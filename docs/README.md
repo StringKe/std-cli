@@ -10,16 +10,18 @@
 - [04_Core_Abstractions.md](04_Core_Abstractions.md) — Action / Skill / Command / Workflow / Memory 等核心抽象
 - [05_Architecture.md](05_Architecture.md) — 整体技术架构（全部 egui + 强 Core）
 
-## 后续将补充
+## 完整文档列表
 
-- 06_Workflow_System.md
-- 07_Personal_RAG_and_Analysis.md （Eney 方向）
-- 08_Launcher_Surface_Detail.md
-- 09_Studio_Surface_Detail.md
-- 10_Tool_and_Plugin_System.md
-- 11_Event_Protocol.md
-- 12_Configuration_and_Storage.md
-- 13_Implementation_Roadmap.md
+- [06_Workflow_System.md](06_Workflow_System.md) — Workflow 定义、执行、AI 集成
+- [07_Personal_RAG_and_Analysis.md](07_Personal_RAG_and_Analysis.md) — 个人环境索引与结构化理解（Eney 方向）
+- [08_Launcher_Surface_Detail.md](08_Launcher_Surface_Detail.md) — Launcher（cli 入口）详细设计
+- [09_Studio_Surface_Detail.md](09_Studio_Surface_Detail.md) — Studio 多窗口与编辑分析界面
+- [10_Tool_and_Plugin_System.md](10_Tool_and_Plugin_System.md) — Tool Registry 与插件机制
+- [11_Event_Protocol.md](11_Event_Protocol.md) — 事件驱动与表面通信协议
+- [12_Configuration_and_Storage.md](12_Configuration_and_Storage.md) — 配置、存储、Mise 集成
+- [13_Implementation_Roadmap.md](13_Implementation_Roadmap.md) — 分阶段实现路线图
+
+所有文档均以 2026 年最新生态为基准。
 
 ## 写作规范
 
