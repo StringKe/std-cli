@@ -1,6 +1,7 @@
 mod dashboard;
 mod history;
 mod memory;
+mod plugin_rows;
 mod plugins;
 mod settings;
 mod workflow_builder;

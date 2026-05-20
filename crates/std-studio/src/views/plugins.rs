@@ -1,6 +1,12 @@
-use crate::{ui, StudioEguiApp};
+use crate::{
+    ui,
+    views::plugin_rows::{self, PluginActionRowEvent},
+    StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
+
+const PLUGIN_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_plugins(&mut self, ui: &mut egui::Ui) {
@@ -11,10 +17,38 @@ impl StudioEguiApp {
         );
         self.render_plugin_toolbar(ui);
         ui.add_space(Space::SM as f32);
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_plugin_manifests(ui));
-            columns[1].vertical(|ui| self.render_plugin_actions(ui));
-            columns[2].vertical(|ui| self.render_plugin_inspector(ui));
+        self.render_plugin_workspace(ui);
+    }
+
+    fn render_plugin_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 900.0 {
+            self.render_plugin_manifests(ui);
+            ui.add_space(PLUGIN_PANEL_GAP);
+            self.render_plugin_actions(ui);
+            ui.add_space(PLUGIN_PANEL_GAP);
+            self.render_plugin_inspector(ui);
+            return;
+        }
+        let column_width = (available_width - PLUGIN_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_plugin_manifests(ui),
+            );
+            ui.add_space(PLUGIN_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_plugin_actions(ui),
+            );
+            ui.add_space(PLUGIN_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_plugin_inspector(ui),
+            );
         });
     }
 
@@ -55,14 +89,7 @@ impl StudioEguiApp {
                     .max_height(560.0)
                     .show(ui, |ui| {
                         for path in &self.app.plugin_manager.manifest_paths {
-                            ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                                ui.label(
-                                    path.file_stem()
-                                        .and_then(|name| name.to_str())
-                                        .unwrap_or("plugin"),
-                                );
-                                ui.small(path.display().to_string());
-                            });
+                            plugin_rows::manifest_row(ui, path);
                         }
                     });
             }
@@ -87,17 +114,11 @@ impl StudioEguiApp {
                     for (index, result) in self.app.plugin_manager.plugin_actions.iter().enumerate()
                     {
                         let selected = index == self.app.plugin_manager.selected;
-                        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                            if ui.selectable_label(selected, &result.action.name).clicked() {
-                                clicked_plugin = Some(index);
-                            }
-                            ui.small(&result.action.description);
-                            ui.horizontal_wrapped(|ui| {
-                                for field in &result.matched_fields {
-                                    ui::chip(ui, field, ui::panel_alt(ui.ctx()));
-                                }
-                            });
-                        });
+                        if let PluginActionRowEvent::Select(index) =
+                            plugin_rows::action_row(ui, index, result, selected)
+                        {
+                            clicked_plugin = Some(index);
+                        }
                     }
                 });
             if let Some(index) = clicked_plugin {
@@ -145,26 +166,7 @@ impl StudioEguiApp {
             .max_height(190.0)
             .show(ui, |ui| {
                 for report in &self.app.plugin_manager.check_reports {
-                    ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                        ui.horizontal(|ui| {
-                            ui::chip(ui, report.status, ui::ok_bg(ui.ctx()));
-                            ui.label(format!("{} actions={}", report.plugin_name, report.actions));
-                        });
-                        ui.small(format!(
-                            "permissions={}",
-                            report
-                                .permissions
-                                .iter()
-                                .map(|permission| format!("{permission:?}"))
-                                .collect::<Vec<_>>()
-                                .join(",")
-                        ));
-                        ui.small(format!(
-                            "fs_scopes={} network_hosts={}",
-                            report.fs_scopes.len(),
-                            report.network_hosts.len()
-                        ));
-                    });
+                    plugin_rows::check_report_row(ui, report);
                 }
             });
     }
@@ -174,21 +176,7 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.plugins.preview.empty"));
             return;
         };
-        ui.label(&preview.title);
-        ui.small(&preview.primary_command);
-        ui.horizontal(|ui| {
-            ui::chip(
-                ui,
-                &format!("{:?}", preview.action_type),
-                ui::selected_bg(ui.ctx()),
-            );
-            ui.label(format!("examples={}", preview.examples.len()));
-        });
-        if !preview.metadata.is_empty() {
-            for (key, value) in &preview.metadata {
-                ui.small(format!("{key}={value}"));
-            }
-        }
+        plugin_rows::preview_panel(ui, preview);
     }
 
     fn render_plugin_execution(&self, ui: &mut egui::Ui) {
@@ -196,20 +184,14 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.plugins.execution.empty"));
             return;
         };
-        ui.horizontal(|ui| {
-            ui::chip(
-                ui,
-                &format!("{:?}", execution.status),
-                plugin_status_fill(ui.ctx(), &execution.status),
-            );
-            ui.label(&execution.action_name);
-        });
-        ui.label(&execution.message);
+        plugin_rows::execution_panel(
+            ui,
+            &execution.action_name,
+            &execution.status,
+            &execution.message,
+        );
         if let Some(output) = &execution.output {
-            ui.add_sized(
-                [ui.available_width(), 120.0],
-                egui::TextEdit::multiline(&mut output.to_string()).interactive(false),
-            );
+            plugin_rows::output_view(ui, output);
         }
     }
 
@@ -229,16 +211,5 @@ impl StudioEguiApp {
             }
             None => self.status = "no plugin selected".to_string(),
         }
-    }
-}
-
-fn plugin_status_fill(
-    ctx: &egui::Context,
-    status: &std_types::ActionExecutionStatus,
-) -> egui::Color32 {
-    match status {
-        std_types::ActionExecutionStatus::Completed => ui::ok_bg(ctx),
-        std_types::ActionExecutionStatus::Failed => ui::warn_bg(ctx),
-        std_types::ActionExecutionStatus::NeedsExternalRunner => ui::warn_bg(ctx),
     }
 }
