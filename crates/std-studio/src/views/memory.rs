@@ -1,10 +1,12 @@
-use crate::{ui, StudioEguiApp};
-use eframe::egui;
-use std_egui::{
-    i18n,
-    tokens::{Space, Text},
+use crate::{
+    ui,
+    views::memory_rows::{self, MemoryRowEvent},
+    StudioEguiApp,
 };
-use std_types::MemoryRecord;
+use eframe::egui;
+use std_egui::{i18n, tokens::Space};
+
+const MEMORY_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_memory(&mut self, ui: &mut egui::Ui) {
@@ -15,10 +17,38 @@ impl StudioEguiApp {
         );
         self.render_memory_toolbar(ui);
         ui.add_space(Space::SM as f32);
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_memory_records(ui));
-            columns[1].vertical(|ui| self.render_memory_detail(ui));
-            columns[2].vertical(|ui| self.render_memory_writer(ui));
+        self.render_memory_workspace(ui);
+    }
+
+    fn render_memory_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 900.0 {
+            self.render_memory_records(ui);
+            ui.add_space(MEMORY_PANEL_GAP);
+            self.render_memory_detail(ui);
+            ui.add_space(MEMORY_PANEL_GAP);
+            self.render_memory_writer(ui);
+            return;
+        }
+        let column_width = (available_width - MEMORY_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_memory_records(ui),
+            );
+            ui.add_space(MEMORY_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_memory_detail(ui),
+            );
+            ui.add_space(MEMORY_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_memory_writer(ui),
+            );
         });
     }
 
@@ -56,18 +86,11 @@ impl StudioEguiApp {
                 .show(ui, |ui| {
                     for (index, memory) in self.app.memory_browser.memories.iter().enumerate() {
                         let selected = index == self.app.memory_browser.selected;
-                        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                            if ui.selectable_label(selected, &memory.title).clicked() {
-                                clicked_memory = Some(index);
-                            }
-                            ui.horizontal_wrapped(|ui| {
-                                ui::chip(ui, &memory.scope, ui::selected_bg(ui.ctx()));
-                                for tag in &memory.tags {
-                                    ui::chip(ui, tag, ui::panel_alt(ui.ctx()));
-                                }
-                            });
-                            ui.small(memory_preview(&memory.body));
-                        });
+                        if let MemoryRowEvent::Select(index) =
+                            memory_rows::memory_row(ui, index, memory, selected)
+                        {
+                            clicked_memory = Some(index);
+                        }
                     }
                 });
             if let Some(index) = clicked_memory {
@@ -87,7 +110,7 @@ impl StudioEguiApp {
                 ui::empty_state(ui, i18n::t("studio.memory.detail.empty"));
                 return;
             };
-            render_memory_metadata(ui, memory);
+            memory_rows::memory_metadata(ui, memory);
             ui.add_space(Space::XS as f32);
             egui::ScrollArea::vertical()
                 .max_height(480.0)
@@ -127,7 +150,7 @@ impl StudioEguiApp {
             });
             if let Some(memory) = &self.app.memory_browser.last_written {
                 ui.add_space(Space::XS as f32);
-                ui::chip(ui, &format!("last: {}", memory.title), ui::ok_bg(ui.ctx()));
+                memory_rows::last_written(ui, memory);
             }
         });
     }
@@ -148,37 +171,6 @@ impl StudioEguiApp {
             }
             Err(error) => self.status = error.to_string(),
         }
-    }
-}
-
-fn render_memory_metadata(ui: &mut egui::Ui, memory: &MemoryRecord) {
-    ui.label(
-        egui::RichText::new(&memory.title)
-            .strong()
-            .font(Text::headline()),
-    );
-    ui.horizontal_wrapped(|ui| {
-        ui::chip(ui, &memory.scope, ui::selected_bg(ui.ctx()));
-        for tag in &memory.tags {
-            ui::chip(ui, tag, ui::panel_alt(ui.ctx()));
-        }
-    });
-    ui.small(format!("id={}", memory.id));
-    ui.small(format!("updated={}", memory.updated_at));
-}
-
-fn memory_preview(body: &str) -> String {
-    let preview = body
-        .lines()
-        .next()
-        .unwrap_or("")
-        .chars()
-        .take(96)
-        .collect::<String>();
-    if preview.len() < body.len() {
-        format!("{preview}...")
-    } else {
-        preview
     }
 }
 
