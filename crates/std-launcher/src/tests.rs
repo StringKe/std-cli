@@ -255,7 +255,13 @@ fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) 
     assert_eq!(report.defer_actions, "Copy,Retry");
     assert!(report.failed_feedback_label.contains("Failed"));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
+    assert_eq!(report.error_open_studio_target, "ExecutionHistory");
+    assert_eq!(
+        report.error_open_studio_command,
+        "std-studio --open history"
+    );
     assert!(summary.contains("failed_feedback_label=Failed"));
+    assert!(summary.contains("error_open_studio_target=ExecutionHistory"));
 }
 
 #[test]

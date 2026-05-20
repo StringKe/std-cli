@@ -85,7 +85,9 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                 }
             }
             FeedbackAction::OpenStudio => {
-                let _ = quiet_button(ui, i18n::t("launcher.feedback.open_studio"));
+                if quiet_button(ui, i18n::t("launcher.feedback.open_studio")).clicked() {
+                    state.open_studio_execution_history_from_feedback();
+                }
             }
         }
     }
@@ -191,6 +193,24 @@ mod tests {
                 FeedbackAction::OpenStudio
             ]
         );
+    }
+
+    #[test]
+    fn open_studio_action_creates_history_intent_without_launching() {
+        let core = std_core::StdCore::with_config(std_core::StdConfig::default());
+        let mut state = LauncherState::with_core(core);
+        let feedback = feedback(ActionExecutionStatus::Failed, "plugin crashed");
+        state.view.feedback = Some(feedback);
+
+        let intent = state.open_studio_execution_history_from_feedback();
+
+        assert_eq!(intent.command, "std-studio --open history");
+        assert_eq!(
+            intent.target,
+            std_launcher::StudioLaunchTarget::ExecutionHistory
+        );
+        assert_eq!(intent.source_action, "Open Terminal");
+        assert_eq!(state.studio_intent, Some(intent));
     }
 
     #[test]

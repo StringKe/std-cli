@@ -42,6 +42,19 @@ pub struct LauncherState {
     pub controller: LauncherController,
     pub action_panel: ActionPanel,
     pub focus_section: LauncherFocusSection,
+    pub studio_intent: Option<StudioLaunchIntent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StudioLaunchIntent {
+    pub command: String,
+    pub target: StudioLaunchTarget,
+    pub source_action: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StudioLaunchTarget {
+    ExecutionHistory,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -110,6 +123,7 @@ impl Default for LauncherState {
             controller,
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
+            studio_intent: None,
         }
     }
 }
@@ -129,6 +143,7 @@ impl LauncherState {
             controller,
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
+            studio_intent: None,
         }
     }
 
@@ -226,6 +241,22 @@ impl LauncherState {
             ActionPanelItem::Defer => self.trigger_selected(),
             ActionPanelItem::CopyCommand(command) => Some(self.complete_action_panel_copy(command)),
         }
+    }
+
+    pub fn open_studio_execution_history_from_feedback(&mut self) -> StudioLaunchIntent {
+        let source_action = self
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.action_name.clone())
+            .unwrap_or_else(|| "Launcher feedback".to_string());
+        let intent = StudioLaunchIntent {
+            command: "std-studio --open history".to_string(),
+            target: StudioLaunchTarget::ExecutionHistory,
+            source_action,
+        };
+        self.studio_intent = Some(intent.clone());
+        intent
     }
 
     pub fn trigger_selected(&mut self) -> Option<ActionExecution> {

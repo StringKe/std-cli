@@ -34,6 +34,8 @@ pub struct LauncherUiSemanticsReport {
     pub defer_actions: String,
     pub failed_feedback_label: String,
     pub error_actions: String,
+    pub error_open_studio_target: String,
+    pub error_open_studio_command: String,
     pub reduce_motion: bool,
     pub launcher_enter_ms: u128,
     pub focus_ring_width: u32,
@@ -44,92 +46,11 @@ impl LauncherState {
         let mut state = Self::new();
         state.controller.show();
         state.update_query(query);
-        let selected = state
-            .view
-            .selected_result()
-            .map(|result| {
-                AccessibilityContext::from_env().launcher_result_label(
-                    &result.action.name,
-                    &result.action.description,
-                    state.view.selected + 1,
-                    state.view.results.len(),
-                )
-            })
-            .unwrap_or_else(|| "No matches".to_string());
-        let selected_position = if state.view.results.is_empty() {
-            "0 of 0".to_string()
-        } else {
-            format!(
-                "{} of {}",
-                state.view.selected + 1,
-                state.view.results.len()
-            )
-        };
-        let selected_keycap = if state.view.results.is_empty() {
-            "none".to_string()
-        } else {
-            "Mod+1".to_string()
-        };
-        let selected_action_hint = state
-            .view
-            .preview
-            .as_ref()
-            .map(|preview| format!("Enter {}", preview.primary_command))
-            .unwrap_or_else(|| "Enter none".to_string());
-        let action_bar_hint = "Actions Mod+K".to_string();
-        let mut no_results = Self::new();
-        no_results.update_query("no-such-launcher-result");
-        let mut no_results_enter = Self::new();
-        no_results_enter.update_query("no-such-launcher-result");
-        no_results_enter.handle_keyboard_input(LauncherKey::Enter, false);
-        let no_results_enter_query = no_results_enter.view.query;
-        let no_results_ime_enter_blocked = no_results
-            .handle_keyboard_input(LauncherKey::Enter, true)
-            .is_none()
-            && no_results.view.feedback.is_none();
-        let no_results_label =
-            i18n::translate(Locale::EnUs, "launcher.empty.no_matches.title").to_string();
-        let no_results_detail =
-            i18n::translate(Locale::EnUs, "launcher.empty.no_matches.detail").to_string();
-        let no_results_fallback = format!(
-            "{} \"{}\"",
-            i18n::translate(Locale::EnUs, "launcher.empty.ask_ai"),
-            no_results.view.query
-        );
-        let no_results_phase = format!(
-            "{:?}/{:?}",
-            no_results.view.phase, no_results.view.result_mode
-        );
-
-        let mut loading_state = Self::new();
-        loading_state.view.preview_searching("slow query");
-        let loading_label = i18n::translate(Locale::EnUs, "launcher.results.searching").to_string();
-        let loading_progress = format!(
-            "{}px {} indeterminate",
-            2,
-            i18n::translate(Locale::EnUs, "launcher.results.searching.title")
-        );
-
-        let mut executing_state = Self::new();
-        executing_state.update_query(query);
-        executing_state.view.preview_executing();
-        let executing_title = executing_state
-            .view
-            .preview
-            .as_ref()
-            .map(|preview| preview.title.clone())
-            .unwrap_or_else(|| "selected action".to_string());
-        let executing_search_text = format!(
-            "{} {}",
-            i18n::translate(Locale::EnUs, "launcher.search.running"),
-            executing_title
-        );
-
-        let defer_feedback = LauncherFeedback::from_execution(&deferred_execution());
-        let defer_feedback_label = feedback_label(&defer_feedback);
-
-        let failed_feedback = LauncherFeedback::from_execution(&failed_execution());
-        let failed_feedback_label = feedback_label(&failed_feedback);
+        let result = result_semantics(&state);
+        let no_results = no_result_semantics();
+        let loading = loading_semantics();
+        let executing = executing_semantics(query);
+        let feedback = feedback_semantics();
 
         let motion = MotionContext::from_env();
         let a11y = AccessibilityContext::from_env();
@@ -138,31 +59,181 @@ impl LauncherState {
             result_count: state.view.results.len(),
             result_phase: format!("{:?}", state.view.phase),
             result_mode: format!("{:?}", state.view.result_mode),
-            selected_label: selected,
-            selected_position,
-            selected_keycap,
-            selected_action_hint,
-            action_bar_hint,
-            no_results_label,
-            no_results_detail,
-            no_results_fallback,
-            no_results_phase,
-            no_results_enter_query,
-            no_results_ime_enter_blocked,
-            loading_label,
-            loading_progress,
+            selected_label: result.selected_label,
+            selected_position: result.selected_position,
+            selected_keycap: result.selected_keycap,
+            selected_action_hint: result.selected_action_hint,
+            action_bar_hint: result.action_bar_hint,
+            no_results_label: no_results.label,
+            no_results_detail: no_results.detail,
+            no_results_fallback: no_results.fallback,
+            no_results_phase: no_results.phase,
+            no_results_enter_query: no_results.enter_query,
+            no_results_ime_enter_blocked: no_results.ime_enter_blocked,
+            loading_label: loading.label,
+            loading_progress: loading.progress,
             loading_spinner_after_ms: 200,
-            executing_search_text,
+            executing_search_text: executing.search_text,
             executing_input_enabled: false,
             executing_cancel_shortcut: "Cancel Ctrl+C".to_string(),
-            defer_feedback_label,
+            defer_feedback_label: feedback.defer_label,
             defer_actions: "Copy,Retry".to_string(),
-            failed_feedback_label,
+            failed_feedback_label: feedback.failed_label,
             error_actions: "Copy,Retry,Open Studio".to_string(),
+            error_open_studio_target: feedback.open_studio_target,
+            error_open_studio_command: feedback.open_studio_command,
             reduce_motion: motion.is_reduced(),
             launcher_enter_ms: motion.launcher_enter().as_millis(),
             focus_ring_width: a11y.focus_ring_width() as u32,
         }
+    }
+}
+
+struct ResultSemantics {
+    selected_label: String,
+    selected_position: String,
+    selected_keycap: String,
+    selected_action_hint: String,
+    action_bar_hint: String,
+}
+
+struct NoResultSemantics {
+    label: String,
+    detail: String,
+    fallback: String,
+    phase: String,
+    enter_query: String,
+    ime_enter_blocked: bool,
+}
+
+struct LoadingSemantics {
+    label: String,
+    progress: String,
+}
+
+struct ExecutingSemantics {
+    search_text: String,
+}
+
+struct FeedbackSemantics {
+    defer_label: String,
+    failed_label: String,
+    open_studio_target: String,
+    open_studio_command: String,
+}
+
+fn result_semantics(state: &LauncherState) -> ResultSemantics {
+    let selected_label = state
+        .view
+        .selected_result()
+        .map(|result| {
+            AccessibilityContext::from_env().launcher_result_label(
+                &result.action.name,
+                &result.action.description,
+                state.view.selected + 1,
+                state.view.results.len(),
+            )
+        })
+        .unwrap_or_else(|| "No matches".to_string());
+    let selected_position = if state.view.results.is_empty() {
+        "0 of 0".to_string()
+    } else {
+        format!(
+            "{} of {}",
+            state.view.selected + 1,
+            state.view.results.len()
+        )
+    };
+    let selected_keycap = if state.view.results.is_empty() {
+        "none".to_string()
+    } else {
+        "Mod+1".to_string()
+    };
+    let selected_action_hint = state
+        .view
+        .preview
+        .as_ref()
+        .map(|preview| format!("Enter {}", preview.primary_command))
+        .unwrap_or_else(|| "Enter none".to_string());
+    ResultSemantics {
+        selected_label,
+        selected_position,
+        selected_keycap,
+        selected_action_hint,
+        action_bar_hint: "Actions Mod+K".to_string(),
+    }
+}
+
+fn no_result_semantics() -> NoResultSemantics {
+    let mut no_results = LauncherState::new();
+    no_results.update_query("no-such-launcher-result");
+    let mut no_results_enter = LauncherState::new();
+    no_results_enter.update_query("no-such-launcher-result");
+    no_results_enter.handle_keyboard_input(LauncherKey::Enter, false);
+    let ime_enter_blocked = no_results
+        .handle_keyboard_input(LauncherKey::Enter, true)
+        .is_none()
+        && no_results.view.feedback.is_none();
+    NoResultSemantics {
+        label: i18n::translate(Locale::EnUs, "launcher.empty.no_matches.title").to_string(),
+        detail: i18n::translate(Locale::EnUs, "launcher.empty.no_matches.detail").to_string(),
+        fallback: format!(
+            "{} \"{}\"",
+            i18n::translate(Locale::EnUs, "launcher.empty.ask_ai"),
+            no_results.view.query
+        ),
+        phase: format!(
+            "{:?}/{:?}",
+            no_results.view.phase, no_results.view.result_mode
+        ),
+        enter_query: no_results_enter.view.query,
+        ime_enter_blocked,
+    }
+}
+
+fn loading_semantics() -> LoadingSemantics {
+    let mut loading_state = LauncherState::new();
+    loading_state.view.preview_searching("slow query");
+    LoadingSemantics {
+        label: i18n::translate(Locale::EnUs, "launcher.results.searching").to_string(),
+        progress: format!(
+            "{}px {} indeterminate",
+            2,
+            i18n::translate(Locale::EnUs, "launcher.results.searching.title")
+        ),
+    }
+}
+
+fn executing_semantics(query: &str) -> ExecutingSemantics {
+    let mut executing_state = LauncherState::new();
+    executing_state.update_query(query);
+    executing_state.view.preview_executing();
+    let executing_title = executing_state
+        .view
+        .preview
+        .as_ref()
+        .map(|preview| preview.title.clone())
+        .unwrap_or_else(|| "selected action".to_string());
+    ExecutingSemantics {
+        search_text: format!(
+            "{} {}",
+            i18n::translate(Locale::EnUs, "launcher.search.running"),
+            executing_title
+        ),
+    }
+}
+
+fn feedback_semantics() -> FeedbackSemantics {
+    let defer_feedback = LauncherFeedback::from_execution(&deferred_execution());
+    let failed_feedback = LauncherFeedback::from_execution(&failed_execution());
+    let mut failed_state = LauncherState::new();
+    failed_state.view.feedback = Some(failed_feedback.clone());
+    let studio_intent = failed_state.open_studio_execution_history_from_feedback();
+    FeedbackSemantics {
+        defer_label: feedback_label(&defer_feedback),
+        failed_label: feedback_label(&failed_feedback),
+        open_studio_target: format!("{:?}", studio_intent.target),
+        open_studio_command: studio_intent.command,
     }
 }
 
@@ -198,12 +269,14 @@ impl LauncherUiSemanticsReport {
             && self.defer_actions == "Copy,Retry"
             && self.failed_feedback_label.contains("Failed")
             && self.error_actions == "Copy,Retry,Open Studio"
+            && self.error_open_studio_target == "ExecutionHistory"
+            && self.error_open_studio_command == "std-studio --open history"
             && (!self.reduce_motion || self.launcher_enter_ms == 0)
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -230,6 +303,8 @@ impl LauncherUiSemanticsReport {
             self.defer_actions,
             self.failed_feedback_label,
             self.error_actions,
+            self.error_open_studio_target,
+            self.error_open_studio_command,
             self.reduce_motion,
             self.launcher_enter_ms,
             self.focus_ring_width
