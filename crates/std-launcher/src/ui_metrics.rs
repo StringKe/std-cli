@@ -10,6 +10,7 @@ const RESULT_ROW_HEIGHT: f32 = 36.0;
 const GROUP_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
+const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
 
 pub(crate) fn panel_width() -> f32 {
     UiScale::from_env().f32(PANEL_WIDTH)
@@ -21,6 +22,30 @@ pub(crate) fn scale() -> UiScale {
 
 pub(crate) fn window_margin() -> f32 {
     Space::sm() as f32
+}
+
+pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
+    let margin = window_margin();
+    let panel_width = panel_width().min((available.width() - margin * 2.0).max(320.0));
+    let body_height = body_height(state, available.height());
+    let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
+    panel_rect_for_available(available, panel_width, panel_height, margin)
+}
+
+fn panel_rect_for_available(
+    available: egui::Rect,
+    panel_width: f32,
+    panel_height: f32,
+    margin: f32,
+) -> egui::Rect {
+    let target_top = available.top() + available.height() * PANEL_VERTICAL_ANCHOR;
+    let min_y = available.top() + margin;
+    let max_y = available.bottom() - margin - panel_height;
+    let top = target_top.clamp(min_y, max_y.max(min_y));
+    egui::Rect::from_min_size(
+        egui::pos2(available.center().x - panel_width * 0.5, top),
+        egui::vec2(panel_width, panel_height),
+    )
 }
 
 pub(crate) fn result_row_height() -> f32 {
@@ -265,5 +290,29 @@ mod tests {
             crate::ui_metrics_results::group_header_metrics_for_scale(UiScale::new(1.5), 600.0),
             (600.0, 1.5)
         );
+    }
+
+    #[test]
+    fn panel_rect_anchors_to_upper_screen_region() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1440.0, 900.0));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(rect.width(), 720.0);
+        assert_eq!(rect.min.x, 360.0);
+        assert_eq!(rect.min.y, 252.0);
+    }
+
+    #[test]
+    fn panel_rect_clamps_when_viewport_is_short() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        state.view.preview_executing();
+        let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 240.0));
+        let rect = panel_rect(available, &state);
+
+        assert!(rect.min.y >= window_margin());
+        assert!(rect.max.y <= available.bottom() - window_margin());
     }
 }

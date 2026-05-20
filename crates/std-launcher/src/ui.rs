@@ -27,20 +27,8 @@ pub(crate) fn render_launcher_overlay(
     voice_transcript: &mut String,
 ) -> bool {
     let available = ui.max_rect();
-    let margin = ui_metrics::window_margin();
-    let panel_width = ui_metrics::panel_width().min((available.width() - margin * 2.0).max(320.0));
     let body_height = ui_metrics::body_height(state, available.height());
-    let panel_height = ui_metrics::panel_height(state, body_height);
-    let rect = egui::Rect::from_min_size(
-        egui::pos2(
-            available.center().x - panel_width * 0.5,
-            available.top() + margin,
-        ),
-        egui::vec2(
-            panel_width,
-            panel_height.min(available.height() - margin * 2.0),
-        ),
-    );
+    let rect = ui_metrics::panel_rect(available, state);
 
     let mut hide_requested = false;
     ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
