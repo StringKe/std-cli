@@ -18,6 +18,8 @@ pub struct LauncherUiSemanticsReport {
     pub selected_keycap: String,
     pub selected_action_hint: String,
     pub action_bar_hint: String,
+    pub action_panel_actions: String,
+    pub action_panel_open_studio_command: String,
     pub no_results_label: String,
     pub no_results_detail: String,
     pub no_results_fallback: String,
@@ -51,6 +53,7 @@ impl LauncherState {
         let loading = loading_semantics();
         let executing = executing_semantics(query);
         let feedback = feedback_semantics();
+        let action_panel = action_panel_semantics(query);
 
         let motion = MotionContext::from_env();
         let a11y = AccessibilityContext::from_env();
@@ -64,6 +67,8 @@ impl LauncherState {
             selected_keycap: result.selected_keycap,
             selected_action_hint: result.selected_action_hint,
             action_bar_hint: result.action_bar_hint,
+            action_panel_actions: action_panel.actions,
+            action_panel_open_studio_command: action_panel.open_studio_command,
             no_results_label: no_results.label,
             no_results_detail: no_results.detail,
             no_results_fallback: no_results.fallback,
@@ -119,6 +124,11 @@ struct FeedbackSemantics {
     defer_label: String,
     failed_label: String,
     open_studio_target: String,
+    open_studio_command: String,
+}
+
+struct ActionPanelSemantics {
+    actions: String,
     open_studio_command: String,
 }
 
@@ -237,6 +247,28 @@ fn feedback_semantics() -> FeedbackSemantics {
     }
 }
 
+fn action_panel_semantics(query: &str) -> ActionPanelSemantics {
+    let mut state = LauncherState::new();
+    state.update_query(query);
+    state.open_action_panel();
+    let actions = state
+        .action_panel
+        .items
+        .iter()
+        .map(|item| item.title())
+        .collect::<Vec<_>>()
+        .join(",");
+    state.update_action_panel_query("studio");
+    let _ = state.trigger_action_panel_selection();
+    ActionPanelSemantics {
+        actions,
+        open_studio_command: state
+            .studio_intent
+            .map(|intent| intent.command)
+            .unwrap_or_else(|| "none".to_string()),
+    }
+}
+
 impl LauncherUiSemanticsReport {
     pub fn pass(&self) -> bool {
         self.search_focused
@@ -248,6 +280,10 @@ impl LauncherUiSemanticsReport {
             && self.selected_keycap == "Mod+1"
             && self.selected_action_hint.starts_with("Enter ")
             && self.action_bar_hint == "Actions Mod+K"
+            && self.action_panel_actions.contains("Open in Studio")
+            && self
+                .action_panel_open_studio_command
+                .starts_with("std-studio --open ")
             && self.no_results_label == "No matches"
             && self.no_results_detail.contains("Try a different keyword")
             && self.no_results_fallback.contains("Ask AI about")
@@ -276,7 +312,7 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -287,6 +323,8 @@ impl LauncherUiSemanticsReport {
             self.selected_keycap,
             self.selected_action_hint,
             self.action_bar_hint,
+            self.action_panel_actions,
+            self.action_panel_open_studio_command,
             self.no_results_label,
             self.no_results_detail,
             self.no_results_fallback,

@@ -224,10 +224,15 @@ fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     assert_eq!(report.selected_keycap, "Mod+1");
     assert!(report.selected_action_hint.starts_with("Enter "));
     assert_eq!(report.action_bar_hint, "Actions Mod+K");
+    assert!(report.action_panel_actions.contains("Open in Studio"));
+    assert!(report
+        .action_panel_open_studio_command
+        .starts_with("std-studio --open "));
     assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
     assert!(summary.contains("result_phase=WithResults"));
     assert!(summary.contains("selected_keycap=Mod+1"));
     assert!(summary.contains("action_bar_hint=Actions Mod+K"));
+    assert!(summary.contains("action_panel_actions="));
 }
 
 fn assert_no_result_semantics(report: &LauncherUiSemanticsReport) {

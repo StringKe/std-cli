@@ -4,6 +4,7 @@ use std_types::{Action, ActionType};
 pub enum ActionPanelItem {
     Run,
     Defer,
+    OpenInStudio,
     CopyCommand(String),
 }
 
@@ -88,6 +89,7 @@ impl ActionPanelItem {
         match self {
             Self::Run => "Run",
             Self::Defer => "Defer",
+            Self::OpenInStudio => "Open in Studio",
             Self::CopyCommand(_) => "Copy command",
         }
     }
@@ -96,6 +98,7 @@ impl ActionPanelItem {
         match self {
             Self::Run => "Enter",
             Self::Defer => "Shift+Enter",
+            Self::OpenInStudio => "Cmd+O",
             Self::CopyCommand(_) => "Cmd+C",
         }
     }
@@ -111,10 +114,17 @@ fn action_panel_items(action: &Action) -> Vec<ActionPanelItem> {
     if action.action_type.needs_external_runner() {
         items.push(ActionPanelItem::Defer);
     }
+    if studio_supported(action) {
+        items.push(ActionPanelItem::OpenInStudio);
+    }
     if let Some(command) = primary_command(action) {
         items.push(ActionPanelItem::CopyCommand(command));
     }
     items
+}
+
+fn studio_supported(action: &Action) -> bool {
+    !matches!(action.action_type, ActionType::Custom(_))
 }
 
 fn primary_command(action: &Action) -> Option<String> {

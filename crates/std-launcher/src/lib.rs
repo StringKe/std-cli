@@ -8,6 +8,7 @@ mod hotkey;
 mod keyboard;
 mod layout_contract;
 mod semantics;
+mod studio_intent;
 mod surface_smoke;
 mod voice;
 
@@ -28,6 +29,7 @@ use std_orchestration::{
     append_workflow_execution, load_workflow, resolve_workflow_input, WorkflowExecutor,
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType};
+pub use studio_intent::{StudioLaunchIntent, StudioLaunchTarget};
 pub use surface_smoke::LauncherSurfaceSmokeReport;
 pub use voice::clean_voice_transcript;
 
@@ -43,18 +45,6 @@ pub struct LauncherState {
     pub action_panel: ActionPanel,
     pub focus_section: LauncherFocusSection,
     pub studio_intent: Option<StudioLaunchIntent>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct StudioLaunchIntent {
-    pub command: String,
-    pub target: StudioLaunchTarget,
-    pub source_action: String,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StudioLaunchTarget {
-    ExecutionHistory,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -239,24 +229,12 @@ impl LauncherState {
         match self.action_panel.selected_item()?.clone() {
             ActionPanelItem::Run => self.trigger_selected_by_user(),
             ActionPanelItem::Defer => self.trigger_selected(),
+            ActionPanelItem::OpenInStudio => {
+                self.open_selected_action_in_studio()?;
+                None
+            }
             ActionPanelItem::CopyCommand(command) => Some(self.complete_action_panel_copy(command)),
         }
-    }
-
-    pub fn open_studio_execution_history_from_feedback(&mut self) -> StudioLaunchIntent {
-        let source_action = self
-            .view
-            .feedback
-            .as_ref()
-            .map(|feedback| feedback.action_name.clone())
-            .unwrap_or_else(|| "Launcher feedback".to_string());
-        let intent = StudioLaunchIntent {
-            command: "std-studio --open history".to_string(),
-            target: StudioLaunchTarget::ExecutionHistory,
-            source_action,
-        };
-        self.studio_intent = Some(intent.clone());
-        intent
     }
 
     pub fn trigger_selected(&mut self) -> Option<ActionExecution> {

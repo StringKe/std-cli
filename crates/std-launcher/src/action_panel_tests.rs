@@ -29,6 +29,50 @@ fn action_panel_opens_for_selected_result_and_closes_on_search_change() {
 }
 
 #[test]
+fn action_panel_includes_open_in_studio_for_launcher_results() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("index");
+    state.open_action_panel();
+
+    let titles = state
+        .action_panel
+        .items
+        .iter()
+        .map(|item| item.title().to_string())
+        .collect::<Vec<_>>();
+
+    assert!(titles.contains(&"Open in Studio".to_string()));
+}
+
+#[test]
+fn action_panel_open_in_studio_records_intent_without_launching() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("index");
+    state.open_action_panel();
+    state.update_action_panel_query("studio");
+    let execution = state.trigger_action_panel_selection();
+
+    assert!(execution.is_none());
+    let intent = state.studio_intent.unwrap();
+    assert_eq!(intent.command, "std-studio --open analysis");
+    assert_eq!(intent.source_action, "Rebuild Index");
+}
+
+#[test]
 fn action_panel_keyboard_path_defers_external_runner_by_default() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {
@@ -45,7 +89,6 @@ fn action_panel_keyboard_path_defers_external_runner_by_default() {
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
 
-    assert_eq!(state.action_panel.selected, 1);
     assert_eq!(state.action_panel.selected_item().unwrap().title(), "Defer");
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
 }
