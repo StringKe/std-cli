@@ -104,9 +104,8 @@ impl LauncherViewModel {
             return;
         }
 
-        let len = self.results.len() as isize;
-        let next = (self.selected as isize + delta).rem_euclid(len);
-        self.selected = next as usize;
+        let last = self.results.len() - 1;
+        self.selected = self.selected.saturating_add_signed(delta).min(last);
     }
 
     pub fn move_selection_with_preview(&mut self, core: &StdCore, delta: isize) {

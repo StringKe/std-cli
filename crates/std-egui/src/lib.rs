@@ -75,6 +75,24 @@ mod tests {
     }
 
     #[test]
+    fn launcher_selection_stops_at_list_edges() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "");
+        model.move_selection(-1);
+        assert_eq!(model.selected, 0);
+
+        let last = model.results.len() - 1;
+        for _ in 0..(model.results.len() + 2) {
+            model.move_selection(1);
+        }
+        assert_eq!(model.selected, last);
+        model.move_selection(1);
+        assert_eq!(model.selected, last);
+    }
+
+    #[test]
     fn launcher_view_model_distinguishes_result_modes() {
         let core = test_core();
         let mut model = LauncherViewModel::new(&core);
