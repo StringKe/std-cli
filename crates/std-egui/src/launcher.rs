@@ -10,9 +10,17 @@ pub struct LauncherTelemetry {
     pub last_result_count: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LauncherResultMode {
+    SuggestedWorkflows,
+    Matches,
+    NoMatches,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct LauncherViewModel {
     pub query: String,
+    pub result_mode: LauncherResultMode,
     pub results: Vec<SearchResult>,
     pub selected: usize,
     pub preview: Option<ActionPreview>,
@@ -61,6 +69,7 @@ impl LauncherViewModel {
         let result_count = results.len();
         let mut view = Self {
             query: String::new(),
+            result_mode: LauncherResultMode::SuggestedWorkflows,
             results,
             selected: 0,
             preview: None,
@@ -81,6 +90,7 @@ impl LauncherViewModel {
         self.query = query.into();
         let started_at = Instant::now();
         self.results = core.search(&self.query, 10).unwrap_or_default();
+        self.result_mode = result_mode(&self.query, self.results.is_empty());
         self.telemetry.last_search_ms = started_at.elapsed().as_millis();
         self.telemetry.last_result_count = self.results.len();
         self.selected = 0;
@@ -127,6 +137,16 @@ impl LauncherViewModel {
         self.last_execution = Some(execution.clone());
         self.feedback = Some(LauncherFeedback::from_execution(&execution));
         Some(execution)
+    }
+}
+
+fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {
+    if query.trim().is_empty() {
+        LauncherResultMode::SuggestedWorkflows
+    } else if empty_results {
+        LauncherResultMode::NoMatches
+    } else {
+        LauncherResultMode::Matches
     }
 }
 

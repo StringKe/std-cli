@@ -7,6 +7,7 @@ use std_egui::{
     a11y::AccessibilityContext,
     i18n,
     tokens::{Color, Radius, Space, Text},
+    LauncherResultMode,
 };
 use std_launcher::LauncherState;
 use std_types::{ActionType, SearchResult};
@@ -15,11 +16,19 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
     surface_frame(ui.ctx()).show(ui, |ui| {
         section_header(
             ui,
-            "Results",
+            section_title(state.view.result_mode),
             &format!("{} matches", state.view.results.len()),
         );
         render_results(ui, state, max_height);
     });
+}
+
+fn section_title(mode: LauncherResultMode) -> &'static str {
+    match mode {
+        LauncherResultMode::SuggestedWorkflows => "Suggested Workflows",
+        LauncherResultMode::Matches => "Results",
+        LauncherResultMode::NoMatches => "Results",
+    }
 }
 
 fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {

@@ -11,7 +11,7 @@ mod plugin;
 pub mod tokens;
 
 pub use dashboard::StudioDashboardViewModel;
-pub use launcher::{LauncherFeedback, LauncherTelemetry, LauncherViewModel};
+pub use launcher::{LauncherFeedback, LauncherResultMode, LauncherTelemetry, LauncherViewModel};
 pub use memory::MemoryBrowserViewModel;
 pub use plugin::PluginManagerViewModel;
 
@@ -71,6 +71,19 @@ mod tests {
         let second_title = model.preview.as_ref().unwrap().title.clone();
 
         assert_ne!(first_title, second_title);
+        assert_eq!(model.result_mode, LauncherResultMode::SuggestedWorkflows);
+    }
+
+    #[test]
+    fn launcher_view_model_distinguishes_result_modes() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        assert_eq!(model.result_mode, LauncherResultMode::SuggestedWorkflows);
+        model.update_query(&core, "index");
+        assert_eq!(model.result_mode, LauncherResultMode::Matches);
+        model.update_query(&core, "zzzz-no-launcher-match");
+        assert_eq!(model.result_mode, LauncherResultMode::NoMatches);
     }
 
     #[test]
