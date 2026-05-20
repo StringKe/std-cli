@@ -189,6 +189,25 @@ fn launcher_smoke_report_validates_fast_search_preview_and_feedback() {
 }
 
 #[test]
+fn launcher_ui_semantics_smoke_covers_result_empty_defer_and_error_states() {
+    let report = LauncherState::ui_semantics_smoke("index");
+    let summary = report.summary();
+
+    assert!(report.pass(), "{summary}");
+    assert_eq!(report.no_results_label, "No matches");
+    assert!(report.no_results_fallback.contains("Ask AI about"));
+    assert_eq!(report.no_results_phase, "NoMatches/NoMatches");
+    assert!(report
+        .defer_feedback_label
+        .contains("Needs external runner"));
+    assert_eq!(report.defer_actions, "Copy,Retry");
+    assert!(report.failed_feedback_label.contains("Failed"));
+    assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
+    assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
+    assert!(summary.contains("failed_feedback_label=Failed"));
+}
+
+#[test]
 fn launcher_window_smoke_validates_hotkey_window_commands() {
     let report = LauncherState::window_smoke();
     let summary = report.summary();
