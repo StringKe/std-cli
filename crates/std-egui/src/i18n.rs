@@ -45,6 +45,7 @@ mod tests {
             translate(Locale::ZhCn, "launcher.action.executing"),
             "正在执行选中操作"
         );
+        assert_eq!(translate(Locale::EnUs, "launcher.search.icon"), "Search");
         assert_eq!(
             translate(Locale::EnUs, "launcher.results.group.action_workflow"),
             "Action / Workflow"

@@ -152,11 +152,7 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
         .show(ui, |ui| {
             ui.set_min_height(44.0);
             ui.horizontal(|ui| {
-                ui.label(
-                    egui::RichText::new(">")
-                        .font(Text::headline())
-                        .color(Color::fg_secondary(&ctx)),
-                );
+                render_search_icon(ui, &ctx);
                 let response = ui.add_sized(
                     [ui.available_width() - 92.0, 36.0],
                     egui::TextEdit::singleline(&mut state.view.query)
@@ -215,6 +211,27 @@ fn pressed_result_shortcut(ctx: &egui::Context) -> Option<usize> {
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
     ui_results::render(ui, state, max_height);
+}
+
+fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ctx));
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(24.0, 28.0), egui::Sense::hover());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Other,
+            ui.is_enabled(),
+            i18n::t("launcher.search.icon"),
+        )
+    });
+    let center = egui::pos2(rect.left() + 10.0, rect.center().y - 2.0);
+    ui.painter().circle_stroke(center, 5.0, stroke);
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x + 4.0, center.y + 4.0),
+            egui::pos2(center.x + 9.0, center.y + 9.0),
+        ],
+        stroke,
+    );
 }
 
 fn draw_focus_ring(ui: &egui::Ui, rect: egui::Rect, radius: u8, width: f32) {

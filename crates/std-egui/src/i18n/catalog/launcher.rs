@@ -6,6 +6,8 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.search.placeholder") => {
             Some("Search Workflows, apps, clipboard...")
         }
+        (Locale::ZhCn, "launcher.search.icon") => Some("搜索"),
+        (Locale::EnUs, "launcher.search.icon") => Some("Search"),
         (Locale::ZhCn, "launcher.empty.no_matches.title") => Some("没有匹配项"),
         (Locale::EnUs, "launcher.empty.no_matches.title") => Some("No matches"),
         (Locale::ZhCn, "launcher.empty.no_matches.detail") => Some("换个关键词，或按 ? 询问"),
@@ -83,6 +85,7 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
 pub(super) fn fallback(key: &str) -> Option<&'static str> {
     match key {
         "launcher.search.placeholder" => Some("Search Workflows, apps, clipboard..."),
+        "launcher.search.icon" => Some("Search"),
         "launcher.empty.no_matches.title" => Some("No matches"),
         "launcher.empty.no_matches.detail" => Some("Try a different keyword or press ? to ask"),
         "launcher.empty.ready.title" => Some("Ready to search"),
