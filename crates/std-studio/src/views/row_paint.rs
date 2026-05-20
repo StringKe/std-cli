@@ -75,6 +75,47 @@ pub(crate) fn paint_inset_title_detail(
     );
 }
 
+pub(crate) fn paint_inset_caption_body_caption(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    caption_top: &str,
+    body: &str,
+    caption_bottom: &str,
+    rows: ThreeTextRows,
+) {
+    let x = rect.left() + row_metrics::TEXT_INSET_X;
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
+    let painter = ui.painter().with_clip_rect(clip);
+    painter.text(
+        egui::pos2(x, rect.top() + rows.top_y),
+        egui::Align2::LEFT_CENTER,
+        caption_top,
+        Text::caption(),
+        ui::muted_text(ui.ctx()),
+    );
+    painter.text(
+        egui::pos2(x, rect.top() + rows.body_y),
+        egui::Align2::LEFT_CENTER,
+        body,
+        Text::body(),
+        ui::strong_text(ui.ctx()),
+    );
+    painter.text(
+        egui::pos2(x, rect.top() + rows.bottom_y),
+        egui::Align2::LEFT_CENTER,
+        caption_bottom,
+        Text::caption(),
+        ui::muted_text(ui.ctx()),
+    );
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct ThreeTextRows {
+    pub(crate) top_y: f32,
+    pub(crate) body_y: f32,
+    pub(crate) bottom_y: f32,
+}
+
 pub(crate) fn paint_title_detail_at(
     ui: &mut egui::Ui,
     rect: egui::Rect,

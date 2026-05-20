@@ -1,6 +1,12 @@
-use crate::{ui, views::row_metrics};
+use crate::{
+    ui,
+    views::{
+        row_metrics,
+        row_paint::{self, RowSurface},
+    },
+};
 use eframe::egui;
-use std_egui::tokens::{Color, Radius, Space, Text};
+use std_egui::tokens::{Color, Space};
 use std_index::{ComponentDigest, IndexCoverage, IndexCoverageItem, IndexDocument};
 
 pub(crate) fn document_overview_row(ui: &mut egui::Ui, document: &IndexDocument) {
@@ -19,8 +25,8 @@ pub(crate) fn document_overview_row(ui: &mut egui::Ui, document: &IndexDocument)
         )
     });
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
+        row_paint::paint_inset_title_detail(
             ui,
             rect,
             &document.overview.name,
@@ -46,8 +52,8 @@ pub(crate) fn component_row(ui: &mut egui::Ui, component: &ComponentDigest) {
         egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title.as_str())
     });
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
+        row_paint::paint_inset_title_detail(
             ui,
             rect,
             &title,
@@ -72,12 +78,12 @@ pub(crate) fn coverage_item_row(ui: &mut egui::Ui, item: &IndexCoverageItem) {
         egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), &item.name)
     });
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered());
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
         let detail = format!(
             "components={} relations={} history={}",
             item.component_count, item.relation_count, item.history_count
         );
-        paint_title_detail(
+        row_paint::paint_inset_title_detail(
             ui,
             rect,
             &item.name,
@@ -161,7 +167,7 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
                 row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
             ),
         );
-        paint_chip(
+        row_paint::paint_chip(
             ui,
             chip_rect,
             label,
@@ -191,62 +197,7 @@ fn paint_chips(ui: &mut egui::Ui, start_x: f32, y: f32, labels: &[String]) {
                 row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
             ),
         );
-        paint_chip(ui, chip_rect, label, Color::bg_surface_2(ui.ctx()));
+        row_paint::paint_chip(ui, chip_rect, label, Color::bg_surface_2(ui.ctx()));
         x += width + row_metrics::CHIP_GAP;
     }
-}
-
-fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool) {
-    let fill = if hovered {
-        Color::bg_surface_3(ui.ctx())
-    } else {
-        Color::bg_surface_1(ui.ctx())
-    };
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().rect_stroke(
-        rect,
-        egui::CornerRadius::same(Radius::SM),
-        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
-        egui::StrokeKind::Inside,
-    );
-}
-
-fn paint_title_detail(
-    ui: &mut egui::Ui,
-    rect: egui::Rect,
-    title: &str,
-    detail: &str,
-    y1: f32,
-    y2: f32,
-) {
-    let x = rect.left() + row_metrics::TEXT_INSET_X;
-    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
-    let painter = ui.painter().with_clip_rect(clip);
-    painter.text(
-        egui::pos2(x, rect.top() + y1),
-        egui::Align2::LEFT_CENTER,
-        title,
-        Text::body(),
-        ui::strong_text(ui.ctx()),
-    );
-    painter.text(
-        egui::pos2(x, rect.top() + y2),
-        egui::Align2::LEFT_CENTER,
-        detail,
-        Text::caption(),
-        ui::muted_text(ui.ctx()),
-    );
-}
-
-fn paint_chip(ui: &mut egui::Ui, rect: egui::Rect, label: &str, fill: egui::Color32) {
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().text(
-        rect.center(),
-        egui::Align2::CENTER_CENTER,
-        label,
-        Text::caption(),
-        ui::strong_text(ui.ctx()),
-    );
 }
