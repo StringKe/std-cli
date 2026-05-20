@@ -1,17 +1,9 @@
-use std::{fs, process::Command};
+use std::{fs, path::Path, process::Command};
 
 #[test]
 fn binary_test_mode_blocks_external_runner() {
     let temp = tempfile::tempdir().unwrap();
-    let config_path = temp.path().join("std-cli.json");
-    fs::write(
-        &config_path,
-        serde_json::json!({
-            "data_dir": temp.path().join("data"),
-        })
-        .to_string(),
-    )
-    .unwrap();
+    let config_path = write_config(temp.path());
 
     let define = run_std(
         &config_path,
@@ -37,7 +29,95 @@ fn binary_test_mode_blocks_external_runner() {
     assert!(!stdout.contains("\"status\": \"Completed\""));
 }
 
-fn run_std(config_path: &std::path::Path, args: &[&str]) -> std::process::Output {
+#[test]
+fn binary_test_mode_blocks_dangerous_command_text() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+
+    for (command_text, guard_terms) in [
+        ("open -a 1Password", vec!["open", "1Password"]),
+        (
+            "/usr/bin/open -a 1Password",
+            vec!["/usr/bin/open", "1Password"],
+        ),
+        (
+            "/usr/bin/osascript -e 'tell application \"1Password\" to activate'",
+            vec!["/usr/bin/osascript", "1Password"],
+        ),
+    ] {
+        let define = run_std(
+            &config_path,
+            &[
+                "command",
+                "define",
+                command_text,
+                "Dangerous external runner guard",
+                command_text,
+            ],
+        );
+        assert!(define.status.success(), "{}", command_stderr(&define));
+
+        let trigger = run_std(&config_path, &["trigger", command_text, "--allow-external"]);
+        assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+        let stdout = command_stdout(&trigger);
+        assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+        for term in guard_terms {
+            assert!(stdout.contains(term), "{stdout}");
+        }
+        assert!(!stdout.contains("\"status\": \"Completed\""));
+    }
+}
+
+#[test]
+fn binary_test_mode_blocks_registered_app_launch() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+    let app_path = temp.path().join("FakePassword.app");
+    fs::create_dir_all(app_path.join("Contents").join("MacOS")).unwrap();
+    fs::write(
+        app_path
+            .join("Contents")
+            .join("MacOS")
+            .join("fake-password"),
+        "bin",
+    )
+    .unwrap();
+
+    let register = run_std(
+        &config_path,
+        &["app", "register", app_path.to_str().unwrap()],
+    );
+    assert!(register.status.success(), "{}", command_stderr(&register));
+
+    let trigger = run_std(
+        &config_path,
+        &["trigger", "FakePassword", "--allow-external"],
+    );
+    assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+    let stdout = command_stdout(&trigger);
+    assert!(stdout.contains("\"action_name\": \"Open App: FakePassword\""));
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(stdout.contains("open "));
+    assert!(stdout.contains("FakePassword.app"));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
+fn write_config(root: &Path) -> std::path::PathBuf {
+    let config_path = root.join("std-cli.json");
+    fs::write(
+        &config_path,
+        serde_json::json!({
+            "data_dir": root.join("data"),
+        })
+        .to_string(),
+    )
+    .unwrap();
+    config_path
+}
+
+fn run_std(config_path: &Path, args: &[&str]) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_std"));
     command
         .args(args)
