@@ -101,6 +101,10 @@ impl LauncherState {
                 self.close_action_panel();
                 None
             }
+            LauncherKey::Escape if !self.view.query.is_empty() => {
+                self.update_query("");
+                None
+            }
             LauncherKey::Escape => {
                 self.hide();
                 None
@@ -129,6 +133,7 @@ impl LauncherState {
         let trigger_status = state
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
+        state.handle_keyboard_input(LauncherKey::Escape, false);
         state.handle_keyboard_input(LauncherKey::Escape, false);
         LauncherKeyboardReport {
             selected_before,
