@@ -32,7 +32,7 @@ pub(crate) fn release_plan(core: &StdCore, version: &str) -> Result<String, CliE
         format!("version={version}"),
         format!("dist_dir={}", dist_dir.display()),
         "build=cargo build --release --workspace".to_string(),
-        "verify=cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets && cargo test --workspace -- --test-threads=1 && cargo deny check && cargo machete".to_string(),
+        "verify=mise run quality".to_string(),
         "doctor=std doctor".to_string(),
         "workflow_smoke=std plan terminal --save && std run terminal".to_string(),
         "workflow_trace=std workflow trace --limit 5".to_string(),

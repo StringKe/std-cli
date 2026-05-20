@@ -18,6 +18,9 @@ pub(crate) struct DoctorReport {
     pub(crate) quality_tools: Vec<&'static str>,
     pub(crate) source_file_limit: usize,
     pub(crate) config_file_limit: usize,
+    pub(crate) config_files: usize,
+    pub(crate) max_config_file: PathBuf,
+    pub(crate) max_config_lines: usize,
     pub(crate) source_files: usize,
     pub(crate) max_source_file: PathBuf,
     pub(crate) max_source_lines: usize,
@@ -32,7 +35,7 @@ pub(crate) struct DoctorReport {
 impl DoctorReport {
     pub(crate) fn text(&self) -> String {
         format!(
-            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
+            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nconfig_files={config_files}\nmax_config_file={max_config_file}:{max_config_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
             status = self.status,
             storage = self.storage,
             actions = self.actions,
@@ -51,6 +54,9 @@ impl DoctorReport {
             source_files = self.source_files,
             max_source_file = self.max_source_file.display(),
             max_source_lines = self.max_source_lines,
+            config_files = self.config_files,
+            max_config_file = self.max_config_file.display(),
+            max_config_lines = self.max_config_lines,
             workspace_crates = self.workspace_crates,
             launcher = self.launcher,
             studio = self.studio,
@@ -77,6 +83,9 @@ impl DoctorReport {
             "quality_tools": self.quality_tools,
             "source_file_limit": self.source_file_limit,
             "config_file_limit": self.config_file_limit,
+            "config_files": self.config_files,
+            "max_config_file": self.max_config_file,
+            "max_config_lines": self.max_config_lines,
             "source_files": self.source_files,
             "max_source_file": self.max_source_file,
             "max_source_lines": self.max_source_lines,

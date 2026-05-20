@@ -2,7 +2,22 @@ use super::*;
 
 #[test]
 fn config_command_prints_storage_paths() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = temp.path().join("std-cli.json");
+    std::fs::write(
+        &config_path,
+        serde_json::json!({
+            "launcher_hotkey": "Alt+Space",
+            "data_dir": temp.path().join("data"),
+        })
+        .to_string(),
+    )
+    .unwrap();
+    std::env::set_var("STDCLI_CONFIG", &config_path);
+
     let output = run_cli(["std", "config"]).unwrap();
+
+    std::env::remove_var("STDCLI_CONFIG");
 
     assert!(output.contains("launcher_hotkey=Alt+Space"));
     assert!(output.contains("workflows_dir="));
@@ -15,6 +30,7 @@ fn config_commands_get_set_list_and_path() {
     std::fs::write(
         &config_path,
         serde_json::json!({
+            "launcher_hotkey": "Alt+Space",
             "data_dir": temp.path().join("data"),
         })
         .to_string(),
@@ -92,6 +108,8 @@ fn doctor_command_checks_local_runtime_surface() {
     assert!(output.contains("quality_tools=rustfmt,clippy,dylint,cargo-deny,cargo-machete"));
     assert!(output.contains("source_file_limit=500"));
     assert!(output.contains("config_file_limit=300"));
+    assert!(output.contains("config_files="));
+    assert!(output.contains("max_config_file="));
     assert!(output.contains("workspace_crates="));
     assert!(output.contains("launcher=PASS"));
     assert!(output.contains("studio=PASS"));
@@ -129,6 +147,8 @@ fn doctor_command_can_print_machine_readable_json() {
     assert_eq!(report["dylint_lint"].as_str(), Some("PASS"));
     assert_eq!(report["source_file_limit"].as_u64(), Some(500));
     assert_eq!(report["config_file_limit"].as_u64(), Some(300));
+    assert!(report["config_files"].as_u64().unwrap() > 0);
+    assert!(report["max_config_lines"].as_u64().unwrap() <= 300);
     assert_eq!(report["launcher"].as_str(), Some("PASS"));
     assert_eq!(report["studio"].as_str(), Some("PASS"));
     assert_eq!(report["release_plan"].as_str(), Some("PASS"));
@@ -173,9 +193,7 @@ fn install_plan_and_release_plan_print_actionable_steps() {
     assert!(install.contains("std install verify --prefix"));
     assert!(release.contains("version=1.0.0"));
     assert!(release.contains("cargo build --release --workspace"));
-    assert!(release.contains("cargo clippy --workspace --all-targets -- -D warnings"));
-    assert!(release.contains("cargo deny check"));
-    assert!(release.contains("cargo machete"));
+    assert!(release.contains("verify=mise run quality"));
     assert!(release.contains("doctor=std doctor"));
     assert!(release.contains("workflow_smoke=std plan terminal --save && std run terminal"));
     assert!(release.contains("workflow_trace=std workflow trace --limit 5"));

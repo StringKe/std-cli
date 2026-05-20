@@ -43,9 +43,10 @@ impl OpsEvidence {
         Self {
             qa: OpsGate {
                 title: "QA",
-                command: "make quality".to_string(),
+                command: "mise run quality".to_string(),
                 status: quality_status(&root),
-                evidence: ".github/workflows/quality.yml, crates/file_too_long".to_string(),
+                evidence: "mise.toml, .github/workflows/quality.yml, crates/file_too_long"
+                    .to_string(),
                 detail: "rustfmt, clippy, dylint, cargo-deny, cargo-machete".to_string(),
             },
             doctor: OpsGate {
@@ -103,7 +104,7 @@ impl OpsEvidence {
 
 fn quality_status(root: &Path) -> OpsStatus {
     let required = [
-        root.join("Makefile"),
+        root.join("mise.toml"),
         root.join("clippy.toml"),
         root.join("rustfmt.toml"),
         root.join("deny.toml"),

@@ -79,7 +79,7 @@ PASS
 
 ### Quality
 
-当前 `make quality` 证据：
+当前 `mise run quality` 证据：
 
 ```text
 cargo fmt --all --check
@@ -92,6 +92,7 @@ DYLINT_RUSTFLAGS="-D warnings" cargo dylint --workspace --all -- --all-targets
 PASS
 
 cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml
+cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib
 PASS
 
 cargo test --workspace -- --test-threads=1
@@ -292,9 +293,4 @@ answer includes SmokeComponent defines_type and implements_type evidence
 - UI docs 18-24、Launcher、Studio、Core、Terminal、Plugin、Index、Workflow、Release、Install、Quality 的 requirement-by-requirement completion audit
 
 ## 审计规则
-
-- 未验证即未完成
-- 默认测试和默认 smoke 不得唤起 Terminal、App、文件或外部 runner
-- 外部行为默认 `NeedsExternalRunner`
-- 只有显式 opt-in 才执行真实 GUI hotkey 或外部 runner 行为
-- 完成声明必须引用当前运行证据
+未验证即未完成。默认测试和 smoke 不得唤起 Terminal、App、文件或外部 runner。外部行为默认 `NeedsExternalRunner`。只有显式 opt-in 才执行真实 GUI hotkey 或外部 runner 行为。完成声明必须引用当前运行证据。

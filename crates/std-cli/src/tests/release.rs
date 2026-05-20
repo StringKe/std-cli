@@ -89,7 +89,7 @@ fn assert_release_files_exist(dist_dir: &std::path::Path) {
             .join("scoped-fs")
             .join("main.js"),
         dist_dir.join("quality").join("Cargo.toml"),
-        dist_dir.join("quality").join("Makefile"),
+        dist_dir.join("quality").join("mise.toml"),
         dist_dir.join("quality").join("clippy.toml"),
         dist_dir.join("quality").join("rustfmt.toml"),
         dist_dir.join("quality").join("deny.toml"),
@@ -159,6 +159,8 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=std workflow trace --limit 5",
         "smoke=std index coverage",
         "smoke=std plugin check examples/plugins/hello-js",
+        "quality_command=mise run quality",
+        "command=cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     ] {
         assert!(quality_report.contains(expected));
     }

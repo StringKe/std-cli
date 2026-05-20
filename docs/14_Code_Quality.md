@@ -15,19 +15,26 @@
 
 ## Release 质量门禁
 
-Release verify gate 使用 Rust 生态工具作为主质量体系：
+Release verify gate 使用 `mise` 作为任务入口，内部仍只调用 Rust 生态工具：
+
+```bash
+mise run quality
+```
+
+`quality` 任务展开为：
 
 ```bash
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 DYLINT_RUSTFLAGS="-D warnings" cargo dylint --workspace --all -- --all-targets
 cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml
+cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib
 cargo test --workspace -- --test-threads=1
 cargo deny check
 cargo machete
 ```
 
-`clippy.toml` 负责函数行数、参数数量、认知复杂度和测试宽松规则。`crates/file_too_long` 通过 Dylint 强制 Rust 源文件不超过 500 行。`deny.toml` 负责依赖安全、许可证和来源策略。`cargo machete` 负责未使用依赖。
+`clippy.toml` 负责函数行数、参数数量、认知复杂度和测试宽松规则。`crates/file_too_long` 通过 Dylint 强制 Rust 源文件不超过 500 行。`std-cli` 的 file limit gate 扫描配置文件，强制不超过 300 行。Markdown 文档不做行数限制。`deny.toml` 负责依赖安全、许可证和来源策略。`cargo machete` 负责未使用依赖。
 
 Release 包还必须附带 v1.0 表面 smoke 证据：
 
@@ -42,7 +49,7 @@ std index coverage
 std plugin check examples/plugins/hello-js
 ```
 
-真实桌面热键验证使用显式 opt-in 命令，不进入默认 `make quality`：
+真实桌面热键验证使用显式 opt-in 命令，不进入默认 `mise run quality`：
 
 ```bash
 std-launcher --gui-hotkey-smoke Alt+Space 5000

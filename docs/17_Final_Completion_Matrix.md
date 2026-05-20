@@ -207,7 +207,7 @@
 
 证据：
 
-- `make quality` PASS
+- `mise run quality` PASS
 - `cargo fmt --all --check` PASS
 - `cargo clippy --workspace --all-targets -- -D warnings` PASS
 - `cargo dylint --workspace --all -- --all-targets` PASS
@@ -230,7 +230,7 @@
 
 完成前必须重跑并保留当前证据：
 
-- `make quality`
+- `mise run quality`
 - `cargo build --release --workspace`
 - release package / verify
 - install run / verify

@@ -52,10 +52,7 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
 
     let workspace = check_workspace_quality()?;
     let release = release_plan(core, "1.0.0")?;
-    check_text(
-        &release,
-        "DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets",
-    )?;
+    check_text(&release, "verify=mise run quality")?;
     check_text(&release, "std release verify --dist")?;
     check_text(&release, "std install verify --prefix")?;
     let install = install_plan(core, None)?;
@@ -80,6 +77,9 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
         quality_tools: vec!["rustfmt", "clippy", "dylint", "cargo-deny", "cargo-machete"],
         source_file_limit: workspace.source_file_limit,
         config_file_limit: workspace.config_file_limit,
+        config_files: workspace.config_files,
+        max_config_file: workspace.max_config_file,
+        max_config_lines: workspace.max_config_lines,
         source_files: workspace.source_files,
         max_source_file: workspace.max_source_file,
         max_source_lines: workspace.max_source_lines,

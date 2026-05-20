@@ -9,17 +9,18 @@ use std::{
 
 const QUALITY_FILES: [&str; 5] = [
     "Cargo.toml",
-    "Makefile",
+    "mise.toml",
     "clippy.toml",
     "rustfmt.toml",
     "deny.toml",
 ];
 
-const QUALITY_COMMANDS: [&str; 7] = [
+const QUALITY_COMMANDS: [&str; 8] = [
     "cargo fmt --all --check",
     "cargo clippy --workspace --all-targets -- -D warnings",
     "DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets",
     "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml",
+    "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     "cargo test --workspace -- --test-threads=1",
     "cargo deny check",
     "cargo machete",
@@ -96,6 +97,8 @@ pub(crate) fn quality_paths(paths: &[String]) -> Vec<PathBuf> {
 fn quality_report() -> String {
     let mut lines = vec![
         "std-cli quality gate".to_string(),
+        "task_runner=mise".to_string(),
+        "quality_command=mise run quality".to_string(),
         "source_file_limit=500".to_string(),
         "config_file_limit=300".to_string(),
     ];
@@ -113,10 +116,13 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
     for expected in [
         "source_file_limit=500",
         "config_file_limit=300",
+        "task_runner=mise",
+        "quality_command=mise run quality",
         "cargo fmt --all --check",
         "cargo clippy --workspace --all-targets -- -D warnings",
         "cargo dylint --workspace --all -- --all-targets",
         "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml",
+        "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
         "cargo test --workspace -- --test-threads=1",
         "cargo deny check",
         "cargo machete",

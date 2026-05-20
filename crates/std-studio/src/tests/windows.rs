@@ -111,7 +111,7 @@ fn studio_pane_content_snapshots_include_real_state() {
     assert!(operations_content
         .lines
         .iter()
-        .any(|line| line.contains("make quality")));
+        .any(|line| line.contains("mise run quality")));
     assert!(operations_content
         .lines
         .iter()

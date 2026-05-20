@@ -1,0 +1,59 @@
+[tools]
+rust = "stable"
+
+[tasks.fmt]
+description = "Check workspace formatting"
+run = "cargo fmt --all --check"
+
+[tasks.clippy]
+description = "Run Clippy for all workspace targets"
+run = "cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks.dylint]
+description = "Run local Dylint workspace lints"
+run = "DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets"
+
+[tasks.dylint-test]
+description = "Run local Dylint lint tests"
+run = "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml"
+
+[tasks.file-limits]
+description = "Enforce Rust source and config file length gates"
+run = "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib"
+
+[tasks.test]
+description = "Run workspace tests"
+run = "cargo test --workspace -- --test-threads=1"
+
+[tasks.deny]
+description = "Run cargo-deny dependency checks"
+run = "cargo deny check"
+
+[tasks.machete]
+description = "Run cargo-machete unused dependency checks"
+run = "cargo machete"
+
+[tasks.quality]
+description = "Run the complete quality gate"
+depends = [
+    "fmt",
+    "clippy",
+    "dylint",
+    "dylint-test",
+    "file-limits",
+    "test",
+    "deny",
+    "machete",
+]
+
+[tasks.release-build]
+description = "Build release binaries"
+run = "cargo build --release --workspace"
+
+[tasks.release-package]
+description = "Package release artifacts"
+run = "cargo run -p std-cli -- release package --version 1.0.0 --from target/release --dist dist/1.0.0-current"
+
+[tasks.release-verify]
+description = "Verify release artifacts"
+run = "cargo run -p std-cli -- release verify --dist dist/1.0.0-current"
