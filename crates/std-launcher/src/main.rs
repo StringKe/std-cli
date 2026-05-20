@@ -8,6 +8,7 @@ mod gui_smoke;
 mod preview;
 mod resident;
 mod ui;
+mod ui_action_bar;
 mod ui_action_panel;
 mod ui_empty;
 mod ui_keyboard;
