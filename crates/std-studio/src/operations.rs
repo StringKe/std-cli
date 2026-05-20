@@ -1,5 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::tokens::Space;
 use std_studio::{OpsEvidence, OpsGate, OpsStatus};
 
 const QUALITY_TOOLS: [&str; 5] = ["rustfmt", "clippy", "dylint", "cargo-deny", "cargo-machete"];
@@ -11,17 +12,17 @@ impl StudioEguiApp {
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| {
                 self.render_evidence_gate(ui, &evidence.qa);
-                ui.add_space(10.0);
+                ui.add_space(Space::SM as f32);
                 self.render_evidence_gate(ui, &evidence.doctor);
             });
             columns[1].vertical(|ui| {
                 self.render_evidence_gate(ui, &evidence.release);
-                ui.add_space(10.0);
+                ui.add_space(Space::SM as f32);
                 self.render_evidence_gate(ui, &evidence.install);
             });
             columns[2].vertical(|ui| {
                 self.render_evidence_gate(ui, &evidence.runtime);
-                ui.add_space(10.0);
+                ui.add_space(Space::SM as f32);
                 self.render_completion_gate(ui);
             });
         });
@@ -64,7 +65,7 @@ impl StudioEguiApp {
             ] {
                 ui::chip(ui, item, ui::warn_bg(ui.ctx()));
             }
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui.label("Each area requires current runtime evidence before completion.");
         });
     }

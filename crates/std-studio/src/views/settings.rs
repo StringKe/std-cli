@@ -1,6 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::i18n;
+use std_egui::{i18n, tokens::Space};
 
 impl StudioEguiApp {
     pub(crate) fn render_settings(&mut self, ui: &mut egui::Ui) {
@@ -28,7 +28,7 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.settings.hotkey.save")).clicked() {
                 self.save_setting("launcher_hotkey", self.settings_hotkey.clone());
             }
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui.checkbox(
                 &mut self.settings_enable_ai,
                 i18n::t("studio.settings.ai.enable"),
@@ -36,7 +36,7 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.settings.ai.save")).clicked() {
                 self.save_setting("enable_ai", self.settings_enable_ai.to_string());
             }
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui.label(i18n::t("studio.settings.theme.label"));
             ui.text_edit_singleline(&mut self.settings_theme);
             if ui::quiet_button(ui, i18n::t("studio.settings.theme.save")).clicked() {
@@ -58,7 +58,7 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.settings.data_dir.save")).clicked() {
                 self.save_setting("data_dir", self.settings_data_dir.clone());
             }
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui::chip(
                 ui,
                 i18n::t("studio.settings.storage.note"),
