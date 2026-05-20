@@ -22,6 +22,28 @@ fn test_sources_do_not_reference_real_app_launch_targets() {
     );
 }
 
+#[test]
+fn test_sources_do_not_inherit_desktop_automation_opt_ins() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut violations = Vec::new();
+
+    scan_rs_files(
+        &root.join("crates"),
+        &forbidden_test_opt_in_terms(),
+        &mut violations,
+    );
+
+    assert!(
+        violations.is_empty(),
+        "test sources must clear desktop opt-in env vars instead of inheriting them: {}",
+        violations.join(", ")
+    );
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
@@ -36,6 +58,15 @@ fn forbidden_test_app_terms() -> Vec<String> {
         ["tell ", "application"].join(""),
         ["/Applications/", "1", "Password.app"].join(""),
         ["tell application \"", "1", "Password\""].join(""),
+    ]
+}
+
+fn forbidden_test_opt_in_terms() -> Vec<String> {
+    vec![
+        ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
+        ".env(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+        "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
+        "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
     ]
 }
 
