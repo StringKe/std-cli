@@ -75,11 +75,29 @@ pub(crate) fn move_selection(selected: usize, delta: isize, len: usize) -> usize
     selected.saturating_add_signed(delta).min(len - 1)
 }
 
+pub(crate) fn filter_items(items: &[StudioCommandItem], query: &str) -> Vec<StudioCommandItem> {
+    let query = query.trim().to_ascii_lowercase();
+    if query.is_empty() {
+        return items.to_vec();
+    }
+    items
+        .iter()
+        .filter(|item| command_matches(item, &query))
+        .cloned()
+        .collect()
+}
+
 pub(crate) fn selected_action(
     items: &[StudioCommandItem],
     selected: usize,
 ) -> Option<StudioCommandAction> {
     items.get(selected).map(|item| item.action)
+}
+
+fn command_matches(item: &StudioCommandItem, query: &str) -> bool {
+    item.title.to_ascii_lowercase().contains(query)
+        || item.detail.to_ascii_lowercase().contains(query)
+        || item.shortcut.to_ascii_lowercase().contains(query)
 }
 
 fn main_pane(kind: &WorkspacePaneKind) -> StudioPane {
@@ -140,5 +158,22 @@ mod tests {
             Some(StudioCommandAction::SwitchPane(StudioPane::Dashboard))
         );
         assert_eq!(selected_action(&items, usize::MAX), None);
+    }
+
+    #[test]
+    fn command_filter_matches_title_detail_and_shortcut() {
+        let app = StudioApp::default();
+        let items = command_palette_items(&app);
+
+        assert!(filter_items(&items, "dashboard")
+            .iter()
+            .any(|item| item.title == "Show Dashboard"));
+        assert!(filter_items(&items, "workspace")
+            .iter()
+            .any(|item| item.title == "Show Dashboard"));
+        assert!(filter_items(&items, "mod+,")
+            .iter()
+            .any(|item| item.title == "Open Settings"));
+        assert!(filter_items(&items, "missing").is_empty());
     }
 }

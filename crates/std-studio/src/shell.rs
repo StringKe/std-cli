@@ -1,7 +1,7 @@
 use crate::{
     commands::{
-        command_palette_items, quick_open_items, selected_action, StudioCommandAction,
-        StudioCommandItem,
+        command_palette_items, filter_items, quick_open_items, selected_action,
+        StudioCommandAction, StudioCommandItem,
     },
     shell_parts::{panel_frame, path_label},
     ui, StudioEguiApp,
@@ -246,12 +246,16 @@ impl StudioEguiApp {
 
     fn handle_overlay_keyboard(&mut self, ctx: &egui::Context) {
         let items = if self.layout.command_palette_open {
-            command_palette_items(&self.app)
+            filter_items(
+                &command_palette_items(&self.app),
+                &self.layout.command_query,
+            )
         } else if self.layout.quick_open_open {
-            quick_open_items(&self.app)
+            filter_items(&quick_open_items(&self.app), &self.layout.quick_open_query)
         } else {
             Vec::new()
         };
+        self.layout.clamp_overlay_selection(items.len());
         if items.is_empty() && !self.layout.settings_open {
             return;
         }
@@ -320,7 +324,29 @@ impl StudioEguiApp {
             .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
             .show(ctx, |ui| {
                 ui::section_header(ui, title, shortcut);
-                for (index, item) in items.into_iter().enumerate() {
+                let query = if id == "studio_command_palette" {
+                    &mut self.layout.command_query
+                } else {
+                    &mut self.layout.quick_open_query
+                };
+                let response = ui.add(
+                    egui::TextEdit::singleline(query)
+                        .hint_text("Filter commands")
+                        .desired_width(f32::INFINITY),
+                );
+                if response.changed() {
+                    self.layout.overlay_selected = 0;
+                }
+                response.request_focus();
+                ui.add_space(8.0);
+
+                let filtered_items = filter_items(&items, query);
+                self.layout.clamp_overlay_selection(filtered_items.len());
+                if filtered_items.is_empty() {
+                    ui.label(egui::RichText::new("No matches").color(ui::muted_text(ctx)));
+                    return;
+                }
+                for (index, item) in filtered_items.into_iter().enumerate() {
                     self.render_command_item(ui, item, index == self.layout.overlay_selected);
                 }
             });

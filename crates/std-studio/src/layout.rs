@@ -8,6 +8,8 @@ pub(crate) struct StudioLayoutState {
     pub settings_open: bool,
     pub command_palette_open: bool,
     pub quick_open_open: bool,
+    pub command_query: String,
+    pub quick_open_query: String,
     pub overlay_selected: usize,
     pub sidebar_width: f32,
     pub inspector_width: f32,
@@ -23,6 +25,8 @@ impl Default for StudioLayoutState {
             settings_open: false,
             command_palette_open: false,
             quick_open_open: false,
+            command_query: String::new(),
+            quick_open_query: String::new(),
             overlay_selected: 0,
             sidebar_width: 240.0,
             inspector_width: 320.0,
@@ -64,18 +68,24 @@ impl StudioLayoutState {
         self.settings_open = true;
         self.command_palette_open = false;
         self.quick_open_open = false;
+        self.command_query.clear();
+        self.quick_open_query.clear();
         self.overlay_selected = 0;
     }
 
     pub(crate) fn open_command_palette(&mut self) {
         self.command_palette_open = true;
         self.quick_open_open = false;
+        self.command_query.clear();
+        self.quick_open_query.clear();
         self.overlay_selected = 0;
     }
 
     pub(crate) fn open_quick_open(&mut self) {
         self.quick_open_open = true;
         self.command_palette_open = false;
+        self.command_query.clear();
+        self.quick_open_query.clear();
         self.overlay_selected = 0;
     }
 
@@ -83,11 +93,17 @@ impl StudioLayoutState {
         self.settings_open = false;
         self.command_palette_open = false;
         self.quick_open_open = false;
+        self.command_query.clear();
+        self.quick_open_query.clear();
         self.overlay_selected = 0;
     }
 
     pub(crate) fn move_overlay_selection(&mut self, delta: isize, len: usize) {
         self.overlay_selected = crate::commands::move_selection(self.overlay_selected, delta, len);
+    }
+
+    pub(crate) fn clamp_overlay_selection(&mut self, len: usize) {
+        self.overlay_selected = crate::commands::move_selection(self.overlay_selected, 0, len);
     }
 
     pub(crate) fn sidebar_width(&self) -> f32 {
@@ -121,6 +137,8 @@ mod tests {
         assert!(!layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(layout.command_query.is_empty());
+        assert!(layout.quick_open_query.is_empty());
         assert_eq!(layout.overlay_selected, 0);
         assert_eq!(layout.sidebar_width(), 240.0);
         assert_eq!(layout.inspector_width(), 320.0);
@@ -157,6 +175,7 @@ mod tests {
         let mut layout = StudioLayoutState::default();
 
         layout.open_quick_open();
+        layout.quick_open_query = "plugin".to_string();
         layout.overlay_selected = 1;
         assert!(layout.quick_open_open);
         assert!(!layout.command_palette_open);
@@ -164,12 +183,15 @@ mod tests {
         layout.open_command_palette();
         assert!(layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(layout.quick_open_query.is_empty());
+        assert!(layout.command_query.is_empty());
         assert_eq!(layout.overlay_selected, 0);
 
         layout.open_settings();
         assert!(layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(layout.command_query.is_empty());
 
         layout.close_overlays();
         assert!(!layout.settings_open);
@@ -188,5 +210,19 @@ mod tests {
         assert_eq!(layout.overlay_selected, 1);
         layout.move_overlay_selection(9, 3);
         assert_eq!(layout.overlay_selected, 2);
+    }
+
+    #[test]
+    fn studio_layout_clamps_selection_after_filter_changes() {
+        let mut layout = StudioLayoutState {
+            overlay_selected: 4,
+            ..StudioLayoutState::default()
+        };
+
+        layout.clamp_overlay_selection(2);
+        assert_eq!(layout.overlay_selected, 1);
+
+        layout.clamp_overlay_selection(0);
+        assert_eq!(layout.overlay_selected, 0);
     }
 }
