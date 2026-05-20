@@ -5,6 +5,7 @@ pub(crate) fn check_ui_token_usage(root: &Path) -> Result<(), CliError> {
     for crate_dir in ["crates/std-launcher/src", "crates/std-studio/src"] {
         scan_ui_token_usage(&root.join(crate_dir))?;
     }
+    check_studio_row_helpers(root)?;
     Ok(())
 }
 
@@ -189,6 +190,26 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
     )
 }
 
+fn check_studio_row_helpers(root: &Path) -> Result<(), CliError> {
+    for path in [
+        "crates/std-studio/src/views/workflow_rows.rs",
+        "crates/std-studio/src/views/plugin_rows.rs",
+    ] {
+        let source = fs::read_to_string(root.join(path))?;
+        if !source.contains("row_paint::paint_row_frame") {
+            return Err(CliError::Doctor(format!(
+                "{path} must use shared Studio row_paint frame helper"
+            )));
+        }
+        if source.contains("fn paint_row_frame") {
+            return Err(CliError::Doctor(format!(
+                "{path} must not define a local paint_row_frame helper"
+            )));
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -222,5 +243,12 @@ mod tests {
         let path = PathBuf::from("crates/std-launcher/src/ui_metrics.rs");
 
         assert!(ui_token_exception(&path, "egui::vec2("));
+    }
+
+    #[test]
+    fn studio_core_rows_use_shared_paint_helpers() {
+        let root = super::super::workspace::find_workspace_root().unwrap();
+
+        check_studio_row_helpers(&root).unwrap();
     }
 }

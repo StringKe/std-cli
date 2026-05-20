@@ -1,4 +1,10 @@
-use crate::{ui, views::row_metrics};
+use crate::{
+    ui,
+    views::{
+        row_metrics,
+        row_paint::{self, RowSurface},
+    },
+};
 use eframe::egui;
 use std::path::{Path, PathBuf};
 use std_egui::{
@@ -36,7 +42,7 @@ pub(crate) fn workflow_file_row(
         ),
     );
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), selected);
+        row_paint::paint_row_frame(ui, rect, response.hovered(), selected, RowSurface::Base);
         paint_file_text(ui, rect, &title, &path.display().to_string());
         paint_open_control(ui, open_rect, response.hovered());
     }
@@ -69,7 +75,7 @@ pub(crate) fn status_row(
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title));
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), false);
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
         let chip_rect = egui::Rect::from_min_size(
             egui::pos2(
                 rect.left() + Space::XS as f32,
@@ -80,7 +86,7 @@ pub(crate) fn status_row(
                 row_metrics::STATUS_CHIP_HEIGHT,
             ),
         );
-        paint_status_chip(ui, chip_rect, status, fill);
+        row_paint::paint_chip(ui, chip_rect, status, fill);
         let text_x = chip_rect.right() + Space::XS as f32;
         ui.painter().text(
             egui::pos2(text_x, rect.top() + row_metrics::STATUS_TITLE_Y),
@@ -109,7 +115,7 @@ pub(crate) fn path_row(ui: &mut egui::Ui, label: &str, path: &Path) {
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), label));
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), false);
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
         let text_x = rect.left() + row_metrics::TEXT_INSET_X;
         ui.painter().text(
             egui::pos2(text_x, rect.top() + row_metrics::PATH_TITLE_Y),
@@ -179,7 +185,7 @@ pub(crate) fn builder_step_row(
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), name));
     if ui.is_rect_visible(rect) {
-        paint_builder_step_row(ui, rect, response.hovered(), selected);
+        row_paint::paint_row_frame(ui, rect, response.hovered(), selected, RowSurface::Raised);
         let index_rect = egui::Rect::from_min_size(
             egui::pos2(
                 rect.left() + Space::XS as f32,
@@ -220,38 +226,6 @@ fn workflow_label(path: &Path) -> String {
         .to_string()
 }
 
-fn paint_builder_step_row(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
-    let fill = if selected {
-        Color::accent_weak(ui.ctx())
-    } else if hovered {
-        Color::bg_surface_3(ui.ctx())
-    } else {
-        Color::bg_surface_2(ui.ctx())
-    };
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().rect_stroke(
-        rect,
-        egui::CornerRadius::same(Radius::SM),
-        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
-        egui::StrokeKind::Inside,
-    );
-    if selected {
-        let strip = egui::Rect::from_min_max(
-            rect.left_top(),
-            egui::pos2(
-                rect.left() + row_metrics::SELECTED_STRIP_WIDTH,
-                rect.bottom(),
-            ),
-        );
-        ui.painter().rect_filled(
-            strip,
-            egui::CornerRadius::same(Radius::SM),
-            Color::accent_base(ui.ctx()),
-        );
-    }
-}
-
 fn paint_builder_step_index(ui: &mut egui::Ui, rect: egui::Rect, number: usize, selected: bool) {
     let fill = if selected {
         Color::accent_base(ui.ctx())
@@ -271,24 +245,6 @@ fn paint_builder_step_index(ui: &mut egui::Ui, rect: egui::Rect, number: usize, 
         number.to_string(),
         Text::caption(),
         text_color,
-    );
-}
-
-fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
-    let fill = if selected {
-        Color::accent_weak(ui.ctx())
-    } else if hovered {
-        Color::bg_surface_3(ui.ctx())
-    } else {
-        Color::bg_surface_1(ui.ctx())
-    };
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().rect_stroke(
-        rect,
-        egui::CornerRadius::same(Radius::SM),
-        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
-        egui::StrokeKind::Inside,
     );
 }
 
@@ -334,18 +290,6 @@ fn paint_open_control(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool) {
         rect.center(),
         egui::Align2::CENTER_CENTER,
         i18n::t("studio.workflows.open"),
-        Text::caption(),
-        ui::strong_text(ui.ctx()),
-    );
-}
-
-fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str, fill: egui::Color32) {
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().text(
-        rect.center(),
-        egui::Align2::CENTER_CENTER,
-        status,
         Text::caption(),
         ui::strong_text(ui.ctx()),
     );

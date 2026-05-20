@@ -7,6 +7,7 @@ mod memory_rows;
 mod plugin_rows;
 mod plugins;
 pub(crate) mod row_metrics;
+pub(crate) mod row_paint;
 mod settings;
 mod settings_rows;
 mod workflow_builder;

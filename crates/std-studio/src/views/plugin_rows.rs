@@ -1,7 +1,13 @@
-use crate::{ui, views::row_metrics};
+use crate::{
+    ui,
+    views::{
+        row_metrics,
+        row_paint::{self, RowSurface},
+    },
+};
 use eframe::egui;
 use std::path::Path;
-use std_egui::tokens::{Color, Radius, Space, Text};
+use std_egui::tokens::{Color, Space, Text};
 use std_types::{ActionExecutionStatus, ActionPreview, SearchResult};
 
 pub(crate) enum PluginActionRowEvent {
@@ -27,8 +33,8 @@ pub(crate) fn manifest_row(ui: &mut egui::Ui, path: &Path) {
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title));
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), false);
-        paint_title_detail(
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
+        row_paint::paint_title_detail(
             ui,
             rect,
             title,
@@ -58,8 +64,8 @@ pub(crate) fn action_row(
         )
     });
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), selected);
-        paint_title_detail(
+        row_paint::paint_row_frame(ui, rect, response.hovered(), selected, RowSurface::Base);
+        row_paint::paint_title_detail(
             ui,
             rect,
             &result.action.name,
@@ -152,7 +158,7 @@ pub(crate) fn status_row(
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title));
     if ui.is_rect_visible(rect) {
-        paint_row_frame(ui, rect, response.hovered(), false);
+        row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
         let chip_rect = egui::Rect::from_min_size(
             egui::pos2(
                 rect.left() + Space::XS as f32,
@@ -163,12 +169,12 @@ pub(crate) fn status_row(
                 row_metrics::STATUS_CHIP_HEIGHT,
             ),
         );
-        paint_status_chip(ui, chip_rect, status, fill);
+        row_paint::paint_chip(ui, chip_rect, status, fill);
         let text_rect = egui::Rect::from_min_max(
             egui::pos2(chip_rect.right() + Space::XS as f32, rect.top()),
             rect.right_bottom(),
         );
-        paint_title_detail_at(
+        row_paint::paint_title_detail_at(
             ui,
             text_rect,
             title,
@@ -195,79 +201,6 @@ fn metadata_row(ui: &mut egui::Ui, key: &str, value: &str) {
     });
 }
 
-fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
-    let fill = if selected {
-        Color::accent_weak(ui.ctx())
-    } else if hovered {
-        Color::bg_surface_3(ui.ctx())
-    } else {
-        Color::bg_surface_1(ui.ctx())
-    };
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().rect_stroke(
-        rect,
-        egui::CornerRadius::same(Radius::SM),
-        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
-        egui::StrokeKind::Inside,
-    );
-    if selected {
-        let strip = egui::Rect::from_min_max(
-            rect.left_top(),
-            egui::pos2(
-                rect.left() + row_metrics::SELECTED_STRIP_WIDTH,
-                rect.bottom(),
-            ),
-        );
-        ui.painter().rect_filled(
-            strip,
-            egui::CornerRadius::same(Radius::SM),
-            Color::accent_base(ui.ctx()),
-        );
-    }
-}
-
-fn paint_title_detail(
-    ui: &mut egui::Ui,
-    rect: egui::Rect,
-    title: &str,
-    detail: &str,
-    y1: f32,
-    y2: f32,
-) {
-    let text_rect = egui::Rect::from_min_max(
-        egui::pos2(rect.left() + Space::SM as f32, rect.top()),
-        rect.right_bottom(),
-    );
-    paint_title_detail_at(ui, text_rect, title, detail, y1, y2);
-}
-
-fn paint_title_detail_at(
-    ui: &mut egui::Ui,
-    rect: egui::Rect,
-    title: &str,
-    detail: &str,
-    y1: f32,
-    y2: f32,
-) {
-    let clip = rect.shrink2(egui::vec2(row_metrics::CLIP_INSET_X, 0.0));
-    let painter = ui.painter().with_clip_rect(clip);
-    painter.text(
-        egui::pos2(rect.left(), rect.top() + y1),
-        egui::Align2::LEFT_CENTER,
-        title,
-        Text::body(),
-        ui::strong_text(ui.ctx()),
-    );
-    painter.text(
-        egui::pos2(rect.left(), rect.top() + y2),
-        egui::Align2::LEFT_CENTER,
-        detail,
-        Text::caption(),
-        ui::muted_text(ui.ctx()),
-    );
-}
-
 fn paint_match_chips(ui: &mut egui::Ui, rect: egui::Rect, fields: &[String]) {
     let mut x = rect.left() + Space::SM as f32;
     let y = rect.bottom() - row_metrics::MATCH_CHIP_BOTTOM_INSET;
@@ -282,21 +215,9 @@ fn paint_match_chips(ui: &mut egui::Ui, rect: egui::Rect, fields: &[String]) {
             egui::pos2(x, y),
             egui::vec2(width, row_metrics::MATCH_CHIP_HEIGHT),
         );
-        paint_status_chip(ui, chip_rect, field, Color::bg_surface_2(ui.ctx()));
+        row_paint::paint_chip(ui, chip_rect, field, Color::bg_surface_2(ui.ctx()));
         x += width + row_metrics::CHIP_GAP;
     }
-}
-
-fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str, fill: egui::Color32) {
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
-    ui.painter().text(
-        rect.center(),
-        egui::Align2::CENTER_CENTER,
-        status,
-        Text::caption(),
-        ui::strong_text(ui.ctx()),
-    );
 }
 
 fn plugin_status_fill(ctx: &egui::Context, status: &ActionExecutionStatus) -> egui::Color32 {
