@@ -22,7 +22,7 @@ pub(crate) enum LauncherPreviewRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LauncherPreviewSmokeReport {
-    scenarios: Vec<String>,
+    scenarios: Vec<LauncherPreviewScenario>,
     commands: Vec<String>,
     states: Vec<String>,
 }
@@ -33,13 +33,11 @@ impl LauncherPreviewSmokeReport {
         Self {
             commands: scenarios
                 .iter()
-                .map(|scenario| {
-                    format!("STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview {scenario} 8000")
-                })
+                .map(LauncherPreviewScenario::command)
                 .collect(),
             states: scenarios
                 .iter()
-                .map(|scenario| preview_state_summary(scenario))
+                .map(preview_state_summary)
                 .collect(),
             scenarios,
         }
@@ -55,7 +53,11 @@ impl LauncherPreviewSmokeReport {
         format!(
             "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}",
             if self.pass() { "PASS" } else { "FAIL" },
-            self.scenarios.join(","),
+            self.scenarios
+                .iter()
+                .map(LauncherPreviewScenario::label)
+                .collect::<Vec<_>>()
+                .join(","),
             self.commands.join(";"),
             self.states.join(";")
         )
@@ -202,28 +204,72 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
     }
 }
 
-fn preview_matrix() -> Vec<String> {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct LauncherPreviewScenario {
+    theme: &'static str,
+    state: &'static str,
+}
+
+impl LauncherPreviewScenario {
+    fn label(&self) -> String {
+        format!("{}-{}", self.theme, self.state)
+    }
+
+    fn command(&self) -> String {
+        format!(
+            "STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview {} {} 8000",
+            self.theme, self.state
+        )
+    }
+}
+
+fn preview_matrix() -> Vec<LauncherPreviewScenario> {
     [
-        "dark-results",
-        "light-results",
-        "dark-no-results",
-        "light-defer",
-        "dark-error",
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "results",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "results",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "no-results",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "no-results",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "defer",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "defer",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "error",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "error",
+        },
     ]
     .into_iter()
-    .map(ToString::to_string)
     .collect()
 }
 
-fn preview_state_summary(scenario: &str) -> String {
+fn preview_state_summary(scenario: &LauncherPreviewScenario) -> String {
     let mut state = LauncherState::new();
-    let Some((theme, state_name)) = scenario.split_once('-') else {
-        return format!("{scenario}=FAIL");
-    };
-    apply_preview_scenario(&mut state, state_name);
-    let valid = matches!(theme, "dark" | "light") && preview_state_passes(&state, state_name);
+    apply_preview_scenario(&mut state, scenario.state);
+    let valid =
+        matches!(scenario.theme, "dark" | "light") && preview_state_passes(&state, scenario.state);
     format!(
-        "{scenario}={}:phase={:?},results={},feedback={}",
+        "{}={}:phase={:?},results={},feedback={}",
+        scenario.label(),
         if valid { "PASS" } else { "FAIL" },
         state.view.phase,
         state.view.results.len(),
@@ -309,6 +355,31 @@ mod tests {
         };
         assert!(reason.contains("STD_TEST_MODE blocked UI preview"));
         assert!(blocked_preview_summary(&reason).contains("launcher_ui_preview SKIP"));
+    }
+
+    #[test]
+    fn preview_smoke_commands_match_ui_preview_parser_contract() {
+        let report = LauncherPreviewSmokeReport::new();
+
+        assert!(report.pass(), "{}", report.summary());
+        assert_eq!(report.scenarios.len(), 8);
+        assert!(report
+            .commands
+            .iter()
+            .all(|command| command.starts_with("STD_ALLOW_UI_PREVIEW=1 ")));
+        assert!(report
+            .commands
+            .iter()
+            .all(|command| command.contains(" --ui-preview light ")
+                || command.contains(" --ui-preview dark ")));
+        assert!(report
+            .states
+            .iter()
+            .any(|state| state.starts_with("light-no-results=PASS")));
+        assert!(report
+            .states
+            .iter()
+            .any(|state| state.starts_with("dark-error=PASS")));
     }
 
     #[test]

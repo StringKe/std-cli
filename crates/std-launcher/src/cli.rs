@@ -211,6 +211,10 @@ mod tests {
         assert!(report.pass(), "{}", report.summary());
         assert!(report.summary().contains("launcher_preview_smoke PASS"));
         assert!(report.summary().contains("dark-results"));
+        assert!(report.summary().contains("light-no-results"));
         assert!(report.summary().contains("light-defer"));
+        assert!(report.summary().contains("dark-defer"));
+        assert!(report.summary().contains("light-error"));
+        assert!(report.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
     }
 }
