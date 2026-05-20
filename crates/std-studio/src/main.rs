@@ -8,6 +8,7 @@ mod layout;
 mod operations;
 mod preview;
 mod shell;
+mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;
 mod smoke;
@@ -121,7 +122,7 @@ impl eframe::App for StudioEguiApp {
 }
 
 impl StudioEguiApp {
-    fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
         let panes = self
             .app
             .workspace_panes

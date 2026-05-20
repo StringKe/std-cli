@@ -42,90 +42,6 @@ impl StudioEguiApp {
         self.render_overlays(ctx);
     }
 
-    fn render_navigation(&mut self, ui: &mut egui::Ui) {
-        ui.add_space(Space::XS as f32);
-        if !self.layout.sidebar_open {
-            for pane in StudioPane::all() {
-                let label = pane.label().chars().next().unwrap_or('?').to_string();
-                let selected = self.app.active_pane == pane;
-                if ui
-                    .selectable_label(selected, label)
-                    .on_hover_text(pane.label())
-                    .clicked()
-                {
-                    self.app.switch_pane(pane);
-                }
-            }
-            return;
-        }
-        ui.vertical(|ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.shell.workspace.title"),
-                i18n::t("studio.shell.workspace.detail"),
-            );
-            for pane in StudioPane::all() {
-                let selected = self.app.active_pane == pane;
-                if ui
-                    .add_sized(
-                        [ui.available_width(), 32.0],
-                        egui::Button::new(
-                            egui::RichText::new(pane.label()).color(ui::strong_text(ui.ctx())),
-                        )
-                        .fill(if selected {
-                            ui::selected_bg(ui.ctx())
-                        } else {
-                            egui::Color32::TRANSPARENT
-                        }),
-                    )
-                    .clicked()
-                {
-                    self.app.switch_pane(pane);
-                }
-            }
-        });
-        ui.add_space(Space::LG as f32);
-        ui.vertical(|ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.shell.open.title"),
-                i18n::t("studio.shell.open.detail"),
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.workflow.title"),
-                i18n::t("studio.shell.open.workflow.detail"),
-                StudioPane::Workflows,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.analysis.title"),
-                i18n::t("studio.shell.open.analysis.detail"),
-                StudioPane::Analysis,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.plugins.title"),
-                i18n::t("studio.shell.open.plugins.detail"),
-                StudioPane::Plugins,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.memory.title"),
-                i18n::t("studio.shell.open.memory.detail"),
-                StudioPane::Memory,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.history.title"),
-                i18n::t("studio.shell.open.history.detail"),
-                StudioPane::History,
-            );
-        });
-        ui.add_space(Space::LG as f32);
-        self.render_workspace_pane_manager(ui);
-    }
-
     fn render_active_workspace(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| match self.app.active_pane {
@@ -266,35 +182,5 @@ impl StudioEguiApp {
                 ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
             }
         });
-    }
-
-    fn open_row(&mut self, ui: &mut egui::Ui, title: &str, detail: &str, pane: StudioPane) {
-        let response = ui
-            .horizontal(|ui| {
-                ui.vertical(|ui| {
-                    ui.label(egui::RichText::new(title).color(ui::strong_text(ui.ctx())));
-                    ui.label(egui::RichText::new(detail).color(ui::muted_text(ui.ctx())));
-                });
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui::quiet_button(ui, i18n::t("studio.shell.open"))
-                })
-                .inner
-            })
-            .inner;
-        if response.clicked() {
-            let id = match pane {
-                StudioPane::Workflows => self
-                    .app
-                    .open_workflow_builder(self.app.core.config.workflows_dir()),
-                StudioPane::Analysis => self
-                    .app
-                    .open_analysis_workbench(std::path::PathBuf::from(&self.analysis_path)),
-                StudioPane::Plugins => self.app.open_plugin_manager_pane(),
-                StudioPane::Memory => self.app.open_memory_browser_pane(),
-                StudioPane::History => self.app.open_execution_history_pane(),
-                _ => self.app.open_workspace_pane(pane),
-            };
-            self.status = format!("opened workspace pane {}", id.value());
-        }
     }
 }

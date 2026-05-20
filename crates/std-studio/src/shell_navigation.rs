@@ -1,0 +1,357 @@
+use crate::{ui, StudioEguiApp};
+use eframe::egui;
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space, Text},
+};
+use std_studio::StudioPane;
+
+const NAV_ROW_HEIGHT: f32 = 28.0;
+const OPEN_ROW_HEIGHT: f32 = 44.0;
+
+impl StudioEguiApp {
+    pub(crate) fn render_navigation(&mut self, ui: &mut egui::Ui) {
+        ui.add_space(Space::XS as f32);
+        if !self.layout.sidebar_open {
+            self.render_icon_rail(ui);
+            return;
+        }
+        self.render_workspace_nav(ui);
+        ui.add_space(Space::LG as f32);
+        self.render_open_nav(ui);
+        ui.add_space(Space::LG as f32);
+        self.render_workspace_pane_manager(ui);
+    }
+
+    fn render_icon_rail(&mut self, ui: &mut egui::Ui) {
+        for pane in StudioPane::all() {
+            let selected = self.app.active_pane == pane;
+            if nav_icon_button(ui, pane, selected)
+                .on_hover_text(pane.label())
+                .clicked()
+            {
+                self.app.switch_pane(pane);
+            }
+        }
+    }
+
+    fn render_workspace_nav(&mut self, ui: &mut egui::Ui) {
+        ui.vertical(|ui| {
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.workspace.title"),
+                i18n::t("studio.shell.workspace.detail"),
+            );
+            for pane in StudioPane::all() {
+                let selected = self.app.active_pane == pane;
+                if nav_row(ui, pane, pane.label(), selected).clicked() {
+                    self.app.switch_pane(pane);
+                }
+            }
+        });
+    }
+
+    fn render_open_nav(&mut self, ui: &mut egui::Ui) {
+        ui.vertical(|ui| {
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.open.title"),
+                i18n::t("studio.shell.open.detail"),
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.shell.open.workflow.title"),
+                i18n::t("studio.shell.open.workflow.detail"),
+                StudioPane::Workflows,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.shell.open.analysis.title"),
+                i18n::t("studio.shell.open.analysis.detail"),
+                StudioPane::Analysis,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.plugins.title"),
+                i18n::t("studio.shell.open.plugins.detail"),
+                StudioPane::Plugins,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.memory.title"),
+                i18n::t("studio.shell.open.memory.detail"),
+                StudioPane::Memory,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.shell.open.history.title"),
+                i18n::t("studio.shell.open.history.detail"),
+                StudioPane::History,
+            );
+        });
+    }
+
+    fn open_row(&mut self, ui: &mut egui::Ui, title: &str, detail: &str, pane: StudioPane) {
+        let response = open_nav_row(ui, pane, title, detail);
+        if response.clicked() {
+            let id = match pane {
+                StudioPane::Workflows => self
+                    .app
+                    .open_workflow_builder(self.app.core.config.workflows_dir()),
+                StudioPane::Analysis => self
+                    .app
+                    .open_analysis_workbench(std::path::PathBuf::from(&self.analysis_path)),
+                StudioPane::Plugins => self.app.open_plugin_manager_pane(),
+                StudioPane::Memory => self.app.open_memory_browser_pane(),
+                StudioPane::History => self.app.open_execution_history_pane(),
+                _ => self.app.open_workspace_pane(pane),
+            };
+            self.status = format!(
+                "{} {}",
+                i18n::t("studio.status.workspace_pane_opened"),
+                id.value()
+            );
+        }
+    }
+}
+
+fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), NAV_ROW_HEIGHT),
+        egui::Sense::click(),
+    );
+    if ui.is_rect_visible(rect) {
+        paint_nav_bg(ui, rect, response.hovered(), selected);
+        let icon_rect = egui::Rect::from_min_size(
+            egui::pos2(rect.left() + Space::SM as f32, rect.center().y - 8.0),
+            egui::vec2(16.0, 16.0),
+        );
+        paint_pane_icon(ui, icon_rect, pane, selected);
+        ui.painter().text(
+            egui::pos2(icon_rect.right() + Space::XS as f32, rect.center().y),
+            egui::Align2::LEFT_CENTER,
+            title,
+            Text::body(),
+            ui::strong_text(ui.ctx()),
+        );
+    }
+    response
+}
+
+fn nav_icon_button(ui: &mut egui::Ui, pane: StudioPane, selected: bool) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(32.0, 28.0), egui::Sense::click());
+    if ui.is_rect_visible(rect) {
+        paint_nav_bg(ui, rect, response.hovered(), selected);
+        let icon_rect = egui::Rect::from_center_size(rect.center(), egui::vec2(16.0, 16.0));
+        paint_pane_icon(ui, icon_rect, pane, selected);
+    }
+    response
+}
+
+fn open_nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, detail: &str) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), OPEN_ROW_HEIGHT),
+        egui::Sense::click(),
+    );
+    if ui.is_rect_visible(rect) {
+        paint_nav_bg(ui, rect, response.hovered(), false);
+        let icon_rect = egui::Rect::from_min_size(
+            egui::pos2(
+                rect.left() + Space::SM as f32,
+                rect.top() + Space::SM as f32,
+            ),
+            egui::vec2(16.0, 16.0),
+        );
+        paint_pane_icon(ui, icon_rect, pane, false);
+        let text_x = icon_rect.right() + Space::XS as f32;
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 13.0),
+            egui::Align2::LEFT_CENTER,
+            title,
+            Text::body(),
+            ui::strong_text(ui.ctx()),
+        );
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 29.0),
+            egui::Align2::LEFT_CENTER,
+            detail,
+            Text::caption(),
+            ui::muted_text(ui.ctx()),
+        );
+    }
+    response
+}
+
+fn paint_nav_bg(ui: &egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
+    let fill = if selected {
+        ui::selected_bg(ui.ctx())
+    } else if hovered {
+        Color::bg_surface_2(ui.ctx())
+    } else {
+        egui::Color32::TRANSPARENT
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::MD), fill);
+}
+
+fn paint_pane_icon(ui: &egui::Ui, rect: egui::Rect, pane: StudioPane, selected: bool) {
+    let color = if selected {
+        Color::accent_base(ui.ctx())
+    } else {
+        Color::fg_secondary(ui.ctx())
+    };
+    let stroke = egui::Stroke::new(1.5, color);
+    match pane {
+        StudioPane::Dashboard => paint_square(ui, rect, stroke),
+        StudioPane::Workflows => paint_flow(ui, rect, stroke),
+        StudioPane::Apps => paint_grid(ui, rect, stroke),
+        StudioPane::Memory => paint_book(ui, rect, stroke),
+        StudioPane::Plugins => paint_plug(ui, rect, stroke),
+        StudioPane::Analysis => paint_chart(ui, rect, stroke),
+        StudioPane::History => paint_clock(ui, rect, stroke),
+        StudioPane::Operations => paint_terminal(ui, rect, stroke),
+        StudioPane::Settings => paint_sliders(ui, rect, stroke),
+    }
+}
+
+fn paint_square(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    ui.painter().rect_stroke(
+        rect.shrink(2.0),
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+}
+
+fn paint_flow(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let y = rect.center().y;
+    let left = egui::pos2(rect.left() + 2.0, y);
+    let mid = rect.center();
+    let right = egui::pos2(rect.right() - 2.0, y);
+    ui.painter().line_segment([left, right], stroke);
+    ui.painter().circle_stroke(left, 2.0, stroke);
+    ui.painter().circle_stroke(mid, 2.0, stroke);
+    ui.painter().circle_stroke(right, 2.0, stroke);
+}
+
+fn paint_grid(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    for x in [rect.left() + 3.0, rect.left() + 9.0] {
+        for y in [rect.top() + 3.0, rect.top() + 9.0] {
+            let cell = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(4.0, 4.0));
+            ui.painter().rect_stroke(
+                cell,
+                egui::CornerRadius::same(1),
+                stroke,
+                egui::StrokeKind::Inside,
+            );
+        }
+    }
+}
+
+fn paint_book(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    ui.painter().rect_stroke(
+        rect.shrink(2.0),
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.center().x, rect.top() + 2.0),
+            egui::pos2(rect.center().x, rect.bottom() - 2.0),
+        ],
+        stroke,
+    );
+}
+
+fn paint_plug(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.left() + 5.0, rect.top() + 3.0),
+            egui::pos2(rect.left() + 5.0, rect.top() + 7.0),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.right() - 5.0, rect.top() + 3.0),
+            egui::pos2(rect.right() - 5.0, rect.top() + 7.0),
+        ],
+        stroke,
+    );
+    ui.painter().rect_stroke(
+        egui::Rect::from_min_max(
+            egui::pos2(rect.left() + 4.0, rect.top() + 7.0),
+            egui::pos2(rect.right() - 4.0, rect.bottom() - 4.0),
+        ),
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+}
+
+fn paint_chart(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let base = rect.bottom() - 2.0;
+    for (index, height) in [4.0, 8.0, 12.0].into_iter().enumerate() {
+        let x = rect.left() + 3.0 + index as f32 * 5.0;
+        ui.painter()
+            .line_segment([egui::pos2(x, base), egui::pos2(x, base - height)], stroke);
+    }
+}
+
+fn paint_clock(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    ui.painter().circle_stroke(rect.center(), 6.0, stroke);
+    ui.painter().line_segment(
+        [rect.center(), egui::pos2(rect.center().x, rect.top() + 4.0)],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            rect.center(),
+            egui::pos2(rect.right() - 4.0, rect.center().y),
+        ],
+        stroke,
+    );
+}
+
+fn paint_terminal(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.left() + 3.0, rect.top() + 5.0),
+            egui::pos2(rect.left() + 7.0, rect.center().y),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.left() + 7.0, rect.center().y),
+            egui::pos2(rect.left() + 3.0, rect.bottom() - 5.0),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(rect.left() + 9.0, rect.bottom() - 4.0),
+            egui::pos2(rect.right() - 3.0, rect.bottom() - 4.0),
+        ],
+        stroke,
+    );
+}
+
+fn paint_sliders(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    for (index, y) in [rect.top() + 4.0, rect.center().y, rect.bottom() - 4.0]
+        .into_iter()
+        .enumerate()
+    {
+        ui.painter().line_segment(
+            [
+                egui::pos2(rect.left() + 2.0, y),
+                egui::pos2(rect.right() - 2.0, y),
+            ],
+            stroke,
+        );
+        let knob_x = rect.left() + 5.0 + index as f32 * 3.0;
+        ui.painter()
+            .circle_filled(egui::pos2(knob_x, y), 1.8, stroke.color);
+    }
+}
