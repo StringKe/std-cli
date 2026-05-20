@@ -4,6 +4,7 @@ mod memory;
 mod plugins;
 mod settings;
 mod workflow_builder;
+mod workflow_rows;
 mod workflows;
 
 pub(crate) fn schema_label(schema: Option<&serde_json::Value>) -> String {

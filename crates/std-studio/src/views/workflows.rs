@@ -1,7 +1,16 @@
-use crate::{ui, views::schema_label, StudioEguiApp};
+use crate::{
+    ui,
+    views::{
+        schema_label,
+        workflow_rows::{self, WorkflowFileAction},
+    },
+    StudioEguiApp,
+};
 use eframe::egui;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std_egui::{i18n, tokens::Space};
+
+const WORKFLOW_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflows(&mut self, ui: &mut egui::Ui) {
@@ -10,10 +19,38 @@ impl StudioEguiApp {
             i18n::t("studio.workflows.title"),
             i18n::t("studio.workflows.detail"),
         );
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_workflow_library(ui));
-            columns[1].vertical(|ui| self.render_workflow_builder(ui));
-            columns[2].vertical(|ui| self.render_workflow_runtime(ui));
+        self.render_workflows_workspace(ui);
+    }
+
+    fn render_workflows_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 900.0 {
+            self.render_workflow_library(ui);
+            ui.add_space(WORKFLOW_PANEL_GAP);
+            self.render_workflow_builder(ui);
+            ui.add_space(WORKFLOW_PANEL_GAP);
+            self.render_workflow_runtime(ui);
+            return;
+        }
+        let column_width = (available_width - WORKFLOW_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_workflow_library(ui),
+            );
+            ui.add_space(WORKFLOW_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_workflow_builder(ui),
+            );
+            ui.add_space(WORKFLOW_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_workflow_runtime(ui),
+            );
         });
     }
 
@@ -64,19 +101,17 @@ impl StudioEguiApp {
             .show(ui, |ui| {
                 for path in workflows {
                     let selected = self.workflow_selected_path.as_ref() == Some(&path);
-                    let label = workflow_label(&path);
-                    ui.horizontal(|ui| {
-                        if ui.selectable_label(selected, label).clicked() {
+                    match workflow_rows::workflow_file_row(ui, &path, selected) {
+                        WorkflowFileAction::Select(path) => {
                             self.workflow_selected_path = Some(path.clone());
                             self.preview_workflow_path(&path);
                         }
-                        if ui.small_button(i18n::t("studio.workflows.open")).clicked() {
+                        WorkflowFileAction::Open(path) => {
                             self.app.open_workflow_builder(path.clone());
-                            self.workflow_selected_path = Some(path.clone());
+                            self.workflow_selected_path = Some(path);
                         }
-                    });
-                    ui.small(path.display().to_string());
-                    ui.add_space(Space::XS as f32);
+                        WorkflowFileAction::None => {}
+                    }
                 }
             });
     }
@@ -115,35 +150,25 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.workflows.no_dry_run"));
             return;
         };
-        ui.horizontal(|ui| {
-            ui::chip(
-                ui,
-                &format!("{:?}", debug.status),
-                status_fill(ui.ctx(), &debug.status),
-            );
-            ui.label(format!(
-                "{} steps={}",
-                debug.workflow_name,
-                debug.steps.len()
-            ));
-        });
+        workflow_rows::workflow_summary(
+            ui,
+            &debug.workflow_name,
+            &format!("{:?}", debug.status),
+            debug.steps.len(),
+        );
         for step in &debug.steps {
-            ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui::chip(
-                        ui,
-                        &format!("{:?}", step.status),
-                        status_fill(ui.ctx(), &step.status),
-                    );
-                    ui.label(format!("{} {:?}", step.step_name, step.step_type));
-                });
-                ui.small(&step.message);
-                ui.small(format!(
-                    "schema input={} output={}",
+            workflow_rows::status_row(
+                ui,
+                &format!("{} {:?}", step.step_name, step.step_type),
+                &format!("{:?}", step.status),
+                &format!(
+                    "{} input={} output={}",
+                    step.message,
                     schema_label(step.input_schema.as_ref()),
                     schema_label(step.output_schema.as_ref())
-                ));
-            });
+                ),
+                status_fill(ui.ctx(), &step.status),
+            );
         }
     }
 
@@ -152,24 +177,20 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.workflows.no_execution"));
             return;
         };
-        ui.horizontal(|ui| {
-            ui::chip(
-                ui,
-                &format!("{:?}", execution.status),
-                status_fill(ui.ctx(), &execution.status),
-            );
-            ui.label(format!(
-                "{} steps={}",
-                execution.workflow_name,
-                execution.results.len()
-            ));
-        });
+        workflow_rows::workflow_summary(
+            ui,
+            &execution.workflow_name,
+            &format!("{:?}", execution.status),
+            execution.results.len(),
+        );
         for step in &execution.results {
-            ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                ui.label(format!("{} {:?}", step.step_name, step.status));
-                ui.small(format!("started={}", step.started_at));
-                ui.small(format!("finished={}", step.finished_at));
-            });
+            workflow_rows::status_row(
+                ui,
+                &step.step_name,
+                &format!("{:?}", step.status),
+                &format!("started={} finished={}", step.started_at, step.finished_at),
+                status_fill(ui.ctx(), &step.status),
+            );
         }
     }
 
@@ -188,16 +209,20 @@ impl StudioEguiApp {
             }
         }
         if let Some(report) = &self.app.last_batch_report {
-            ui.horizontal(|ui| {
-                ui::chip(
-                    ui,
-                    &format!("{:?}", report.status),
-                    action_status_fill(ui.ctx(), &report.status),
-                );
-                ui.label(format!("steps={}", report.steps.len()));
-            });
+            workflow_rows::workflow_summary(
+                ui,
+                "batch",
+                &format!("{:?}", report.status),
+                report.steps.len(),
+            );
             for step in &report.steps {
-                ui.small(format!("{} {:?} {}", step.name, step.status, step.target));
+                workflow_rows::status_row(
+                    ui,
+                    &step.name,
+                    &format!("{:?}", step.status),
+                    &format!("{:?} {}", step.kind, step.target),
+                    action_status_fill(ui.ctx(), &step.status),
+                );
             }
         }
     }
@@ -216,15 +241,6 @@ impl StudioEguiApp {
             Err(error) => self.status = error.to_string(),
         }
     }
-}
-
-fn workflow_label(path: &Path) -> String {
-    path.parent()
-        .and_then(Path::file_name)
-        .and_then(|name| name.to_str())
-        .or_else(|| path.file_stem().and_then(|name| name.to_str()))
-        .unwrap_or("workflow")
-        .to_string()
 }
 
 fn status_fill(ctx: &egui::Context, status: &std_orchestration::ExecutionStatus) -> egui::Color32 {
