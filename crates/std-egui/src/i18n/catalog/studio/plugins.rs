@@ -1,0 +1,78 @@
+use crate::i18n::Locale;
+
+pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
+        (Locale::ZhCn, "studio.plugins.title") => Some("Plugin Manager"),
+        (Locale::EnUs, "studio.plugins.title") => Some("Plugin Manager"),
+        (Locale::ZhCn, "studio.plugins.detail") => Some("manifest 检查、权限边界、JS/TS 执行"),
+        (Locale::EnUs, "studio.plugins.detail") => {
+            Some("manifest checks, scoped permissions, JS/TS execution")
+        }
+        (Locale::ZhCn, "studio.plugins.search.hint") => Some("plugin action、tag、manifest"),
+        (Locale::EnUs, "studio.plugins.search.hint") => Some("plugin action, tag, manifest"),
+        (Locale::ZhCn, "studio.plugins.search") => Some("搜索"),
+        (Locale::EnUs, "studio.plugins.search") => Some("Search"),
+        (Locale::ZhCn, "studio.plugins.reload") => Some("重载"),
+        (Locale::EnUs, "studio.plugins.reload") => Some("Reload"),
+        (Locale::ZhCn, "studio.plugins.run") => Some("运行"),
+        (Locale::EnUs, "studio.plugins.run") => Some("Run"),
+        (Locale::ZhCn, "studio.plugins.manifests.title") => Some("Manifests"),
+        (Locale::EnUs, "studio.plugins.manifests.title") => Some("Manifests"),
+        (Locale::ZhCn, "studio.plugins.manifests.detail") => Some("已发现 plugin.json"),
+        (Locale::EnUs, "studio.plugins.manifests.detail") => Some("discovered plugin.json"),
+        (Locale::ZhCn, "studio.plugins.manifests.empty") => Some("没有 plugin manifest"),
+        (Locale::EnUs, "studio.plugins.manifests.empty") => Some("No plugin manifests"),
+        (Locale::ZhCn, "studio.plugins.actions.title") => Some("Actions"),
+        (Locale::EnUs, "studio.plugins.actions.title") => Some("Actions"),
+        (Locale::ZhCn, "studio.plugins.actions.detail") => Some("执行前预览"),
+        (Locale::EnUs, "studio.plugins.actions.detail") => Some("preview before execution"),
+        (Locale::ZhCn, "studio.plugins.actions.empty") => Some("没有 plugin action"),
+        (Locale::EnUs, "studio.plugins.actions.empty") => Some("No plugin actions"),
+        (Locale::ZhCn, "studio.plugins.checks.title") => Some("Checks"),
+        (Locale::EnUs, "studio.plugins.checks.title") => Some("Checks"),
+        (Locale::ZhCn, "studio.plugins.checks.detail") => Some("权限与 scope"),
+        (Locale::EnUs, "studio.plugins.checks.detail") => Some("permissions and scopes"),
+        (Locale::ZhCn, "studio.plugins.checks.empty") => Some("没有 manifest check report"),
+        (Locale::EnUs, "studio.plugins.checks.empty") => Some("No manifest check reports"),
+        (Locale::ZhCn, "studio.plugins.preview.title") => Some("Preview"),
+        (Locale::EnUs, "studio.plugins.preview.title") => Some("Preview"),
+        (Locale::ZhCn, "studio.plugins.preview.detail") => Some("已选择 action"),
+        (Locale::EnUs, "studio.plugins.preview.detail") => Some("selected action"),
+        (Locale::ZhCn, "studio.plugins.preview.empty") => Some("没有选择 action"),
+        (Locale::EnUs, "studio.plugins.preview.empty") => Some("No action selected"),
+        (Locale::ZhCn, "studio.plugins.execution.title") => Some("Execution"),
+        (Locale::EnUs, "studio.plugins.execution.title") => Some("Execution"),
+        (Locale::ZhCn, "studio.plugins.execution.detail") => Some("最近受控运行"),
+        (Locale::EnUs, "studio.plugins.execution.detail") => Some("last controlled run"),
+        (Locale::ZhCn, "studio.plugins.execution.empty") => Some("还没有执行记录"),
+        (Locale::EnUs, "studio.plugins.execution.empty") => Some("No execution yet"),
+        _ => None,
+    }
+}
+
+pub(super) fn fallback(key: &str) -> Option<&'static str> {
+    match key {
+        "studio.plugins.title" => Some("Plugin Manager"),
+        "studio.plugins.detail" => Some("manifest checks, scoped permissions, JS/TS execution"),
+        "studio.plugins.search.hint" => Some("plugin action, tag, manifest"),
+        "studio.plugins.search" => Some("Search"),
+        "studio.plugins.reload" => Some("Reload"),
+        "studio.plugins.run" => Some("Run"),
+        "studio.plugins.manifests.title" => Some("Manifests"),
+        "studio.plugins.manifests.detail" => Some("discovered plugin.json"),
+        "studio.plugins.manifests.empty" => Some("No plugin manifests"),
+        "studio.plugins.actions.title" => Some("Actions"),
+        "studio.plugins.actions.detail" => Some("preview before execution"),
+        "studio.plugins.actions.empty" => Some("No plugin actions"),
+        "studio.plugins.checks.title" => Some("Checks"),
+        "studio.plugins.checks.detail" => Some("permissions and scopes"),
+        "studio.plugins.checks.empty" => Some("No manifest check reports"),
+        "studio.plugins.preview.title" => Some("Preview"),
+        "studio.plugins.preview.detail" => Some("selected action"),
+        "studio.plugins.preview.empty" => Some("No action selected"),
+        "studio.plugins.execution.title" => Some("Execution"),
+        "studio.plugins.execution.detail" => Some("last controlled run"),
+        "studio.plugins.execution.empty" => Some("No execution yet"),
+        _ => None,
+    }
+}

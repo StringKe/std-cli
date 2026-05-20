@@ -1,13 +1,13 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::tokens::Space;
+use std_egui::{i18n, tokens::Space};
 
 impl StudioEguiApp {
     pub(crate) fn render_plugins(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
-            "Plugin Manager",
-            "manifest checks, scoped permissions, JS/TS execution",
+            i18n::t("studio.plugins.title"),
+            i18n::t("studio.plugins.detail"),
         );
         self.render_plugin_toolbar(ui);
         ui.add_space(Space::SM as f32);
@@ -24,17 +24,17 @@ impl StudioEguiApp {
                 ui.add_sized(
                     [ui.available_width() - 230.0, 28.0],
                     egui::TextEdit::singleline(&mut self.plugin_query)
-                        .hint_text("plugin action, tag, manifest"),
+                        .hint_text(i18n::t("studio.plugins.search.hint")),
                 );
-                if ui::quiet_button(ui, "Search").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.plugins.search")).clicked() {
                     let query = self.plugin_query.clone();
                     let results = self.app.search_plugins(&query);
                     self.status = format!("{} plugin actions", results.len());
                 }
-                if ui::quiet_button(ui, "Reload").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.plugins.reload")).clicked() {
                     self.reload_plugins();
                 }
-                if ui::quiet_button(ui, "Run").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.plugins.run")).clicked() {
                     self.run_selected_plugin();
                 }
             });
@@ -43,9 +43,13 @@ impl StudioEguiApp {
 
     fn render_plugin_manifests(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Manifests", "discovered plugin.json");
+            ui::section_header(
+                ui,
+                i18n::t("studio.plugins.manifests.title"),
+                i18n::t("studio.plugins.manifests.detail"),
+            );
             if self.app.plugin_manager.manifest_paths.is_empty() {
-                ui::empty_state(ui, "No plugin manifests");
+                ui::empty_state(ui, i18n::t("studio.plugins.manifests.empty"));
             } else {
                 egui::ScrollArea::vertical()
                     .max_height(560.0)
@@ -67,9 +71,13 @@ impl StudioEguiApp {
 
     fn render_plugin_actions(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Actions", "preview before execution");
+            ui::section_header(
+                ui,
+                i18n::t("studio.plugins.actions.title"),
+                i18n::t("studio.plugins.actions.detail"),
+            );
             if self.app.plugin_manager.plugin_actions.is_empty() {
-                ui::empty_state(ui, "No plugin actions");
+                ui::empty_state(ui, i18n::t("studio.plugins.actions.empty"));
                 return;
             }
             let mut clicked_plugin = None;
@@ -101,24 +109,36 @@ impl StudioEguiApp {
 
     fn render_plugin_inspector(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Checks", "permissions and scopes");
+            ui::section_header(
+                ui,
+                i18n::t("studio.plugins.checks.title"),
+                i18n::t("studio.plugins.checks.detail"),
+            );
             self.render_plugin_check_reports(ui);
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Preview", "selected action");
+            ui::section_header(
+                ui,
+                i18n::t("studio.plugins.preview.title"),
+                i18n::t("studio.plugins.preview.detail"),
+            );
             self.render_plugin_preview(ui);
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Execution", "last controlled run");
+            ui::section_header(
+                ui,
+                i18n::t("studio.plugins.execution.title"),
+                i18n::t("studio.plugins.execution.detail"),
+            );
             self.render_plugin_execution(ui);
         });
     }
 
     fn render_plugin_check_reports(&self, ui: &mut egui::Ui) {
         if self.app.plugin_manager.check_reports.is_empty() {
-            ui::empty_state(ui, "No manifest check reports");
+            ui::empty_state(ui, i18n::t("studio.plugins.checks.empty"));
             return;
         }
         egui::ScrollArea::vertical()
@@ -151,7 +171,7 @@ impl StudioEguiApp {
 
     fn render_plugin_preview(&self, ui: &mut egui::Ui) {
         let Some(preview) = &self.app.plugin_manager.preview else {
-            ui::empty_state(ui, "No action selected");
+            ui::empty_state(ui, i18n::t("studio.plugins.preview.empty"));
             return;
         };
         ui.label(&preview.title);
@@ -173,7 +193,7 @@ impl StudioEguiApp {
 
     fn render_plugin_execution(&self, ui: &mut egui::Ui) {
         let Some(execution) = &self.app.plugin_manager.last_execution else {
-            ui::empty_state(ui, "No execution yet");
+            ui::empty_state(ui, i18n::t("studio.plugins.execution.empty"));
             return;
         };
         ui.horizontal(|ui| {

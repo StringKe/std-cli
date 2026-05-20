@@ -89,4 +89,16 @@ mod tests {
             "运行 Batch"
         );
     }
+
+    #[test]
+    fn studio_plugins_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.plugins.execution.empty"),
+            "No execution yet"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.plugins.execution.empty"),
+            "还没有执行记录"
+        );
+    }
 }
