@@ -197,6 +197,12 @@ fn launcher_ui_semantics_smoke_covers_result_empty_defer_and_error_states() {
     assert_eq!(report.no_results_label, "No matches");
     assert!(report.no_results_fallback.contains("Ask AI about"));
     assert_eq!(report.no_results_phase, "NoMatches/NoMatches");
+    assert!(report.loading_label.contains("Searching registry"));
+    assert_eq!(report.loading_progress, "2px Searching indeterminate");
+    assert_eq!(report.loading_spinner_after_ms, 200);
+    assert!(report.executing_search_text.starts_with("Running:"));
+    assert!(!report.executing_input_enabled);
+    assert_eq!(report.executing_cancel_shortcut, "Cancel Ctrl+C");
     assert!(report
         .defer_feedback_label
         .contains("Needs external runner"));
@@ -204,6 +210,8 @@ fn launcher_ui_semantics_smoke_covers_result_empty_defer_and_error_states() {
     assert!(report.failed_feedback_label.contains("Failed"));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
     assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
+    assert!(summary.contains("loading_progress=2px Searching indeterminate"));
+    assert!(summary.contains("executing_input_enabled=false"));
     assert!(summary.contains("failed_feedback_label=Failed"));
 }
 
