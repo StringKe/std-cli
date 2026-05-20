@@ -1,5 +1,6 @@
 mod dashboard;
 mod history;
+mod history_rows;
 mod memory;
 mod memory_rows;
 mod plugin_rows;

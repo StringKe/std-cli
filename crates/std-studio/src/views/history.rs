@@ -1,6 +1,8 @@
-use crate::{ui, StudioEguiApp};
+use crate::{ui, views::history_rows, StudioEguiApp};
 use eframe::egui;
-use std_egui::i18n;
+use std_egui::{i18n, tokens::Space};
+
+const HISTORY_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_history(&mut self, ui: &mut egui::Ui) {
@@ -9,9 +11,30 @@ impl StudioEguiApp {
             i18n::t("studio.history.title"),
             i18n::t("studio.history.detail"),
         );
-        ui.columns(2, |columns| {
-            columns[0].vertical(|ui| self.render_workflow_traces(ui));
-            columns[1].vertical(|ui| self.render_audit_events(ui));
+        self.render_history_workspace(ui);
+    }
+
+    fn render_history_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 760.0 {
+            self.render_workflow_traces(ui);
+            ui.add_space(HISTORY_PANEL_GAP);
+            self.render_audit_events(ui);
+            return;
+        }
+        let column_width = (available_width - HISTORY_PANEL_GAP) / 2.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_workflow_traces(ui),
+            );
+            ui.add_space(HISTORY_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_audit_events(ui),
+            );
         });
     }
 
@@ -31,36 +54,7 @@ impl StudioEguiApp {
                         .max_height(620.0)
                         .show(ui, |ui| {
                             for trace in traces {
-                                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                                    ui.label(egui::RichText::new(trace.summary()).strong());
-                                    ui.small(format!(
-                                        "workflow_id={} steps={}",
-                                        trace.execution.workflow_id,
-                                        trace.steps.len()
-                                    ));
-                                    for step in &trace.steps {
-                                        ui.horizontal_wrapped(|ui| {
-                                            ui::chip(
-                                                ui,
-                                                &format!("{:?}", step.status),
-                                                ui::panel_alt(ui.ctx()),
-                                            );
-                                            if let Some(status) = &step.action_status {
-                                                ui::chip(
-                                                    ui,
-                                                    &format!("{status:?}"),
-                                                    ui::selected_bg(ui.ctx()),
-                                                );
-                                            }
-                                            ui.label(&step.name);
-                                        });
-                                        if let Some(message) =
-                                            step.message.as_deref().or(step.error.as_deref())
-                                        {
-                                            ui.small(message);
-                                        }
-                                    }
-                                });
+                                history_rows::trace_row(ui, &trace);
                             }
                         });
                 }
@@ -86,18 +80,7 @@ impl StudioEguiApp {
                 .max_height(620.0)
                 .show(ui, |ui| {
                     for event in self.app.dashboard.recent_events.iter().rev().take(40) {
-                        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                            ui.horizontal_wrapped(|ui| {
-                                ui::chip(
-                                    ui,
-                                    &format!("{:?}", event.event_type),
-                                    ui::selected_bg(ui.ctx()),
-                                );
-                                ui::chip(ui, &event.source, ui::panel_alt(ui.ctx()));
-                            });
-                            ui.small(event.created_at.to_rfc3339());
-                            ui.small(event.payload.to_string());
-                        });
+                        history_rows::event_row(ui, event);
                     }
                 });
         });
