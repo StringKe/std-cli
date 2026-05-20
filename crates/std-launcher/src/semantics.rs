@@ -1,4 +1,4 @@
-use crate::LauncherState;
+use crate::{keyboard::LauncherKey, LauncherState};
 use std_egui::{
     a11y::AccessibilityContext,
     i18n::{self, Locale},
@@ -11,12 +11,18 @@ use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 pub struct LauncherUiSemanticsReport {
     pub search_focused: bool,
     pub result_count: usize,
+    pub result_phase: String,
+    pub result_mode: String,
     pub selected_label: String,
     pub selected_position: String,
+    pub selected_keycap: String,
+    pub selected_action_hint: String,
+    pub action_bar_hint: String,
     pub no_results_label: String,
     pub no_results_detail: String,
     pub no_results_fallback: String,
     pub no_results_phase: String,
+    pub no_results_ime_enter_blocked: bool,
     pub loading_label: String,
     pub loading_progress: String,
     pub loading_spinner_after_ms: u128,
@@ -58,8 +64,24 @@ impl LauncherState {
                 state.view.results.len()
             )
         };
+        let selected_keycap = if state.view.results.is_empty() {
+            "none".to_string()
+        } else {
+            "Mod+1".to_string()
+        };
+        let selected_action_hint = state
+            .view
+            .preview
+            .as_ref()
+            .map(|preview| format!("Enter {}", preview.title))
+            .unwrap_or_else(|| "Enter none".to_string());
+        let action_bar_hint = "Actions Mod+K".to_string();
         let mut no_results = Self::new();
         no_results.update_query("no-such-launcher-result");
+        let no_results_ime_enter_blocked = no_results
+            .handle_keyboard_input(LauncherKey::Enter, true)
+            .is_none()
+            && no_results.view.feedback.is_none();
         let no_results_label =
             i18n::translate(Locale::EnUs, "launcher.empty.no_matches.title").to_string();
         let no_results_detail =
@@ -109,12 +131,18 @@ impl LauncherState {
         LauncherUiSemanticsReport {
             search_focused: state.controller.focused,
             result_count: state.view.results.len(),
+            result_phase: format!("{:?}", state.view.phase),
+            result_mode: format!("{:?}", state.view.result_mode),
             selected_label: selected,
             selected_position,
+            selected_keycap,
+            selected_action_hint,
+            action_bar_hint,
             no_results_label,
             no_results_detail,
             no_results_fallback,
             no_results_phase,
+            no_results_ime_enter_blocked,
             loading_label,
             loading_progress,
             loading_spinner_after_ms: 200,
@@ -136,8 +164,13 @@ impl LauncherUiSemanticsReport {
     pub fn pass(&self) -> bool {
         self.search_focused
             && self.result_count > 0
+            && self.result_phase == "WithResults"
+            && self.result_mode == "Matches"
             && self.selected_label.contains("press Enter")
             && self.selected_position.contains(" of ")
+            && self.selected_keycap == "Mod+1"
+            && self.selected_action_hint.starts_with("Enter ")
+            && self.action_bar_hint == "Actions Mod+K"
             && self.no_results_label == "No matches"
             && self.no_results_detail.contains("Try a different keyword")
             && self.no_results_fallback.contains("Ask AI about")
@@ -147,6 +180,7 @@ impl LauncherUiSemanticsReport {
                     LauncherPhase::NoMatches,
                     LauncherResultMode::NoMatches
                 )
+            && self.no_results_ime_enter_blocked
             && self.loading_label.contains("Searching registry")
             && self.loading_progress == "2px Searching indeterminate"
             && self.loading_spinner_after_ms == 200
@@ -162,16 +196,22 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nselected_label={}\nselected_position={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
+            self.result_phase,
+            self.result_mode,
             self.selected_label,
             self.selected_position,
+            self.selected_keycap,
+            self.selected_action_hint,
+            self.action_bar_hint,
             self.no_results_label,
             self.no_results_detail,
             self.no_results_fallback,
             self.no_results_phase,
+            self.no_results_ime_enter_blocked,
             self.loading_label,
             self.loading_progress,
             self.loading_spinner_after_ms,

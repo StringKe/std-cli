@@ -10,7 +10,7 @@ enum LauncherCliSmoke {
     Hotkey(HotkeySmokeReport),
     Window(LauncherWindowSmokeReport),
     Keyboard(LauncherKeyboardReport),
-    UiSemantics(LauncherUiSemanticsReport),
+    UiSemantics(Box<LauncherUiSemanticsReport>),
     GuiHotkey(GuiHotkeySmokeConfig),
     Theme(ThemeSmokeReport),
 }
@@ -85,9 +85,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 .map(String::as_str)
                 .filter(|query| !query.trim().is_empty())
                 .unwrap_or("index");
-            Some(LauncherCliSmoke::UiSemantics(
+            Some(LauncherCliSmoke::UiSemantics(Box::new(
                 LauncherState::ui_semantics_smoke(query),
-            ))
+            )))
         }
         Some("--theme-smoke") => Some(LauncherCliSmoke::Theme(ThemeSmokeReport::new())),
         Some("--gui-hotkey-smoke") => Some(LauncherCliSmoke::GuiHotkey(GuiHotkeySmokeConfig {

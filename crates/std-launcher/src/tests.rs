@@ -200,24 +200,49 @@ fn launcher_ui_semantics_smoke_covers_result_empty_defer_and_error_states() {
     let summary = report.summary();
 
     assert!(report.pass(), "{summary}");
+    assert_result_semantics(&report, &summary);
+    assert_no_result_semantics(&report);
+    assert_loading_and_execution_semantics(&report, &summary);
+    assert_feedback_semantics(&report, &summary);
+}
+
+fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
+    assert_eq!(report.result_phase, "WithResults");
+    assert_eq!(report.result_mode, "Matches");
+    assert_eq!(report.selected_keycap, "Mod+1");
+    assert!(report.selected_action_hint.starts_with("Enter "));
+    assert_eq!(report.action_bar_hint, "Actions Mod+K");
+    assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
+    assert!(summary.contains("result_phase=WithResults"));
+    assert!(summary.contains("selected_keycap=Mod+1"));
+    assert!(summary.contains("action_bar_hint=Actions Mod+K"));
+}
+
+fn assert_no_result_semantics(report: &LauncherUiSemanticsReport) {
     assert_eq!(report.no_results_label, "No matches");
     assert!(report.no_results_fallback.contains("Ask AI about"));
     assert_eq!(report.no_results_phase, "NoMatches/NoMatches");
+    assert!(report.no_results_ime_enter_blocked);
+}
+
+fn assert_loading_and_execution_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     assert!(report.loading_label.contains("Searching registry"));
     assert_eq!(report.loading_progress, "2px Searching indeterminate");
     assert_eq!(report.loading_spinner_after_ms, 200);
     assert!(report.executing_search_text.starts_with("Running:"));
     assert!(!report.executing_input_enabled);
     assert_eq!(report.executing_cancel_shortcut, "Cancel Ctrl+C");
+    assert!(summary.contains("loading_progress=2px Searching indeterminate"));
+    assert!(summary.contains("executing_input_enabled=false"));
+}
+
+fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     assert!(report
         .defer_feedback_label
         .contains("Needs external runner"));
     assert_eq!(report.defer_actions, "Copy,Retry");
     assert!(report.failed_feedback_label.contains("Failed"));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
-    assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
-    assert!(summary.contains("loading_progress=2px Searching indeterminate"));
-    assert!(summary.contains("executing_input_enabled=false"));
     assert!(summary.contains("failed_feedback_label=Failed"));
 }
 
