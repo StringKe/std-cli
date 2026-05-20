@@ -1,6 +1,8 @@
-use crate::{ui, StudioEguiApp};
+use crate::{ui, views::settings_rows, StudioEguiApp};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
+
+const SETTINGS_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_settings(&mut self, ui: &mut egui::Ui) {
@@ -9,10 +11,38 @@ impl StudioEguiApp {
             i18n::t("studio.settings.title"),
             i18n::t("studio.settings.detail"),
         );
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_runtime_settings(ui));
-            columns[1].vertical(|ui| self.render_storage_settings(ui));
-            columns[2].vertical(|ui| self.render_resolved_paths(ui));
+        self.render_settings_workspace(ui);
+    }
+
+    fn render_settings_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 900.0 {
+            self.render_runtime_settings(ui);
+            ui.add_space(SETTINGS_PANEL_GAP);
+            self.render_storage_settings(ui);
+            ui.add_space(SETTINGS_PANEL_GAP);
+            self.render_resolved_paths(ui);
+            return;
+        }
+        let column_width = (available_width - SETTINGS_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_runtime_settings(ui),
+            );
+            ui.add_space(SETTINGS_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_storage_settings(ui),
+            );
+            ui.add_space(SETTINGS_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_resolved_paths(ui),
+            );
         });
     }
 
@@ -52,7 +82,7 @@ impl StudioEguiApp {
                 i18n::t("studio.settings.storage.title"),
                 i18n::t("studio.settings.storage.detail"),
             );
-            ui.small(format!("config={}", self.app.config_path().display()));
+            settings_rows::config_path_row(ui, &self.app.config_path().display().to_string());
             ui.label(i18n::t("studio.settings.data_dir.label"));
             ui.text_edit_singleline(&mut self.settings_data_dir);
             if ui::quiet_button(ui, i18n::t("studio.settings.data_dir.save")).clicked() {
@@ -75,10 +105,7 @@ impl StudioEguiApp {
                 i18n::t("studio.settings.paths.detail"),
             );
             for (key, value) in self.resolved_paths() {
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.label(egui::RichText::new(key).strong());
-                    ui.small(value);
-                });
+                settings_rows::resolved_path_row(ui, key, &value);
             }
         });
     }

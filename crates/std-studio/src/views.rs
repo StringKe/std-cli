@@ -6,6 +6,7 @@ mod memory_rows;
 mod plugin_rows;
 mod plugins;
 mod settings;
+mod settings_rows;
 mod workflow_builder;
 mod workflow_rows;
 mod workflows;
