@@ -6,6 +6,7 @@ mod action_panel;
 mod controller;
 mod hotkey;
 mod keyboard;
+mod layout_contract;
 mod semantics;
 mod surface_smoke;
 mod voice;
@@ -16,6 +17,9 @@ pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
 };
 pub use keyboard::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport};
+pub use layout_contract::{
+    panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
+};
 pub use semantics::LauncherUiSemanticsReport;
 use std::time::Instant;
 use std_core::{StdConfig, StdCore};

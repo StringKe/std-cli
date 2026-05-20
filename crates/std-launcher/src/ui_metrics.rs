@@ -2,8 +2,8 @@ use eframe::egui;
 use std_egui::tokens::{Space, UiScale};
 use std_egui::LauncherPhase;
 use std_launcher::LauncherState;
+use std_launcher::PANEL_WIDTH;
 
-const PANEL_WIDTH: f32 = 720.0;
 const SEARCH_HEIGHT: f32 = 64.0;
 const ACTION_BAR_HEIGHT: f32 = 36.0;
 const RESULT_ROW_HEIGHT: f32 = 36.0;
@@ -11,10 +11,6 @@ const GROUP_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
-
-pub(crate) fn panel_width() -> f32 {
-    UiScale::from_env().f32(PANEL_WIDTH)
-}
 
 pub(crate) fn scale() -> UiScale {
     UiScale::from_env()
@@ -26,10 +22,14 @@ pub(crate) fn window_margin() -> f32 {
 
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
-    let panel_width = panel_width().min((available.width() - margin * 2.0).max(320.0));
+    let panel_width = panel_width_for_available(available.width(), margin);
     let body_height = body_height(state, available.height());
     let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
     panel_rect_for_available(available, panel_width, panel_height, margin, false)
+}
+
+fn panel_width_for_available(available_width: f32, margin: f32) -> f32 {
+    std_launcher::panel_width_for_available(available_width, margin, UiScale::from_env().value())
 }
 
 fn panel_rect_for_available(
@@ -309,6 +309,20 @@ mod tests {
     }
 
     #[test]
+    fn panel_width_uses_docs_viewport_ratio_on_large_carriers() {
+        let width = panel_width_for_available(1440.0, window_margin());
+
+        assert_eq!(width, 720.0);
+    }
+
+    #[test]
+    fn panel_width_does_not_fill_medium_carrier() {
+        let width = panel_width_for_available(1000.0, window_margin());
+
+        assert_eq!(width, 550.0);
+    }
+
+    #[test]
     fn panel_rect_stays_inside_tightly_sized_native_window() {
         let mut state = LauncherState::new();
         state.update_query("index");
@@ -335,6 +349,18 @@ mod tests {
             rect.height(),
             panel_height(&state, body_height(&state, available.height()))
         );
+    }
+
+    #[test]
+    fn panel_rect_uses_centered_panel_inside_preview_carrier() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1000.0, 900.0));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(rect.width(), 550.0);
+        assert_eq!(rect.center().x, available.center().x);
+        assert!(rect.width() < available.width());
     }
 
     #[test]

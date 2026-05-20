@@ -1,3 +1,4 @@
+use crate::panel_width_for_available;
 use std_egui::{
     tokens::{apply_theme, Color, Radius, Space, ThemeMode},
     LauncherFeedback,
@@ -32,7 +33,7 @@ impl LauncherSurfaceSmokeReport {
             panel_opaque: Color::bg_surface_0(&dark).a() == 255
                 && Color::bg_surface_0(&light).a() == 255,
             panel_radius: Radius::xl(),
-            panel_does_not_fill_viewport: true,
+            panel_does_not_fill_viewport: panel_does_not_fill_viewport(),
             panel_inner_padding: Space::md(),
             search_surface_layer: layer("search", "bg/surface-1", &dark),
             result_surface_layer: layer("results", "bg/surface-1", &dark),
@@ -94,6 +95,12 @@ fn themed_context(mode: ThemeMode) -> egui::Context {
     let ctx = egui::Context::default();
     apply_theme(&ctx, mode);
     ctx
+}
+
+fn panel_does_not_fill_viewport() -> bool {
+    let available_width = 1000.0;
+    let panel_width = panel_width_for_available(available_width, 0.0, 1.0);
+    panel_width < available_width && panel_width == 550.0
 }
 
 fn layer(name: &str, token: &str, ctx: &egui::Context) -> String {
