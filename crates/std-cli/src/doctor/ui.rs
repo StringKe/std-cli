@@ -90,11 +90,14 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
 fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
     let launcher = read_required(&root.join("crates/std-launcher/src/preview.rs"))?;
     for required in [
-        "dark-results",
-        "light-results",
-        "dark-no-results",
-        "light-defer",
-        "dark-error",
+        "STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview",
+        "state: \"results\"",
+        "state: \"no-results\"",
+        "state: \"defer\"",
+        "state: \"error\"",
+        "theme: \"light\"",
+        "theme: \"dark\"",
+        "assert_eq!(report.scenarios.len(), 8)",
     ] {
         check_text(&launcher, required)?;
     }

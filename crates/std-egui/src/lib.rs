@@ -171,10 +171,42 @@ mod tests {
         model.trigger_selected(&core).unwrap();
 
         assert_eq!(model.telemetry.last_result_count, model.results.len());
+        assert_eq!(model.telemetry.last_total_matches, model.results.len());
+        assert!(!model.telemetry.last_overflowed);
         assert!(model.telemetry.last_result_count >= 1);
         assert!(model.telemetry.last_search_ms < 1_000);
         assert!(model.telemetry.last_preview_ms < 1_000);
         assert!(model.telemetry.last_trigger_ms < 1_000);
+    }
+
+    #[test]
+    fn launcher_non_empty_query_caps_visible_results_at_docs_limit() {
+        let temp = tempfile::tempdir().unwrap();
+        let core = StdCore::with_config(StdConfig {
+            data_dir: temp.path().join("data"),
+            ..StdConfig::default()
+        });
+        for index in 0..205 {
+            core.register_action(std_types::RegistryEntry::from_action(
+                std_types::Action::new(
+                    format!("Bulk Action {index:03}"),
+                    "Bulk searchable action",
+                    "bulk-search-overflow",
+                    ActionType::Command,
+                ),
+                vec!["bulk-search-overflow".to_string()],
+            ))
+            .unwrap();
+        }
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "bulk-search-overflow");
+
+        assert_eq!(model.results.len(), 200);
+        assert_eq!(model.telemetry.last_result_count, 200);
+        assert_eq!(model.telemetry.last_total_matches, 201);
+        assert!(model.telemetry.last_overflowed);
+        assert!(model.result_overflowed());
     }
 
     #[test]

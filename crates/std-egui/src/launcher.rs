@@ -2,12 +2,18 @@ use std::time::Instant;
 use std_core::StdCore;
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType, SearchResult};
 
+const EMPTY_QUERY_LIMIT: usize = 10;
+const RESULT_DISPLAY_LIMIT: usize = 200;
+const RESULT_FETCH_LIMIT: usize = RESULT_DISPLAY_LIMIT + 1;
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LauncherTelemetry {
     pub last_search_ms: u128,
     pub last_preview_ms: u128,
     pub last_trigger_ms: u128,
     pub last_result_count: usize,
+    pub last_total_matches: usize,
+    pub last_overflowed: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -75,7 +81,7 @@ impl LauncherFeedback {
 impl LauncherViewModel {
     pub fn new(core: &StdCore) -> Self {
         let started_at = Instant::now();
-        let mut results = core.search("", 10).unwrap_or_default();
+        let mut results = core.search("", EMPTY_QUERY_LIMIT).unwrap_or_default();
         sort_launcher_results(&mut results);
         let elapsed_ms = started_at.elapsed().as_millis();
         let result_count = results.len();
@@ -92,6 +98,7 @@ impl LauncherViewModel {
             telemetry: LauncherTelemetry {
                 last_search_ms: elapsed_ms,
                 last_result_count: result_count,
+                last_total_matches: result_count,
                 ..LauncherTelemetry::default()
             },
         };
@@ -102,12 +109,20 @@ impl LauncherViewModel {
     pub fn update_query(&mut self, core: &StdCore, query: impl Into<String>) {
         self.query = normalize_query(query.into());
         let started_at = Instant::now();
-        self.results = core.search(&self.query, 10).unwrap_or_default();
+        self.results = core
+            .search(&self.query, search_limit_for_query(&self.query))
+            .unwrap_or_default();
         sort_launcher_results(&mut self.results);
+        let overflowed = self.results.len() > RESULT_DISPLAY_LIMIT;
+        if overflowed {
+            self.results.truncate(RESULT_DISPLAY_LIMIT);
+        }
         self.result_mode = result_mode(&self.query, self.results.is_empty());
         self.phase = phase_for_results(&self.query, self.results.is_empty());
         self.telemetry.last_search_ms = started_at.elapsed().as_millis();
         self.telemetry.last_result_count = self.results.len();
+        self.telemetry.last_total_matches = self.results.len() + usize::from(overflowed);
+        self.telemetry.last_overflowed = overflowed;
         self.selected = 0;
         self.refresh_preview(core);
     }
@@ -183,6 +198,10 @@ impl LauncherViewModel {
     pub fn preview_executing(&mut self) {
         self.phase = LauncherPhase::Executing;
     }
+
+    pub fn result_overflowed(&self) -> bool {
+        self.telemetry.last_overflowed
+    }
 }
 
 fn normalize_query(query: String) -> String {
@@ -206,6 +225,14 @@ fn phase_for_results(query: &str, empty_results: bool) -> LauncherPhase {
         LauncherPhase::NoMatches
     } else {
         LauncherPhase::WithResults
+    }
+}
+
+fn search_limit_for_query(query: &str) -> usize {
+    if query.trim().is_empty() {
+        EMPTY_QUERY_LIMIT
+    } else {
+        RESULT_FETCH_LIMIT
     }
 }
 

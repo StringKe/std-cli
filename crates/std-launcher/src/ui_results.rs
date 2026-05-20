@@ -79,6 +79,9 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                     }
                     return;
                 }
+                if row_range.start == 0 {
+                    render_overflow_hint(ui, &state.view);
+                }
                 for index in row_range {
                     match &items[index] {
                         LauncherResultListItem::Group { label } => group_header(ui, label),
@@ -96,6 +99,19 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
+}
+
+fn render_overflow_hint(ui: &mut egui::Ui, view: &std_egui::LauncherViewModel) {
+    if !view.result_overflowed() {
+        return;
+    }
+    let ctx = ui.ctx().clone();
+    ui.add_space(Space::xs() as f32);
+    ui.label(
+        egui::RichText::new(i18n::t("launcher.results.overflow_hint"))
+            .font(Text::footnote())
+            .color(Color::fg_secondary(&ctx)),
+    );
 }
 
 fn render_progress(ui: &mut egui::Ui, label: &str) {
@@ -269,5 +285,18 @@ mod tests {
     #[test]
     fn group_header_label_is_uppercase() {
         assert_eq!(group_header_label("Action / Workflow"), "ACTION / WORKFLOW");
+    }
+
+    #[test]
+    fn overflow_hint_uses_documented_copy() {
+        let mut view = std_egui::LauncherViewModel::new(&std_core::StdCore::default());
+        view.telemetry.last_result_count = 200;
+        view.telemetry.last_overflowed = true;
+
+        assert!(view.result_overflowed());
+        assert_eq!(
+            i18n::t("launcher.results.overflow_hint"),
+            "200+ matches, refine your query"
+        );
     }
 }
