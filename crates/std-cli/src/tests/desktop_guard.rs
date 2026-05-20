@@ -1,0 +1,63 @@
+use std::{fs, path::Path};
+
+#[test]
+fn test_sources_do_not_reference_real_app_launch_targets() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut violations = Vec::new();
+
+    scan_rs_files(
+        &root.join("crates"),
+        &forbidden_test_app_terms(),
+        &mut violations,
+    );
+
+    assert!(
+        violations.is_empty(),
+        "test sources must use fake app fixtures, not real launch targets: {}",
+        violations.join(", ")
+    );
+}
+
+fn forbidden_test_app_terms() -> Vec<String> {
+    vec![
+        ["1", "Password"].join(""),
+        ["open -a ", "Terminal"].join(""),
+        ["/Applications/", "1", "Password.app"].join(""),
+        ["tell application \"", "1", "Password\""].join(""),
+    ]
+}
+
+fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if path.is_dir() {
+            scan_rs_files(&path, forbidden_terms, violations);
+            continue;
+        }
+        if path.extension().and_then(|ext| ext.to_str()) != Some("rs") || !is_test_path(&path) {
+            continue;
+        }
+        let body = fs::read_to_string(&path).unwrap();
+        for term in forbidden_terms {
+            if body.contains(term) {
+                violations.push(format!("{} contains {}", path.display(), term));
+            }
+        }
+    }
+}
+
+fn is_test_path(path: &Path) -> bool {
+    path.components().any(|part| part.as_os_str() == "tests")
+        || path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .map(|name| name.ends_with("_tests.rs") || name == "tests.rs")
+            .unwrap_or(false)
+}

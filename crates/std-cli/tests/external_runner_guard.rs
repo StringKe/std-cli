@@ -35,14 +35,17 @@ fn binary_test_mode_blocks_dangerous_command_text() {
     let config_path = write_config(temp.path());
 
     for (command_text, guard_terms) in [
-        ("open -a 1Password", vec!["open", "1Password"]),
         (
-            "/usr/bin/open -a 1Password",
-            vec!["/usr/bin/open", "1Password"],
+            "open -a StdNeverLaunchFixture",
+            vec!["open", "StdNeverLaunchFixture"],
         ),
         (
-            "/usr/bin/osascript -e 'tell application \"1Password\" to activate'",
-            vec!["/usr/bin/osascript", "1Password"],
+            "/usr/bin/open -a StdNeverLaunchFixture",
+            vec!["/usr/bin/open", "StdNeverLaunchFixture"],
+        ),
+        (
+            "/usr/bin/osascript -e 'tell application \"StdNeverLaunchFixture\" to activate'",
+            vec!["/usr/bin/osascript", "StdNeverLaunchFixture"],
         ),
     ] {
         let define = run_std(

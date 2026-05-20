@@ -116,6 +116,27 @@ fn core_registers_app_bundle_from_source() {
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
 }
 
+#[test]
+fn test_mode_does_not_discover_system_app_bundles() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let core = StdCore::with_config(config);
+
+    let entries = core.discover_local_content_actions().unwrap();
+
+    assert!(entries.iter().all(|entry| {
+        entry.action.action_type != ActionType::AppLaunch
+            || entry
+                .metadata
+                .get("path")
+                .map(|path| path.contains(temp.path().to_str().unwrap()))
+                .unwrap_or(false)
+    }));
+}
+
 fn find_app_result<'a>(
     results: &'a [std_types::SearchResult],
     path: &str,

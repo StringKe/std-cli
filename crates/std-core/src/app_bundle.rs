@@ -6,6 +6,9 @@ use std::{
 use std_types::{Action, ActionType, RegistryEntry};
 
 pub(crate) fn discover_app_actions(local_apps_dir: &Path) -> Vec<RegistryEntry> {
+    if crate::std_test_mode_enabled() {
+        return discover_apps_in_dir(local_apps_dir);
+    }
     [
         local_apps_dir.to_path_buf(),
         default_apps_dir(),

@@ -1,6 +1,7 @@
 use super::*;
 
 mod config;
+mod desktop_guard;
 mod index;
 mod local_content;
 mod plugin;

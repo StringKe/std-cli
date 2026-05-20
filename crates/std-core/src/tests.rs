@@ -169,7 +169,7 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
     action.action_type = ActionType::Command;
     core.register_action(
         RegistryEntry::from_action(action, vec!["runner".to_string()])
-            .with_metadata("command", "open -a 1Password"),
+            .with_metadata("command", "open -a StdNeverLaunchFixture"),
     )
     .unwrap();
 
@@ -177,7 +177,7 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
     let execution = core.execute_action(result.action.id).unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.message, "open -a 1Password");
+    assert_eq!(execution.message, "open -a StdNeverLaunchFixture");
     assert!(execution
         .output
         .unwrap()
@@ -197,7 +197,7 @@ fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
     action.action_type = ActionType::Command;
     core.register_action(
         RegistryEntry::from_action(action, vec!["runner".to_string()])
-            .with_metadata("command", "open -a 1Password"),
+            .with_metadata("command", "open -a StdNeverLaunchFixture"),
     )
     .unwrap();
 
@@ -207,7 +207,7 @@ fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
         .unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.message, "open -a 1Password");
+    assert_eq!(execution.message, "open -a StdNeverLaunchFixture");
     assert!(execution
         .output
         .unwrap()
@@ -228,19 +228,19 @@ fn test_core_blocks_external_application_launches_by_default() {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
     });
-    let mut action = make_test_action("Open 1Password");
+    let mut action = make_test_action("Open StdNeverLaunchFixture");
     action.action_type = ActionType::AppLaunch;
     core.register_action(
         RegistryEntry::from_action(action, vec!["app".to_string()])
-            .with_metadata("path", "/Applications/1Password.app"),
+            .with_metadata("path", "/tmp/StdNeverLaunchFixture.app"),
     )
     .unwrap();
 
-    let result = core.search("1Password", 1).unwrap().remove(0);
+    let result = core.search("StdNeverLaunchFixture", 1).unwrap().remove(0);
     let execution = core.execute_action(result.action.id).unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.message, "open /Applications/1Password.app");
+    assert_eq!(execution.message, "open /tmp/StdNeverLaunchFixture.app");
     assert!(execution
         .output
         .unwrap()
