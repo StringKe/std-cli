@@ -68,7 +68,7 @@ fn execute_command_action(
     created_at: chrono::DateTime<chrono::Utc>,
 ) -> Result<ActionExecution, CoreError> {
     match entry.metadata.get("command") {
-        Some(_) if !allow_external_runner || crate::std_test_mode_enabled() => {
+        Some(_) if !external_runner_allowed(allow_external_runner) => {
             Ok(needs_external_runner(entry, created_at))
         }
         Some(command) => Ok(run_shell_command(core, entry, command, created_at)),

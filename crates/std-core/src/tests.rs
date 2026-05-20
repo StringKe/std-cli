@@ -187,6 +187,36 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
 }
 
 #[test]
+fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    let mut action = make_test_action("Open Real App Command");
+    action.action_type = ActionType::Command;
+    core.register_action(
+        RegistryEntry::from_action(action, vec!["runner".to_string()])
+            .with_metadata("command", "open -a 1Password"),
+    )
+    .unwrap();
+
+    let result = core.search("real app", 1).unwrap().remove(0);
+    let execution = core
+        .execute_action_with_external_runner(result.action.id, true)
+        .unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.message, "open -a 1Password");
+    assert!(execution
+        .output
+        .unwrap()
+        .get("deferred")
+        .and_then(|value| value.as_bool())
+        .unwrap());
+}
+
+#[test]
 fn test_core_blocks_external_application_launches_by_default() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {
