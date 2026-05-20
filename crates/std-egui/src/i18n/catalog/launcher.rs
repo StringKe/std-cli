@@ -1,0 +1,41 @@
+use crate::i18n::Locale;
+
+pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
+        (Locale::ZhCn, "launcher.search.placeholder") => Some("搜索 Workflow、应用、剪切板..."),
+        (Locale::EnUs, "launcher.search.placeholder") => {
+            Some("Search Workflows, apps, clipboard...")
+        }
+        (Locale::ZhCn, "launcher.empty.no_matches.title") => Some("没有匹配项"),
+        (Locale::EnUs, "launcher.empty.no_matches.title") => Some("No matches"),
+        (Locale::ZhCn, "launcher.empty.no_matches.detail") => Some("换个关键词，或按 ? 询问"),
+        (Locale::EnUs, "launcher.empty.no_matches.detail") => {
+            Some("Try a different keyword or press ? to ask")
+        }
+        (Locale::ZhCn, "launcher.empty.ready.title") => Some("准备搜索"),
+        (Locale::EnUs, "launcher.empty.ready.title") => Some("Ready to search"),
+        (Locale::ZhCn, "launcher.empty.ready.detail") => Some("输入关键词，或按 ? 询问"),
+        (Locale::EnUs, "launcher.empty.ready.detail") => Some("Type a keyword, or press ? to ask"),
+        (Locale::ZhCn, "launcher.empty.ask_ai") => Some("询问 AI 关于"),
+        (Locale::EnUs, "launcher.empty.ask_ai") => Some("Ask AI about"),
+        (Locale::ZhCn, "launcher.action.actions") => Some("操作"),
+        (Locale::EnUs, "launcher.action.actions") => Some("Actions"),
+        (Locale::ZhCn, "launcher.action.run") => Some("运行"),
+        (Locale::EnUs, "launcher.action.run") => Some("Run"),
+        _ => None,
+    }
+}
+
+pub(super) fn fallback(key: &str) -> Option<&'static str> {
+    match key {
+        "launcher.search.placeholder" => Some("Search Workflows, apps, clipboard..."),
+        "launcher.empty.no_matches.title" => Some("No matches"),
+        "launcher.empty.no_matches.detail" => Some("Try a different keyword or press ? to ask"),
+        "launcher.empty.ready.title" => Some("Ready to search"),
+        "launcher.empty.ready.detail" => Some("Type a keyword, or press ? to ask"),
+        "launcher.empty.ask_ai" => Some("Ask AI about"),
+        "launcher.action.actions" => Some("Actions"),
+        "launcher.action.run" => Some("Run"),
+        _ => None,
+    }
+}
