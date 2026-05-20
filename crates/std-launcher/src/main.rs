@@ -19,6 +19,7 @@ mod ui_metrics_empty;
 mod ui_metrics_results;
 mod ui_metrics_search;
 mod ui_parts;
+mod ui_result_model;
 mod ui_results;
 mod window;
 

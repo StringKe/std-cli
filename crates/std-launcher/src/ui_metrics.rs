@@ -66,6 +66,10 @@ pub(crate) fn result_row_height() -> f32 {
     scale().f32(RESULT_ROW_HEIGHT)
 }
 
+pub(crate) fn result_list_slot_height() -> f32 {
+    scale().f32(RESULT_ROW_HEIGHT)
+}
+
 pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
     crate::ui_metrics_results::loading_progress_rect(scale(), available_width, top_left)
 }
