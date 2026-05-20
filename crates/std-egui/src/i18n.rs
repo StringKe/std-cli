@@ -37,6 +37,14 @@ mod tests {
             translate(Locale::ZhCn, "launcher.empty.no_matches.title"),
             "没有匹配项"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.action.executing"),
+            "Executing selected action"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.executing"),
+            "正在执行选中操作"
+        );
     }
 
     #[test]

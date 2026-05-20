@@ -275,7 +275,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         ui.horizontal(|ui| {
             ui.spinner();
             ui.label(
-                egui::RichText::new("Executing selected action")
+                egui::RichText::new(i18n::t("launcher.action.executing"))
                     .font(Text::footnote())
                     .color(Color::fg_primary(&ctx))
                     .strong(),
@@ -308,7 +308,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
     ui.add_sized(
         [max_width, 18.0],
         egui::Label::new(
-            egui::RichText::new("Press / for commands")
+            egui::RichText::new(i18n::t("launcher.action.command_hint"))
                 .font(Text::footnote())
                 .color(Color::fg_secondary(&ctx)),
         )
@@ -328,12 +328,16 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
         .inner_margin(egui::Margin::same(Space::XS))
         .show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.label(egui::RichText::new("Voice").color(Color::fg_secondary(&ctx)));
+                ui.label(
+                    egui::RichText::new(i18n::t("launcher.voice.label"))
+                        .color(Color::fg_secondary(&ctx)),
+                );
                 ui.add_sized(
                     [ui.available_width() - 112.0, 28.0],
-                    egui::TextEdit::singleline(voice_transcript).hint_text("voice transcript"),
+                    egui::TextEdit::singleline(voice_transcript)
+                        .hint_text(i18n::t("launcher.voice.placeholder")),
                 );
-                if quiet_button(ui, "Apply").clicked() {
+                if quiet_button(ui, i18n::t("launcher.voice.apply")).clicked() {
                     state.apply_voice_transcript(voice_transcript.as_str());
                 }
             });

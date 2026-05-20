@@ -54,7 +54,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         .show(ui, |ui| {
             if state.view.results.is_empty() {
                 if state.view.phase == std_egui::LauncherPhase::Searching {
-                    render_progress(ui, "Searching registry and local index");
+                    render_progress(ui, i18n::t("launcher.results.searching"));
                     return;
                 }
                 if let Some(EmptyAction::AskAi(query)) =
