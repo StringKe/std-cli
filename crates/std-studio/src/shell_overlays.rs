@@ -8,7 +8,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     i18n,
-    tokens::{Color, Radius, Space},
+    tokens::{Color, Elevation, Radius, Space},
 };
 use std_studio::StudioPane;
 
@@ -211,6 +211,7 @@ fn render_host_overlay(
                 .fill(Color::bg_surface_1(ctx))
                 .stroke(egui::Stroke::new(1.0, Color::stroke_border(ctx)))
                 .corner_radius(egui::CornerRadius::same(Radius::MD))
+                .shadow(Elevation::level_2(ctx))
                 .inner_margin(egui::Margin::same(Space::MD))
                 .show(ui, |ui| {
                     ui.set_width(width);

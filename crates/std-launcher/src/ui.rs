@@ -7,7 +7,7 @@ use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
     i18n, input,
-    tokens::{self, Color, Radius, Space, Text},
+    tokens::{self, Color, Elevation, Radius, Space, Text},
     LauncherFeedback, LauncherPhase,
 };
 use std_launcher::{LauncherKey, LauncherPerformanceReport, LauncherState};
@@ -88,6 +88,7 @@ pub(crate) fn render_launcher_panel(
         .fill(Color::bg_surface_0(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
         .corner_radius(egui::CornerRadius::same(Radius::XL))
+        .shadow(Elevation::level_3(&ctx))
         .inner_margin(egui::Margin::same(Space::MD))
         .show(ui, |ui| {
             ui.set_width(panel_rect.width() - Space::MD as f32 * 2.0);

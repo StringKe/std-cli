@@ -2,7 +2,7 @@ use crate::ui_parts::{keycap, quiet_label};
 use eframe::egui;
 use std_egui::{
     i18n, input,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, Elevation, Radius, Space, Text},
 };
 use std_launcher::{ActionPanelItem, LauncherKey, LauncherState};
 
@@ -23,6 +23,7 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
                 .fill(Color::bg_surface_1(ctx))
                 .stroke(egui::Stroke::new(1.0, Color::stroke_border(ctx)))
                 .corner_radius(egui::CornerRadius::same(Radius::LG))
+                .shadow(Elevation::level_2(ctx))
                 .inner_margin(egui::Margin::same(Space::SM))
                 .show(ui, |ui| {
                     ui.set_width(width);

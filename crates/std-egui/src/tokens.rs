@@ -157,6 +157,38 @@ impl Radius {
     pub const XL: u8 = 16;
 }
 
+pub struct Elevation;
+
+impl Elevation {
+    pub fn level_2(ctx: &egui::Context) -> egui::Shadow {
+        shadow(
+            ctx,
+            [0, 8],
+            24,
+            0,
+            egui::Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
+                128
+            } else {
+                26
+            }),
+        )
+    }
+
+    pub fn level_3(ctx: &egui::Context) -> egui::Shadow {
+        shadow(
+            ctx,
+            [0, 16],
+            48,
+            0,
+            egui::Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
+                153
+            } else {
+                41
+            }),
+        )
+    }
+}
+
 pub struct Text;
 
 impl Text {
@@ -279,6 +311,21 @@ fn effective_theme(ctx: &egui::Context, mode: ThemeMode) -> EffectiveTheme {
     }
 }
 
+fn shadow(
+    _ctx: &egui::Context,
+    offset: [i8; 2],
+    blur: u8,
+    spread: u8,
+    color: egui::Color32,
+) -> egui::Shadow {
+    egui::Shadow {
+        offset,
+        blur,
+        spread,
+        color,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -300,6 +347,22 @@ mod tests {
         assert_eq!(Space::LG, 24);
         assert_eq!(Space::XL, 32);
         assert_eq!(Space::TWO_XL, 48);
+    }
+
+    #[test]
+    fn exported_elevation_matches_documented_shadow_levels() {
+        let ctx = egui::Context::default();
+        apply_theme(&ctx, ThemeMode::Dark);
+        let level_2 = Elevation::level_2(&ctx);
+        let level_3 = Elevation::level_3(&ctx);
+
+        assert_eq!(level_2.offset, [0, 8]);
+        assert_eq!(level_2.blur, 24);
+        assert_eq!(level_3.offset, [0, 16]);
+        assert_eq!(level_3.blur, 48);
+
+        apply_theme(&ctx, ThemeMode::Light);
+        assert!(Elevation::level_3(&ctx).color.a() < level_3.color.a());
     }
 
     #[test]
