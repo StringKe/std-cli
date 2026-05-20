@@ -303,6 +303,7 @@ impl LauncherState {
     ) -> Option<ActionExecution> {
         let result = self.view.selected_result()?.clone();
         let started_at = Instant::now();
+        self.view.preview_executing();
         let execution = if result.action.action_type == ActionType::Workflow {
             let preview = self.core.preview_action(result.action.id).ok()?;
             self.trigger_workflow_action(&result.action.name, preview.metadata.get("path"))
@@ -316,6 +317,7 @@ impl LauncherState {
         self.view.last_triggered = Some(result.action.name);
         self.view.last_execution = Some(execution.clone());
         self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.phase = std_egui::LauncherPhase::Feedback;
         Some(execution)
     }
 

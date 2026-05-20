@@ -8,7 +8,7 @@ use std_egui::{
     a11y::AccessibilityContext,
     i18n, input,
     tokens::{self, Color, Radius, Space, Text},
-    LauncherFeedback,
+    LauncherFeedback, LauncherPhase,
 };
 use std_launcher::{LauncherKey, LauncherPerformanceReport, LauncherState};
 use std_types::ActionExecutionStatus;
@@ -187,6 +187,18 @@ fn render_action_bar(
 
 fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f32) {
     let ctx = ui.ctx().clone();
+    if state.view.phase == LauncherPhase::Executing {
+        ui.horizontal(|ui| {
+            ui.spinner();
+            ui.label(
+                egui::RichText::new("Executing selected action")
+                    .font(Text::footnote())
+                    .color(Color::fg_primary(&ctx))
+                    .strong(),
+            );
+        });
+        return;
+    }
     if let Some(preview) = state.view.preview.as_ref() {
         ui.add_sized(
             [max_width * 0.34, 18.0],

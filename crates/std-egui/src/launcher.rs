@@ -17,9 +17,20 @@ pub enum LauncherResultMode {
     NoMatches,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LauncherPhase {
+    Empty,
+    Searching,
+    WithResults,
+    NoMatches,
+    Executing,
+    Feedback,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct LauncherViewModel {
     pub query: String,
+    pub phase: LauncherPhase,
     pub result_mode: LauncherResultMode,
     pub results: Vec<SearchResult>,
     pub selected: usize,
@@ -70,6 +81,7 @@ impl LauncherViewModel {
         let result_count = results.len();
         let mut view = Self {
             query: String::new(),
+            phase: LauncherPhase::Empty,
             result_mode: LauncherResultMode::SuggestedWorkflows,
             results,
             selected: 0,
@@ -93,6 +105,7 @@ impl LauncherViewModel {
         self.results = core.search(&self.query, 10).unwrap_or_default();
         sort_launcher_results(&mut self.results);
         self.result_mode = result_mode(&self.query, self.results.is_empty());
+        self.phase = phase_for_results(&self.query, self.results.is_empty());
         self.telemetry.last_search_ms = started_at.elapsed().as_millis();
         self.telemetry.last_result_count = self.results.len();
         self.selected = 0;
@@ -147,13 +160,28 @@ impl LauncherViewModel {
     pub fn trigger_selected(&mut self, core: &StdCore) -> Option<ActionExecution> {
         let action = self.selected_result()?.action.clone();
         let started_at = Instant::now();
+        self.phase = LauncherPhase::Executing;
         let execution = core.execute_action(action.id).ok()?;
         self.telemetry.last_trigger_ms = started_at.elapsed().as_millis();
         let name = action.name;
         self.last_triggered = Some(name.clone());
         self.last_execution = Some(execution.clone());
         self.feedback = Some(LauncherFeedback::from_execution(&execution));
+        self.phase = LauncherPhase::Feedback;
         Some(execution)
+    }
+
+    pub fn preview_searching(&mut self, query: impl Into<String>) {
+        self.query = normalize_query(query.into());
+        self.results.clear();
+        self.preview = None;
+        self.selected = 0;
+        self.result_mode = LauncherResultMode::Matches;
+        self.phase = LauncherPhase::Searching;
+    }
+
+    pub fn preview_executing(&mut self) {
+        self.phase = LauncherPhase::Executing;
     }
 }
 
@@ -168,6 +196,16 @@ fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {
         LauncherResultMode::NoMatches
     } else {
         LauncherResultMode::Matches
+    }
+}
+
+fn phase_for_results(query: &str, empty_results: bool) -> LauncherPhase {
+    if query.trim().is_empty() {
+        LauncherPhase::Empty
+    } else if empty_results {
+        LauncherPhase::NoMatches
+    } else {
+        LauncherPhase::WithResults
     }
 }
 

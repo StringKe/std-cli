@@ -16,18 +16,23 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
     surface_frame(ui.ctx()).show(ui, |ui| {
         section_header(
             ui,
-            section_title(state.view.result_mode),
+            section_title(&state.view),
             &format!("{} matches", state.view.results.len()),
         );
         render_results(ui, state, max_height);
     });
 }
 
-fn section_title(mode: LauncherResultMode) -> &'static str {
-    match mode {
-        LauncherResultMode::SuggestedWorkflows => "Suggested Workflows",
-        LauncherResultMode::Matches => "Results",
-        LauncherResultMode::NoMatches => "Results",
+fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
+    match view.phase {
+        std_egui::LauncherPhase::Searching => "Searching",
+        std_egui::LauncherPhase::Executing => "Executing",
+        std_egui::LauncherPhase::Feedback => "Result",
+        _ => match view.result_mode {
+            LauncherResultMode::SuggestedWorkflows => "Suggested Workflows",
+            LauncherResultMode::Matches => "Results",
+            LauncherResultMode::NoMatches => "Results",
+        },
     }
 }
 
@@ -40,6 +45,10 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         .auto_shrink([false, false])
         .show(ui, |ui| {
             if state.view.results.is_empty() {
+                if state.view.phase == std_egui::LauncherPhase::Searching {
+                    render_progress(ui, "Searching registry and local index");
+                    return;
+                }
                 if let Some(EmptyAction::AskAi(query)) =
                     ui_empty::render_no_results(ui, &state.view.query)
                 {
@@ -72,6 +81,19 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
+}
+
+fn render_progress(ui: &mut egui::Ui, label: &str) {
+    let ctx = ui.ctx().clone();
+    ui.add_space(Space::MD as f32);
+    ui.horizontal(|ui| {
+        ui.spinner();
+        ui.label(
+            egui::RichText::new(label)
+                .font(Text::body())
+                .color(Color::fg_secondary(&ctx)),
+        );
+    });
 }
 
 fn result_row(

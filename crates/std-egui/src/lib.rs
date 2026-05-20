@@ -11,7 +11,9 @@ mod plugin;
 pub mod tokens;
 
 pub use dashboard::StudioDashboardViewModel;
-pub use launcher::{LauncherFeedback, LauncherResultMode, LauncherTelemetry, LauncherViewModel};
+pub use launcher::{
+    LauncherFeedback, LauncherPhase, LauncherResultMode, LauncherTelemetry, LauncherViewModel,
+};
 pub use memory::MemoryBrowserViewModel;
 pub use plugin::PluginManagerViewModel;
 
@@ -48,9 +50,11 @@ mod tests {
         let mut model = LauncherViewModel::new(&core);
 
         model.update_query(&core, "index");
+        assert_eq!(model.phase, LauncherPhase::WithResults);
         let execution = model.trigger_selected(&core).unwrap();
 
         assert_eq!(execution.action_name, "Rebuild Index");
+        assert_eq!(model.phase, LauncherPhase::Feedback);
         assert_eq!(model.preview.as_ref().unwrap().title, "Rebuild Index");
         assert_eq!(model.last_triggered.as_deref(), Some("Rebuild Index"));
         assert_eq!(
@@ -99,10 +103,27 @@ mod tests {
         let mut model = LauncherViewModel::new(&core);
 
         assert_eq!(model.result_mode, LauncherResultMode::SuggestedWorkflows);
+        assert_eq!(model.phase, LauncherPhase::Empty);
         model.update_query(&core, "index");
         assert_eq!(model.result_mode, LauncherResultMode::Matches);
+        assert_eq!(model.phase, LauncherPhase::WithResults);
         model.update_query(&core, "zzzz-no-launcher-match");
         assert_eq!(model.result_mode, LauncherResultMode::NoMatches);
+        assert_eq!(model.phase, LauncherPhase::NoMatches);
+    }
+
+    #[test]
+    fn launcher_preview_phases_cover_searching_and_executing() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.preview_searching("slow query");
+        assert_eq!(model.phase, LauncherPhase::Searching);
+        assert_eq!(model.query, "slow query");
+        assert!(model.results.is_empty());
+
+        model.preview_executing();
+        assert_eq!(model.phase, LauncherPhase::Executing);
     }
 
     #[test]

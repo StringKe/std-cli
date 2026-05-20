@@ -319,6 +319,13 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
         "none" | "no-results" => {
             state.update_query("zzzz-no-launcher-match");
         }
+        "searching" => {
+            state.view.preview_searching("slow query");
+        }
+        "executing" => {
+            state.update_query("index");
+            state.view.preview_executing();
+        }
         "defer" => {
             state.update_query("terminal");
             select_external_runner_result(state);
@@ -341,6 +348,7 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
                     created_at: chrono::Utc::now(),
                 },
             ));
+            state.view.phase = std_egui::LauncherPhase::Feedback;
         }
         _ => {
             state.update_query("index");
@@ -405,12 +413,20 @@ mod app_tests {
 
         apply_preview_scenario(&mut state, "no-results");
         assert!(state.view.results.is_empty());
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::NoMatches);
+
+        apply_preview_scenario(&mut state, "searching");
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
+
+        apply_preview_scenario(&mut state, "executing");
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);
 
         apply_preview_scenario(&mut state, "defer");
         assert_eq!(
             state.view.feedback.as_ref().unwrap().status,
             ActionExecutionStatus::NeedsExternalRunner
         );
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
 
         apply_preview_scenario(&mut state, "action-panel");
         assert!(state.action_panel.open);
