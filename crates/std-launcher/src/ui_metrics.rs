@@ -27,6 +27,10 @@ pub(crate) fn result_row_height() -> f32 {
     scale().f32(RESULT_ROW_HEIGHT)
 }
 
+pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
+    crate::ui_metrics_results::loading_progress_rect(scale(), available_width, top_left)
+}
+
 pub(crate) fn ask_ai_row_height() -> f32 {
     scale().f32(34.0)
 }
@@ -232,6 +236,14 @@ mod tests {
         assert_eq!(
             crate::ui_metrics_empty::no_matches_icon_metrics_for_scale(UiScale::new(1.5)),
             (egui::vec2(48.0, 48.0), 13.5)
+        );
+    }
+
+    #[test]
+    fn loading_progress_metrics_scale_with_ui_zoom() {
+        assert_eq!(
+            crate::ui_metrics_results::loading_progress_metrics_for_scale(UiScale::new(1.5), 600.0),
+            (228.0, 3.0)
         );
     }
 }

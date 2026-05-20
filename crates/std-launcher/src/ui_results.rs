@@ -100,6 +100,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
 
 fn render_progress(ui: &mut egui::Ui, label: &str) {
     let ctx = ui.ctx().clone();
+    render_loading_progress_bar(ui, &ctx);
     ui.add_space(Space::md() as f32);
     ui.horizontal(|ui| {
         ui.spinner();
@@ -109,6 +110,23 @@ fn render_progress(ui: &mut egui::Ui, label: &str) {
                 .color(Color::fg_secondary(&ctx)),
         );
     });
+}
+
+fn render_loading_progress_bar(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let available_width = ui.available_width();
+    let (rect, _response) = ui.allocate_exact_size(
+        egui::vec2(
+            available_width,
+            ui_metrics::loading_progress_rect(available_width, egui::Pos2::ZERO).height(),
+        ),
+        egui::Sense::hover(),
+    );
+    let progress_rect = ui_metrics::loading_progress_rect(available_width, rect.min);
+    ui.painter().rect_filled(
+        progress_rect,
+        egui::CornerRadius::same(1),
+        Color::accent_base(ctx),
+    );
 }
 
 fn result_row(
@@ -150,12 +168,7 @@ fn result_row(
             ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
                 ui.horizontal(|ui| {
                     render_kind_badge(ui, &ctx, &result.action.action_type);
-                    ui.label(
-                        egui::RichText::new(&result.action.name)
-                            .font(Text::body())
-                            .color(Color::fg_primary(&ctx))
-                            .strong(),
-                    );
+                    ui.label(result_title_text(&result.action.name, selected, &ctx));
                     ui.label(
                         egui::RichText::new(action_kind(&result.action.action_type))
                             .font(Text::footnote())
@@ -174,6 +187,22 @@ fn result_row(
             response
         })
         .inner
+}
+
+fn result_title_text(title: &str, selected: bool, ctx: &egui::Context) -> egui::RichText {
+    let text = egui::RichText::new(title)
+        .font(Text::body())
+        .color(Color::fg_primary(ctx));
+    if selected {
+        text.strong()
+    } else {
+        text
+    }
+}
+
+#[cfg(test)]
+fn result_title_is_strong(selected: bool) -> bool {
+    selected
 }
 
 fn group_header(ui: &mut egui::Ui, group: &str) {
@@ -241,4 +270,15 @@ fn render_kind_badge(ui: &mut egui::Ui, ctx: &egui::Context, action_type: &Actio
                     .color(Color::fg_secondary(ctx)),
             );
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn result_title_weight_matches_selection_state() {
+        assert!(result_title_is_strong(true));
+        assert!(!result_title_is_strong(false));
+    }
 }
