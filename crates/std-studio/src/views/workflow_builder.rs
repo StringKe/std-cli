@@ -1,7 +1,13 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::Path;
-use std_egui::{i18n, tokens::Space};
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space, Text},
+};
+
+const BUILDER_STEP_ROW_HEIGHT: f32 = 48.0;
+const BUILDER_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
@@ -13,12 +19,35 @@ impl StudioEguiApp {
             );
             self.render_builder_toolbar(ui);
             ui.add_space(Space::XS as f32);
-            ui.columns(2, |columns| {
-                columns[0].vertical(|ui| self.render_builder_steps(ui));
-                columns[1].vertical(|ui| self.render_step_properties(ui));
-            });
+            self.render_builder_workspace(ui);
             ui.add_space(Space::XS as f32);
             self.render_ai_assist_panel(ui);
+        });
+    }
+
+    fn render_builder_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 560.0 {
+            self.render_builder_steps(ui);
+            ui.add_space(BUILDER_PANEL_GAP);
+            self.render_step_properties(ui);
+            return;
+        }
+        let left_width = ((available_width - BUILDER_PANEL_GAP) * 0.48).max(260.0);
+        let right_width = (available_width - left_width - BUILDER_PANEL_GAP).max(260.0);
+        ui.horizontal_top(|ui| {
+            ui.set_min_width(available_width);
+            ui.allocate_ui_with_layout(
+                egui::vec2(left_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_builder_steps(ui),
+            );
+            ui.add_space(BUILDER_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(right_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_step_properties(ui),
+            );
         });
     }
 
@@ -73,7 +102,7 @@ impl StudioEguiApp {
             .iter()
             .map(|step| (step.name.clone(), format!("{:?}", step.step_type)))
             .collect::<Vec<_>>();
-        ui.label(format!("{} steps={}", name, rows.len()));
+        workflow_step_summary(ui, &name, rows.len());
         for (index, (name, detail)) in rows.iter().enumerate() {
             self.step_row(ui, index, name, detail);
         }
@@ -90,7 +119,7 @@ impl StudioEguiApp {
             .iter()
             .map(|step| (step.step_name.clone(), format!("{:?}", step.step_type)))
             .collect::<Vec<_>>();
-        ui.label(format!("{} steps={}", name, rows.len()));
+        workflow_step_summary(ui, &name, rows.len());
         for (index, (name, detail)) in rows.iter().enumerate() {
             self.step_row(ui, index, name, detail);
         }
@@ -98,13 +127,11 @@ impl StudioEguiApp {
 
     fn step_row(&mut self, ui: &mut egui::Ui, index: usize, name: &str, detail: &str) {
         let selected = self.workflow_edit_index.trim() == index.to_string();
-        let response = ui.selectable_label(selected, format!("{}  {}", index + 1, name));
+        let response = workflow_step_row(ui, index, name, detail, selected);
         if response.clicked() {
             self.workflow_edit_index = index.to_string();
             self.workflow_step_name = name.to_string();
         }
-        ui.small(detail);
-        ui.add_space(Space::TWO_XS as f32);
     }
 
     fn render_step_properties(&mut self, ui: &mut egui::Ui) {
@@ -313,4 +340,113 @@ impl StudioEguiApp {
             }
         }
     }
+}
+
+fn workflow_step_summary(ui: &mut egui::Ui, name: &str, steps: usize) {
+    ui.horizontal(|ui| {
+        ui.label(
+            egui::RichText::new(name)
+                .font(Text::body())
+                .color(ui::strong_text(ui.ctx())),
+        );
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.label(
+                egui::RichText::new(format!("steps={steps}"))
+                    .font(Text::caption())
+                    .color(ui::muted_text(ui.ctx())),
+            );
+        });
+    });
+    ui.add_space(Space::TWO_XS as f32);
+}
+
+fn workflow_step_row(
+    ui: &mut egui::Ui,
+    index: usize,
+    name: &str,
+    detail: &str,
+    selected: bool,
+) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), BUILDER_STEP_ROW_HEIGHT),
+        egui::Sense::click(),
+    );
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), name));
+    if ui.is_rect_visible(rect) {
+        paint_workflow_step_row(ui, rect, response.hovered(), selected);
+        let index_rect = egui::Rect::from_min_size(
+            egui::pos2(rect.left() + Space::XS as f32, rect.center().y - 11.0),
+            egui::vec2(32.0, 22.0),
+        );
+        paint_step_index(ui, index_rect, index + 1, selected);
+        let text_x = index_rect.right() + Space::XS as f32;
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 17.0),
+            egui::Align2::LEFT_CENTER,
+            name,
+            Text::body(),
+            ui::strong_text(ui.ctx()),
+        );
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 34.0),
+            egui::Align2::LEFT_CENTER,
+            detail,
+            Text::caption(),
+            ui::muted_text(ui.ctx()),
+        );
+    }
+    ui.add_space(Space::TWO_XS as f32);
+    response
+}
+
+fn paint_workflow_step_row(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
+    let fill = if selected {
+        Color::accent_weak(ui.ctx())
+    } else if hovered {
+        Color::bg_surface_3(ui.ctx())
+    } else {
+        Color::bg_surface_2(ui.ctx())
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
+    ui.painter().rect_stroke(
+        rect,
+        egui::CornerRadius::same(Radius::SM),
+        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
+        egui::StrokeKind::Inside,
+    );
+    if selected {
+        let strip = egui::Rect::from_min_max(
+            rect.left_top(),
+            egui::pos2(rect.left() + 3.0, rect.bottom()),
+        );
+        ui.painter().rect_filled(
+            strip,
+            egui::CornerRadius::same(Radius::SM),
+            Color::accent_base(ui.ctx()),
+        );
+    }
+}
+
+fn paint_step_index(ui: &mut egui::Ui, rect: egui::Rect, number: usize, selected: bool) {
+    let fill = if selected {
+        Color::accent_base(ui.ctx())
+    } else {
+        Color::bg_surface_1(ui.ctx())
+    };
+    let text_color = if selected {
+        Color::bg_surface_0(ui.ctx())
+    } else {
+        Color::fg_secondary(ui.ctx())
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
+    ui.painter().text(
+        rect.center(),
+        egui::Align2::CENTER_CENTER,
+        number.to_string(),
+        Text::caption(),
+        text_color,
+    );
 }
