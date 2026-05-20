@@ -21,6 +21,13 @@ pub(crate) struct StudioSmokeReport {
     pane_focus_switched: bool,
     pane_closed: bool,
     pane_focus_restored: bool,
+    pane_deduplicated: bool,
+    pane_content_keys: String,
+    pane_focused_title: String,
+    pane_restored_title: String,
+    pane_closed_removed: bool,
+    pane_state_preserved: bool,
+    pane_focus_label: String,
     native_child_windows: bool,
     detached_panels: bool,
     host_window_size: String,
@@ -73,13 +80,20 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
             self.pane_focus_switched,
             self.pane_closed,
             self.pane_focus_restored,
+            self.pane_deduplicated,
+            self.pane_content_keys,
+            self.pane_focused_title,
+            self.pane_restored_title,
+            self.pane_closed_removed,
+            self.pane_state_preserved,
+            self.pane_focus_label,
             self.native_child_windows,
             self.detached_panels,
             self.host_window_size,
@@ -135,6 +149,14 @@ impl StudioSmokeReport {
             && self.pane_focus_switched
             && self.pane_closed
             && self.pane_focus_restored
+            && self.pane_deduplicated
+            && self.pane_content_keys.contains("dashboard")
+            && self.pane_content_keys.contains("settings")
+            && self.pane_focused_title == "Plugin Manager"
+            && self.pane_restored_title == "Plugin Manager"
+            && self.pane_closed_removed
+            && self.pane_state_preserved
+            && self.pane_focus_label.contains("title=Plugin Manager")
             && !self.native_child_windows
             && !self.detached_panels
             && self.host_window_size == "1280x800"
@@ -198,6 +220,13 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             pane_focus_switched: false,
             pane_closed: false,
             pane_focus_restored: false,
+            pane_deduplicated: false,
+            pane_content_keys: "FAIL".to_string(),
+            pane_focused_title: "FAIL".to_string(),
+            pane_restored_title: "FAIL".to_string(),
+            pane_closed_removed: false,
+            pane_state_preserved: false,
+            pane_focus_label: "FAIL".to_string(),
             native_child_windows: true,
             detached_panels: true,
             host_window_size: "FAIL".to_string(),
@@ -313,6 +342,13 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         pane_focus_switched: pane_smoke.focus_switched,
         pane_closed: pane_smoke.closed,
         pane_focus_restored: pane_smoke.focus_restored,
+        pane_deduplicated: pane_smoke.deduplicated,
+        pane_content_keys: pane_smoke.content_keys,
+        pane_focused_title: pane_smoke.focused_title,
+        pane_restored_title: pane_smoke.restored_title,
+        pane_closed_removed: pane_smoke.closed_removed,
+        pane_state_preserved: pane_smoke.state_preserved_after_focus,
+        pane_focus_label: pane_smoke.focus_label,
         native_child_windows: studio.workspace_policy.allows_native_child_windows(),
         detached_panels: studio.workspace_policy.allows_detached_panels(),
         host_window_size: layout.host_window_size,
@@ -383,6 +419,15 @@ mod tests {
         assert!(summary.contains("pane_focus_switched=true"));
         assert!(summary.contains("pane_closed=true"));
         assert!(summary.contains("pane_focus_restored=true"));
+        assert!(summary.contains("pane_deduplicated=true"));
+        assert!(summary.contains("pane_content_keys=analysis,apps,dashboard"));
+        assert!(summary.contains("history,memory,operations,plugins,settings,workflows"));
+        assert!(summary.contains("pane_focused_title=Plugin Manager"));
+        assert!(summary.contains("pane_restored_title=Plugin Manager"));
+        assert!(summary.contains("pane_closed_removed=true"));
+        assert!(summary.contains("pane_state_preserved=true"));
+        assert!(summary.contains("pane_focus_label=focused="));
+        assert!(summary.contains("title=Plugin Manager"));
         assert!(summary.contains("native_child_windows=false"));
         assert!(summary.contains("detached_panels=false"));
     }
