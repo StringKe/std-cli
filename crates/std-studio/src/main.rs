@@ -2,9 +2,11 @@
 
 mod analysis;
 mod app_view;
+mod host_chrome;
 mod operations;
 mod preview;
 mod shell;
+mod shell_parts;
 mod smoke;
 mod ui;
 mod views;
@@ -110,7 +112,7 @@ impl eframe::App for StudioEguiApp {
 }
 
 impl StudioEguiApp {
-    fn render_window_manager(&mut self, ui: &mut egui::Ui) {
+    fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
         let panes = self
             .app
             .workspace_panes

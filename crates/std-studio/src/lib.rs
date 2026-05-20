@@ -1,4 +1,4 @@
-//! std-studio - Professional multi-window environment.
+//! std-studio - Professional workspace pane environment.
 //!
 //! This is the main place for Workflow building and project analysis.
 //! Shared Studio application state.
@@ -21,10 +21,7 @@ use std_orchestration::{
 };
 pub use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecution, SearchResult};
-pub use window::{
-    StudioWindow, StudioWindowContent, StudioWindowId, StudioWindowKind, WorkspacePane,
-    WorkspacePaneContent, WorkspacePaneId, WorkspacePaneKind,
-};
+pub use window::{WorkspacePane, WorkspacePaneContent, WorkspacePaneId, WorkspacePaneKind};
 pub use workflow::built_in_studio_preview_workflow;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -193,31 +190,6 @@ impl StudioApp {
         self.open_pane(WorkspacePaneKind::ExecutionHistory)
     }
 
-    #[deprecated(note = "use open_workspace_pane")]
-    pub fn open_pane_window(&mut self, pane: StudioPane) -> WorkspacePaneId {
-        self.open_workspace_pane(pane)
-    }
-
-    #[deprecated(note = "use open_plugin_manager_pane")]
-    pub fn open_plugin_manager_window(&mut self) -> WorkspacePaneId {
-        self.open_plugin_manager_pane()
-    }
-
-    #[deprecated(note = "use open_app_manager_pane")]
-    pub fn open_app_manager_window(&mut self) -> WorkspacePaneId {
-        self.open_app_manager_pane()
-    }
-
-    #[deprecated(note = "use open_memory_browser_pane")]
-    pub fn open_memory_browser_window(&mut self) -> WorkspacePaneId {
-        self.open_memory_browser_pane()
-    }
-
-    #[deprecated(note = "use open_execution_history_pane")]
-    pub fn open_execution_history_window(&mut self) -> WorkspacePaneId {
-        self.open_execution_history_pane()
-    }
-
     pub fn focus_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
         let Some(pane) = self.workspace_panes.iter_mut().find(|pane| pane.id == id) else {
             return false;
@@ -239,23 +211,8 @@ impl StudioApp {
         true
     }
 
-    #[deprecated(note = "use focus_workspace_pane")]
-    pub fn focus_window(&mut self, id: WorkspacePaneId) -> bool {
-        self.focus_workspace_pane(id)
-    }
-
-    #[deprecated(note = "use close_workspace_pane")]
-    pub fn close_window(&mut self, id: WorkspacePaneId) -> bool {
-        self.close_workspace_pane(id)
-    }
-
     pub fn open_workspace_panes(&self) -> impl Iterator<Item = &WorkspacePane> {
         self.workspace_panes.iter().filter(|pane| pane.open)
-    }
-
-    #[deprecated(note = "use open_workspace_panes")]
-    pub fn open_windows(&self) -> impl Iterator<Item = &WorkspacePane> {
-        self.open_workspace_panes()
     }
 
     fn open_pane(&mut self, kind: WorkspacePaneKind) -> WorkspacePaneId {

@@ -134,10 +134,6 @@ impl StudioApp {
         }
     }
 
-    pub fn window_content(&self, kind: &WorkspacePaneKind) -> WorkspacePaneContent {
-        self.workspace_pane_content(kind)
-    }
-
     fn pane_content(&self, pane: StudioPane) -> WorkspacePaneContent {
         let lines = match pane {
             StudioPane::Dashboard => vec![
@@ -192,8 +188,3 @@ impl StudioApp {
         }
     }
 }
-
-pub type StudioWindow = WorkspacePane;
-pub type StudioWindowContent = WorkspacePaneContent;
-pub type StudioWindowId = WorkspacePaneId;
-pub type StudioWindowKind = WorkspacePaneKind;
