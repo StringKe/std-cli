@@ -1,4 +1,5 @@
 use crate::gui_smoke::{run_gui_hotkey_smoke, GuiHotkeySmokeConfig};
+use crate::preview::LauncherPreviewSmokeReport;
 use std_egui::tokens::ThemeSmokeReport;
 use std_launcher::{
     hotkey_smoke, HotkeySmokeReport, LauncherKeyboardReport, LauncherSmokeReport, LauncherState,
@@ -12,6 +13,7 @@ enum LauncherCliSmoke {
     Keyboard(LauncherKeyboardReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
     Surface(LauncherSurfaceSmokeReport),
+    Preview(LauncherPreviewSmokeReport),
     GuiHotkey(GuiHotkeySmokeConfig),
     Theme(ThemeSmokeReport),
 }
@@ -39,6 +41,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
             Ok(true)
         }
         Some(LauncherCliSmoke::Surface(report)) => {
+            println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::Preview(report)) => {
             println!("{}", report.summary());
             Ok(true)
         }
@@ -96,6 +102,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
         }
         Some("--surface-smoke") => {
             Some(LauncherCliSmoke::Surface(LauncherSurfaceSmokeReport::new()))
+        }
+        Some("--preview-smoke") => {
+            Some(LauncherCliSmoke::Preview(LauncherPreviewSmokeReport::new()))
         }
         Some("--theme-smoke") => Some(LauncherCliSmoke::Theme(ThemeSmokeReport::new())),
         Some("--gui-hotkey-smoke") => Some(LauncherCliSmoke::GuiHotkey(GuiHotkeySmokeConfig {
@@ -190,5 +199,18 @@ mod tests {
         assert!(report.pass(), "{}", report.summary());
         assert!(report.summary().contains("launcher_surface_smoke PASS"));
         assert!(report.summary().contains("panel_opaque=true"));
+    }
+
+    #[test]
+    fn preview_smoke_reports_required_screenshot_matrix() {
+        let args = vec!["std-launcher".to_string(), "--preview-smoke".to_string()];
+        let Some(LauncherCliSmoke::Preview(report)) = smoke_from_args(args) else {
+            panic!("expected preview smoke report");
+        };
+
+        assert!(report.pass(), "{}", report.summary());
+        assert!(report.summary().contains("launcher_preview_smoke PASS"));
+        assert!(report.summary().contains("dark-results"));
+        assert!(report.summary().contains("light-defer"));
     }
 }

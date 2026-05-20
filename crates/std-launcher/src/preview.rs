@@ -12,6 +12,46 @@ pub(crate) struct LauncherPreviewConfig {
     timeout_ms: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct LauncherPreviewSmokeReport {
+    scenarios: Vec<String>,
+    commands: Vec<String>,
+    states: Vec<String>,
+}
+
+impl LauncherPreviewSmokeReport {
+    pub(crate) fn new() -> Self {
+        let scenarios = preview_matrix();
+        Self {
+            commands: scenarios
+                .iter()
+                .map(|scenario| format!("std-launcher --ui-preview {scenario} 8000"))
+                .collect(),
+            states: scenarios
+                .iter()
+                .map(|scenario| preview_state_summary(scenario))
+                .collect(),
+            scenarios,
+        }
+    }
+
+    pub(crate) fn pass(&self) -> bool {
+        self.scenarios == preview_matrix()
+            && self.commands.len() == self.scenarios.len()
+            && self.states.iter().all(|state| state.contains("PASS"))
+    }
+
+    pub(crate) fn summary(&self) -> String {
+        format!(
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}",
+            if self.pass() { "PASS" } else { "FAIL" },
+            self.scenarios.join(","),
+            self.commands.join(";"),
+            self.states.join(";")
+        )
+    }
+}
+
 struct LauncherPreviewApp {
     app: LauncherApp,
     started_at: Instant,
@@ -123,6 +163,65 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
         _ => {
             state.update_query("index");
         }
+    }
+}
+
+fn preview_matrix() -> Vec<String> {
+    [
+        "dark-results",
+        "light-results",
+        "dark-no-results",
+        "light-defer",
+        "dark-error",
+    ]
+    .into_iter()
+    .map(ToString::to_string)
+    .collect()
+}
+
+fn preview_state_summary(scenario: &str) -> String {
+    let mut state = LauncherState::new();
+    let Some((theme, state_name)) = scenario.split_once('-') else {
+        return format!("{scenario}=FAIL");
+    };
+    apply_preview_scenario(&mut state, state_name);
+    let valid = matches!(theme, "dark" | "light") && preview_state_passes(&state, state_name);
+    format!(
+        "{scenario}={}:phase={:?},results={},feedback={}",
+        if valid { "PASS" } else { "FAIL" },
+        state.view.phase,
+        state.view.results.len(),
+        state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.title.as_str())
+            .unwrap_or("none")
+    )
+}
+
+fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
+    match state_name {
+        "results" => {
+            state.view.phase == std_egui::LauncherPhase::WithResults
+                && !state.view.results.is_empty()
+        }
+        "no-results" => {
+            state.view.phase == std_egui::LauncherPhase::NoMatches && state.view.results.is_empty()
+        }
+        "defer" => state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.status == ActionExecutionStatus::NeedsExternalRunner)
+            .unwrap_or(false),
+        "error" => state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.status == ActionExecutionStatus::Failed)
+            .unwrap_or(false),
+        _ => false,
     }
 }
 
