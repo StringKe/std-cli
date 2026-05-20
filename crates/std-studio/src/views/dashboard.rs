@@ -1,9 +1,11 @@
-use crate::{ui, StudioEguiApp};
+use crate::{ui, views::dashboard_rows, StudioEguiApp};
 use eframe::egui;
 use std_egui::{
     i18n,
     tokens::{Space, Text},
 };
+
+const DASHBOARD_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_dashboard(&mut self, ui: &mut egui::Ui) {
@@ -29,32 +31,68 @@ impl StudioEguiApp {
     }
 
     fn render_dashboard_metrics(&self, ui: &mut egui::Ui) {
-        ui.columns(3, |columns| {
-            ui::metric(
-                &mut columns[0],
+        let metrics = [
+            (
                 i18n::t("studio.dashboard.actions"),
                 self.app.dashboard.action_count,
                 i18n::t("studio.dashboard.actions.detail"),
-            );
-            ui::metric(
-                &mut columns[1],
+            ),
+            (
                 i18n::t("studio.dashboard.memory"),
                 self.app.dashboard.memory_count,
                 i18n::t("studio.dashboard.memory.detail"),
-            );
-            ui::metric(
-                &mut columns[2],
+            ),
+            (
                 i18n::t("studio.dashboard.audit_events"),
                 self.app.dashboard.audit_event_count,
                 i18n::t("studio.dashboard.audit_events.detail"),
-            );
+            ),
+        ];
+        let available_width = ui.available_width();
+        if available_width < 760.0 {
+            for (title, value, detail) in metrics {
+                dashboard_rows::metric_tile(ui, title, value, detail);
+                ui.add_space(DASHBOARD_PANEL_GAP);
+            }
+            return;
+        }
+        let tile_width = (available_width - DASHBOARD_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            for (index, (title, value, detail)) in metrics.into_iter().enumerate() {
+                ui.allocate_ui_with_layout(
+                    egui::vec2(tile_width, 0.0),
+                    egui::Layout::top_down(egui::Align::Min),
+                    |ui| dashboard_rows::metric_tile(ui, title, value, detail),
+                );
+                if index < 2 {
+                    ui.add_space(DASHBOARD_PANEL_GAP);
+                }
+            }
         });
     }
 
     fn render_dashboard_workbench(&self, ui: &mut egui::Ui) {
-        ui.columns(2, |columns| {
-            self.render_planner_draft(&mut columns[0]);
-            self.render_recent_memory(&mut columns[1]);
+        let available_width = ui.available_width();
+        if available_width < 860.0 {
+            self.render_planner_draft(ui);
+            ui.add_space(DASHBOARD_PANEL_GAP);
+            self.render_recent_memory(ui);
+            return;
+        }
+        let left_width = ((available_width - DASHBOARD_PANEL_GAP) * 0.55).max(320.0);
+        let right_width = (available_width - left_width - DASHBOARD_PANEL_GAP).max(280.0);
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(left_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_planner_draft(ui),
+            );
+            ui.add_space(DASHBOARD_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(right_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_recent_memory(ui),
+            );
         });
     }
 
@@ -65,27 +103,13 @@ impl StudioEguiApp {
                 i18n::t("studio.dashboard.planner.title"),
                 i18n::t("studio.dashboard.planner.detail"),
             );
-            ui.label(
-                egui::RichText::new(format!(
-                    "{}: {}",
-                    i18n::t("studio.dashboard.goal"),
-                    self.app.dashboard.suggested_plan.goal
-                ))
-                .color(ui::strong_text(ui.ctx())),
+            dashboard_rows::plan_goal_row(
+                ui,
+                i18n::t("studio.dashboard.goal"),
+                &self.app.dashboard.suggested_plan.goal,
             );
             for (index, step) in self.app.dashboard.suggested_plan.steps.iter().enumerate() {
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.horizontal(|ui| {
-                        ui::chip(ui, &format!("{}", index + 1), ui::selected_bg(ui.ctx()));
-                        ui.label(
-                            egui::RichText::new(&step.action_name)
-                                .strong()
-                                .color(ui::strong_text(ui.ctx())),
-                        );
-                    });
-                    ui.label(egui::RichText::new(&step.reason).color(ui::muted_text(ui.ctx())));
-                });
-                ui.add_space(Space::XS as f32);
+                dashboard_rows::plan_step_row(ui, index, step);
             }
         });
     }
@@ -102,23 +126,7 @@ impl StudioEguiApp {
                 return;
             }
             for memory in &self.app.dashboard.recent_memories {
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.label(
-                        egui::RichText::new(&memory.title)
-                            .strong()
-                            .color(ui::strong_text(ui.ctx())),
-                    );
-                    ui.label(
-                        egui::RichText::new(format!(
-                            "scope={} tags={}",
-                            memory.scope,
-                            memory.tags.join(",")
-                        ))
-                        .color(ui::muted_text(ui.ctx())),
-                    );
-                    ui.label(egui::RichText::new(&memory.body).color(ui::strong_text(ui.ctx())));
-                });
-                ui.add_space(Space::XS as f32);
+                dashboard_rows::memory_row(ui, memory);
             }
         });
     }

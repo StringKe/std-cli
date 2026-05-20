@@ -1,4 +1,5 @@
 mod dashboard;
+mod dashboard_rows;
 mod history;
 mod history_rows;
 mod memory;
