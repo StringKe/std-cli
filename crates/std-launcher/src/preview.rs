@@ -35,10 +35,7 @@ impl LauncherPreviewSmokeReport {
                 .iter()
                 .map(LauncherPreviewScenario::command)
                 .collect(),
-            states: scenarios
-                .iter()
-                .map(preview_state_summary)
-                .collect(),
+            states: scenarios.iter().map(preview_state_summary).collect(),
             scenarios,
         }
     }

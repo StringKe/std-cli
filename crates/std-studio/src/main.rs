@@ -24,7 +24,10 @@ mod workspace_panes;
 mod workspace_tabs;
 
 use layout::StudioLayoutState;
-use preview::{run_studio_preview, studio_preview_from_args, StudioPreviewSmokeReport};
+use preview::{
+    blocked_studio_preview_summary, run_studio_preview, studio_preview_request_from_args,
+    StudioPreviewRequest, StudioPreviewSmokeReport,
+};
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -165,8 +168,14 @@ fn default_batch_json() -> String {
 
 fn main() -> eframe::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
-    if let Some(config) = studio_preview_from_args(&args) {
-        return run_studio_preview(config);
+    if let Some(request) = studio_preview_request_from_args(&args) {
+        match request {
+            StudioPreviewRequest::Run(config) => return run_studio_preview(config),
+            StudioPreviewRequest::Blocked(reason) => {
+                println!("{}", blocked_studio_preview_summary(&reason));
+                return Ok(());
+            }
+        }
     }
     if args.get(1).map(String::as_str) == Some("--preview-smoke") {
         println!("{}", StudioPreviewSmokeReport::new().summary());

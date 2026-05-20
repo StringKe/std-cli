@@ -66,13 +66,14 @@ STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 5000
 
 未设置 `STD_ALLOW_DESKTOP_AUTOMATION=1` 时，`--gui-hotkey-smoke` 返回 `SKIP`，不创建窗口、不注册全局热键、不发送 System Events。
 
-Launcher 截图预览同样属于人工 UI 验收。`std-launcher --preview-smoke` 只输出状态矩阵和待执行命令，不创建窗口。真正打开可见预览窗口必须显式设置：
+Launcher 和 Studio 截图预览同样属于人工 UI 验收。`std-launcher --preview-smoke` 与 `std-studio --preview-smoke` 只输出状态矩阵和待执行命令，不创建窗口。真正打开可见预览窗口必须显式设置：
 
 ```bash
 STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview light defer 8000
+STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 ```
 
-未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 不匹配默认 smoke 路径，不创建可见窗口。
+未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 返回 `SKIP`，不创建可见窗口。
 
 ## 拆分策略
 

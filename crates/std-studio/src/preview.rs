@@ -1,12 +1,20 @@
 use crate::{viewport::studio_native_options, StudioEguiApp, StudioPane};
 use eframe::egui;
+use std::env;
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeMode;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewConfig {
     pub theme: String,
     pub scenario: String,
     pub timeout_ms: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum StudioPreviewRequest {
+    Run(StudioPreviewConfig),
+    Blocked(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -24,7 +32,7 @@ impl StudioPreviewSmokeReport {
                 .iter()
                 .map(|scenario| {
                     let (theme, name) = scenario.split_once('-').unwrap_or(("dark", "dashboard"));
-                    format!("std-studio --ui-preview {theme} {name} 8000")
+                    format!("STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview {theme} {name} 8000")
                 })
                 .collect(),
             states: scenarios
@@ -87,10 +95,19 @@ impl eframe::App for StudioPreviewApp {
     }
 }
 
-pub(crate) fn studio_preview_from_args(args: &[String]) -> Option<StudioPreviewConfig> {
+pub(crate) fn studio_preview_request_from_args(args: &[String]) -> Option<StudioPreviewRequest> {
     if args.get(1).map(String::as_str) != Some("--ui-preview") {
         return None;
     }
+    if !studio_preview_allowed() {
+        return Some(StudioPreviewRequest::Blocked(
+            studio_preview_blocked_reason(),
+        ));
+    }
+    studio_preview_config_from_args(args).map(StudioPreviewRequest::Run)
+}
+
+fn studio_preview_config_from_args(args: &[String]) -> Option<StudioPreviewConfig> {
     let theme = args
         .get(2)
         .map(String::as_str)
@@ -113,6 +130,26 @@ pub(crate) fn studio_preview_from_args(args: &[String]) -> Option<StudioPreviewC
             .and_then(|value| value.parse::<u64>().ok())
             .unwrap_or(8_000),
     })
+}
+
+fn studio_preview_allowed() -> bool {
+    !std_core::std_test_mode_enabled()
+        && env::var("STD_ALLOW_UI_PREVIEW")
+            .map(|value| value == "1")
+            .unwrap_or(false)
+}
+
+fn studio_preview_blocked_reason() -> String {
+    if std_core::std_test_mode_enabled() {
+        "STD_TEST_MODE blocked Studio UI preview; use explicit UI preview opt-in outside tests"
+            .to_string()
+    } else {
+        "Studio UI preview requires STD_ALLOW_UI_PREVIEW=1 explicit opt-in".to_string()
+    }
+}
+
+pub(crate) fn blocked_studio_preview_summary(reason: &str) -> String {
+    format!("studio_ui_preview SKIP\nreason={reason}")
 }
 
 pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<()> {
@@ -307,12 +344,31 @@ mod tests {
             "panes".to_string(),
             "900".to_string(),
         ];
-        let config = studio_preview_from_args(&args).unwrap();
+        let config = studio_preview_config_from_args(&args).unwrap();
 
         assert_eq!(config.theme, "light");
         assert_eq!(config.scenario, "panes");
         assert_eq!(config.timeout_ms, 900);
         assert!(smoke_from_args(args).is_none());
+    }
+
+    #[test]
+    fn ui_preview_args_are_blocked_without_opt_in() {
+        std::env::remove_var("STD_ALLOW_UI_PREVIEW");
+        let args = vec![
+            "std-studio".to_string(),
+            "--ui-preview".to_string(),
+            "light".to_string(),
+            "panes".to_string(),
+            "900".to_string(),
+        ];
+
+        let Some(StudioPreviewRequest::Blocked(reason)) = studio_preview_request_from_args(&args)
+        else {
+            panic!("expected blocked Studio UI preview request");
+        };
+        assert!(reason.contains("STD_TEST_MODE blocked Studio UI preview"));
+        assert!(blocked_studio_preview_summary(&reason).contains("studio_ui_preview SKIP"));
     }
 
     #[test]
@@ -345,5 +401,6 @@ mod tests {
         assert!(summary.contains("dark-workflow"));
         assert!(summary.contains("light-analysis"));
         assert!(summary.contains("dark-settings"));
+        assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
     }
 }
