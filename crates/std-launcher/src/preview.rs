@@ -139,10 +139,14 @@ pub(crate) fn blocked_preview_summary(reason: &str) -> String {
 
 pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
     eframe::run_native(
-        "std-cli Launcher UI Preview",
+        preview_window_title(),
         preview_native_options(),
         Box::new(|_cc| Ok(Box::new(LauncherPreviewApp::new(config)))),
     )
+}
+
+fn preview_window_title() -> &'static str {
+    "std-cli Launcher"
 }
 
 fn preview_native_options() -> eframe::NativeOptions {
@@ -384,6 +388,7 @@ mod tests {
         let options = preview_native_options();
         let description = format!("{:?}", options.viewport);
 
+        assert_eq!(preview_window_title(), "std-cli Launcher");
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));

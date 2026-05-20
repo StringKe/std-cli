@@ -154,10 +154,14 @@ pub(crate) fn blocked_studio_preview_summary(reason: &str) -> String {
 
 pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<()> {
     eframe::run_native(
-        "std-cli Studio UI Preview",
+        studio_preview_window_title(),
         studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioPreviewApp::new(config)))),
     )
+}
+
+fn studio_preview_window_title() -> &'static str {
+    "std-cli Studio"
 }
 
 fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {
@@ -350,6 +354,11 @@ mod tests {
         assert_eq!(config.scenario, "panes");
         assert_eq!(config.timeout_ms, 900);
         assert!(smoke_from_args(args).is_none());
+    }
+
+    #[test]
+    fn ui_preview_uses_product_window_title() {
+        assert_eq!(studio_preview_window_title(), "std-cli Studio");
     }
 
     #[test]
