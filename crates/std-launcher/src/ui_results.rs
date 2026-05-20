@@ -25,7 +25,11 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
         section_header(
             ui,
             section_title(&state.view),
-            &format!("{} matches", state.view.results.len()),
+            &format!(
+                "{} {}",
+                state.view.results.len(),
+                i18n::t("launcher.results.matches_suffix")
+            ),
         );
         render_results(ui, state, max_height);
     });
@@ -33,13 +37,15 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
 
 fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
     match view.phase {
-        std_egui::LauncherPhase::Searching => "Searching",
-        std_egui::LauncherPhase::Executing => "Executing",
-        std_egui::LauncherPhase::Feedback => "Result",
+        std_egui::LauncherPhase::Searching => i18n::t("launcher.results.searching.title"),
+        std_egui::LauncherPhase::Executing => i18n::t("launcher.results.executing.title"),
+        std_egui::LauncherPhase::Feedback => i18n::t("launcher.results.feedback.title"),
         _ => match view.result_mode {
-            LauncherResultMode::SuggestedWorkflows => "Suggested Workflows",
-            LauncherResultMode::Matches => "Results",
-            LauncherResultMode::NoMatches => "Results",
+            LauncherResultMode::SuggestedWorkflows => {
+                i18n::t("launcher.results.suggested_workflows.title")
+            }
+            LauncherResultMode::Matches => i18n::t("launcher.results.title"),
+            LauncherResultMode::NoMatches => i18n::t("launcher.results.title"),
         },
     }
 }
@@ -196,25 +202,27 @@ fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
 
 fn action_group(result: &SearchResult) -> String {
     match &result.action.action_type {
-        ActionType::AppLaunch => "App / File".to_string(),
-        ActionType::Workflow => "Action / Workflow".to_string(),
-        ActionType::Command => "Action / Workflow".to_string(),
-        ActionType::Skill => "Memory / Skill".to_string(),
-        ActionType::Clipboard => "Clipboard".to_string(),
-        ActionType::Custom(kind) if kind == "file" => "App / File".to_string(),
-        ActionType::Custom(_) => "Other".to_string(),
+        ActionType::AppLaunch => i18n::t("launcher.results.group.app_file").to_string(),
+        ActionType::Workflow => i18n::t("launcher.results.group.action_workflow").to_string(),
+        ActionType::Command => i18n::t("launcher.results.group.action_workflow").to_string(),
+        ActionType::Skill => i18n::t("launcher.results.group.memory_skill").to_string(),
+        ActionType::Clipboard => i18n::t("launcher.results.group.clipboard").to_string(),
+        ActionType::Custom(kind) if kind == "file" => {
+            i18n::t("launcher.results.group.app_file").to_string()
+        }
+        ActionType::Custom(_) => i18n::t("launcher.results.group.other").to_string(),
     }
 }
 
 fn action_kind(action_type: &ActionType) -> &str {
     match action_type {
-        ActionType::AppLaunch => "App",
-        ActionType::Workflow => "Workflow",
-        ActionType::Command => "Command",
-        ActionType::Skill => "Skill",
-        ActionType::Clipboard => "Clipboard",
-        ActionType::Custom(kind) if kind == "file" => "File",
-        ActionType::Custom(_) => "Custom",
+        ActionType::AppLaunch => i18n::t("launcher.results.kind.app"),
+        ActionType::Workflow => i18n::t("launcher.results.kind.workflow"),
+        ActionType::Command => i18n::t("launcher.results.kind.command"),
+        ActionType::Skill => i18n::t("launcher.results.kind.skill"),
+        ActionType::Clipboard => i18n::t("launcher.results.kind.clipboard"),
+        ActionType::Custom(kind) if kind == "file" => i18n::t("launcher.results.kind.file"),
+        ActionType::Custom(_) => i18n::t("launcher.results.kind.custom"),
     }
 }
 

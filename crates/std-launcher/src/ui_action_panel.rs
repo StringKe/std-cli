@@ -60,14 +60,14 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
     let response = ui.add_sized(
         [ui.available_width(), 28.0],
         egui::TextEdit::singleline(&mut state.action_panel.query)
-            .hint_text("Filter actions")
+            .hint_text(i18n::t("launcher.action.filter.hint"))
             .font(Text::body()),
     );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::TextEdit,
             ui.is_enabled(),
-            "Action Panel filter",
+            i18n::t("launcher.action.filter.a11y"),
         )
     });
     if response.changed() {
@@ -89,7 +89,7 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
         .cloned()
         .collect::<Vec<_>>();
     if items.is_empty() {
-        quiet_label(ui, "No matching actions");
+        quiet_label(ui, i18n::t("launcher.action.no_matches"));
         return;
     }
     for (index, item) in items.iter().enumerate() {

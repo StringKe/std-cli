@@ -45,6 +45,14 @@ mod tests {
             translate(Locale::ZhCn, "launcher.action.executing"),
             "正在执行选中操作"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.results.group.action_workflow"),
+            "Action / Workflow"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.filter.hint"),
+            "Filter actions"
+        );
     }
 
     #[test]
