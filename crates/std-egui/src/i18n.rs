@@ -197,6 +197,14 @@ mod tests {
             translate(Locale::EnUs, "studio.windows.execution_history"),
             "Execution History"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.status.workspace_refreshed"),
+            "Refreshed workspace state"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.status.workspace_pane_opened"),
+            "已打开 workspace pane"
+        );
     }
 
     #[test]

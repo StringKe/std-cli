@@ -54,6 +54,10 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.chrome.fill") => Some("Fill"),
         (Locale::ZhCn, "studio.chrome.size.tooltip") => Some("Toggle Studio size"),
         (Locale::EnUs, "studio.chrome.size.tooltip") => Some("Toggle Studio size"),
+        (Locale::ZhCn, "studio.status.workspace_refreshed") => Some("已刷新 workspace 状态"),
+        (Locale::EnUs, "studio.status.workspace_refreshed") => Some("Refreshed workspace state"),
+        (Locale::ZhCn, "studio.status.workspace_pane_opened") => Some("已打开 workspace pane"),
+        (Locale::EnUs, "studio.status.workspace_pane_opened") => Some("Opened workspace pane"),
         _ => None,
     }
 }
@@ -86,6 +90,8 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.chrome.fit" => Some("Fit"),
         "studio.chrome.fill" => Some("Fill"),
         "studio.chrome.size.tooltip" => Some("Toggle Studio size"),
+        "studio.status.workspace_refreshed" => Some("Refreshed workspace state"),
+        "studio.status.workspace_pane_opened" => Some("Opened workspace pane"),
         _ => None,
     }
 }

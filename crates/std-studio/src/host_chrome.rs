@@ -1,6 +1,9 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::{i18n, tokens::Space};
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space},
+};
 
 impl StudioEguiApp {
     pub(crate) fn render_app_chrome(&mut self, ui: &mut egui::Ui) {
@@ -45,11 +48,15 @@ impl StudioEguiApp {
     fn render_top_actions(&mut self, ui: &mut egui::Ui) {
         if ui::quiet_button(ui, i18n::t("studio.chrome.refresh")).clicked() {
             self.app.refresh();
-            self.status = "refreshed workspace state".to_string();
+            self.status = i18n::t("studio.status.workspace_refreshed").to_string();
         }
         if ui::quiet_button(ui, i18n::t("studio.chrome.open_current_pane")).clicked() {
             let id = self.app.open_workspace_pane(self.app.active_pane);
-            self.status = format!("opened workspace pane {}", id.value());
+            self.status = format!(
+                "{} {}",
+                i18n::t("studio.status.workspace_pane_opened"),
+                id.value()
+            );
         }
         ui.label(
             egui::RichText::new(format!(
@@ -66,6 +73,7 @@ fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {
     ui.horizontal(|ui| {
         if host_control(
             ui,
+            HostControlKind::Close,
             i18n::t("studio.chrome.exit"),
             i18n::t("studio.chrome.exit.tooltip"),
         )
@@ -75,6 +83,7 @@ fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {
         }
         if host_control(
             ui,
+            HostControlKind::Minimize,
             i18n::t("studio.chrome.hide"),
             i18n::t("studio.chrome.hide.tooltip"),
         )
@@ -88,7 +97,14 @@ fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {
         } else {
             i18n::t("studio.chrome.fill")
         };
-        if host_control(ui, maximize_label, i18n::t("studio.chrome.size.tooltip")).clicked() {
+        if host_control(
+            ui,
+            HostControlKind::Maximize,
+            maximize_label,
+            i18n::t("studio.chrome.size.tooltip"),
+        )
+        .clicked()
+        {
             *host_maximized = !*host_maximized;
             ui.ctx()
                 .send_viewport_cmd(egui::ViewportCommand::Maximized(*host_maximized));
@@ -96,20 +112,89 @@ fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {
     });
 }
 
-fn host_control(ui: &mut egui::Ui, label: &str, tooltip: &str) -> egui::Response {
-    ui.add(
-        egui::Button::new(
-            egui::RichText::new(label)
-                .font(std_egui::tokens::Text::caption())
-                .color(ui::muted_text(ui.ctx())),
-        )
-        .min_size(egui::vec2(40.0, 24.0))
-        .fill(egui::Color32::TRANSPARENT)
-        .stroke(egui::Stroke::new(
-            1.0,
-            std_egui::tokens::Color::stroke_divider(ui.ctx()),
-        ))
-        .corner_radius(egui::CornerRadius::same(4)),
-    )
-    .on_hover_text(tooltip)
+#[derive(Debug, Clone, Copy)]
+enum HostControlKind {
+    Close,
+    Minimize,
+    Maximize,
+}
+
+fn host_control(
+    ui: &mut egui::Ui,
+    kind: HostControlKind,
+    label: &str,
+    tooltip: &str,
+) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(32.0, 24.0), egui::Sense::click());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label)
+    });
+    if ui.is_rect_visible(rect) {
+        paint_host_control(ui, rect, kind, response.hovered());
+    }
+    response.on_hover_text(tooltip)
+}
+
+fn paint_host_control(ui: &egui::Ui, rect: egui::Rect, kind: HostControlKind, hovered: bool) {
+    let ctx = ui.ctx();
+    let fill = if hovered {
+        Color::bg_surface_2(ctx)
+    } else {
+        Color::bg_surface_1(ctx)
+    };
+    let stroke = egui::Stroke::new(1.0, Color::stroke_divider(ctx));
+    ui.painter().rect(
+        rect,
+        egui::CornerRadius::same(Radius::SM),
+        fill,
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+    let icon_stroke = egui::Stroke::new(1.5, ui::muted_text(ctx));
+    match kind {
+        HostControlKind::Close => paint_close_icon(ui, rect, icon_stroke),
+        HostControlKind::Minimize => paint_minimize_icon(ui, rect, icon_stroke),
+        HostControlKind::Maximize => paint_maximize_icon(ui, rect, icon_stroke),
+    }
+}
+
+fn paint_close_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let center = rect.center();
+    let half = 4.0;
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x - half, center.y - half),
+            egui::pos2(center.x + half, center.y + half),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x + half, center.y - half),
+            egui::pos2(center.x - half, center.y + half),
+        ],
+        stroke,
+    );
+}
+
+fn paint_minimize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let center = rect.center();
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x - 5.0, center.y + 3.0),
+            egui::pos2(center.x + 5.0, center.y + 3.0),
+        ],
+        stroke,
+    );
+}
+
+fn paint_maximize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let size = egui::vec2(10.0, 8.0);
+    let icon_rect = egui::Rect::from_center_size(rect.center(), size);
+    ui.painter().rect_stroke(
+        icon_rect,
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
 }
