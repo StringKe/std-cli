@@ -62,6 +62,31 @@ fn test_binary_spawns_are_forced_into_test_mode() {
     );
 }
 
+#[test]
+fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("mise.toml")).unwrap();
+
+    for task in ["clippy", "dylint", "dylint-test", "file-limits", "test"] {
+        assert!(
+            task_has_std_test_mode(&body, task),
+            "mise task {task} must set STD_TEST_MODE=1"
+        );
+    }
+    assert!(
+        !body.contains("STD_ALLOW_DESKTOP_AUTOMATION"),
+        "mise default tasks must not opt into desktop automation"
+    );
+    assert!(
+        !body.contains("STD_ALLOW_UI_PREVIEW"),
+        "mise default tasks must not opt into UI preview"
+    );
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
@@ -86,6 +111,16 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
     ]
+}
+
+fn task_has_std_test_mode(body: &str, task: &str) -> bool {
+    let header = format!("[tasks.{task}]");
+    let Some(start) = body.find(&header) else {
+        return false;
+    };
+    let rest = &body[start + header.len()..];
+    let end = rest.find("\n[tasks.").unwrap_or(rest.len());
+    rest[..end].contains("env = { STD_TEST_MODE = \"1\" }")
 }
 
 fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<String>) {

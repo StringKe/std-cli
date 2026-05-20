@@ -119,6 +119,45 @@ fn binary_test_mode_blocks_registered_app_launch() {
     assert!(!stdout.contains("\"status\": \"Completed\""));
 }
 
+#[test]
+fn binary_test_mode_blocks_real_desktop_app_names() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+
+    let app_names = [
+        ["1", "Password"].join(""),
+        ["We", "Chat"].join(""),
+        ["wei", "xin"].join(""),
+        ["\u{5fae}", "\u{4fe1}"].join(""),
+        "Terminal".to_string(),
+    ];
+    for app_name in app_names {
+        let command_text = format!("{} {app_name}", ["op", "en", "-a"].join(" "));
+        let define = run_std(
+            &config_path,
+            &[
+                "command",
+                "define",
+                &format!("Guard {app_name}"),
+                "Real desktop app launch guard",
+                &command_text,
+            ],
+        );
+        assert!(define.status.success(), "{}", command_stderr(&define));
+
+        let trigger = run_std(
+            &config_path,
+            &["trigger", &format!("Guard {app_name}"), "--allow-external"],
+        );
+        assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+        let stdout = command_stdout(&trigger);
+        assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+        assert!(stdout.contains(&command_text));
+        assert!(!stdout.contains("\"status\": \"Completed\""));
+    }
+}
+
 fn write_config(root: &Path) -> std::path::PathBuf {
     let config_path = root.join("std-cli.json");
     fs::write(
