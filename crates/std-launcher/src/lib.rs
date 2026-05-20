@@ -368,6 +368,8 @@ impl LauncherWindowSmokeReport {
         self.hidden_commands == vec![LauncherWindowCommand::SetVisible(false)]
             && self.shown_commands
                 == vec![
+                    LauncherWindowCommand::ResizeToPanel,
+                    LauncherWindowCommand::PositionForPanel,
                     LauncherWindowCommand::SetVisible(true),
                     LauncherWindowCommand::Focus,
                 ]
@@ -397,6 +399,8 @@ fn format_window_commands(commands: &[LauncherWindowCommand]) -> String {
             LauncherWindowCommand::SetVisible(true) => "Visible(true)",
             LauncherWindowCommand::SetVisible(false) => "Visible(false)",
             LauncherWindowCommand::Focus => "Focus",
+            LauncherWindowCommand::PositionForPanel => "PositionForPanel",
+            LauncherWindowCommand::ResizeToPanel => "ResizeToPanel",
         })
         .collect::<Vec<_>>()
         .join(",")

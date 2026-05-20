@@ -29,7 +29,7 @@ pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::
     let panel_width = panel_width().min((available.width() - margin * 2.0).max(320.0));
     let body_height = body_height(state, available.height());
     let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
-    panel_rect_for_available(available, panel_width, panel_height, margin)
+    panel_rect_for_available(available, panel_width, panel_height, margin, false)
 }
 
 fn panel_rect_for_available(
@@ -37,8 +37,13 @@ fn panel_rect_for_available(
     panel_width: f32,
     panel_height: f32,
     margin: f32,
+    anchor_to_screen: bool,
 ) -> egui::Rect {
-    let target_top = available.top() + available.height() * PANEL_VERTICAL_ANCHOR;
+    let target_top = if anchor_to_screen {
+        available.top() + available.height() * PANEL_VERTICAL_ANCHOR
+    } else {
+        available.top() + margin
+    };
     let min_y = available.top() + margin;
     let max_y = available.bottom() - margin - panel_height;
     let top = target_top.clamp(min_y, max_y.max(min_y));
@@ -294,14 +299,25 @@ mod tests {
 
     #[test]
     fn panel_rect_anchors_to_upper_screen_region() {
-        let mut state = LauncherState::new();
-        state.update_query("index");
         let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1440.0, 900.0));
-        let rect = panel_rect(available, &state);
+        let rect = panel_rect_for_available(available, 720.0, 320.0, window_margin(), true);
 
         assert_eq!(rect.width(), 720.0);
         assert_eq!(rect.min.x, 360.0);
         assert_eq!(rect.min.y, 252.0);
+    }
+
+    #[test]
+    fn panel_rect_stays_inside_tightly_sized_native_window() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(rect.min.x, window_margin());
+        assert_eq!(rect.min.y, window_margin());
+        assert!(rect.max.x <= available.right() - window_margin());
+        assert!(rect.max.y <= available.bottom() - window_margin());
     }
 
     #[test]

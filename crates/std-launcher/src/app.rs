@@ -35,13 +35,14 @@ impl eframe::App for LauncherApp {
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         apply_theme(ctx, self.theme_mode);
+        let panel_size = ui::launcher_window_inner_size(&self.state);
         if ctx.input(|input| input.viewport().close_requested()) && !self.allow_close {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
-            apply_window_commands(ctx, &self.state.handle_escape_hide());
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
         }
 
         if self.take_hotkey_toggle() {
-            apply_window_commands(ctx, &self.state.handle_hotkey_toggle());
+            apply_window_commands(ctx, &self.state.handle_hotkey_toggle(), panel_size);
         }
         if let Some(command) = self
             .resident_entry
@@ -49,16 +50,18 @@ impl eframe::App for LauncherApp {
             .and_then(ResidentEntry::poll_command)
         {
             match command {
-                ResidentCommand::Show => apply_window_commands(ctx, &self.state.handle_show()),
+                ResidentCommand::Show => {
+                    apply_window_commands(ctx, &self.state.handle_show(), panel_size);
+                }
                 ResidentCommand::Hide => {
-                    apply_window_commands(ctx, &self.state.handle_escape_hide());
+                    apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
                 }
                 ResidentCommand::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             }
         }
 
         if input::escape().pressed(ctx) {
-            apply_window_commands(ctx, &self.state.handle_escape_hide());
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
         }
 
         if !self.state.controller.visible {
@@ -66,9 +69,7 @@ impl eframe::App for LauncherApp {
             return;
         }
 
-        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(
-            ui::launcher_window_inner_size(&self.state),
-        ));
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(panel_size));
         egui::CentralPanel::default()
             .frame(egui::Frame::NONE.fill(egui::Color32::TRANSPARENT))
             .show(ctx, |ui| {
@@ -79,7 +80,7 @@ impl eframe::App for LauncherApp {
                     &self.resident_status,
                     &mut self.voice_transcript,
                 ) {
-                    apply_window_commands(ctx, &self.state.handle_escape_hide());
+                    apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
                 }
             });
     }

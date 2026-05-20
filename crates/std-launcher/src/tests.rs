@@ -33,6 +33,8 @@ fn launcher_controller_toggles_visibility() {
     assert_eq!(
         LauncherController::window_commands(false, controller.visible),
         vec![
+            LauncherWindowCommand::ResizeToPanel,
+            LauncherWindowCommand::PositionForPanel,
             LauncherWindowCommand::SetVisible(true),
             LauncherWindowCommand::Focus
         ]
@@ -154,6 +156,8 @@ fn launcher_hotkey_toggle_returns_window_show_commands() {
         assert_eq!(
             hidden,
             vec![
+                LauncherWindowCommand::ResizeToPanel,
+                LauncherWindowCommand::PositionForPanel,
                 LauncherWindowCommand::SetVisible(true),
                 LauncherWindowCommand::Focus
             ]
@@ -166,6 +170,8 @@ fn launcher_hotkey_toggle_returns_window_show_commands() {
     assert_eq!(
         shown,
         vec![
+            LauncherWindowCommand::ResizeToPanel,
+            LauncherWindowCommand::PositionForPanel,
             LauncherWindowCommand::SetVisible(true),
             LauncherWindowCommand::Focus
         ]
@@ -228,12 +234,14 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
     assert_eq!(
         report.shown_commands,
         vec![
+            LauncherWindowCommand::ResizeToPanel,
+            LauncherWindowCommand::PositionForPanel,
             LauncherWindowCommand::SetVisible(true),
             LauncherWindowCommand::Focus
         ]
     );
     assert!(summary.contains("launcher_window_smoke PASS"));
-    assert!(summary.contains("shown_commands=Visible(true),Focus"));
+    assert!(summary.contains("shown_commands=ResizeToPanel,PositionForPanel,Visible(true),Focus"));
 }
 
 #[test]

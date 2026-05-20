@@ -11,6 +11,8 @@ pub struct LauncherController {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LauncherWindowCommand {
+    PositionForPanel,
+    ResizeToPanel,
     SetVisible(bool),
     Focus,
 }
@@ -72,6 +74,8 @@ impl LauncherController {
         }
         if current_visible {
             vec![
+                LauncherWindowCommand::ResizeToPanel,
+                LauncherWindowCommand::PositionForPanel,
                 LauncherWindowCommand::SetVisible(true),
                 LauncherWindowCommand::Focus,
             ]

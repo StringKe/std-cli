@@ -280,12 +280,16 @@ impl eframe::App for GuiHotkeySmokeApp {
         self.collect_input();
         if self.hotkey_runtime.poll_toggle_event() {
             let commands = self.state.handle_hotkey_toggle();
-            apply_window_commands(ctx, &commands);
+            apply_window_commands(ctx, &commands, ui::launcher_window_inner_size(&self.state));
             if !self.first_event_received {
                 self.first_event_received = true;
                 self.first_commands = commands;
                 self.close_commands = self.state.handle_escape_hide();
-                apply_window_commands(ctx, &self.close_commands);
+                apply_window_commands(
+                    ctx,
+                    &self.close_commands,
+                    ui::launcher_window_inner_size(&self.state),
+                );
                 self.visible_after_close = self.state.controller.visible;
                 self.resident_after_close = self.hotkey_runtime.is_registered();
             } else {
@@ -399,6 +403,8 @@ fn format_window_commands(commands: &[LauncherWindowCommand]) -> String {
             LauncherWindowCommand::SetVisible(true) => "Visible(true)",
             LauncherWindowCommand::SetVisible(false) => "Visible(false)",
             LauncherWindowCommand::Focus => "Focus",
+            LauncherWindowCommand::PositionForPanel => "PositionForPanel",
+            LauncherWindowCommand::ResizeToPanel => "ResizeToPanel",
         })
         .collect::<Vec<_>>()
         .join(",")
