@@ -99,11 +99,14 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
         .corner_radius(egui::CornerRadius::same(Radius::lg()))
         .inner_margin(egui::Margin::symmetric(Space::md(), Space::sm()))
         .show(ui, |ui| {
-            ui.set_min_height(44.0);
+            ui.set_min_height(ui_metrics::search_bar_min_height());
             ui.horizontal(|ui| {
                 render_search_icon(ui, &ctx);
                 let response = ui.add_sized(
-                    [ui.available_width() - 92.0, 36.0],
+                    [
+                        ui_metrics::search_input_width(ui.available_width()),
+                        ui_metrics::search_input_height(),
+                    ],
                     egui::TextEdit::singleline(&mut query_text)
                         .hint_text(search_placeholder(state))
                         .font(Text::headline())
@@ -168,7 +171,8 @@ fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
 
 fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
     let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ctx));
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(24.0, 28.0), egui::Sense::hover());
+    let (rect, response) =
+        ui.allocate_exact_size(ui_metrics::search_icon_size(), egui::Sense::hover());
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Other,
@@ -176,19 +180,15 @@ fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
             i18n::t("launcher.search.icon"),
         )
     });
-    let center = egui::pos2(rect.left() + 10.0, rect.center().y - 2.0);
-    ui.painter().circle_stroke(center, 5.0, stroke);
-    ui.painter().line_segment(
-        [
-            egui::pos2(center.x + 4.0, center.y + 4.0),
-            egui::pos2(center.x + 9.0, center.y + 9.0),
-        ],
-        stroke,
-    );
+    let geometry = ui_metrics::search_icon_geometry(rect);
+    ui.painter()
+        .circle_stroke(geometry.center, geometry.radius, stroke);
+    ui.painter()
+        .line_segment([geometry.handle_start, geometry.handle_end], stroke);
 }
 
 fn draw_focus_ring(ui: &egui::Ui, rect: egui::Rect, radius: u8, width: f32) {
-    let outer = rect.expand(3.0);
+    let outer = rect.expand(ui_metrics::focus_ring_expand());
     ui.painter().rect_stroke(
         outer,
         egui::CornerRadius::same(radius),
@@ -214,7 +214,10 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
                         .color(Color::fg_secondary(&ctx)),
                 );
                 ui.add_sized(
-                    [ui.available_width() - 112.0, 28.0],
+                    [
+                        ui_metrics::voice_input_width(ui.available_width()),
+                        ui_metrics::voice_input_height(),
+                    ],
                     egui::TextEdit::singleline(voice_transcript)
                         .hint_text(i18n::t("launcher.voice.placeholder")),
                 );

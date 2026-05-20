@@ -39,6 +39,60 @@ pub(crate) fn action_summary_label_height() -> f32 {
     scale().f32(18.0)
 }
 
+pub(crate) fn search_bar_min_height() -> f32 {
+    crate::ui_metrics_search::search_bar_min_height(scale())
+}
+
+pub(crate) fn search_input_width(available_width: f32) -> f32 {
+    crate::ui_metrics_search::search_input_width(scale(), available_width)
+}
+
+pub(crate) fn search_input_height() -> f32 {
+    crate::ui_metrics_search::search_input_height(scale())
+}
+
+pub(crate) fn search_icon_size() -> egui::Vec2 {
+    crate::ui_metrics_search::search_icon_size(scale())
+}
+
+pub(crate) fn search_icon_geometry(
+    rect: egui::Rect,
+) -> crate::ui_metrics_search::SearchIconGeometry {
+    crate::ui_metrics_search::search_icon_geometry(scale(), rect)
+}
+
+pub(crate) fn focus_ring_expand() -> f32 {
+    crate::ui_metrics_search::focus_ring_expand(scale())
+}
+
+pub(crate) fn voice_input_width(available_width: f32) -> f32 {
+    crate::ui_metrics_search::voice_input_width(scale(), available_width)
+}
+
+pub(crate) fn voice_input_height() -> f32 {
+    crate::ui_metrics_search::voice_input_height(scale())
+}
+
+pub(crate) fn action_panel_width(anchor_width: f32) -> f32 {
+    crate::ui_metrics_action_panel::width(scale(), anchor_width)
+}
+
+pub(crate) fn action_panel_height(item_count: usize) -> f32 {
+    crate::ui_metrics_action_panel::height(scale(), item_count)
+}
+
+pub(crate) fn action_panel_search_height() -> f32 {
+    crate::ui_metrics_action_panel::search_height(scale())
+}
+
+pub(crate) fn action_panel_focus_expand() -> f32 {
+    crate::ui_metrics_action_panel::focus_expand(scale())
+}
+
+pub(crate) fn action_panel_row_height() -> f32 {
+    crate::ui_metrics_action_panel::row_height(scale())
+}
+
 pub(crate) fn initial_window_inner_size() -> egui::Vec2 {
     initial_window_inner_size_for_scale(UiScale::from_env())
 }
@@ -144,6 +198,22 @@ mod tests {
         assert_eq!(
             row_metrics_for_scale(UiScale::new(1.5)),
             (54.0, 51.0, 36.0, 27.0)
+        );
+    }
+
+    #[test]
+    fn search_metrics_scale_with_ui_zoom() {
+        assert_eq!(
+            crate::ui_metrics_search::search_metrics_for_scale(UiScale::new(1.5), 600.0),
+            (66.0, 462.0, 54.0, 4.5, 42.0)
+        );
+    }
+
+    #[test]
+    fn action_panel_metrics_scale_with_ui_zoom() {
+        assert_eq!(
+            crate::ui_metrics_action_panel::metrics_for_scale(UiScale::new(1.5), 700.0),
+            (480.0, 219.0, 42.0, 3.0, 48.0)
         );
     }
 }

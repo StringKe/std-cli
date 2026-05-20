@@ -13,6 +13,8 @@ mod ui_action_panel;
 mod ui_empty;
 mod ui_keyboard;
 mod ui_metrics;
+mod ui_metrics_action_panel;
+mod ui_metrics_search;
 mod ui_parts;
 mod ui_results;
 mod window;

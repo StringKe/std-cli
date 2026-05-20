@@ -1,4 +1,7 @@
-use crate::ui_parts::{keycap, quiet_label};
+use crate::{
+    ui_metrics,
+    ui_parts::{keycap, quiet_label},
+};
 use eframe::egui;
 use std_egui::{
     i18n, input,
@@ -10,7 +13,7 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
     if !state.action_panel.open {
         return;
     }
-    let width = 320.0_f32.min(anchor_rect.width());
+    let width = ui_metrics::action_panel_width(anchor_rect.width());
     let pos = egui::pos2(
         anchor_rect.right() - width,
         anchor_rect.top() - action_panel_height(state),
@@ -22,23 +25,22 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
             egui::Frame::new()
                 .fill(Color::bg_surface_1(ctx))
                 .stroke(egui::Stroke::new(1.0, Color::stroke_border(ctx)))
-                .corner_radius(egui::CornerRadius::same(Radius::LG))
+                .corner_radius(egui::CornerRadius::same(Radius::lg()))
                 .shadow(Elevation::level_2(ctx))
-                .inner_margin(egui::Margin::same(Space::SM))
+                .inner_margin(egui::Margin::same(Space::sm()))
                 .show(ui, |ui| {
                     ui.set_width(width);
                     header(ui, state);
-                    ui.add_space(Space::XS as f32);
+                    ui.add_space(Space::xs() as f32);
                     search(ui, state);
-                    ui.add_space(Space::XS as f32);
+                    ui.add_space(Space::xs() as f32);
                     actions(ui, state);
                 });
         });
 }
 
 fn action_panel_height(state: &LauncherState) -> f32 {
-    let row_height = 34.0 * state.action_panel.items.len() as f32;
-    44.0 + row_height
+    ui_metrics::action_panel_height(state.action_panel.items.len())
 }
 
 fn header(ui: &mut egui::Ui, state: &LauncherState) {
@@ -59,7 +61,10 @@ fn header(ui: &mut egui::Ui, state: &LauncherState) {
 fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
     let ctx = ui.ctx().clone();
     let response = ui.add_sized(
-        [ui.available_width(), 28.0],
+        [
+            ui.available_width(),
+            ui_metrics::action_panel_search_height(),
+        ],
         egui::TextEdit::singleline(&mut state.action_panel.query)
             .hint_text(i18n::t("launcher.action.filter.hint"))
             .font(Text::body()),
@@ -75,8 +80,10 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
         state.update_action_panel_query(state.action_panel.query.clone());
     }
     ui.painter().rect_stroke(
-        response.rect.expand(2.0),
-        egui::CornerRadius::same(Radius::MD),
+        response
+            .rect
+            .expand(ui_metrics::action_panel_focus_expand()),
+        egui::CornerRadius::same(Radius::md()),
         egui::Stroke::new(1.0, Color::stroke_divider(&ctx)),
         egui::StrokeKind::Outside,
     );
@@ -97,7 +104,7 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
         if action_row(ui, item, index == state.action_panel.selected).clicked() {
             state.action_panel.selected = index;
         }
-        ui.add_space(Space::TWO_XS as f32);
+        ui.add_space(Space::two_xs() as f32);
     }
     if input::arrow_down().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
@@ -116,11 +123,13 @@ fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui
     };
     egui::Frame::new()
         .fill(fill)
-        .corner_radius(egui::CornerRadius::same(Radius::MD))
-        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .corner_radius(egui::CornerRadius::same(Radius::md()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
         .show(ui, |ui| {
-            let response =
-                ui.allocate_response(egui::vec2(ui.available_width(), 32.0), egui::Sense::click());
+            let response = ui.allocate_response(
+                egui::vec2(ui.available_width(), ui_metrics::action_panel_row_height()),
+                egui::Sense::click(),
+            );
             response.widget_info(|| {
                 egui::WidgetInfo::labeled(
                     egui::WidgetType::SelectableLabel,
