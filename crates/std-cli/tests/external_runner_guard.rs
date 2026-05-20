@@ -158,6 +158,35 @@ fn binary_test_mode_blocks_fixture_desktop_app_names() {
     }
 }
 
+#[test]
+fn binary_blocks_external_runner_without_desktop_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+
+    let define = run_std_without_test_mode(
+        &config_path,
+        &[
+            "command",
+            "define",
+            "Opt In External Guard",
+            "External runner guard",
+            "printf opt-in-external-guard",
+        ],
+    );
+    assert!(define.status.success(), "{}", command_stderr(&define));
+
+    let trigger = run_std_without_test_mode(
+        &config_path,
+        &["trigger", "Opt In External Guard", "--allow-external"],
+    );
+    assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+    let stdout = command_stdout(&trigger);
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(stdout.contains("printf opt-in-external-guard"));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
 fn write_config(root: &Path) -> std::path::PathBuf {
     let config_path = root.join("std-cli.json");
     fs::write(
@@ -177,6 +206,17 @@ fn run_std(config_path: &Path, args: &[&str]) -> std::process::Output {
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
+    command.output().unwrap()
+}
+
+fn run_std_without_test_mode(config_path: &Path, args: &[&str]) -> std::process::Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_std"));
+    command
+        .args(args)
+        .env("STDCLI_CONFIG", config_path)
+        .env_remove("STD_TEST_MODE")
         .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
         .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()

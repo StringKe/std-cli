@@ -131,6 +131,25 @@ fn std_core_test_mode_limits_app_discovery_to_local_fixtures() {
     }
 }
 
+#[test]
+fn std_core_external_runner_requires_desktop_opt_in() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
+
+    assert!(
+        body.contains("allow_external_runner && crate::desktop_automation_allowed()"),
+        "external runners must require CLI opt-in and STD_ALLOW_DESKTOP_AUTOMATION"
+    );
+    assert!(
+        !body.contains("allow_external_runner && !crate::std_test_mode_enabled()"),
+        "STD_TEST_MODE alone is not enough to guard external runners"
+    );
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
