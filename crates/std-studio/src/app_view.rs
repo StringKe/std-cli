@@ -143,7 +143,11 @@ impl StudioEguiApp {
                                 &format!("score={:.2}", result.score),
                                 ui::panel_alt(ui.ctx()),
                             );
-                            ui::chip(ui, "NeedsExternalRunner", ui::warn_bg(ui.ctx()));
+                            ui::chip(
+                                ui,
+                                i18n::t("studio.apps.external_runner.status"),
+                                ui::warn_bg(ui.ctx()),
+                            );
                             for field in &result.matched_fields {
                                 ui::chip(ui, field, ui::selected_bg(ui.ctx()));
                             }

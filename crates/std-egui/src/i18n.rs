@@ -128,6 +128,10 @@ mod tests {
             translate(Locale::ZhCn, "studio.apps.external_defer"),
             "外部启动默认返回 NeedsExternalRunner"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.apps.external_runner.status"),
+            "NeedsExternalRunner"
+        );
     }
 
     #[test]

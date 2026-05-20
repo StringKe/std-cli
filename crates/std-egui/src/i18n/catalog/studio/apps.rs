@@ -34,6 +34,8 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.apps.external_defer") => {
             Some("external launch defaults to NeedsExternalRunner")
         }
+        (Locale::ZhCn, "studio.apps.external_runner.status") => Some("NeedsExternalRunner"),
+        (Locale::EnUs, "studio.apps.external_runner.status") => Some("NeedsExternalRunner"),
         (Locale::ZhCn, "studio.apps.registered.title") => Some("已注册"),
         (Locale::EnUs, "studio.apps.registered.title") => Some("Registered"),
         (Locale::ZhCn, "studio.apps.registered.detail") => Some("受管 app bundle"),
@@ -63,6 +65,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.apps.preview" => Some("Preview"),
         "studio.apps.trigger" => Some("Trigger"),
         "studio.apps.external_defer" => Some("external launch defaults to NeedsExternalRunner"),
+        "studio.apps.external_runner.status" => Some("NeedsExternalRunner"),
         "studio.apps.registered.title" => Some("Registered"),
         "studio.apps.registered.detail" => Some("managed app bundles"),
         "studio.apps.registered.empty" => Some("No app bundles registered"),
