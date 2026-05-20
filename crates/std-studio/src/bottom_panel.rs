@@ -2,6 +2,13 @@ use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 
+const BOTTOM_ROW_HEIGHT: f32 = Space::XL as f32 + Space::TWO_XS as f32;
+const STATUS_CHIP_WIDTH: f32 = 120.0;
+const STATUS_CHIP_HEIGHT: f32 = Space::MD as f32 + Space::TWO_XS as f32;
+const STATUS_CHIP_Y_OFFSET: f32 = STATUS_CHIP_HEIGHT / 2.0;
+const ROW_TITLE_Y_OFFSET: f32 = -7.0;
+const ROW_DETAIL_Y_OFFSET: f32 = 9.0;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct BottomPanelSnapshot {
     pub title: String,
@@ -106,8 +113,10 @@ impl StudioEguiApp {
 }
 
 fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
-    let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 36.0), egui::Sense::hover());
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), BOTTOM_ROW_HEIGHT),
+        egui::Sense::hover(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), &row.name)
     });
@@ -117,23 +126,29 @@ fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
         } else {
             std_egui::tokens::Color::bg_surface_2(ui.ctx())
         };
-        ui.painter()
-            .rect_filled(rect, egui::CornerRadius::same(4), fill);
+        ui.painter().rect_filled(
+            rect,
+            egui::CornerRadius::same(std_egui::tokens::Radius::SM),
+            fill,
+        );
         let chip_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.left() + Space::XS as f32, rect.center().y - 10.0),
-            egui::vec2(118.0, 20.0),
+            egui::pos2(
+                rect.left() + Space::XS as f32,
+                rect.center().y - STATUS_CHIP_Y_OFFSET,
+            ),
+            egui::vec2(STATUS_CHIP_WIDTH, STATUS_CHIP_HEIGHT),
         );
         paint_status_chip(ui, chip_rect, &row.status);
         let text_x = chip_rect.right() + Space::XS as f32;
         ui.painter().text(
-            egui::pos2(text_x, rect.center().y - 7.0),
+            egui::pos2(text_x, rect.center().y + ROW_TITLE_Y_OFFSET),
             egui::Align2::LEFT_CENTER,
             &row.name,
             std_egui::tokens::Text::body(),
             ui::strong_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.center().y + 9.0),
+            egui::pos2(text_x, rect.center().y + ROW_DETAIL_Y_OFFSET),
             egui::Align2::LEFT_CENTER,
             &row.detail,
             std_egui::tokens::Text::caption(),
@@ -150,8 +165,11 @@ fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
         "Running" => ui::selected_bg(ui.ctx()),
         _ => ui::panel_alt(ui.ctx()),
     };
-    ui.painter()
-        .rect_filled(rect, egui::CornerRadius::same(4), fill);
+    ui.painter().rect_filled(
+        rect,
+        egui::CornerRadius::same(std_egui::tokens::Radius::SM),
+        fill,
+    );
     ui.painter().text(
         rect.center(),
         egui::Align2::CENTER_CENTER,

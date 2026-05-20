@@ -1,3 +1,4 @@
+use super::ui_tokens::check_ui_token_usage;
 use crate::CliError;
 use std::{
     fs,
@@ -172,79 +173,6 @@ fn check_surface_crates(root: &Path) -> Result<(), CliError> {
     )
 }
 
-fn check_ui_token_usage(root: &Path) -> Result<(), CliError> {
-    for crate_dir in ["crates/std-launcher/src", "crates/std-studio/src"] {
-        scan_ui_token_usage(&root.join(crate_dir))?;
-    }
-    Ok(())
-}
-
-fn scan_ui_token_usage(dir: &Path) -> Result<(), CliError> {
-    if !dir.is_dir() {
-        return Ok(());
-    }
-    for entry in fs::read_dir(dir)? {
-        let path = entry?.path();
-        if path.is_dir() {
-            scan_ui_token_usage(&path)?;
-        } else if path.extension().and_then(|extension| extension.to_str()) == Some("rs") {
-            check_ui_source_tokens(&path)?;
-        }
-    }
-    Ok(())
-}
-
-fn check_ui_source_tokens(path: &Path) -> Result<(), CliError> {
-    let text = fs::read_to_string(path)?;
-    for line in text.lines() {
-        for forbidden in [
-            ".size(",
-            "FontId::new(",
-            "Color32::from_rgb(",
-            "Color32::from_rgba(",
-        ] {
-            if line.contains(forbidden) && !ui_token_exception(path, forbidden) {
-                return Err(CliError::Doctor(format!(
-                    "{} contains UI token bypass: {forbidden}",
-                    path.display()
-                )));
-            }
-        }
-        for forbidden in ["add_space(", "Margin::same(", "Margin::symmetric("] {
-            if line_contains_numeric_call(line, forbidden) {
-                return Err(CliError::Doctor(format!(
-                    "{} contains UI token bypass: {forbidden}",
-                    path.display()
-                )));
-            }
-        }
-    }
-    Ok(())
-}
-
-fn line_contains_numeric_call(line: &str, call: &str) -> bool {
-    let mut rest = line;
-    while let Some(index) = rest.find(call) {
-        let after = rest[index + call.len()..].trim_start();
-        if after
-            .chars()
-            .next()
-            .is_some_and(|value| value.is_ascii_digit())
-        {
-            return true;
-        }
-        rest = &after[after.len().min(1)..];
-    }
-    false
-}
-
-fn ui_token_exception(path: &Path, forbidden: &str) -> bool {
-    let Some(file_name) = path.file_name().and_then(|name| name.to_str()) else {
-        return false;
-    };
-    forbidden == "Color32::from_rgba(" && file_name == "ui_parts.rs"
-}
-
 pub(crate) fn find_workspace_root() -> Result<PathBuf, CliError> {
     let mut current = std::env::current_dir()?;
     loop {
@@ -376,12 +304,5 @@ mod tests {
             .extension()
             .and_then(|extension| extension.to_str())
             .is_some());
-    }
-
-    #[test]
-    fn workspace_ui_surfaces_use_visual_tokens() {
-        let root = find_workspace_root().unwrap();
-
-        check_ui_token_usage(&root).unwrap();
     }
 }

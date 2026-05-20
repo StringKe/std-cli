@@ -151,7 +151,7 @@ fn render_loading_progress_bar(ui: &mut egui::Ui, ctx: &egui::Context) {
     let progress_rect = ui_metrics::loading_progress_rect(available_width, rect.min);
     ui.painter().rect_filled(
         progress_rect,
-        egui::CornerRadius::same(1),
+        egui::CornerRadius::ZERO,
         Color::accent_base(ctx),
     );
 }

@@ -9,6 +9,13 @@ use std_studio::StudioPane;
 const NAV_ROW_HEIGHT: f32 = 28.0;
 const OPEN_ROW_HEIGHT: f32 = 44.0;
 const PANE_ROW_HEIGHT: f32 = 36.0;
+const ICON_SIZE: f32 = Space::MD as f32;
+const ICON_RAIL_WIDTH: f32 = Space::XL as f32;
+const ICON_RAIL_HEIGHT: f32 = NAV_ROW_HEIGHT;
+const PANE_CLOSE_SIZE: f32 = Space::LG as f32;
+const PANE_CLOSE_INSET: f32 = 14.0;
+const OPEN_TITLE_Y: f32 = 13.0;
+const OPEN_DETAIL_Y: f32 = 29.0;
 
 impl StudioEguiApp {
     pub(crate) fn render_navigation(&mut self, ui: &mut egui::Ui) {
@@ -165,7 +172,7 @@ fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> 
         paint_nav_bg(ui, rect, response.hovered(), selected);
         let icon_rect = egui::Rect::from_min_size(
             egui::pos2(rect.left() + Space::SM as f32, rect.center().y - 8.0),
-            egui::vec2(16.0, 16.0),
+            egui::vec2(ICON_SIZE, ICON_SIZE),
         );
         shell_icons::paint_pane_icon(ui, icon_rect, pane, selected);
         ui.painter().text(
@@ -180,13 +187,17 @@ fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> 
 }
 
 fn nav_icon_button(ui: &mut egui::Ui, pane: StudioPane, selected: bool) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(32.0, 28.0), egui::Sense::click());
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ICON_RAIL_WIDTH, ICON_RAIL_HEIGHT),
+        egui::Sense::click(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), pane.label())
     });
     if ui.is_rect_visible(rect) {
         paint_nav_bg(ui, rect, response.hovered(), selected);
-        let icon_rect = egui::Rect::from_center_size(rect.center(), egui::vec2(16.0, 16.0));
+        let icon_rect =
+            egui::Rect::from_center_size(rect.center(), egui::vec2(ICON_SIZE, ICON_SIZE));
         shell_icons::paint_pane_icon(ui, icon_rect, pane, selected);
     }
     response
@@ -207,19 +218,19 @@ fn open_nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, detail: &str) 
                 rect.left() + Space::SM as f32,
                 rect.top() + Space::SM as f32,
             ),
-            egui::vec2(16.0, 16.0),
+            egui::vec2(ICON_SIZE, ICON_SIZE),
         );
         shell_icons::paint_pane_icon(ui, icon_rect, pane, false);
         let text_x = icon_rect.right() + Space::XS as f32;
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 13.0),
+            egui::pos2(text_x, rect.top() + OPEN_TITLE_Y),
             egui::Align2::LEFT_CENTER,
             title,
             Text::body(),
             ui::strong_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 29.0),
+            egui::pos2(text_x, rect.top() + OPEN_DETAIL_Y),
             egui::Align2::LEFT_CENTER,
             detail,
             Text::caption(),
@@ -235,8 +246,8 @@ fn pane_manager_row(ui: &mut egui::Ui, title: &str, open: bool, focused: bool) -
         egui::Sense::click(),
     );
     let close_rect = egui::Rect::from_center_size(
-        egui::pos2(rect.right() - 14.0, rect.center().y),
-        egui::vec2(24.0, 24.0),
+        egui::pos2(rect.right() - PANE_CLOSE_INSET, rect.center().y),
+        egui::vec2(PANE_CLOSE_SIZE, PANE_CLOSE_SIZE),
     );
     let close_id = ui.id().with(("pane_close", title));
     let close_response = ui.interact(close_rect, close_id, egui::Sense::click());

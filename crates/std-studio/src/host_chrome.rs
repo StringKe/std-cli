@@ -5,6 +5,14 @@ use std_egui::{
     tokens::{Color, Radius, Space},
 };
 
+const HOST_CONTROL_WIDTH: f32 = Space::XL as f32;
+const HOST_CONTROL_HEIGHT: f32 = Space::LG as f32;
+const CLOSE_ICON_HALF: f32 = Space::TWO_XS as f32;
+const MINIMIZE_ICON_HALF_WIDTH: f32 = 5.0;
+const MINIMIZE_ICON_Y_OFFSET: f32 = 3.0;
+const MAXIMIZE_ICON_WIDTH: f32 = 10.0;
+const MAXIMIZE_ICON_HEIGHT: f32 = Space::XS as f32;
+
 impl StudioEguiApp {
     pub(crate) fn render_app_chrome(&mut self, ui: &mut egui::Ui) {
         let frame = egui::Frame::new()
@@ -125,7 +133,10 @@ fn host_control(
     label: &str,
     tooltip: &str,
 ) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(egui::vec2(32.0, 24.0), egui::Sense::click());
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(HOST_CONTROL_WIDTH, HOST_CONTROL_HEIGHT),
+        egui::Sense::click(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label)
     });
@@ -160,18 +171,17 @@ fn paint_host_control(ui: &egui::Ui, rect: egui::Rect, kind: HostControlKind, ho
 
 fn paint_close_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let center = rect.center();
-    let half = 4.0;
     ui.painter().line_segment(
         [
-            egui::pos2(center.x - half, center.y - half),
-            egui::pos2(center.x + half, center.y + half),
+            egui::pos2(center.x - CLOSE_ICON_HALF, center.y - CLOSE_ICON_HALF),
+            egui::pos2(center.x + CLOSE_ICON_HALF, center.y + CLOSE_ICON_HALF),
         ],
         stroke,
     );
     ui.painter().line_segment(
         [
-            egui::pos2(center.x + half, center.y - half),
-            egui::pos2(center.x - half, center.y + half),
+            egui::pos2(center.x + CLOSE_ICON_HALF, center.y - CLOSE_ICON_HALF),
+            egui::pos2(center.x - CLOSE_ICON_HALF, center.y + CLOSE_ICON_HALF),
         ],
         stroke,
     );
@@ -181,19 +191,25 @@ fn paint_minimize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let center = rect.center();
     ui.painter().line_segment(
         [
-            egui::pos2(center.x - 5.0, center.y + 3.0),
-            egui::pos2(center.x + 5.0, center.y + 3.0),
+            egui::pos2(
+                center.x - MINIMIZE_ICON_HALF_WIDTH,
+                center.y + MINIMIZE_ICON_Y_OFFSET,
+            ),
+            egui::pos2(
+                center.x + MINIMIZE_ICON_HALF_WIDTH,
+                center.y + MINIMIZE_ICON_Y_OFFSET,
+            ),
         ],
         stroke,
     );
 }
 
 fn paint_maximize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
-    let size = egui::vec2(10.0, 8.0);
+    let size = egui::vec2(MAXIMIZE_ICON_WIDTH, MAXIMIZE_ICON_HEIGHT);
     let icon_rect = egui::Rect::from_center_size(rect.center(), size);
     ui.painter().rect_stroke(
         icon_rect,
-        egui::CornerRadius::same(2),
+        egui::CornerRadius::same(Radius::SM),
         stroke,
         egui::StrokeKind::Inside,
     );

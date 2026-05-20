@@ -12,6 +12,9 @@ use std_egui::{
 };
 use std_studio::StudioPane;
 
+const HOST_OVERLAY_X: f32 = 0.0;
+const HOST_OVERLAY_Y: f32 = 96.0;
+
 impl StudioEguiApp {
     pub(crate) fn render_overlays(&mut self, ctx: &egui::Context) {
         if self.layout.settings_open {
@@ -210,7 +213,10 @@ fn render_host_overlay(
     add_contents: impl FnOnce(&mut egui::Ui),
 ) {
     egui::Area::new(egui::Id::new(id))
-        .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
+        .anchor(
+            egui::Align2::CENTER_TOP,
+            egui::vec2(HOST_OVERLAY_X, HOST_OVERLAY_Y),
+        )
         .order(egui::Order::Foreground)
         .constrain(true)
         .show(ctx, |ui| {
