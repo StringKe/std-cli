@@ -84,10 +84,14 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
     if tokens::ime_composing(&ctx) {
         return;
     }
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
+    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::ArrowDown)) {
+        state.handle_keyboard_input(LauncherKey::JumpToLast, false);
+    } else if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
         state.handle_keyboard_input(LauncherKey::ArrowDown, false);
     }
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
+    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::ArrowUp)) {
+        state.handle_keyboard_input(LauncherKey::JumpToFirst, false);
+    } else if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
         state.handle_keyboard_input(LauncherKey::ArrowUp, false);
     }
     if ui.input(|input| input.key_pressed(egui::Key::Enter)) {

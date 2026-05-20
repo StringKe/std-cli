@@ -51,6 +51,15 @@ impl ActionPanel {
         self.selected = next.min(visible_len - 1);
     }
 
+    pub fn jump_selection(&mut self, first: bool) {
+        let visible_len = self.visible_items().len();
+        if visible_len == 0 {
+            self.selected = 0;
+            return;
+        }
+        self.selected = if first { 0 } else { visible_len - 1 };
+    }
+
     pub fn update_query(&mut self, query: impl Into<String>) {
         self.query = query.into().trim().to_lowercase();
         self.selected = 0;

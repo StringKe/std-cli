@@ -119,6 +119,16 @@ impl LauncherViewModel {
         self.refresh_preview(core);
     }
 
+    pub fn jump_selection(&mut self, core: &StdCore, first: bool) {
+        if self.results.is_empty() {
+            self.selected = 0;
+            self.preview = None;
+            return;
+        }
+        self.selected = if first { 0 } else { self.results.len() - 1 };
+        self.refresh_preview(core);
+    }
+
     pub fn selected_result(&self) -> Option<&SearchResult> {
         self.results.get(self.selected)
     }

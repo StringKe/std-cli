@@ -5,6 +5,8 @@ use std_types::ActionExecutionStatus;
 pub enum LauncherKey {
     ArrowDown,
     ArrowUp,
+    JumpToFirst,
+    JumpToLast,
     Enter,
     Escape,
     ActionPanel,
@@ -59,12 +61,28 @@ impl LauncherState {
                 self.move_action_panel_selection(-1);
                 None
             }
+            LauncherKey::JumpToFirst if self.action_panel.open => {
+                self.jump_action_panel_selection(true);
+                None
+            }
+            LauncherKey::JumpToLast if self.action_panel.open => {
+                self.jump_action_panel_selection(false);
+                None
+            }
             LauncherKey::ArrowDown => {
                 self.move_selection(1);
                 None
             }
             LauncherKey::ArrowUp => {
                 self.move_selection(-1);
+                None
+            }
+            LauncherKey::JumpToFirst => {
+                self.jump_selection(true);
+                None
+            }
+            LauncherKey::JumpToLast => {
+                self.jump_selection(false);
                 None
             }
             LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),

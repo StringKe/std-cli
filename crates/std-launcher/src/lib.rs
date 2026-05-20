@@ -240,6 +240,12 @@ impl LauncherState {
         self.view.preview.clone()
     }
 
+    pub fn jump_selection(&mut self, first: bool) -> Option<ActionPreview> {
+        self.action_panel.close();
+        self.view.jump_selection(&self.core, first);
+        self.view.preview.clone()
+    }
+
     pub fn open_action_panel(&mut self) -> bool {
         let Some(result) = self.view.selected_result() else {
             self.action_panel.close();
@@ -255,6 +261,10 @@ impl LauncherState {
 
     pub fn move_action_panel_selection(&mut self, delta: isize) {
         self.action_panel.move_selection(delta);
+    }
+
+    pub fn jump_action_panel_selection(&mut self, first: bool) {
+        self.action_panel.jump_selection(first);
     }
 
     pub fn update_action_panel_query(&mut self, query: impl Into<String>) {
@@ -473,6 +483,8 @@ pub fn launcher_version() -> &'static str {
 
 #[cfg(test)]
 mod action_panel_tests;
+#[cfg(test)]
+mod navigation_tests;
 #[cfg(test)]
 mod shortcut_tests;
 #[cfg(test)]
