@@ -5,6 +5,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use std_core::{StdConfig, StdCore};
+use std_types::ActionExecutionStatus;
 
 #[test]
 fn mod_number_triggers_matching_result() {
@@ -42,6 +43,40 @@ fn mod_number_triggers_matching_result() {
     assert!(
         commands.lock().unwrap().len() <= 1,
         "test runner must record commands instead of launching external apps"
+    );
+}
+
+#[test]
+fn mod_number_uses_safe_defer_path_without_user_external_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    let terminal_index = state
+        .view
+        .results
+        .iter()
+        .position(|result| result.action.name == "Open Terminal")
+        .unwrap();
+    let execution = state
+        .handle_keyboard_input(LauncherKey::TriggerResult(terminal_index), false)
+        .unwrap();
+
+    assert_eq!(state.view.selected, terminal_index);
+    assert_eq!(execution.action_name, "Open Terminal");
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.deferred),
+        Some(true)
     );
 }
 

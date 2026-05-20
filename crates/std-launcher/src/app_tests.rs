@@ -86,6 +86,44 @@ fn launcher_gui_enter_defers_external_runner_in_tests() {
     );
 }
 
+#[test]
+fn launcher_main_enter_defers_app_launch_without_user_external_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("FixtureTalk.app");
+    write_multilingual_app_bundle(&app);
+    let core = StdCore::with_config(config);
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query(localized_fixture_name());
+    let execution = state
+        .handle_keyboard_input(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.action_name, "Open App: Fixture Talk");
+    assert_eq!(
+        state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.deferred),
+        Some(true)
+    );
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .unwrap()
+            .get("reason")
+            .and_then(|value| value.as_str()),
+        Some("external runner action requires explicit user trigger")
+    );
+}
+
 fn write_multilingual_app_bundle(app: &std::path::Path) {
     std::fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     std::fs::write(

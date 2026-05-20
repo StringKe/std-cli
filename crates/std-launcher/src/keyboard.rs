@@ -116,7 +116,10 @@ impl LauncherState {
                 self.view.delete_previous_query_token(&self.core);
                 None
             }
-            LauncherKey::TriggerResult(index) => self.trigger_result_by_user(index),
+            LauncherKey::TriggerResult(index) if allow_external_runner => {
+                self.trigger_result_by_user(index)
+            }
+            LauncherKey::TriggerResult(index) => self.trigger_result(index),
             LauncherKey::Escape if self.action_panel.open => {
                 self.close_action_panel();
                 self.focus_section = LauncherFocusSection::Results;

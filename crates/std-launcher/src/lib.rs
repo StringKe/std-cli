@@ -221,13 +221,25 @@ impl LauncherState {
     }
 
     pub fn trigger_result_by_user(&mut self, index: usize) -> Option<ActionExecution> {
+        self.trigger_result_with_external_runner(index, true)
+    }
+
+    fn trigger_result(&mut self, index: usize) -> Option<ActionExecution> {
+        self.trigger_result_with_external_runner(index, false)
+    }
+
+    fn trigger_result_with_external_runner(
+        &mut self,
+        index: usize,
+        allow_external_runner: bool,
+    ) -> Option<ActionExecution> {
         if index >= self.view.results.len() || index >= 9 {
             return None;
         }
         self.action_panel.close();
         self.view.selected = index;
         self.view.refresh_preview(&self.core);
-        self.trigger_selected_by_user()
+        self.trigger_selected_with_external_runner(allow_external_runner)
     }
 
     fn trigger_selected_with_external_runner(
