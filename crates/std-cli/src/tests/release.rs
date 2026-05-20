@@ -153,12 +153,12 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
     for expected in [
         "smoke=std doctor",
         "smoke=std-launcher --smoke \"rebuild index\"",
-        "smoke=std-launcher --hotkey-smoke Alt+Space",
         "smoke=std-launcher --window-smoke",
         "smoke=std-studio --smoke",
         "smoke=std workflow trace --limit 5",
         "smoke=std index coverage",
         "smoke=std plugin check examples/plugins/hello-js",
+        "smoke=std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
         "quality_command=mise run quality",
         "command=cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     ] {

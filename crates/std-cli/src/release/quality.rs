@@ -29,12 +29,12 @@ const QUALITY_COMMANDS: [&str; 8] = [
 const SMOKE_COMMANDS: [&str; 8] = [
     "std doctor",
     "std-launcher --smoke \"rebuild index\"",
-    "std-launcher --hotkey-smoke Alt+Space",
     "std-launcher --window-smoke",
     "std-studio --smoke",
     "std workflow trace --limit 5",
     "std index coverage",
     "std plugin check examples/plugins/hello-js",
+    "std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
 ];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
@@ -128,12 +128,12 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "cargo machete",
         "std doctor",
         "std-launcher --smoke \"rebuild index\"",
-        "std-launcher --hotkey-smoke Alt+Space",
         "std-launcher --window-smoke",
         "std-studio --smoke",
         "std workflow trace --limit 5",
         "std index coverage",
         "std plugin check examples/plugins/hello-js",
+        "std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(
