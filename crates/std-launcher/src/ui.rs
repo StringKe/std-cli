@@ -150,6 +150,8 @@ fn extra_status_height(state: &LauncherState) -> f32 {
 
 fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requested: &mut bool) {
     let ctx = ui.ctx().clone();
+    let executing = state.view.phase == LauncherPhase::Executing;
+    let mut query_text = search_bar_text(state);
     egui::Frame::new()
         .fill(Color::bg_surface_1(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
@@ -161,9 +163,10 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                 render_search_icon(ui, &ctx);
                 let response = ui.add_sized(
                     [ui.available_width() - 92.0, 36.0],
-                    egui::TextEdit::singleline(&mut state.view.query)
-                        .hint_text(i18n::t("launcher.search.placeholder"))
-                        .font(Text::headline()),
+                    egui::TextEdit::singleline(&mut query_text)
+                        .hint_text(search_placeholder(state))
+                        .font(Text::headline())
+                        .interactive(!executing),
                 );
                 response.request_focus();
                 let a11y = AccessibilityContext::from_env();
@@ -175,8 +178,8 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                     )
                 });
                 draw_focus_ring(ui, response.rect, Radius::LG, a11y.focus_ring_width());
-                if response.changed() {
-                    state.update_query(state.view.query.clone());
+                if !executing && response.changed() {
+                    state.update_query(query_text);
                 }
                 if quiet_button(ui, "Esc").clicked() {
                     *hide_requested = true;
@@ -184,7 +187,38 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
             });
         });
 
-    ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
+    if !executing {
+        ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
+    }
+}
+
+fn search_bar_text(state: &LauncherState) -> String {
+    if state.view.phase == LauncherPhase::Executing {
+        return state
+            .view
+            .preview
+            .as_ref()
+            .map(|preview| format!("{} {}", i18n::t("launcher.search.running"), preview.title))
+            .or_else(|| {
+                state.view.selected_result().map(|result| {
+                    format!(
+                        "{} {}",
+                        i18n::t("launcher.search.running"),
+                        result.action.name
+                    )
+                })
+            })
+            .unwrap_or_else(|| i18n::t("launcher.action.executing").to_string());
+    }
+    state.view.query.clone()
+}
+
+fn search_placeholder(state: &LauncherState) -> &'static str {
+    if state.view.phase == LauncherPhase::Executing {
+        i18n::t("launcher.action.executing")
+    } else {
+        i18n::t("launcher.search.placeholder")
+    }
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
@@ -420,5 +454,25 @@ fn feedback_marker(feedback: &LauncherFeedback) -> &'static str {
         ActionExecutionStatus::Completed => "OK",
         ActionExecutionStatus::Failed => "ERR",
         ActionExecutionStatus::NeedsExternalRunner => "WAIT",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn executing_search_bar_shows_running_action_text() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        state.view.preview_executing();
+        let text = search_bar_text(&state);
+
+        assert!(text.starts_with(i18n::t("launcher.search.running")));
+        assert!(text.contains("Rebuild Index"));
+        assert_eq!(
+            search_placeholder(&state),
+            i18n::t("launcher.action.executing")
+        );
     }
 }
