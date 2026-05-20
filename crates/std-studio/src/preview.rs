@@ -1,4 +1,4 @@
-use crate::{StudioEguiApp, StudioPane};
+use crate::{viewport::studio_native_options, StudioEguiApp, StudioPane};
 use eframe::egui;
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeMode;
@@ -86,13 +86,7 @@ pub(crate) fn studio_preview_from_args(args: &[String]) -> Option<StudioPreviewC
 pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<()> {
     eframe::run_native(
         "std-cli Studio UI Preview",
-        eframe::NativeOptions {
-            viewport: egui::ViewportBuilder::default()
-                .with_inner_size([1280.0, 820.0])
-                .with_min_inner_size([1080.0, 640.0])
-                .with_decorations(false),
-            ..Default::default()
-        },
+        studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioPreviewApp::new(config)))),
     )
 }

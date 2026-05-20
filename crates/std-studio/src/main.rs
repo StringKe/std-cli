@@ -11,16 +11,17 @@ mod shell;
 mod shell_parts;
 mod smoke;
 mod ui;
+mod viewport;
 mod views;
 mod windows;
 
-use eframe::egui;
 use layout::StudioLayoutState;
 use preview::{run_studio_preview, studio_preview_from_args};
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std_studio::{StudioApp, StudioPane};
+use viewport::studio_native_options;
 use windows::WorkspaceCommandQueue;
 
 pub(crate) struct StudioEguiApp {
@@ -183,13 +184,7 @@ fn main() -> eframe::Result<()> {
 
     eframe::run_native(
         "std-cli Studio",
-        eframe::NativeOptions {
-            viewport: egui::ViewportBuilder::default()
-                .with_inner_size([1280.0, 820.0])
-                .with_min_inner_size([1080.0, 640.0])
-                .with_decorations(false),
-            ..Default::default()
-        },
+        studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioEguiApp::default()))),
     )
 }
