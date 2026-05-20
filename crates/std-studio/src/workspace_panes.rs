@@ -156,12 +156,18 @@ impl StudioEguiApp {
             }
             StudioWorkspaceCommand::PreviewWorkflow(path) => {
                 match self.app.preview_workflow_path(&path) {
-                    Ok(report) => self.status = format!("workspace preview {:?}", report.status),
+                    Ok(report) => {
+                        self.layout.open_bottom_panel();
+                        self.status = format!("workspace preview {:?}", report.status);
+                    }
                     Err(error) => self.status = error.to_string(),
                 }
             }
             StudioWorkspaceCommand::RunWorkflow(path) => match self.app.run_workflow_path(&path) {
-                Ok(execution) => self.status = format!("workspace run {:?}", execution.status),
+                Ok(execution) => {
+                    self.layout.open_bottom_panel();
+                    self.status = format!("workspace run {:?}", execution.status);
+                }
                 Err(error) => self.status = error.to_string(),
             },
             StudioWorkspaceCommand::Analyze(path) => match self.app.analyze_entity(&path) {

@@ -92,6 +92,10 @@ impl StudioLayoutState {
         self.overlay_selected = 0;
     }
 
+    pub(crate) fn open_bottom_panel(&mut self) {
+        self.bottom_panel_open = true;
+    }
+
     pub(crate) fn move_overlay_selection(&mut self, delta: isize, len: usize) {
         self.overlay_selected = crate::commands::move_selection(self.overlay_selected, delta, len);
     }
@@ -192,6 +196,16 @@ mod tests {
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
         assert_eq!(layout.overlay_selected, 0);
+    }
+
+    #[test]
+    fn studio_layout_can_open_batch_debug_panel_from_workflow_actions() {
+        let mut layout = StudioLayoutState::default();
+
+        layout.open_bottom_panel();
+
+        assert!(layout.bottom_panel_open);
+        assert_eq!(layout.bottom_panel_height(), 240.0);
     }
 
     #[test]

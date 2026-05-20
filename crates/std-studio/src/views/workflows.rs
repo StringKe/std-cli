@@ -203,6 +203,7 @@ impl StudioEguiApp {
             let body = self.batch_json.clone();
             match self.app.run_batch_json(&body) {
                 Ok(report) => {
+                    self.layout.open_bottom_panel();
                     self.status = format!("batch {:?} steps={}", report.status, report.steps.len())
                 }
                 Err(error) => self.status = error.to_string(),

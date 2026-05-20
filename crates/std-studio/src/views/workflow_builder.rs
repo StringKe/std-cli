@@ -222,6 +222,7 @@ impl StudioEguiApp {
         match self.app.planned_workflow.clone() {
             Some(workflow) => match self.app.preview_workflow(&workflow) {
                 Ok(preview) => {
+                    self.layout.open_bottom_panel();
                     self.status = format!(
                         "dry-run {} steps={}",
                         preview.workflow_name,
@@ -247,6 +248,7 @@ impl StudioEguiApp {
     pub(crate) fn preview_workflow_path(&mut self, path: &Path) {
         match self.app.preview_workflow_path(path) {
             Ok(preview) => {
+                self.layout.open_bottom_panel();
                 self.status = format!(
                     "dry-run {} steps={}",
                     preview.workflow_name,
@@ -260,6 +262,7 @@ impl StudioEguiApp {
     pub(crate) fn run_workflow_path(&mut self, path: &Path) {
         match self.app.run_workflow_path(path) {
             Ok(execution) => {
+                self.layout.open_bottom_panel();
                 self.status = format!(
                     "run {:?} steps={}",
                     execution.status,

@@ -349,13 +349,45 @@ mod app_tests {
         app.workspace_commands
             .lock()
             .unwrap()
-            .push(StudioWorkspaceCommand::PreviewWorkflow(workflow_path));
+            .push(StudioWorkspaceCommand::PreviewWorkflow(
+                workflow_path.clone(),
+            ));
 
         app.consume_workspace_commands();
 
         assert_eq!(app.app.active_pane, StudioPane::Workflows);
         assert!(app.app.workflow_debug.is_some());
+        assert!(app.layout.bottom_panel_open);
         assert!(app.status.contains("workspace preview"));
+
+        app.workspace_commands
+            .lock()
+            .unwrap()
+            .push(StudioWorkspaceCommand::RunWorkflow(workflow_path));
+        app.consume_workspace_commands();
+
+        assert!(app.app.last_workflow_execution.is_some());
+        assert!(app.layout.bottom_panel_open);
+        assert!(app.status.contains("workspace run"));
+    }
+
+    #[test]
+    fn batch_run_opens_bottom_panel_with_report_state() {
+        let mut app = StudioEguiApp::default();
+        let temp = tempfile::tempdir().unwrap();
+        app.app = StudioApp::with_core(StdCore::with_config(StdConfig {
+            data_dir: temp.path().join("data"),
+            ..StdConfig::default()
+        }));
+
+        let body = app.batch_json.clone();
+        let report = app.app.run_batch_json(&body).unwrap();
+        app.layout.open_bottom_panel();
+        app.status = format!("batch {:?} steps={}", report.status, report.steps.len());
+
+        assert!(app.app.last_batch_report.is_some());
+        assert!(app.layout.bottom_panel_open);
+        assert!(app.status.contains("batch"));
     }
 
     #[test]
