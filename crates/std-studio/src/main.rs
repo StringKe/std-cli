@@ -162,7 +162,7 @@ fn main() -> eframe::Result<()> {
 #[cfg(test)]
 mod app_tests {
     use super::*;
-    use crate::windows::StudioWorkspaceCommand;
+    use crate::windows::{focused_workspace_spec, StudioWorkspaceCommand};
     use std_core::{StdConfig, StdCore};
 
     #[test]
@@ -179,6 +179,22 @@ mod app_tests {
         assert_eq!(app.app.focused_pane, None);
         assert_eq!(app.app.open_workspace_panes().count(), 0);
         assert!(app.status.contains("closed workspace pane"));
+    }
+
+    #[test]
+    fn workspace_canvas_renders_only_focused_internal_pane() {
+        let mut app = StudioEguiApp::default();
+        let plugin = app.app.open_plugin_manager_pane();
+        let settings = app.app.open_settings_pane();
+
+        let spec = focused_workspace_spec(&app.app).unwrap();
+        assert_eq!(spec.id, settings);
+        assert_eq!(spec.content_key, "settings");
+
+        assert!(app.app.focus_workspace_pane(plugin));
+        let focused = focused_workspace_spec(&app.app).unwrap();
+        assert_eq!(focused.id, plugin);
+        assert_eq!(focused.content_key, "plugins");
     }
 
     #[test]

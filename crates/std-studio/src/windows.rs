@@ -64,16 +64,23 @@ impl StudioWorkspaceSpec {
     }
 }
 
+pub(crate) fn focused_workspace_spec(app: &std_studio::StudioApp) -> Option<StudioWorkspaceSpec> {
+    let focused = app.focused_pane?;
+    app.open_workspace_panes()
+        .find(|pane| pane.id == focused)
+        .map(|pane| StudioWorkspaceSpec::from_pane(app, pane))
+        .or_else(|| {
+            app.open_workspace_panes()
+                .last()
+                .map(|pane| StudioWorkspaceSpec::from_pane(app, pane))
+        })
+}
+
 impl StudioEguiApp {
     pub(crate) fn render_workspace_panes(&mut self, ui: &mut egui::Ui) {
-        let specs = self
-            .app
-            .open_workspace_panes()
-            .map(|pane| StudioWorkspaceSpec::from_pane(&self.app, pane))
-            .collect::<Vec<_>>();
-        if specs.is_empty() {
+        let Some(spec) = focused_workspace_spec(&self.app) else {
             return;
-        }
+        };
 
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
@@ -82,15 +89,12 @@ impl StudioEguiApp {
                 i18n::t("studio.windows.title"),
                 self.app.workspace_policy.summary(),
             );
-            for spec in specs {
-                render_spec(
-                    ui,
-                    &spec,
-                    i18n::t("studio.windows.active"),
-                    &self.workspace_commands,
-                );
-                ui.add_space(Space::XS as f32);
-            }
+            render_spec(
+                ui,
+                &spec,
+                i18n::t("studio.windows.active"),
+                &self.workspace_commands,
+            );
         });
     }
 
