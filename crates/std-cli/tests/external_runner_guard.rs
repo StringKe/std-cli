@@ -120,16 +120,16 @@ fn binary_test_mode_blocks_registered_app_launch() {
 }
 
 #[test]
-fn binary_test_mode_blocks_real_desktop_app_names() {
+fn binary_test_mode_blocks_fixture_desktop_app_names() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
     let app_names = [
-        ["1", "Password"].join(""),
-        ["We", "Chat"].join(""),
-        ["wei", "xin"].join(""),
-        ["\u{5fae}", "\u{4fe1}"].join(""),
-        "Terminal".to_string(),
+        "StdFixtureVault".to_string(),
+        "StdFixtureChat".to_string(),
+        "stdfixturealias".to_string(),
+        "测试应用".to_string(),
+        "StdFixtureShell".to_string(),
     ];
     for app_name in app_names {
         let command_text = format!("{} {app_name}", ["op", "en", "-a"].join(" "));

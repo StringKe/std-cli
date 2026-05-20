@@ -63,7 +63,19 @@ fn workflow_action_step_executes_registered_action() {
 #[test]
 fn workflow_action_step_falls_back_to_name_when_action_id_is_stale() {
     let core = StdCore::new();
-    core.seed_builtin_actions().unwrap();
+    core.register_action(
+        std_types::RegistryEntry::from_action(
+            std_types::Action::new(
+                "Open Fixture Shell",
+                "Launch fixture shell app",
+                "When validating stale action fallback",
+                std_types::ActionType::AppLaunch,
+            ),
+            vec!["fixture".to_string(), "shell".to_string()],
+        )
+        .with_metadata("path", "/tmp/std-cli-fixture-shell"),
+    )
+    .unwrap();
     let stale_action_id = Uuid::new_v4();
     let wf = Workflow {
         id: Uuid::new_v4(),
@@ -71,7 +83,7 @@ fn workflow_action_step_falls_back_to_name_when_action_id_is_stale() {
         description: "Runs a planner workflow saved in another process".to_string(),
         steps: vec![WorkflowStep {
             id: Uuid::new_v4(),
-            name: "Open Terminal".to_string(),
+            name: "Open Fixture Shell".to_string(),
             action_id: Some(stale_action_id),
             step_type: StepType::Action,
             parameters: serde_json::json!({}),
@@ -87,12 +99,12 @@ fn workflow_action_step_falls_back_to_name_when_action_id_is_stale() {
     assert_eq!(preview.status, ExecutionStatus::Completed);
     assert_eq!(
         preview.steps[0].action_name.as_deref(),
-        Some("Open Terminal")
+        Some("Open Fixture Shell")
     );
     assert_eq!(result.status, ExecutionStatus::Completed);
     assert_eq!(
         result.results[0].output["action_name"].as_str(),
-        Some("Open Terminal")
+        Some("Open Fixture Shell")
     );
     assert_eq!(
         result.results[0].output["status"].as_str(),

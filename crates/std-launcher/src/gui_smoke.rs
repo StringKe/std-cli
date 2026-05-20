@@ -342,6 +342,9 @@ impl eframe::App for GuiHotkeySmokeApp {
 }
 
 fn send_macos_hotkey(accelerator: &str) -> Result<(), String> {
+    if !std_core::desktop_automation_allowed() {
+        return Err(gui_hotkey_smoke_blocked_reason());
+    }
     let hotkey = LauncherHotkey::parse(accelerator)
         .ok_or_else(|| format!("unsupported accelerator: {accelerator}"))?;
     let script = apple_script_for_hotkey(&hotkey)?;
@@ -408,4 +411,16 @@ fn format_window_commands(commands: &[LauncherWindowCommand]) -> String {
         })
         .collect::<Vec<_>>()
         .join(",")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn macos_hotkey_sender_is_hard_blocked_in_tests() {
+        let error = send_macos_hotkey("Alt+Space").unwrap_err();
+
+        assert!(error.contains("STD_TEST_MODE blocked GUI hotkey smoke"));
+    }
 }

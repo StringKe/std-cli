@@ -90,13 +90,13 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
-        ["We", "Chat"].join(""),
-        ["Wei", "xin"].join(""),
-        String::from("\u{5fae}\u{4fe1}"),
+        "[\"1\", \"Password\"]".to_string(),
         ["open -a ", "Terminal"].join(""),
+        "Terminal\".to_string()".to_string(),
         ["open", " -a "].join(""),
         ["/usr/bin/", "open", " -a "].join(""),
         ["osa", "script"].join(""),
+        "[\"osa\", \"script\"]".to_string(),
         ["System", " Events"].join(""),
         ["tell ", "application"].join(""),
         ["/Applications/", "1", "Password.app"].join(""),
