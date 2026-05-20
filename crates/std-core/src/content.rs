@@ -3,6 +3,7 @@ use crate::{
     events::EventBus,
     CoreError, StdCore,
 };
+use std::cmp::Reverse;
 use std_types::{ClipboardRecord, CommandTemplate, MemoryRecord, Skill, StdEvent, StdEventType};
 
 impl StdCore {
@@ -50,7 +51,7 @@ impl StdCore {
                         .any(|tag| tag.to_lowercase().contains(&query))
             });
         }
-        memories.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+        memories.sort_by_key(|memory| Reverse(memory.updated_at));
         memories.truncate(limit);
         Ok(memories)
     }
@@ -84,7 +85,7 @@ impl StdCore {
                     || record.source.to_lowercase().contains(&query)
             });
         }
-        records.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+        records.sort_by_key(|record| Reverse(record.created_at));
         records.truncate(limit);
         Ok(records)
     }

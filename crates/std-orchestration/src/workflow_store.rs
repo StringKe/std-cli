@@ -1,6 +1,7 @@
 use crate::{OrchestrationError, Workflow, WorkflowExecution};
 use chrono::Utc;
 use std::{
+    cmp::Reverse,
     fs,
     io::{BufRead, BufReader, Write},
     path::{Path, PathBuf},
@@ -122,7 +123,7 @@ pub fn read_workflow_executions(
         }
         executions.push(serde_json::from_str(&line)?);
     }
-    executions.sort_by(|a, b| b.started_at.cmp(&a.started_at));
+    executions.sort_by_key(|execution| Reverse(execution.started_at));
     executions.truncate(limit);
     Ok(executions)
 }
