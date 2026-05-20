@@ -5,8 +5,8 @@ pub(crate) fn surface_frame(ctx: &egui::Context) -> egui::Frame {
     egui::Frame::new()
         .fill(Color::bg_surface_1(ctx))
         .stroke(egui::Stroke::NONE)
-        .corner_radius(egui::CornerRadius::same(Radius::MD))
-        .inner_margin(egui::Margin::same(Space::SM))
+        .corner_radius(egui::CornerRadius::same(Radius::md()))
+        .inner_margin(egui::Margin::same(Space::sm()))
 }
 
 pub(crate) fn quiet_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -15,7 +15,7 @@ pub(crate) fn quiet_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
         egui::Button::new(egui::RichText::new(label).color(Color::fg_primary(&ctx)))
             .fill(Color::bg_surface_0(&ctx))
             .stroke(egui::Stroke::new(1.0, Color::stroke_divider(&ctx)))
-            .corner_radius(egui::CornerRadius::same(Radius::SM)),
+            .corner_radius(egui::CornerRadius::same(Radius::sm())),
     )
 }
 
@@ -33,8 +33,8 @@ pub(crate) fn keycap(ui: &mut egui::Ui, text: &str) {
     egui::Frame::new()
         .fill(Color::bg_surface_0(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
-        .corner_radius(egui::CornerRadius::same(Radius::SM))
-        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .corner_radius(egui::CornerRadius::same(Radius::sm()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
         .show(ui, |ui| {
             ui.label(
                 egui::RichText::new(text)

@@ -15,8 +15,28 @@ pub(crate) fn panel_width() -> f32 {
     UiScale::from_env().f32(PANEL_WIDTH)
 }
 
+pub(crate) fn scale() -> UiScale {
+    UiScale::from_env()
+}
+
 pub(crate) fn window_margin() -> f32 {
     Space::sm() as f32
+}
+
+pub(crate) fn result_row_height() -> f32 {
+    scale().f32(RESULT_ROW_HEIGHT)
+}
+
+pub(crate) fn ask_ai_row_height() -> f32 {
+    scale().f32(34.0)
+}
+
+pub(crate) fn action_bar_content_height() -> f32 {
+    scale().f32(24.0)
+}
+
+pub(crate) fn action_summary_label_height() -> f32 {
+    scale().f32(18.0)
 }
 
 pub(crate) fn initial_window_inner_size() -> egui::Vec2 {
@@ -87,14 +107,18 @@ fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
 }
 
 #[cfg(test)]
+fn row_metrics_for_scale(scale: UiScale) -> (f32, f32, f32, f32) {
+    (
+        scale.f32(RESULT_ROW_HEIGHT),
+        scale.f32(34.0),
+        scale.f32(24.0),
+        scale.f32(18.0),
+    )
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::{Mutex, OnceLock};
-
-    fn env_lock() -> std::sync::MutexGuard<'static, ()> {
-        static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
-        ENV_LOCK.get_or_init(|| Mutex::new(())).lock().unwrap()
-    }
 
     #[test]
     fn initial_window_size_scales_with_ui_zoom() {
@@ -106,12 +130,20 @@ mod tests {
     }
 
     #[test]
-    fn window_size_reads_runtime_zoom_without_gui() {
-        let _guard = env_lock();
-        std::env::set_var("STD_UI_ZOOM", "1.5");
+    fn expanded_window_size_scales_with_ui_zoom() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let body_height = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::new(1.5));
+        let height = panel_height_for_scale(&state, body_height, UiScale::new(1.5));
 
-        assert_eq!(initial_window_inner_size(), egui::vec2(1116.0, 132.0));
+        assert!(height > initial_window_inner_size_for_scale(UiScale::new(1.5)).y);
+    }
 
-        std::env::remove_var("STD_UI_ZOOM");
+    #[test]
+    fn row_metrics_scale_with_ui_zoom() {
+        assert_eq!(
+            row_metrics_for_scale(UiScale::new(1.5)),
+            (54.0, 51.0, 36.0, 27.0)
+        );
     }
 }

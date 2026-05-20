@@ -1,5 +1,6 @@
 use crate::{
     ui_empty::{self, EmptyAction},
+    ui_metrics,
     ui_parts::{keycap, quiet_label, surface_frame},
 };
 use eframe::egui;
@@ -87,7 +88,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                 {
                     clicked = Some(index);
                 }
-                ui.add_space(Space::TWO_XS as f32);
+                ui.add_space(Space::two_xs() as f32);
             }
         });
 
@@ -99,7 +100,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
 
 fn render_progress(ui: &mut egui::Ui, label: &str) {
     let ctx = ui.ctx().clone();
-    ui.add_space(Space::MD as f32);
+    ui.add_space(Space::md() as f32);
     ui.horizontal(|ui| {
         ui.spinner();
         ui.label(
@@ -126,11 +127,13 @@ fn result_row(
     };
     egui::Frame::new()
         .fill(fill)
-        .corner_radius(egui::CornerRadius::same(Radius::MD))
-        .inner_margin(egui::Margin::symmetric(Space::SM, Space::TWO_XS))
+        .corner_radius(egui::CornerRadius::same(Radius::md()))
+        .inner_margin(egui::Margin::symmetric(Space::sm(), Space::two_xs()))
         .show(ui, |ui| {
-            let response =
-                ui.allocate_response(egui::vec2(ui.available_width(), 36.0), egui::Sense::click());
+            let response = ui.allocate_response(
+                egui::vec2(ui.available_width(), ui_metrics::result_row_height()),
+                egui::Sense::click(),
+            );
             response.widget_info(|| {
                 egui::WidgetInfo::labeled(
                     egui::WidgetType::SelectableLabel,
@@ -143,7 +146,7 @@ fn result_row(
                     ),
                 )
             });
-            let rect = response.rect.shrink2(egui::vec2(Space::XS as f32, 0.0));
+            let rect = response.rect.shrink2(egui::vec2(Space::xs() as f32, 0.0));
             ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
                 ui.horizontal(|ui| {
                     render_kind_badge(ui, &ctx, &result.action.action_type);
@@ -175,7 +178,7 @@ fn result_row(
 
 fn group_header(ui: &mut egui::Ui, group: &str) {
     let ctx = ui.ctx().clone();
-    ui.add_space(Space::XS as f32);
+    ui.add_space(Space::xs() as f32);
     ui.label(
         egui::RichText::new(group)
             .font(Text::footnote())
@@ -197,7 +200,7 @@ fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
             ui.label(egui::RichText::new(detail).font(Text::footnote()));
         });
     });
-    ui.add_space(Space::TWO_XS as f32);
+    ui.add_space(Space::two_xs() as f32);
 }
 
 fn action_group(result: &SearchResult) -> String {
@@ -229,8 +232,8 @@ fn action_kind(action_type: &ActionType) -> &str {
 fn render_kind_badge(ui: &mut egui::Ui, ctx: &egui::Context, action_type: &ActionType) {
     egui::Frame::new()
         .fill(Color::bg_surface_2(ctx))
-        .corner_radius(egui::CornerRadius::same(Radius::SM))
-        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .corner_radius(egui::CornerRadius::same(Radius::sm()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
         .show(ui, |ui| {
             ui.label(
                 egui::RichText::new(action_kind(action_type))

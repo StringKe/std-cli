@@ -1,4 +1,7 @@
-use crate::ui_parts::{keycap, quiet_label, weak_status_fill};
+use crate::{
+    ui_metrics,
+    ui_parts::{keycap, quiet_label, weak_status_fill},
+};
 use eframe::egui;
 use std_egui::{
     i18n, input,
@@ -17,19 +20,20 @@ pub(crate) fn render(
     let ctx = ui.ctx().clone();
     egui::Frame::new()
         .fill(Color::bg_surface_1(&ctx))
-        .corner_radius(egui::CornerRadius::same(Radius::MD))
-        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .corner_radius(egui::CornerRadius::same(Radius::md()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
         .show(ui, |ui| {
             ui.horizontal(|ui| {
                 let right_width = 272.0_f32.min(ui.available_width() * 0.48);
-                let left_width = (ui.available_width() - right_width - Space::XS as f32).max(160.0);
+                let left_width = (ui.available_width() - right_width - Space::xs() as f32)
+                    .max(ui_metrics::scale().f32(160.0));
                 ui.allocate_ui_with_layout(
-                    egui::vec2(left_width, 24.0),
+                    egui::vec2(left_width, ui_metrics::action_bar_content_height()),
                     egui::Layout::left_to_right(egui::Align::Center),
                     |ui| render_action_summary(ui, state, left_width),
                 );
                 ui.allocate_ui_with_layout(
-                    egui::vec2(right_width, 24.0),
+                    egui::vec2(right_width, ui_metrics::action_bar_content_height()),
                     egui::Layout::right_to_left(egui::Align::Center),
                     |ui| render_status_hints(ui, state, &ctx, hotkey_status, resident_status),
                 );
@@ -48,8 +52,8 @@ pub(crate) fn render_feedback(ui: &mut egui::Ui, state: &LauncherState) {
     egui::Frame::new()
         .fill(feedback_fill(&ctx, feedback))
         .stroke(egui::Stroke::new(1.0, feedback_stroke(&ctx, feedback)))
-        .corner_radius(egui::CornerRadius::same(Radius::MD))
-        .inner_margin(egui::Margin::symmetric(Space::SM, Space::XS))
+        .corner_radius(egui::CornerRadius::same(Radius::md()))
+        .inner_margin(egui::Margin::symmetric(Space::sm(), Space::xs()))
         .show(ui, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if let Some(feedback) = feedback {
@@ -117,7 +121,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
     }
     if let Some(preview) = state.view.preview.as_ref() {
         ui.add_sized(
-            [max_width * 0.34, 18.0],
+            [max_width * 0.34, ui_metrics::action_summary_label_height()],
             egui::Label::new(
                 egui::RichText::new(&preview.title)
                     .font(Text::footnote())
@@ -127,7 +131,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
             .truncate(),
         );
         ui.add_sized(
-            [max_width * 0.62, 18.0],
+            [max_width * 0.62, ui_metrics::action_summary_label_height()],
             egui::Label::new(
                 egui::RichText::new(&preview.subtitle)
                     .font(Text::caption())
@@ -138,7 +142,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         return;
     }
     ui.add_sized(
-        [max_width, 18.0],
+        [max_width, ui_metrics::action_summary_label_height()],
         egui::Label::new(
             egui::RichText::new(i18n::t("launcher.action.command_hint"))
                 .font(Text::footnote())
