@@ -37,6 +37,7 @@ impl StudioEguiApp {
         egui::CentralPanel::default()
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_0(ctx)))
             .show(ctx, |ui| self.render_active_workspace(ui));
+        self.render_overlays(ctx);
     }
 
     fn render_navigation(&mut self, ui: &mut egui::Ui) {
@@ -212,6 +213,59 @@ impl StudioEguiApp {
                 ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
             }
         });
+    }
+
+    fn render_overlays(&mut self, ctx: &egui::Context) {
+        if self.layout.settings_open {
+            self.render_overlay_panel(ctx, "studio_settings_overlay", "Settings", "Mod+,");
+        }
+        if self.layout.command_palette_open {
+            self.render_overlay_panel(
+                ctx,
+                "studio_command_palette",
+                "Command Palette",
+                "Mod+/ or Mod+Shift+P",
+            );
+        }
+        if self.layout.quick_open_open {
+            self.render_overlay_panel(ctx, "studio_quick_open", "Quick Open", "Mod+P");
+        }
+    }
+
+    fn render_overlay_panel(
+        &mut self,
+        ctx: &egui::Context,
+        id: &'static str,
+        title: &str,
+        shortcut: &str,
+    ) {
+        egui::Window::new(title)
+            .id(egui::Id::new(id))
+            .collapsible(false)
+            .resizable(false)
+            .default_width(520.0)
+            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
+            .show(ctx, |ui| {
+                ui::section_header(ui, title, shortcut);
+                ui.label(egui::RichText::new("Studio scoped overlay").color(ui::muted_text(ctx)));
+                ui.horizontal_wrapped(|ui| {
+                    if ui::quiet_button(ui, "Dashboard").clicked() {
+                        self.app.switch_pane(StudioPane::Dashboard);
+                        self.layout.close_overlays();
+                    }
+                    if ui::quiet_button(ui, "Workflows").clicked() {
+                        self.app.switch_pane(StudioPane::Workflows);
+                        self.layout.close_overlays();
+                    }
+                    if ui::quiet_button(ui, "Plugins").clicked() {
+                        self.app.switch_pane(StudioPane::Plugins);
+                        self.layout.close_overlays();
+                    }
+                    if ui::quiet_button(ui, "Close").clicked() {
+                        self.layout.close_overlays();
+                    }
+                });
+            });
     }
 }
 

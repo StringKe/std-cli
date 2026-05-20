@@ -5,6 +5,9 @@ pub(crate) struct StudioLayoutState {
     pub sidebar_open: bool,
     pub inspector_open: bool,
     pub bottom_panel_open: bool,
+    pub settings_open: bool,
+    pub command_palette_open: bool,
+    pub quick_open_open: bool,
     pub sidebar_width: f32,
     pub inspector_width: f32,
     pub bottom_panel_height: f32,
@@ -16,6 +19,9 @@ impl Default for StudioLayoutState {
             sidebar_open: true,
             inspector_open: false,
             bottom_panel_open: false,
+            settings_open: false,
+            command_palette_open: false,
+            quick_open_open: false,
             sidebar_width: 240.0,
             inspector_width: 320.0,
             bottom_panel_height: 240.0,
@@ -35,7 +41,43 @@ impl StudioLayoutState {
             if input.modifiers.command && input.key_pressed(egui::Key::J) {
                 self.bottom_panel_open = !self.bottom_panel_open;
             }
+            if input.modifiers.command && input.key_pressed(egui::Key::Comma) {
+                self.open_settings();
+            }
+            if input.modifiers.command && input.key_pressed(egui::Key::Slash) {
+                self.open_command_palette();
+            }
+            if input.modifiers.command && input.modifiers.shift && input.key_pressed(egui::Key::P) {
+                self.open_command_palette();
+            } else if input.modifiers.command
+                && !input.modifiers.shift
+                && input.key_pressed(egui::Key::P)
+            {
+                self.open_quick_open();
+            }
         });
+    }
+
+    pub(crate) fn open_settings(&mut self) {
+        self.settings_open = true;
+        self.command_palette_open = false;
+        self.quick_open_open = false;
+    }
+
+    pub(crate) fn open_command_palette(&mut self) {
+        self.command_palette_open = true;
+        self.quick_open_open = false;
+    }
+
+    pub(crate) fn open_quick_open(&mut self) {
+        self.quick_open_open = true;
+        self.command_palette_open = false;
+    }
+
+    pub(crate) fn close_overlays(&mut self) {
+        self.settings_open = false;
+        self.command_palette_open = false;
+        self.quick_open_open = false;
     }
 
     pub(crate) fn sidebar_width(&self) -> f32 {
@@ -66,6 +108,9 @@ mod tests {
         assert!(layout.sidebar_open);
         assert!(!layout.inspector_open);
         assert!(!layout.bottom_panel_open);
+        assert!(!layout.settings_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
         assert_eq!(layout.sidebar_width(), 240.0);
         assert_eq!(layout.inspector_width(), 320.0);
         assert_eq!(layout.bottom_panel_height(), 240.0);
@@ -94,5 +139,28 @@ mod tests {
         assert_eq!(layout.sidebar_width(), 200.0);
         assert_eq!(layout.inspector_width(), 480.0);
         assert_eq!(layout.bottom_panel_height(), 160.0);
+    }
+
+    #[test]
+    fn studio_layout_opens_one_command_overlay_at_a_time() {
+        let mut layout = StudioLayoutState::default();
+
+        layout.open_quick_open();
+        assert!(layout.quick_open_open);
+        assert!(!layout.command_palette_open);
+
+        layout.open_command_palette();
+        assert!(layout.command_palette_open);
+        assert!(!layout.quick_open_open);
+
+        layout.open_settings();
+        assert!(layout.settings_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
+
+        layout.close_overlays();
+        assert!(!layout.settings_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
     }
 }

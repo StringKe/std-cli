@@ -257,4 +257,25 @@ mod app_tests {
         assert_eq!(app.layout.inspector_width(), 320.0);
         assert_eq!(app.layout.bottom_panel_height(), 240.0);
     }
+
+    #[test]
+    fn studio_command_overlays_are_internal_and_exclusive() {
+        let mut app = StudioEguiApp::default();
+
+        app.layout.open_quick_open();
+        assert!(app.layout.quick_open_open);
+        assert!(!app.layout.command_palette_open);
+
+        app.layout.open_command_palette();
+        assert!(app.layout.command_palette_open);
+        assert!(!app.layout.quick_open_open);
+
+        app.layout.open_settings();
+        assert!(app.layout.settings_open);
+        assert!(!app.layout.command_palette_open);
+        assert!(!app.layout.quick_open_open);
+
+        app.layout.close_overlays();
+        assert!(!app.layout.settings_open);
+    }
 }
