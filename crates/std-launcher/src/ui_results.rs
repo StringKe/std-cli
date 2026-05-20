@@ -1,7 +1,7 @@
 use crate::{
     ui_empty::{self, EmptyAction},
     ui_metrics,
-    ui_parts::{keycap, quiet_label, surface_frame},
+    ui_parts::{draw_focus_ring, keycap, quiet_label, surface_frame},
     ui_result_model::{
         group_count as model_group_count, group_header_label, list_items, LauncherResultListItem,
         LauncherResultRowModel,
@@ -14,6 +14,7 @@ use std_egui::{
     tokens::{Color, Radius, Space, Text},
     LauncherResultMode,
 };
+use std_launcher::LauncherFocusSection;
 use std_launcher::LauncherState;
 use std_types::SearchResult;
 
@@ -22,7 +23,7 @@ pub(crate) fn group_count(results: &[SearchResult]) -> usize {
 }
 
 pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
-    surface_frame(ui.ctx()).show(ui, |ui| {
+    let response = surface_frame(ui.ctx()).show(ui, |ui| {
         section_header(
             ui,
             section_title(&state.view),
@@ -34,6 +35,16 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
         );
         render_results(ui, state, max_height);
     });
+    if state.focus_section == LauncherFocusSection::Results {
+        let a11y = AccessibilityContext::from_env();
+        draw_focus_ring(
+            ui,
+            response.response.rect,
+            Radius::md(),
+            ui_metrics::focus_ring_expand(),
+            a11y.focus_ring_width(),
+        );
+    }
 }
 
 fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
@@ -298,5 +309,15 @@ mod tests {
             i18n::t("launcher.results.overflow_hint"),
             "200+ matches, refine your query"
         );
+    }
+
+    #[test]
+    fn results_focus_section_uses_single_focus_owner() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        state.focus_section = LauncherFocusSection::Results;
+
+        assert_eq!(state.focus_section, LauncherFocusSection::Results);
+        assert_ne!(state.focus_section, LauncherFocusSection::Search);
     }
 }

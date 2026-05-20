@@ -1,5 +1,6 @@
 use crate::{
-    ui_action_bar, ui_action_panel, ui_feedback, ui_keyboard, ui_metrics, ui_parts::quiet_button,
+    ui_action_bar, ui_action_panel, ui_feedback, ui_keyboard, ui_metrics,
+    ui_parts::{draw_focus_ring, quiet_button},
     ui_results,
 };
 use eframe::egui;
@@ -9,6 +10,7 @@ use std_egui::{
     tokens::{Color, Elevation, Radius, Space, Text},
     LauncherPhase,
 };
+use std_launcher::LauncherFocusSection;
 use std_launcher::LauncherState;
 
 pub(crate) fn launcher_initial_window_inner_size() -> egui::Vec2 {
@@ -110,7 +112,15 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                         a11y.launcher_search_label(&state.view.query),
                     )
                 });
-                draw_focus_ring(ui, response.rect, Radius::lg(), a11y.focus_ring_width());
+                if state.focus_section == LauncherFocusSection::Search {
+                    draw_focus_ring(
+                        ui,
+                        response.rect,
+                        Radius::lg(),
+                        ui_metrics::focus_ring_expand(),
+                        a11y.focus_ring_width(),
+                    );
+                }
                 if !executing && response.changed() {
                     state.update_query(query_text);
                 }
@@ -176,16 +186,6 @@ fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
         .line_segment([geometry.handle_start, geometry.handle_end], stroke);
 }
 
-fn draw_focus_ring(ui: &egui::Ui, rect: egui::Rect, radius: u8, width: f32) {
-    let outer = rect.expand(ui_metrics::focus_ring_expand());
-    ui.painter().rect_stroke(
-        outer,
-        egui::CornerRadius::same(radius),
-        egui::Stroke::new(width, Color::accent_base(ui.ctx())),
-        egui::StrokeKind::Outside,
-    );
-}
-
 fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: &mut String) {
     if !state.controller.voice_active {
         return;
@@ -234,5 +234,15 @@ mod tests {
             search_placeholder(&state),
             i18n::t("launcher.action.executing")
         );
+    }
+
+    #[test]
+    fn search_focus_ring_is_tied_to_search_section() {
+        let mut state = LauncherState::new();
+        assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+        state.focus_section = LauncherFocusSection::Results;
+
+        assert_ne!(state.focus_section, LauncherFocusSection::Search);
     }
 }

@@ -1,13 +1,14 @@
 use crate::{
     ui_metrics,
-    ui_parts::{keycap, quiet_label},
+    ui_parts::{draw_focus_ring, keycap, quiet_label},
 };
 use eframe::egui;
 use std_egui::{
+    a11y::AccessibilityContext,
     i18n, input,
     tokens::{Color, Elevation, Radius, Space, Text},
 };
-use std_launcher::{ActionPanelItem, LauncherKey, LauncherState};
+use std_launcher::{ActionPanelItem, LauncherFocusSection, LauncherKey, LauncherState};
 
 pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut LauncherState) {
     if !state.action_panel.open {
@@ -59,7 +60,6 @@ fn header(ui: &mut egui::Ui, state: &LauncherState) {
 }
 
 fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
-    let ctx = ui.ctx().clone();
     let response = ui.add_sized(
         [
             ui.available_width(),
@@ -79,14 +79,16 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
     if response.changed() {
         state.update_action_panel_query(state.action_panel.query.clone());
     }
-    ui.painter().rect_stroke(
-        response
-            .rect
-            .expand(ui_metrics::action_panel_focus_expand()),
-        egui::CornerRadius::same(Radius::md()),
-        egui::Stroke::new(1.0, Color::stroke_divider(&ctx)),
-        egui::StrokeKind::Outside,
-    );
+    if state.focus_section == LauncherFocusSection::ActionPanel {
+        let a11y = AccessibilityContext::from_env();
+        draw_focus_ring(
+            ui,
+            response.rect,
+            Radius::md(),
+            ui_metrics::action_panel_focus_expand(),
+            a11y.focus_ring_width(),
+        );
+    }
 }
 
 fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
@@ -152,4 +154,18 @@ fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui
             response
         })
         .inner
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn action_panel_focus_ring_uses_action_panel_section() {
+        let mut state = LauncherState::new();
+        state.update_query("terminal");
+        state.open_action_panel();
+
+        assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+    }
 }
