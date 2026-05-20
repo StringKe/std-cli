@@ -175,17 +175,16 @@ fn test_core_blocks_external_application_launches_by_default() {
     .unwrap();
 
     let result = core.search("1Password", 1).unwrap().remove(0);
-    let execution = core
-        .execute_action_with_external_runner(result.action.id, true)
-        .unwrap();
+    let execution = core.execute_action(result.action.id).unwrap();
 
-    assert_eq!(execution.status, ActionExecutionStatus::Failed);
-    assert!(execution.message.contains("test command runner blocked"));
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.message, "open /Applications/1Password.app");
     assert!(execution
         .output
         .unwrap()
-        .to_string()
-        .contains("1Password.app"));
+        .get("deferred")
+        .and_then(|value| value.as_bool())
+        .unwrap());
 }
 
 #[test]

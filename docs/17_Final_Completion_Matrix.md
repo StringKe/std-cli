@@ -27,7 +27,7 @@
 
 证据：
 
-- `std-launcher --gui-hotkey-smoke Alt+Space 7000` 返回 `PASS`
+- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 7000` 返回 `PASS`
 - `registered=true`
 - `commands=Visible(true),Focus`
 - `visible_after_close=false`

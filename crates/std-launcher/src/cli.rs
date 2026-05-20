@@ -95,6 +95,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 .and_then(|value| value.parse::<u64>().ok())
                 .unwrap_or(5_000),
             trigger_delay_ms: 500,
+            allow_system_events: std::env::var("STD_ALLOW_DESKTOP_AUTOMATION")
+                .map(|value| value == "1")
+                .unwrap_or(false),
         })),
         _ => None,
     }
@@ -115,5 +118,19 @@ mod tests {
         ];
 
         assert!(smoke_from_args(args).is_none());
+    }
+
+    #[test]
+    fn gui_hotkey_smoke_requires_desktop_automation_opt_in() {
+        let args = vec![
+            "std-launcher".to_string(),
+            "--gui-hotkey-smoke".to_string(),
+            "Alt+Space".to_string(),
+        ];
+        let Some(LauncherCliSmoke::GuiHotkey(config)) = smoke_from_args(args) else {
+            panic!("expected GUI hotkey smoke config");
+        };
+
+        assert!(!config.allow_system_events);
     }
 }

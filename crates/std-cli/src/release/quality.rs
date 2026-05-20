@@ -34,7 +34,7 @@ const SMOKE_COMMANDS: [&str; 8] = [
     "std workflow trace --limit 5",
     "std index coverage",
     "std plugin check examples/plugins/hello-js",
-    "std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
+    "STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
 ];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
@@ -133,7 +133,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "std workflow trace --limit 5",
         "std index coverage",
         "std plugin check examples/plugins/hello-js",
-        "std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
+        "STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(

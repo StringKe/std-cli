@@ -23,6 +23,7 @@ run = "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --l
 
 [tasks.test]
 description = "Run workspace tests"
+env = { STD_TEST_MODE = "1" }
 run = "cargo test --workspace -- --test-threads=1"
 
 [tasks.deny]

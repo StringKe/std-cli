@@ -119,6 +119,12 @@ impl StdCore {
 
 #[cfg(not(test))]
 fn default_core_with_config(config: StdConfig) -> StdCore {
+    if runtime_test_mode_enabled() {
+        return StdCore::with_config_and_command_runner(
+            config,
+            blocked_runtime_test_command_runner,
+        );
+    }
     StdCore::with_config_and_command_runner(config, |program, args| {
         Command::new(program).args(args).output()
     })
@@ -154,6 +160,24 @@ fn guarded_test_command_runner(program: &str, args: &[String]) -> Result<Output,
         io::ErrorKind::PermissionDenied,
         format!("test command runner blocked external command: {program} {args:?}"),
     ))
+}
+
+#[cfg(not(test))]
+fn blocked_runtime_test_command_runner(
+    program: &str,
+    args: &[String],
+) -> Result<Output, io::Error> {
+    Err(io::Error::new(
+        io::ErrorKind::PermissionDenied,
+        format!("STD_TEST_MODE blocked external command: {program} {args:?}"),
+    ))
+}
+
+#[cfg(not(test))]
+fn runtime_test_mode_enabled() -> bool {
+    std::env::var("STD_TEST_MODE")
+        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
 }
 
 impl Default for StdCore {

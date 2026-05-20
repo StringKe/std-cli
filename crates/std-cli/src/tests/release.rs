@@ -158,7 +158,7 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=std workflow trace --limit 5",
         "smoke=std index coverage",
         "smoke=std plugin check examples/plugins/hello-js",
-        "smoke=std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
+        "smoke=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
         "quality_command=mise run quality",
         "command=cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     ] {

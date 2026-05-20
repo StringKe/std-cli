@@ -17,6 +17,7 @@ pub(crate) struct GuiHotkeySmokeConfig {
     pub accelerator: String,
     pub timeout_ms: u64,
     pub trigger_delay_ms: u64,
+    pub allow_system_events: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -64,6 +65,9 @@ impl GuiHotkeySmokeReport {
 pub(crate) fn run_gui_hotkey_smoke(
     config: GuiHotkeySmokeConfig,
 ) -> eframe::Result<GuiHotkeySmokeReport> {
+    if !config.allow_system_events {
+        return Ok(gui_hotkey_smoke_blocked_report(config));
+    }
     let report = Arc::new(Mutex::new(None));
     let input_result = Arc::new(Mutex::new(Vec::new()));
     let app_report = Arc::clone(&report);
@@ -126,6 +130,29 @@ pub(crate) fn run_gui_hotkey_smoke(
             timeout_ms: 0,
             error: Some("GUI smoke exited without report".to_string()),
         }))
+}
+
+fn gui_hotkey_smoke_blocked_report(config: GuiHotkeySmokeConfig) -> GuiHotkeySmokeReport {
+    GuiHotkeySmokeReport {
+        status: "SKIP",
+        accelerator: config.accelerator,
+        registered: false,
+        input_sent: false,
+        event_received: false,
+        commands: Vec::new(),
+        close_commands: Vec::new(),
+        visible_after_close: false,
+        resident_after_close: false,
+        second_input_sent: false,
+        second_event_received: false,
+        second_commands: Vec::new(),
+        elapsed_ms: 0,
+        timeout_ms: config.timeout_ms,
+        error: Some(
+            "desktop automation requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in"
+                .to_string(),
+        ),
+    }
 }
 
 struct GuiHotkeySmokeApp {

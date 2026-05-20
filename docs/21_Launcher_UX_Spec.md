@@ -246,6 +246,7 @@
 **回归门禁**：
 
 - 任何 Launcher 改动 PR 必须跑 `std-launcher --smoke` 和 `std-launcher --hotkey-smoke Alt+Space` 并附输出
+- 真实桌面验证必须显式运行 `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space`
 - 95p keystroke 时间退化 > 4ms 视为 P0 阻塞
 
 ## 11. 与上下游 surface 的关系
