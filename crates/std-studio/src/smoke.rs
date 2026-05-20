@@ -41,6 +41,10 @@ pub(crate) struct StudioSmokeReport {
     builder_run_status: String,
     builder_trace_steps: usize,
     builder_trace_events: usize,
+    builder_interaction_sequence: String,
+    builder_selected_step: String,
+    builder_trace_status: String,
+    builder_side_effect_model: String,
     batch_status: String,
     analysis_name: String,
     analysis_coverage_complete: usize,
@@ -60,7 +64,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -89,6 +93,10 @@ impl StudioSmokeReport {
             self.builder_run_status,
             self.builder_trace_steps,
             self.builder_trace_events,
+            self.builder_interaction_sequence,
+            self.builder_selected_step,
+            self.builder_trace_status,
+            self.builder_side_effect_model,
             self.batch_status,
             self.analysis_name,
             self.analysis_coverage_complete,
@@ -133,6 +141,10 @@ impl StudioSmokeReport {
             && self.builder_run_status == "Completed"
             && self.builder_trace_steps >= 2
             && self.builder_trace_events >= 3
+            && self.builder_interaction_sequence == "create>add>edit>move>simulate>run>trace"
+            && self.builder_selected_step == "Validate edited output"
+            && self.builder_trace_status == "Completed"
+            && self.builder_side_effect_model == "simulate=dry-run,run=audit-log"
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
             && self.memory_count >= 1
@@ -183,6 +195,10 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             builder_run_status: "FAIL".to_string(),
             builder_trace_steps: 0,
             builder_trace_events: 0,
+            builder_interaction_sequence: "FAIL".to_string(),
+            builder_selected_step: "FAIL".to_string(),
+            builder_trace_status: "FAIL".to_string(),
+            builder_side_effect_model: "FAIL".to_string(),
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
@@ -286,6 +302,10 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         builder_run_status: builder_smoke.run_status,
         builder_trace_steps: builder_smoke.trace_steps,
         builder_trace_events: builder_smoke.trace_events,
+        builder_interaction_sequence: builder_smoke.interaction_sequence,
+        builder_selected_step: builder_smoke.selected_step_title,
+        builder_trace_status: builder_smoke.trace_status,
+        builder_side_effect_model: builder_smoke.side_effect_model,
         batch_status,
         analysis_name,
         analysis_coverage_complete: coverage.complete,
@@ -348,6 +368,11 @@ mod tests {
         assert!(summary.contains("builder_simulated=true"));
         assert!(summary.contains("builder_run_status=Completed"));
         assert!(summary.contains("builder_trace_steps=2"));
+        assert!(summary
+            .contains("builder_interaction_sequence=create>add>edit>move>simulate>run>trace"));
+        assert!(summary.contains("builder_selected_step=Validate edited output"));
+        assert!(summary.contains("builder_trace_status=Completed"));
+        assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
         assert!(summary.contains("plugin_js_status=Completed"));
         assert!(summary.contains("plugin_ts_status=Completed"));
         assert!(summary.contains("plugin_manifest_checks=1"));

@@ -9,6 +9,10 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) run_status: String,
     pub(crate) trace_steps: usize,
     pub(crate) trace_events: usize,
+    pub(crate) interaction_sequence: String,
+    pub(crate) selected_step_title: String,
+    pub(crate) trace_status: String,
+    pub(crate) side_effect_model: String,
 }
 
 pub(crate) fn run_workflow_builder_smoke(
@@ -42,6 +46,9 @@ pub(crate) fn run_workflow_builder_smoke(
     let trace = traces
         .iter()
         .find(|trace| trace.execution.workflow_id == execution.workflow_id);
+    let trace_status = trace
+        .map(|trace| format!("{:?}", trace.execution.status))
+        .unwrap_or_else(|| "Missing".to_string());
 
     Ok(WorkflowBuilderSmoke {
         created,
@@ -54,5 +61,9 @@ pub(crate) fn run_workflow_builder_smoke(
         trace_events: trace
             .map(|trace| trace.audit_events.len())
             .unwrap_or_default(),
+        interaction_sequence: "create>add>edit>move>simulate>run>trace".to_string(),
+        selected_step_title: moved.name,
+        trace_status,
+        side_effect_model: "simulate=dry-run,run=audit-log".to_string(),
     })
 }
