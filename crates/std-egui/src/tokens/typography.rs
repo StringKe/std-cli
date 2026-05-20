@@ -32,6 +32,18 @@ impl UiScale {
     fn font(self, size: f32, family: FontFamily) -> FontId {
         FontId::new(size * self.value, family)
     }
+
+    pub(crate) fn f32(self, value: f32) -> f32 {
+        value * self.value
+    }
+
+    pub(crate) fn i8(self, value: i8) -> i8 {
+        self.f32(value as f32).round().clamp(0.0, i8::MAX as f32) as i8
+    }
+
+    pub(crate) fn u8(self, value: u8) -> u8 {
+        self.f32(value as f32).round().clamp(0.0, u8::MAX as f32) as u8
+    }
 }
 
 impl Default for UiScale {
@@ -180,6 +192,15 @@ mod tests {
         assert_eq!(Text::body_for_scale(scale).size, 19.5);
         assert_eq!(Text::headline_for_scale(scale).size, 27.0);
         assert_eq!(Text::code_for_scale(scale).family, FontFamily::Monospace);
+    }
+
+    #[test]
+    fn ui_scale_scales_numeric_tokens_with_rounding() {
+        let scale = UiScale::new(1.5);
+
+        assert_eq!(scale.i8(12), 18);
+        assert_eq!(scale.u8(16), 24);
+        assert_eq!(scale.f32(8.0), 12.0);
     }
 
     #[test]
