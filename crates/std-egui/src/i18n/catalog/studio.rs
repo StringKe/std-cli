@@ -1,3 +1,4 @@
+mod analysis;
 mod apps;
 mod dashboard;
 mod history;
@@ -11,7 +12,8 @@ mod workflows;
 use crate::i18n::Locale;
 
 pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
-    apps::translate(locale, key)
+    analysis::translate(locale, key)
+        .or_else(|| apps::translate(locale, key))
         .or_else(|| settings::translate(locale, key))
         .or_else(|| dashboard::translate(locale, key))
         .or_else(|| history::translate(locale, key))
@@ -23,7 +25,8 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
 }
 
 pub(super) fn fallback(key: &str) -> Option<&'static str> {
-    apps::fallback(key)
+    analysis::fallback(key)
+        .or_else(|| apps::fallback(key))
         .or_else(|| settings::fallback(key))
         .or_else(|| dashboard::fallback(key))
         .or_else(|| history::fallback(key))

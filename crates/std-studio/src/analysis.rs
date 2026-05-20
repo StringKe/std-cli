@@ -1,6 +1,9 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::tokens::{Space, Text};
+use std_egui::{
+    i18n,
+    tokens::{Space, Text},
+};
 use std_index::{
     IndexAnswer, IndexCoverage, IndexCoverageReport, IndexDocument, IndexInspection,
     IndexSearchResult,
@@ -10,8 +13,8 @@ impl StudioEguiApp {
     pub(crate) fn render_analysis(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
-            "Index Analysis",
-            "four-layer local understanding and QA",
+            i18n::t("studio.analysis.title"),
+            i18n::t("studio.analysis.detail"),
         );
         self.render_analysis_toolbar(ui);
         ui.add_space(Space::SM as f32);
@@ -28,9 +31,9 @@ impl StudioEguiApp {
                 ui.add_sized(
                     [ui.available_width() - 120.0, 28.0],
                     egui::TextEdit::singleline(&mut self.analysis_path)
-                        .hint_text("project, file, app, workflow path"),
+                        .hint_text(i18n::t("studio.analysis.path.hint")),
                 );
-                if ui::quiet_button(ui, "Analyze").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.analysis.analyze")).clicked() {
                     self.analyze_current_path();
                 }
             });
@@ -39,9 +42,13 @@ impl StudioEguiApp {
 
     fn render_active_analysis(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Entity", "active index document");
+            ui::section_header(
+                ui,
+                i18n::t("studio.analysis.entity.title"),
+                i18n::t("studio.analysis.entity.detail"),
+            );
             let Some(document) = &self.app.active_analysis else {
-                ui::empty_state(ui, "No active analysis");
+                ui::empty_state(ui, i18n::t("studio.analysis.entity.empty"));
                 return;
             };
             render_document_overview(ui, document);
@@ -52,29 +59,47 @@ impl StudioEguiApp {
 
     fn render_analysis_query(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Ask and Search", "saved index documents");
+            ui::section_header(
+                ui,
+                i18n::t("studio.analysis.query.title"),
+                i18n::t("studio.analysis.query.detail"),
+            );
             ui.text_edit_singleline(&mut self.analysis_query);
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, "Ask").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.analysis.ask")).clicked() {
                     self.ask_analysis();
                 }
-                if ui::quiet_button(ui, "Search").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.analysis.search")).clicked() {
                     self.search_analysis();
                 }
-                if ui::quiet_button(ui, "Inspect").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.analysis.inspect")).clicked() {
                     self.inspect_analysis();
                 }
             });
             ui.add_space(Space::XS as f32);
-            render_output(ui, "Answer", &self.analysis_answer, 180.0);
-            render_output(ui, "Search", &self.analysis_search_output, 180.0);
+            render_output(
+                ui,
+                i18n::t("studio.analysis.answer"),
+                &self.analysis_answer,
+                180.0,
+            );
+            render_output(
+                ui,
+                i18n::t("studio.analysis.search"),
+                &self.analysis_search_output,
+                180.0,
+            );
         });
     }
 
     fn render_analysis_coverage(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Coverage", "overview, components, relations, history");
-            if ui::quiet_button(ui, "Refresh Coverage").clicked() {
+            ui::section_header(
+                ui,
+                i18n::t("studio.analysis.coverage.title"),
+                i18n::t("studio.analysis.coverage.detail"),
+            );
+            if ui::quiet_button(ui, i18n::t("studio.analysis.coverage.refresh")).clicked() {
                 self.refresh_analysis_coverage();
             }
             if self.analysis_coverage_output.is_empty() {
@@ -85,7 +110,12 @@ impl StudioEguiApp {
                     }
                 }
             } else {
-                render_output(ui, "Coverage Report", &self.analysis_coverage_output, 460.0);
+                render_output(
+                    ui,
+                    i18n::t("studio.analysis.coverage.report"),
+                    &self.analysis_coverage_output,
+                    460.0,
+                );
             }
         });
     }
@@ -240,7 +270,7 @@ fn coverage_chip(ui: &mut egui::Ui, label: &str, pass: bool) {
 fn render_output(ui: &mut egui::Ui, title: &str, value: &str, height: f32) {
     ui.label(egui::RichText::new(title).strong());
     if value.is_empty() {
-        ui::empty_state(ui, "No output");
+        ui::empty_state(ui, i18n::t("studio.analysis.output.empty"));
     } else {
         egui::ScrollArea::vertical()
             .max_height(height)

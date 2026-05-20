@@ -157,4 +157,16 @@ mod tests {
             "选择已保存 workflow 以编辑步骤"
         );
     }
+
+    #[test]
+    fn studio_analysis_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.analysis.coverage.report"),
+            "Coverage Report"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.analysis.output.empty"),
+            "没有输出"
+        );
+    }
 }
