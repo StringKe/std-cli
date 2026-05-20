@@ -22,7 +22,6 @@ use preview::{run_studio_preview, studio_preview_from_args};
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std_egui::i18n;
 use std_studio::{StudioApp, StudioPane};
 use viewport::studio_native_options;
 use windows::WorkspaceCommandQueue;
@@ -118,46 +117,6 @@ impl eframe::App for StudioEguiApp {
         self.layout.handle_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
-    }
-}
-
-impl StudioEguiApp {
-    pub(crate) fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
-        let panes = self
-            .app
-            .workspace_panes
-            .iter()
-            .map(|pane| (pane.id, pane.title.clone(), pane.open))
-            .collect::<Vec<_>>();
-        if panes.is_empty() {
-            return;
-        }
-
-        ui.vertical(|ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.windows.title"),
-                i18n::t("studio.shell.pane_manager.detail"),
-            );
-            for (id, title, open) in panes {
-                ui.horizontal(|ui| {
-                    let label = if open {
-                        title.clone()
-                    } else {
-                        format!("{title} {}", i18n::t("studio.shell.pane_inactive"))
-                    };
-                    if ui
-                        .selectable_label(self.app.focused_pane == Some(id), label)
-                        .clicked()
-                    {
-                        self.app.focus_workspace_pane(id);
-                    }
-                    if ui::quiet_button(ui, i18n::t("studio.shell.close_pane")).clicked() {
-                        self.app.close_workspace_pane(id);
-                    }
-                });
-            }
-        });
     }
 }
 

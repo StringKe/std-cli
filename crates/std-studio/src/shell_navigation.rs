@@ -8,6 +8,7 @@ use std_studio::StudioPane;
 
 const NAV_ROW_HEIGHT: f32 = 28.0;
 const OPEN_ROW_HEIGHT: f32 = 44.0;
+const PANE_ROW_HEIGHT: f32 = 36.0;
 
 impl StudioEguiApp {
     pub(crate) fn render_navigation(&mut self, ui: &mut egui::Ui) {
@@ -113,6 +114,42 @@ impl StudioEguiApp {
             );
         }
     }
+
+    pub(crate) fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
+        let panes = self
+            .app
+            .workspace_panes
+            .iter()
+            .map(|pane| (pane.id, pane.title.clone(), pane.open))
+            .collect::<Vec<_>>();
+        if panes.is_empty() {
+            return;
+        }
+
+        ui.vertical(|ui| {
+            ui::section_header(
+                ui,
+                i18n::t("studio.windows.title"),
+                i18n::t("studio.shell.pane_manager.detail"),
+            );
+            for (id, title, open) in panes {
+                let focused = self.app.focused_pane == Some(id);
+                let action = pane_manager_row(ui, &title, open, focused);
+                if action.focus_requested {
+                    self.app.focus_workspace_pane(id);
+                }
+                if action.close_requested {
+                    self.app.close_workspace_pane(id);
+                }
+            }
+        });
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct PaneRowAction {
+    focus_requested: bool,
+    close_requested: bool,
 }
 
 fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> egui::Response {
@@ -180,6 +217,95 @@ fn open_nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, detail: &str) 
         );
     }
     response
+}
+
+fn pane_manager_row(ui: &mut egui::Ui, title: &str, open: bool, focused: bool) -> PaneRowAction {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), PANE_ROW_HEIGHT),
+        egui::Sense::click(),
+    );
+    let close_rect = egui::Rect::from_center_size(
+        egui::pos2(rect.right() - 14.0, rect.center().y),
+        egui::vec2(24.0, 24.0),
+    );
+    let close_id = ui.id().with(("pane_close", title));
+    let close_response = ui.interact(close_rect, close_id, egui::Sense::click());
+
+    if ui.is_rect_visible(rect) {
+        paint_nav_bg(ui, rect, response.hovered(), focused);
+        paint_pane_state(ui, rect, open, focused);
+        paint_pane_title(ui, rect, close_rect, title, open);
+        paint_close_control(ui, close_rect, close_response.hovered());
+    }
+
+    PaneRowAction {
+        focus_requested: response.clicked() && !close_response.clicked(),
+        close_requested: close_response.clicked(),
+    }
+}
+
+fn paint_pane_state(ui: &egui::Ui, rect: egui::Rect, open: bool, focused: bool) {
+    let color = if focused {
+        Color::accent_base(ui.ctx())
+    } else if open {
+        Color::fg_secondary(ui.ctx())
+    } else {
+        Color::fg_tertiary(ui.ctx())
+    };
+    ui.painter()
+        .circle_filled(egui::pos2(rect.left() + 10.0, rect.center().y), 3.0, color);
+}
+
+fn paint_pane_title(
+    ui: &egui::Ui,
+    rect: egui::Rect,
+    close_rect: egui::Rect,
+    title: &str,
+    open: bool,
+) {
+    let color = if open {
+        ui::strong_text(ui.ctx())
+    } else {
+        Color::fg_tertiary(ui.ctx())
+    };
+    let text_rect = egui::Rect::from_min_max(
+        egui::pos2(rect.left() + Space::LG as f32, rect.top()),
+        egui::pos2(close_rect.left() - Space::XS as f32, rect.bottom()),
+    );
+    ui.painter().text(
+        text_rect.left_center(),
+        egui::Align2::LEFT_CENTER,
+        title,
+        Text::body(),
+        color,
+    );
+}
+
+fn paint_close_control(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
+    let fill = if hovered {
+        Color::bg_surface_2(ui.ctx())
+    } else {
+        egui::Color32::TRANSPARENT
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
+    let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ui.ctx()));
+    let center = rect.center();
+    let half = 4.0;
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x - half, center.y - half),
+            egui::pos2(center.x + half, center.y + half),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x + half, center.y - half),
+            egui::pos2(center.x - half, center.y + half),
+        ],
+        stroke,
+    );
 }
 
 fn paint_nav_bg(ui: &egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
