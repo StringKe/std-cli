@@ -1,15 +1,18 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::{i18n, tokens::Text};
+use std_egui::{
+    i18n,
+    tokens::{Space, Text},
+};
 
 impl StudioEguiApp {
     pub(crate) fn render_dashboard(&mut self, ui: &mut egui::Ui) {
         self.render_dashboard_header(ui);
-        ui.add_space(8.0);
+        ui.add_space(Space::XS as f32);
         self.render_dashboard_metrics(ui);
-        ui.add_space(12.0);
+        ui.add_space(Space::SM as f32);
         self.render_dashboard_workbench(ui);
-        ui.add_space(12.0);
+        ui.add_space(Space::SM as f32);
         self.render_dashboard_gates(ui);
     }
 
@@ -82,7 +85,7 @@ impl StudioEguiApp {
                     });
                     ui.label(egui::RichText::new(&step.reason).color(ui::muted_text(ui.ctx())));
                 });
-                ui.add_space(6.0);
+                ui.add_space(Space::XS as f32);
             }
         });
     }
@@ -115,7 +118,7 @@ impl StudioEguiApp {
                     );
                     ui.label(egui::RichText::new(&memory.body).color(ui::strong_text(ui.ctx())));
                 });
-                ui.add_space(6.0);
+                ui.add_space(Space::XS as f32);
             }
         });
     }

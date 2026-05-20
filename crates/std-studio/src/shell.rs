@@ -7,6 +7,7 @@ use crate::{
     ui, StudioEguiApp,
 };
 use eframe::egui;
+use std_egui::tokens::Space;
 use std_studio::StudioPane;
 
 impl StudioEguiApp {
@@ -46,7 +47,7 @@ impl StudioEguiApp {
     }
 
     fn render_navigation(&mut self, ui: &mut egui::Ui) {
-        ui.add_space(8.0);
+        ui.add_space(Space::XS as f32);
         if !self.layout.sidebar_open {
             for pane in StudioPane::all() {
                 let label = pane.label().chars().next().unwrap_or('?').to_string();
@@ -83,7 +84,7 @@ impl StudioEguiApp {
                 }
             }
         });
-        ui.add_space(18.0);
+        ui.add_space(Space::LG as f32);
         ui.vertical(|ui| {
             ui::section_header(ui, "Open", "workspace panes");
             self.open_row(
@@ -102,7 +103,7 @@ impl StudioEguiApp {
             self.open_row(ui, "Memory Browser", "local recall", StudioPane::Memory);
             self.open_row(ui, "Execution History", "trace review", StudioPane::History);
         });
-        ui.add_space(18.0);
+        ui.add_space(Space::LG as f32);
         self.render_workspace_pane_manager(ui);
     }
 
@@ -127,9 +128,9 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Context", "workspace signals");
             ui::metric(ui, "Actions", self.app.dashboard.action_count, "registered");
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui::metric(ui, "Memory", self.app.dashboard.memory_count, "records");
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui::metric(
                 ui,
                 "Audit Events",
@@ -137,7 +138,7 @@ impl StudioEguiApp {
                 "recent local trail",
             );
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Runtime", "local paths");
             path_label(ui, "Config", self.app.config_path().display().to_string());
@@ -152,7 +153,7 @@ impl StudioEguiApp {
                 self.app.core.config.workflows_dir().display().to_string(),
             );
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Status", "latest result");
             if self.status.is_empty() {
@@ -341,7 +342,7 @@ impl StudioEguiApp {
                     self.layout.overlay_selected = 0;
                 }
                 response.request_focus();
-                ui.add_space(8.0);
+                ui.add_space(Space::XS as f32);
 
                 let filtered_items = filter_items(&items, query);
                 self.layout.clamp_overlay_selection(filtered_items.len());
