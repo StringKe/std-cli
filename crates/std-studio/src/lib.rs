@@ -99,6 +99,7 @@ pub struct StudioApp {
     pub focused_pane: Option<WorkspacePaneId>,
     pub workspace_policy: StudioWorkspacePolicy,
     next_pane_serial: u64,
+    next_focus_serial: u64,
 }
 
 impl Default for StudioApp {
@@ -124,6 +125,7 @@ impl Default for StudioApp {
             focused_pane: None,
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 1,
+            next_focus_serial: 1,
         }
     }
 }
@@ -154,6 +156,7 @@ impl StudioApp {
             focused_pane: None,
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 1,
+            next_focus_serial: 1,
         }
     }
 
@@ -200,11 +203,13 @@ impl StudioApp {
     }
 
     pub fn focus_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
-        let Some(pane) = self.workspace_panes.iter_mut().find(|pane| pane.id == id) else {
+        let Some(index) = self.workspace_panes.iter().position(|pane| pane.id == id) else {
             return false;
         };
+        let serial = self.next_focus_serial();
+        let pane = &mut self.workspace_panes[index];
         pane.open = true;
-        pane.focus();
+        pane.focus(serial);
         self.focused_pane = Some(id);
         true
     }
@@ -219,7 +224,7 @@ impl StudioApp {
                 .workspace_panes
                 .iter()
                 .filter(|pane| pane.open)
-                .max_by_key(|pane| pane.focused_at)
+                .max_by_key(|pane| pane.focus_serial)
                 .map(|pane| pane.id);
         }
         true
@@ -230,23 +235,32 @@ impl StudioApp {
     }
 
     fn open_pane(&mut self, kind: WorkspacePaneKind) -> WorkspacePaneId {
-        if let Some(existing) = self
+        if let Some(index) = self
             .workspace_panes
-            .iter_mut()
-            .find(|pane| pane.kind == kind)
+            .iter()
+            .position(|pane| pane.kind == kind)
         {
+            let serial = self.next_focus_serial();
+            let existing = &mut self.workspace_panes[index];
             existing.open = true;
-            existing.focus();
+            existing.focus(serial);
             self.focused_pane = Some(existing.id);
             return existing.id;
         }
 
         let id = WorkspacePaneId::new(self.next_pane_serial);
         self.next_pane_serial += 1;
-        let pane = WorkspacePane::new(id, kind);
+        let focus_serial = self.next_focus_serial();
+        let pane = WorkspacePane::new(id, kind, focus_serial);
         self.focused_pane = Some(id);
         self.workspace_panes.push(pane);
         id
+    }
+
+    fn next_focus_serial(&mut self) -> u64 {
+        let serial = self.next_focus_serial;
+        self.next_focus_serial += 1;
+        serial
     }
 
     pub fn run_batch_plan(&mut self, plan: &BatchPlan) -> &BatchReport {

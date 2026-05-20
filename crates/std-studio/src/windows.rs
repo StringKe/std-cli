@@ -9,6 +9,7 @@ pub(crate) type WorkspaceCommandQueue = Arc<Mutex<Vec<StudioWorkspaceCommand>>>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum StudioWorkspaceCommand {
+    Focus(WorkspacePaneId),
     Close(WorkspacePaneId),
     ShowInMain(StudioPane),
     Refresh,
@@ -89,6 +90,12 @@ impl StudioEguiApp {
                 i18n::t("studio.windows.title"),
                 self.app.workspace_policy.summary(),
             );
+            let tabs = crate::workspace_tabs::workspace_tab_specs(
+                &self.app.workspace_panes,
+                self.app.focused_pane,
+            );
+            crate::workspace_tabs::render_workspace_tabs(ui, &tabs, &self.workspace_commands);
+            ui.add_space(Space::XS as f32);
             render_spec(
                 ui,
                 &spec,
@@ -112,6 +119,11 @@ impl StudioEguiApp {
 
     fn apply_workspace_command(&mut self, command: StudioWorkspaceCommand) {
         match command {
+            StudioWorkspaceCommand::Focus(id) => {
+                if self.app.focus_workspace_pane(id) {
+                    self.status = format!("focused workspace pane {}", id.value());
+                }
+            }
             StudioWorkspaceCommand::Close(id) => {
                 if self.app.close_workspace_pane(id) {
                     self.status = format!("closed workspace pane {}", id.value());

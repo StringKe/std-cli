@@ -76,6 +76,7 @@ pub struct WorkspacePane {
     pub title: String,
     pub open: bool,
     pub focused_at: chrono::DateTime<chrono::Utc>,
+    pub focus_serial: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -86,7 +87,7 @@ pub struct WorkspacePaneContent {
 }
 
 impl WorkspacePane {
-    pub fn new(id: WorkspacePaneId, kind: WorkspacePaneKind) -> Self {
+    pub fn new(id: WorkspacePaneId, kind: WorkspacePaneKind, focus_serial: u64) -> Self {
         let title = kind.title();
         Self {
             id,
@@ -94,11 +95,13 @@ impl WorkspacePane {
             title,
             open: true,
             focused_at: chrono::Utc::now(),
+            focus_serial,
         }
     }
 
-    pub fn focus(&mut self) {
+    pub fn focus(&mut self, serial: u64) {
         self.focused_at = chrono::Utc::now();
+        self.focus_serial = serial;
     }
 }
 

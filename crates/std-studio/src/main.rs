@@ -20,6 +20,7 @@ mod ui;
 mod viewport;
 mod views;
 mod windows;
+mod workspace_tabs;
 
 use layout::StudioLayoutState;
 use preview::{run_studio_preview, studio_preview_from_args};
@@ -179,6 +180,22 @@ mod app_tests {
         assert_eq!(app.app.focused_pane, None);
         assert_eq!(app.app.open_workspace_panes().count(), 0);
         assert!(app.status.contains("closed workspace pane"));
+    }
+
+    #[test]
+    fn workspace_focus_command_switches_internal_tab() {
+        let mut app = StudioEguiApp::default();
+        let plugin = app.app.open_plugin_manager_pane();
+        app.app.open_settings_pane();
+        app.workspace_commands
+            .lock()
+            .unwrap()
+            .push(StudioWorkspaceCommand::Focus(plugin));
+
+        app.consume_workspace_commands();
+
+        assert_eq!(app.app.focused_pane, Some(plugin));
+        assert!(app.status.contains("focused workspace pane"));
     }
 
     #[test]
