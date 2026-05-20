@@ -3,7 +3,10 @@ use crate::ui;
 use crate::window::apply_window_commands;
 use eframe::egui;
 use std::time::Duration;
-use std_egui::tokens::{apply_theme, ThemeMode};
+use std_egui::{
+    input,
+    tokens::{apply_theme, ThemeMode},
+};
 use std_launcher::{GlobalHotkeyRuntime, LauncherState};
 
 pub(crate) struct LauncherApp {
@@ -74,7 +77,7 @@ impl eframe::App for LauncherApp {
             }
         }
 
-        if ctx.input(|input| input.key_pressed(egui::Key::Escape)) {
+        if input::escape().pressed(ctx) {
             apply_window_commands(ctx, &self.state.handle_escape_hide());
         }
 

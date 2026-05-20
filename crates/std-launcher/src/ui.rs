@@ -151,23 +151,23 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
     if tokens::ime_composing(&ctx) {
         return;
     }
-    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::ArrowDown)) {
+    if input::mod_arrow_down().pressed(&ctx) {
         state.handle_keyboard_input(LauncherKey::JumpToLast, false);
-    } else if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
+    } else if input::arrow_down().pressed(&ctx) {
         state.handle_keyboard_input(LauncherKey::ArrowDown, false);
     }
-    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::ArrowUp)) {
+    if input::mod_arrow_up().pressed(&ctx) {
         state.handle_keyboard_input(LauncherKey::JumpToFirst, false);
-    } else if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
+    } else if input::arrow_up().pressed(&ctx) {
         state.handle_keyboard_input(LauncherKey::ArrowUp, false);
     }
-    if ui.input(|input| input.key_pressed(egui::Key::Enter)) {
+    if input::enter().pressed(&ctx) {
         state.handle_keyboard_input_by_user(LauncherKey::Enter, false);
     }
     if input::launcher_action_panel().pressed(&ctx) {
         state.handle_keyboard_input_by_user(LauncherKey::ActionPanel, false);
     }
-    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::Backspace)) {
+    if input::launcher_delete_previous_token().pressed(&ctx) {
         state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
     }
     if let Some(index) = pressed_result_shortcut(ui.ctx()) {
@@ -176,24 +176,7 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
 }
 
 fn pressed_result_shortcut(ctx: &egui::Context) -> Option<usize> {
-    ctx.input(|input| {
-        if !input.modifiers.command || input.modifiers.shift {
-            return None;
-        }
-        [
-            egui::Key::Num1,
-            egui::Key::Num2,
-            egui::Key::Num3,
-            egui::Key::Num4,
-            egui::Key::Num5,
-            egui::Key::Num6,
-            egui::Key::Num7,
-            egui::Key::Num8,
-            egui::Key::Num9,
-        ]
-        .iter()
-        .position(|key| input.key_pressed(*key))
-    })
+    input::pressed_mod_number(ctx, 9)
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {

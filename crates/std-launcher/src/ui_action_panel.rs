@@ -1,7 +1,7 @@
 use crate::ui_parts::{keycap, quiet_label};
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Radius, Space, Text},
 };
 use std_launcher::{ActionPanelItem, LauncherKey, LauncherState};
@@ -98,10 +98,10 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
         }
         ui.add_space(Space::TWO_XS as f32);
     }
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
+    if input::arrow_down().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
     }
-    if ui.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
+    if input::arrow_up().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowUp, false);
     }
 }
