@@ -2,7 +2,7 @@ use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std_egui::tokens::Space;
+use std_egui::{i18n, tokens::Space};
 use std_studio::{StudioPane, WorkspacePane, WorkspacePaneId, WorkspacePaneKind};
 
 pub(crate) type WorkspaceCommandQueue = Arc<Mutex<Vec<StudioWorkspaceCommand>>>;
@@ -77,9 +77,18 @@ impl StudioEguiApp {
 
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Workspace Panes", "inside Studio");
+            ui::section_header(
+                ui,
+                i18n::t("studio.windows.title"),
+                i18n::t("studio.windows.detail"),
+            );
             for spec in specs {
-                render_spec(ui, &spec, "active workspace", &self.workspace_commands);
+                render_spec(
+                    ui,
+                    &spec,
+                    i18n::t("studio.windows.active"),
+                    &self.workspace_commands,
+                );
                 ui.add_space(Space::XS as f32);
             }
         });
@@ -167,10 +176,16 @@ fn render_workspace_summary(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
     ui.horizontal_wrapped(|ui| {
         ui.label(egui::RichText::new(spec.content_key).color(ui::muted_text(ui.ctx())));
         if spec.workflow_path.is_some() {
-            ui.label(egui::RichText::new("workflow editor").color(ui::muted_text(ui.ctx())));
+            ui.label(
+                egui::RichText::new(i18n::t("studio.windows.workflow_editor"))
+                    .color(ui::muted_text(ui.ctx())),
+            );
         }
         if spec.analysis_path.is_some() {
-            ui.label(egui::RichText::new("analysis target").color(ui::muted_text(ui.ctx())));
+            ui.label(
+                egui::RichText::new(i18n::t("studio.windows.analysis_target"))
+                    .color(ui::muted_text(ui.ctx())),
+            );
         }
     });
 }
@@ -208,32 +223,34 @@ fn render_workspace_actions(
     commands: &WorkspaceCommandQueue,
 ) {
     ui.horizontal_wrapped(|ui| {
-        if ui::quiet_button(ui, "Show In Main").clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.windows.show_in_main")).clicked() {
             push_command(commands, StudioWorkspaceCommand::ShowInMain(spec.pane));
         }
         if let Some(path) = &spec.workflow_path {
-            if ui::quiet_button(ui, "Preview Workflow").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.windows.preview_workflow")).clicked() {
                 push_command(
                     commands,
                     StudioWorkspaceCommand::PreviewWorkflow(path.clone()),
                 );
             }
-            if ui::quiet_button(ui, "Run Workflow").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.windows.run_workflow")).clicked() {
                 push_command(commands, StudioWorkspaceCommand::RunWorkflow(path.clone()));
             }
         }
         if let Some(path) = &spec.analysis_path {
-            if ui::quiet_button(ui, "Analyze").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.windows.analyze")).clicked() {
                 push_command(commands, StudioWorkspaceCommand::Analyze(path.clone()));
             }
         }
-        if spec.content_key == "plugins" && ui::quiet_button(ui, "Reload Plugins").clicked() {
+        if spec.content_key == "plugins"
+            && ui::quiet_button(ui, i18n::t("studio.windows.reload_plugins")).clicked()
+        {
             push_command(commands, StudioWorkspaceCommand::ReloadPlugins);
         }
-        if ui::quiet_button(ui, "Refresh").clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.windows.refresh")).clicked() {
             push_command(commands, StudioWorkspaceCommand::Refresh);
         }
-        if ui::quiet_button(ui, "Close").clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.windows.close")).clicked() {
             push_command(commands, StudioWorkspaceCommand::Close(spec.id));
         }
     });

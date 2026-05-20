@@ -169,4 +169,16 @@ mod tests {
             "没有输出"
         );
     }
+
+    #[test]
+    fn studio_windows_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.windows.preview_workflow"),
+            "Preview Workflow"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.windows.detail"),
+            "Studio 内部面板"
+        );
+    }
 }
