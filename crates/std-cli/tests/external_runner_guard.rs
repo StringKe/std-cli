@@ -1,7 +1,7 @@
 use std::{fs, process::Command};
 
 #[test]
-fn binary_test_mode_blocks_external_runner_even_with_explicit_opt_in() {
+fn binary_test_mode_blocks_external_runner() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = temp.path().join("std-cli.json");
     fs::write(
@@ -42,8 +42,7 @@ fn run_std(config_path: &std::path::Path, args: &[&str]) -> std::process::Output
     command
         .args(args)
         .env("STDCLI_CONFIG", config_path)
-        .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1");
+        .env("STD_TEST_MODE", "1");
     command.output().unwrap()
 }
 

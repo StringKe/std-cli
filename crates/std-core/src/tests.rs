@@ -217,6 +217,11 @@ fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
 }
 
 #[test]
+fn desktop_automation_is_disabled_in_unit_tests() {
+    assert!(!desktop_automation_allowed());
+}
+
+#[test]
 fn test_core_blocks_external_application_launches_by_default() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

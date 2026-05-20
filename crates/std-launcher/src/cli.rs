@@ -102,9 +102,7 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 .and_then(|value| value.parse::<u64>().ok())
                 .unwrap_or(5_000),
             trigger_delay_ms: 500,
-            allow_system_events: std::env::var("STD_ALLOW_DESKTOP_AUTOMATION")
-                .map(|value| value == "1")
-                .unwrap_or(false),
+            allow_system_events: std_core::desktop_automation_allowed(),
         })),
         _ => None,
     }

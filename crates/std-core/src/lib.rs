@@ -169,6 +169,9 @@ pub fn std_test_mode_enabled() -> bool {
 }
 
 pub fn desktop_automation_allowed() -> bool {
+    if cfg!(test) || std_test_mode_enabled() {
+        return false;
+    }
     std::env::var("STD_ALLOW_DESKTOP_AUTOMATION")
         .map(|value| value == "1")
         .unwrap_or(false)
