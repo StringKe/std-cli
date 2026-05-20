@@ -103,6 +103,7 @@ impl StudioEguiApp {
                 &spec,
                 i18n::t("studio.workspace_panes.active"),
                 &self.workspace_commands,
+                &mut self.pending_workspace_focus,
             );
         });
     }
@@ -123,21 +124,25 @@ impl StudioEguiApp {
         match command {
             StudioWorkspaceCommand::Focus(id) => {
                 if self.app.focus_workspace_pane(id) {
+                    self.pending_workspace_focus = Some(id);
                     self.status = format!("focused workspace pane {}", id.value());
                 }
             }
             StudioWorkspaceCommand::FocusNext => {
                 if let Some(id) = self.app.focus_next_workspace_pane() {
+                    self.pending_workspace_focus = Some(id);
                     self.status = format!("focused workspace pane {}", id.value());
                 }
             }
             StudioWorkspaceCommand::FocusPrevious => {
                 if let Some(id) = self.app.focus_previous_workspace_pane() {
+                    self.pending_workspace_focus = Some(id);
                     self.status = format!("focused workspace pane {}", id.value());
                 }
             }
             StudioWorkspaceCommand::Close(id) => {
                 if self.app.close_workspace_pane(id) {
+                    self.pending_workspace_focus = self.app.focused_pane;
                     self.status = format!("closed workspace pane {}", id.value());
                 }
             }
@@ -187,8 +192,10 @@ fn render_spec(
     spec: &StudioWorkspaceSpec,
     class_label: &str,
     commands: &WorkspaceCommandQueue,
+    pending_focus: &mut Option<WorkspacePaneId>,
 ) {
     ui::surface_frame(ui.ctx()).show(ui, |ui| {
+        request_workspace_focus(ui, spec.id, pending_focus);
         ui::section_header(ui, &spec.heading, class_label);
         render_workspace_summary(ui, spec);
         ui.add_space(Space::XS as f32);
@@ -198,6 +205,23 @@ fn render_spec(
         ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
     });
+}
+
+pub(crate) fn workspace_pane_focus_id(id: WorkspacePaneId) -> egui::Id {
+    egui::Id::new(("studio.workspace_pane", id.value()))
+}
+
+fn request_workspace_focus(
+    ui: &mut egui::Ui,
+    id: WorkspacePaneId,
+    pending_focus: &mut Option<WorkspacePaneId>,
+) {
+    if *pending_focus != Some(id) {
+        return;
+    }
+    ui.ctx()
+        .memory_mut(|memory| memory.request_focus(workspace_pane_focus_id(id)));
+    *pending_focus = None;
 }
 
 fn render_workspace_summary(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {

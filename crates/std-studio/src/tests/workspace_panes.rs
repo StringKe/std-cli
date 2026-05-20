@@ -227,6 +227,8 @@ fn studio_ui_uses_workspace_pane_language_not_window_language() {
     }
     assert!(main_source.contains("mod workspace_panes"));
     assert!(pane_source.contains("studio.workspace_panes"));
+    assert!(pane_source.contains("request_workspace_focus"));
+    assert!(pane_source.contains("memory.request_focus"));
     assert!(tabs_source.contains("studio.workspace_panes.close"));
 }
 

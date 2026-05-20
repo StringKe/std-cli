@@ -31,7 +31,7 @@ use preview::{
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std_studio::{StudioApp, StudioPane};
+use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
 use viewport::studio_native_options;
 use workspace_panes::WorkspaceCommandQueue;
@@ -67,6 +67,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) host_maximized: bool,
     pub(crate) layout: StudioLayoutState,
     pub(crate) workspace_commands: WorkspaceCommandQueue,
+    pub(crate) pending_workspace_focus: Option<WorkspacePaneId>,
 }
 
 impl Default for StudioEguiApp {
@@ -102,6 +103,7 @@ impl Default for StudioEguiApp {
             host_maximized: false,
             layout: StudioLayoutState::default(),
             workspace_commands: Arc::new(Mutex::new(Vec::new())),
+            pending_workspace_focus: None,
         }
         .with_loaded_settings()
     }
@@ -236,6 +238,7 @@ mod app_tests {
         app.consume_workspace_commands();
 
         assert_eq!(app.app.focused_pane, Some(plugin));
+        assert_eq!(app.pending_workspace_focus, Some(plugin));
         assert!(app.status.contains("focused workspace pane"));
     }
 
@@ -253,6 +256,7 @@ mod app_tests {
             .push(StudioWorkspaceCommand::FocusNext);
         app.consume_workspace_commands();
         assert_eq!(app.app.focused_pane, Some(dashboard));
+        assert_eq!(app.pending_workspace_focus, Some(dashboard));
         assert!(app.status.contains(&dashboard.value().to_string()));
 
         app.workspace_commands
@@ -261,6 +265,7 @@ mod app_tests {
             .push(StudioWorkspaceCommand::FocusPrevious);
         app.consume_workspace_commands();
         assert_eq!(app.app.focused_pane, Some(settings));
+        assert_eq!(app.pending_workspace_focus, Some(settings));
 
         assert!(app.app.close_workspace_pane(settings));
         app.workspace_commands
@@ -269,6 +274,19 @@ mod app_tests {
             .push(StudioWorkspaceCommand::FocusPrevious);
         app.consume_workspace_commands();
         assert_eq!(app.app.focused_pane, Some(plugins));
+        assert_eq!(app.pending_workspace_focus, Some(plugins));
+    }
+
+    #[test]
+    fn workspace_focus_ids_are_stable_for_accessibility() {
+        assert_eq!(
+            crate::workspace_panes::workspace_pane_focus_id(WorkspacePaneId::new(7)),
+            crate::workspace_panes::workspace_pane_focus_id(WorkspacePaneId::new(7))
+        );
+        assert_ne!(
+            crate::workspace_panes::workspace_pane_focus_id(WorkspacePaneId::new(7)),
+            crate::workspace_panes::workspace_pane_focus_id(WorkspacePaneId::new(8))
+        );
     }
 
     #[test]
