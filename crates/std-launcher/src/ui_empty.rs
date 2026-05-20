@@ -19,14 +19,10 @@ pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyA
     let fallback = render_no_matches(ui, trimmed);
     let enter_pressed = !input::ime_composing(ui.ctx()) && input::enter().pressed(ui.ctx());
     if fallback.clicked() || enter_pressed {
-        Some(EmptyAction::AskAi(ask_ai_query(trimmed)))
+        std_launcher::ask_ai_fallback_query(trimmed).map(EmptyAction::AskAi)
     } else {
         None
     }
-}
-
-fn ask_ai_query(query: &str) -> String {
-    format!("? {}", query.trim())
 }
 
 fn render_empty_query(ui: &mut egui::Ui) {
@@ -121,7 +117,13 @@ mod tests {
 
     #[test]
     fn ask_ai_query_uses_launcher_question_prefix() {
-        assert_eq!(ask_ai_query("  missing workflow  "), "? missing workflow");
+        let mut state = std_launcher::LauncherState::new();
+        state.update_query("  missing workflow  ");
+
+        assert_eq!(
+            state.no_match_fallback_query().as_deref(),
+            Some("? missing workflow")
+        );
     }
 
     #[test]

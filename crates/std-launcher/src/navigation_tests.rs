@@ -104,3 +104,25 @@ fn ime_composition_blocks_focus_section_shortcuts() {
 
     assert_eq!(state.focus_section, LauncherFocusSection::Search);
 }
+
+#[test]
+fn no_match_enter_uses_ask_ai_fallback() {
+    let mut state = LauncherState::new();
+    state.update_query("missing launcher item");
+
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    assert!(execution.is_none());
+    assert_eq!(state.view.query, "? missing launcher item");
+}
+
+#[test]
+fn no_match_enter_respects_ime_composition() {
+    let mut state = LauncherState::new();
+    state.update_query("missing launcher item");
+
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, true);
+
+    assert!(execution.is_none());
+    assert_eq!(state.view.query, "missing launcher item");
+}

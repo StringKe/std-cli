@@ -167,6 +167,18 @@ impl LauncherState {
         self.view.preview.clone()
     }
 
+    pub fn no_match_fallback_query(&self) -> Option<String> {
+        ask_ai_fallback_query(&self.view.query)
+    }
+
+    pub fn trigger_no_match_fallback(&mut self) -> bool {
+        let Some(query) = self.no_match_fallback_query() else {
+            return false;
+        };
+        self.update_query(query);
+        true
+    }
+
     pub fn move_selection(&mut self, delta: isize) -> Option<ActionPreview> {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Results;
@@ -370,6 +382,11 @@ impl LauncherState {
             created_at: chrono::Utc::now(),
         })
     }
+}
+
+pub fn ask_ai_fallback_query(query: &str) -> Option<String> {
+    let trimmed = query.trim();
+    (!trimmed.is_empty()).then(|| format!("? {trimmed}"))
 }
 
 impl LauncherSmokeReport {

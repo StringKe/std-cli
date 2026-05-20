@@ -105,6 +105,10 @@ impl LauncherState {
                 None
             }
             LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),
+            LauncherKey::Enter if self.view.results.is_empty() => {
+                self.trigger_no_match_fallback();
+                None
+            }
             LauncherKey::Enter if allow_external_runner => self.trigger_selected_by_user(),
             LauncherKey::Enter => self.trigger_selected(),
             LauncherKey::ActionPanel => {

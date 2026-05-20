@@ -22,6 +22,7 @@ pub struct LauncherUiSemanticsReport {
     pub no_results_detail: String,
     pub no_results_fallback: String,
     pub no_results_phase: String,
+    pub no_results_enter_query: String,
     pub no_results_ime_enter_blocked: bool,
     pub loading_label: String,
     pub loading_progress: String,
@@ -78,6 +79,10 @@ impl LauncherState {
         let action_bar_hint = "Actions Mod+K".to_string();
         let mut no_results = Self::new();
         no_results.update_query("no-such-launcher-result");
+        let mut no_results_enter = Self::new();
+        no_results_enter.update_query("no-such-launcher-result");
+        no_results_enter.handle_keyboard_input(LauncherKey::Enter, false);
+        let no_results_enter_query = no_results_enter.view.query;
         let no_results_ime_enter_blocked = no_results
             .handle_keyboard_input(LauncherKey::Enter, true)
             .is_none()
@@ -142,6 +147,7 @@ impl LauncherState {
             no_results_detail,
             no_results_fallback,
             no_results_phase,
+            no_results_enter_query,
             no_results_ime_enter_blocked,
             loading_label,
             loading_progress,
@@ -180,6 +186,7 @@ impl LauncherUiSemanticsReport {
                     LauncherPhase::NoMatches,
                     LauncherResultMode::NoMatches
                 )
+            && self.no_results_enter_query == "? no-such-launcher-result"
             && self.no_results_ime_enter_blocked
             && self.loading_label.contains("Searching registry")
             && self.loading_progress == "2px Searching indeterminate"
@@ -196,7 +203,7 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -211,6 +218,7 @@ impl LauncherUiSemanticsReport {
             self.no_results_detail,
             self.no_results_fallback,
             self.no_results_phase,
+            self.no_results_enter_query,
             self.no_results_ime_enter_blocked,
             self.loading_label,
             self.loading_progress,
