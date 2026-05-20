@@ -145,4 +145,16 @@ mod tests {
             "选择一条 memory"
         );
     }
+
+    #[test]
+    fn studio_workflow_builder_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.workflow_builder.properties.empty"),
+            "Select a saved workflow to edit steps"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.workflow_builder.properties.empty"),
+            "选择已保存 workflow 以编辑步骤"
+        );
+    }
 }

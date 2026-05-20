@@ -1,12 +1,16 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::Path;
-use std_egui::tokens::Space;
+use std_egui::{i18n, tokens::Space};
 
 impl StudioEguiApp {
     pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Workflow Builder", "steps, properties, AI assist");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflow_builder.title"),
+                i18n::t("studio.workflow_builder.detail"),
+            );
             self.render_builder_toolbar(ui);
             ui.add_space(Space::XS as f32);
             ui.columns(2, |columns| {
@@ -23,18 +27,18 @@ impl StudioEguiApp {
             ui.add_sized(
                 [ui.available_width().min(260.0), 28.0],
                 egui::TextEdit::singleline(&mut self.workflow_goal)
-                    .hint_text("Describe workflow goal"),
+                    .hint_text(i18n::t("studio.workflow_builder.goal.hint")),
             );
-            if ui::quiet_button(ui, "Plan").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.plan")).clicked() {
                 self.plan_workflow_from_goal();
             }
-            if ui::quiet_button(ui, "Simulate").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.simulate")).clicked() {
                 self.preview_active_workflow();
             }
-            if ui::quiet_button(ui, "Run").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.run")).clicked() {
                 self.run_active_workflow();
             }
-            if ui::quiet_button(ui, "Save").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.save")).clicked() {
                 self.save_planned_workflow();
             }
         });
@@ -42,7 +46,11 @@ impl StudioEguiApp {
 
     fn render_builder_steps(&mut self, ui: &mut egui::Ui) {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Steps", "Alt+Up Alt+Down");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflow_builder.steps.title"),
+                i18n::t("studio.workflow_builder.steps.detail"),
+            );
             if self.app.planned_workflow.is_some() {
                 self.render_planned_steps(ui);
                 return;
@@ -50,7 +58,7 @@ impl StudioEguiApp {
             if self.workflow_selected_path.is_some() {
                 self.render_debug_steps(ui);
             } else {
-                ui::empty_state(ui, "Select or plan a workflow");
+                ui::empty_state(ui, i18n::t("studio.workflow_builder.steps.empty"));
             }
         });
     }
@@ -73,7 +81,7 @@ impl StudioEguiApp {
 
     fn render_debug_steps(&mut self, ui: &mut egui::Ui) {
         let Some(debug) = &self.app.workflow_debug else {
-            ui::empty_state(ui, "No preview yet");
+            ui::empty_state(ui, i18n::t("studio.workflow_builder.preview.empty"));
             return;
         };
         let name = debug.workflow_name.clone();
@@ -101,41 +109,45 @@ impl StudioEguiApp {
 
     fn render_step_properties(&mut self, ui: &mut egui::Ui) {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Step Properties", "schema JSON");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflow_builder.properties.title"),
+                i18n::t("studio.workflow_builder.properties.detail"),
+            );
             let selected = self.workflow_selected_path.clone();
             let Some(path) = selected else {
-                ui::empty_state(ui, "Select a saved workflow to edit steps");
+                ui::empty_state(ui, i18n::t("studio.workflow_builder.properties.empty"));
                 return;
             };
             ui.small(path.display().to_string());
-            ui.label("Step name");
+            ui.label(i18n::t("studio.workflow_builder.step_name"));
             ui.text_edit_singleline(&mut self.workflow_step_name);
-            ui.label("Parameters JSON");
+            ui.label(i18n::t("studio.workflow_builder.parameters"));
             ui.add_sized(
                 [ui.available_width(), 92.0],
                 egui::TextEdit::multiline(&mut self.workflow_step_parameters),
             );
             ui.horizontal(|ui| {
-                ui.label("Index");
+                ui.label(i18n::t("studio.workflow_builder.index"));
                 ui.add_sized(
                     [48.0, 24.0],
                     egui::TextEdit::singleline(&mut self.workflow_edit_index),
                 );
-                if ui::quiet_button(ui, "Add").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.add")).clicked() {
                     self.add_step_to_selected(&path);
                 }
-                if ui::quiet_button(ui, "Update").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
                     self.update_selected_step(&path);
                 }
             });
             ui.horizontal_wrapped(|ui| {
-                if ui::quiet_button(ui, "Move Up").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_up")).clicked() {
                     self.move_selected_step(&path, -1);
                 }
-                if ui::quiet_button(ui, "Move Down").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_down")).clicked() {
                     self.move_selected_step(&path, 1);
                 }
-                if ui::quiet_button(ui, "Remove").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.remove")).clicked() {
                     self.remove_selected_step(&path);
                 }
             });
@@ -144,8 +156,12 @@ impl StudioEguiApp {
 
     fn render_ai_assist_panel(&mut self, ui: &mut egui::Ui) {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "AI Assist", "plan from goal");
-            ui.label("Describe what this workflow should do");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflow_builder.ai.title"),
+                i18n::t("studio.workflow_builder.ai.detail"),
+            );
+            ui.label(i18n::t("studio.workflow_builder.ai.prompt"));
             ui.add_sized(
                 [ui.available_width(), 32.0],
                 egui::TextEdit::singleline(&mut self.workflow_goal),
