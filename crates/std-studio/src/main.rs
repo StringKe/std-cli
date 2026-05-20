@@ -17,6 +17,7 @@ mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;
 mod smoke;
+mod studio_open;
 mod studio_smoke_cli;
 mod ui;
 mod viewport;
@@ -33,6 +34,10 @@ use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
+use studio_open::{
+    apply_studio_open_request, run_studio_open_request, studio_open_blocked_summary,
+    studio_open_request_from_args, StudioOpenRequest,
+};
 use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
 use viewport::studio_native_options;
 use workspace_panes::WorkspaceCommandQueue;
@@ -192,6 +197,13 @@ fn main() -> eframe::Result<()> {
         println!("{}", report.output());
         return Ok(());
     }
+    if let Some(request) = studio_open_request_from_args(&args) {
+        if let Some(reason) = native_app_blocked_by_test_mode() {
+            println!("{}", studio_open_blocked_summary(request, reason));
+            return Ok(());
+        }
+        return run_studio_open_request(request);
+    }
     if let Some(report) = smoke_from_args(args) {
         println!("{}", report.summary());
         return Ok(());
@@ -206,6 +218,12 @@ fn main() -> eframe::Result<()> {
         studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioEguiApp::default()))),
     )
+}
+
+fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp {
+    let mut app = StudioEguiApp::default();
+    apply_studio_open_request(&mut app, request);
+    app
 }
 
 fn native_app_blocked_by_test_mode() -> Option<&'static str> {
