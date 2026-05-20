@@ -8,6 +8,12 @@ pub(crate) enum RowSurface {
     Raised,
 }
 
+#[derive(Clone, Copy)]
+struct TextRows {
+    title_y: f32,
+    detail_y: f32,
+}
+
 pub(crate) fn paint_row_frame(
     ui: &mut egui::Ui,
     rect: egui::Rect,
@@ -46,6 +52,29 @@ pub(crate) fn paint_title_detail(
     paint_title_detail_at(ui, text_rect, title, detail, title_y, detail_y);
 }
 
+pub(crate) fn paint_inset_title_detail(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    title: &str,
+    detail: &str,
+    title_y: f32,
+    detail_y: f32,
+) {
+    let text_rect = egui::Rect::from_min_max(
+        egui::pos2(rect.left() + row_metrics::TEXT_INSET_X, rect.top()),
+        rect.right_bottom(),
+    );
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
+    paint_title_detail_in_clip(
+        ui,
+        text_rect,
+        clip,
+        title,
+        detail,
+        TextRows { title_y, detail_y },
+    );
+}
+
 pub(crate) fn paint_title_detail_at(
     ui: &mut egui::Ui,
     rect: egui::Rect,
@@ -55,16 +84,34 @@ pub(crate) fn paint_title_detail_at(
     detail_y: f32,
 ) {
     let clip = rect.shrink2(egui::vec2(row_metrics::CLIP_INSET_X, 0.0));
+    paint_title_detail_in_clip(
+        ui,
+        rect,
+        clip,
+        title,
+        detail,
+        TextRows { title_y, detail_y },
+    );
+}
+
+fn paint_title_detail_in_clip(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    clip: egui::Rect,
+    title: &str,
+    detail: &str,
+    rows: TextRows,
+) {
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
-        egui::pos2(rect.left(), rect.top() + title_y),
+        egui::pos2(rect.left(), rect.top() + rows.title_y),
         egui::Align2::LEFT_CENTER,
         title,
         Text::body(),
         ui::strong_text(ui.ctx()),
     );
     painter.text(
-        egui::pos2(rect.left(), rect.top() + detail_y),
+        egui::pos2(rect.left(), rect.top() + rows.detail_y),
         egui::Align2::LEFT_CENTER,
         detail,
         Text::caption(),

@@ -194,6 +194,9 @@ fn check_studio_row_helpers(root: &Path) -> Result<(), CliError> {
     for path in [
         "crates/std-studio/src/views/workflow_rows.rs",
         "crates/std-studio/src/views/plugin_rows.rs",
+        "crates/std-studio/src/views/memory_rows.rs",
+        "crates/std-studio/src/views/history_rows.rs",
+        "crates/std-studio/src/views/settings_rows.rs",
     ] {
         let source = fs::read_to_string(root.join(path))?;
         if !source.contains("row_paint::paint_row_frame") {
