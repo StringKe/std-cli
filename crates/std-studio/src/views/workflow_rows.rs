@@ -9,6 +9,7 @@ use std_egui::{
 const FILE_ROW_HEIGHT: f32 = 58.0;
 const STATUS_ROW_HEIGHT: f32 = 52.0;
 const PATH_ROW_HEIGHT: f32 = 42.0;
+const BUILDER_STEP_ROW_HEIGHT: f32 = 48.0;
 
 pub(crate) enum WorkflowFileAction {
     None,
@@ -139,6 +140,64 @@ pub(crate) fn workflow_summary(ui: &mut egui::Ui, title: &str, status: &str, ste
     ui.add_space(Space::TWO_XS as f32);
 }
 
+pub(crate) fn builder_step_summary(ui: &mut egui::Ui, name: &str, steps: usize) {
+    ui.horizontal(|ui| {
+        ui.label(
+            egui::RichText::new(name)
+                .font(Text::body())
+                .color(ui::strong_text(ui.ctx())),
+        );
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.label(
+                egui::RichText::new(format!("steps={steps}"))
+                    .font(Text::caption())
+                    .color(ui::muted_text(ui.ctx())),
+            );
+        });
+    });
+    ui.add_space(Space::TWO_XS as f32);
+}
+
+pub(crate) fn builder_step_row(
+    ui: &mut egui::Ui,
+    index: usize,
+    name: &str,
+    detail: &str,
+    selected: bool,
+) -> egui::Response {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), BUILDER_STEP_ROW_HEIGHT),
+        egui::Sense::click(),
+    );
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), name));
+    if ui.is_rect_visible(rect) {
+        paint_builder_step_row(ui, rect, response.hovered(), selected);
+        let index_rect = egui::Rect::from_min_size(
+            egui::pos2(rect.left() + Space::XS as f32, rect.center().y - 11.0),
+            egui::vec2(32.0, 22.0),
+        );
+        paint_builder_step_index(ui, index_rect, index + 1, selected);
+        let text_x = index_rect.right() + Space::XS as f32;
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 17.0),
+            egui::Align2::LEFT_CENTER,
+            name,
+            Text::body(),
+            ui::strong_text(ui.ctx()),
+        );
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 34.0),
+            egui::Align2::LEFT_CENTER,
+            detail,
+            Text::caption(),
+            ui::muted_text(ui.ctx()),
+        );
+    }
+    ui.add_space(Space::TWO_XS as f32);
+    response
+}
+
 fn workflow_label(path: &Path) -> String {
     path.parent()
         .and_then(Path::file_name)
@@ -146,6 +205,57 @@ fn workflow_label(path: &Path) -> String {
         .or_else(|| path.file_stem().and_then(|name| name.to_str()))
         .unwrap_or("workflow")
         .to_string()
+}
+
+fn paint_builder_step_row(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
+    let fill = if selected {
+        Color::accent_weak(ui.ctx())
+    } else if hovered {
+        Color::bg_surface_3(ui.ctx())
+    } else {
+        Color::bg_surface_2(ui.ctx())
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
+    ui.painter().rect_stroke(
+        rect,
+        egui::CornerRadius::same(Radius::SM),
+        egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())),
+        egui::StrokeKind::Inside,
+    );
+    if selected {
+        let strip = egui::Rect::from_min_max(
+            rect.left_top(),
+            egui::pos2(rect.left() + 3.0, rect.bottom()),
+        );
+        ui.painter().rect_filled(
+            strip,
+            egui::CornerRadius::same(Radius::SM),
+            Color::accent_base(ui.ctx()),
+        );
+    }
+}
+
+fn paint_builder_step_index(ui: &mut egui::Ui, rect: egui::Rect, number: usize, selected: bool) {
+    let fill = if selected {
+        Color::accent_base(ui.ctx())
+    } else {
+        Color::bg_surface_1(ui.ctx())
+    };
+    let text_color = if selected {
+        Color::bg_surface_0(ui.ctx())
+    } else {
+        Color::fg_secondary(ui.ctx())
+    };
+    ui.painter()
+        .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
+    ui.painter().text(
+        rect.center(),
+        egui::Align2::CENTER_CENTER,
+        number.to_string(),
+        Text::caption(),
+        text_color,
+    );
 }
 
 fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) {
