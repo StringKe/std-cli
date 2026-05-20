@@ -2,8 +2,9 @@ use crate::gui_smoke::{run_gui_hotkey_smoke, GuiHotkeySmokeConfig};
 use crate::preview::LauncherPreviewSmokeReport;
 use std_egui::tokens::ThemeSmokeReport;
 use std_launcher::{
-    hotkey_smoke, HotkeySmokeReport, LauncherKeyboardReport, LauncherSmokeReport, LauncherState,
-    LauncherSurfaceSmokeReport, LauncherUiSemanticsReport, LauncherWindowSmokeReport,
+    hotkey_smoke, HotkeySmokeReport, LauncherActionPanelSmokeReport, LauncherKeyboardReport,
+    LauncherSmokeReport, LauncherState, LauncherSurfaceSmokeReport, LauncherUiSemanticsReport,
+    LauncherWindowSmokeReport,
 };
 
 enum LauncherCliSmoke {
@@ -11,6 +12,7 @@ enum LauncherCliSmoke {
     Hotkey(HotkeySmokeReport),
     Window(LauncherWindowSmokeReport),
     Keyboard(LauncherKeyboardReport),
+    ActionPanel(LauncherActionPanelSmokeReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
     Surface(LauncherSurfaceSmokeReport),
     Preview(LauncherPreviewSmokeReport),
@@ -33,6 +35,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
             Ok(true)
         }
         Some(LauncherCliSmoke::Keyboard(report)) => {
+            println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::ActionPanel(report)) => {
             println!("{}", report.summary());
             Ok(true)
         }
@@ -89,6 +95,16 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
             Some(LauncherCliSmoke::Keyboard(LauncherState::keyboard_smoke(
                 query,
             )))
+        }
+        Some("--action-panel-smoke") => {
+            let query = args
+                .get(2)
+                .map(String::as_str)
+                .filter(|query| !query.trim().is_empty())
+                .unwrap_or("index");
+            Some(LauncherCliSmoke::ActionPanel(
+                LauncherState::action_panel_smoke(query),
+            ))
         }
         Some("--ui-semantics-smoke") => {
             let query = args

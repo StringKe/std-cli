@@ -158,6 +158,7 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=std-launcher --surface-smoke",
         "smoke=std-launcher --ui-semantics-smoke index",
         "smoke=std-launcher --keyboard-smoke index",
+        "smoke=std-launcher --action-panel-smoke index",
         "smoke=std-launcher --preview-smoke",
         "smoke=std-studio --smoke",
         "smoke=std-studio --workspace-policy-smoke",

@@ -3,6 +3,7 @@
 //! Extremely restrained implementation. Only search + trigger.
 
 mod action_panel;
+mod action_panel_smoke;
 mod controller;
 mod hotkey;
 mod keyboard;
@@ -13,6 +14,7 @@ mod surface_smoke;
 mod voice;
 
 pub use action_panel::{ActionPanel, ActionPanelItem};
+pub use action_panel_smoke::LauncherActionPanelSmokeReport;
 pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
