@@ -1,15 +1,23 @@
 use crate::app::LauncherApp;
 use crate::ui;
 use eframe::egui;
+use std::env;
 use std::time::{Duration, Instant};
 use std_egui::tokens::ThemeMode;
 use std_launcher::LauncherState;
 use std_types::{ActionExecution, ActionExecutionStatus};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LauncherPreviewConfig {
     theme_mode: ThemeMode,
     scenario: String,
     timeout_ms: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum LauncherPreviewRequest {
+    Run(LauncherPreviewConfig),
+    Blocked(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -25,7 +33,9 @@ impl LauncherPreviewSmokeReport {
         Self {
             commands: scenarios
                 .iter()
-                .map(|scenario| format!("std-launcher --ui-preview {scenario} 8000"))
+                .map(|scenario| {
+                    format!("STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview {scenario} 8000")
+                })
                 .collect(),
             states: scenarios
                 .iter()
@@ -81,10 +91,17 @@ impl eframe::App for LauncherPreviewApp {
     }
 }
 
-pub(crate) fn preview_from_args(args: &[String]) -> Option<LauncherPreviewConfig> {
+pub(crate) fn preview_request_from_args(args: &[String]) -> Option<LauncherPreviewRequest> {
     if args.get(1).map(String::as_str) != Some("--ui-preview") {
         return None;
     }
+    if !ui_preview_allowed() {
+        return Some(LauncherPreviewRequest::Blocked(ui_preview_blocked_reason()));
+    }
+    preview_config_from_args(args).map(LauncherPreviewRequest::Run)
+}
+
+fn preview_config_from_args(args: &[String]) -> Option<LauncherPreviewConfig> {
     Some(LauncherPreviewConfig {
         theme_mode: args
             .get(2)
@@ -100,6 +117,25 @@ pub(crate) fn preview_from_args(args: &[String]) -> Option<LauncherPreviewConfig
             .and_then(|value| value.parse::<u64>().ok())
             .unwrap_or(8_000),
     })
+}
+
+fn ui_preview_allowed() -> bool {
+    !std_core::std_test_mode_enabled()
+        && env::var("STD_ALLOW_UI_PREVIEW")
+            .map(|value| value == "1")
+            .unwrap_or(false)
+}
+
+fn ui_preview_blocked_reason() -> String {
+    if std_core::std_test_mode_enabled() {
+        "STD_TEST_MODE blocked UI preview; use explicit UI preview opt-in outside tests".to_string()
+    } else {
+        "UI preview requires STD_ALLOW_UI_PREVIEW=1 explicit opt-in".to_string()
+    }
+}
+
+pub(crate) fn blocked_preview_summary(reason: &str) -> String {
+    format!("launcher_ui_preview SKIP\nreason={reason}")
 }
 
 pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
@@ -250,11 +286,29 @@ mod tests {
             "defer".to_string(),
             "1200".to_string(),
         ];
-        let config = preview_from_args(&args).unwrap();
+        let config = preview_config_from_args(&args).unwrap();
 
         assert_eq!(config.theme_mode, ThemeMode::Light);
         assert_eq!(config.scenario, "defer");
         assert_eq!(config.timeout_ms, 1200);
+    }
+
+    #[test]
+    fn ui_preview_args_are_blocked_without_opt_in() {
+        std::env::remove_var("STD_ALLOW_UI_PREVIEW");
+        let args = vec![
+            "std-launcher".to_string(),
+            "--ui-preview".to_string(),
+            "light".to_string(),
+            "defer".to_string(),
+            "1200".to_string(),
+        ];
+
+        let Some(LauncherPreviewRequest::Blocked(reason)) = preview_request_from_args(&args) else {
+            panic!("expected blocked UI preview request");
+        };
+        assert!(reason.contains("STD_TEST_MODE blocked UI preview"));
+        assert!(blocked_preview_summary(&reason).contains("launcher_ui_preview SKIP"));
     }
 
     #[test]

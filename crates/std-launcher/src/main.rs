@@ -25,12 +25,20 @@ mod window;
 
 use app::LauncherApp;
 use eframe::egui;
-use preview::{preview_from_args, run_preview};
+use preview::{
+    blocked_preview_summary, preview_request_from_args, run_preview, LauncherPreviewRequest,
+};
 
 fn main() -> eframe::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
-    if let Some(config) = preview_from_args(&args) {
-        return run_preview(config);
+    if let Some(request) = preview_request_from_args(&args) {
+        match request {
+            LauncherPreviewRequest::Run(config) => return run_preview(config),
+            LauncherPreviewRequest::Blocked(reason) => {
+                println!("{}", blocked_preview_summary(&reason));
+                return Ok(());
+            }
+        }
     }
     if cli::run_smoke_from_args(args)? {
         return Ok(());
