@@ -29,6 +29,14 @@ pub(crate) struct StudioSmokeReport {
     bottom_panel_default_open: bool,
     canvas_surface: String,
     workflow_status: String,
+    builder_created: bool,
+    builder_added_step: bool,
+    builder_updated_step: bool,
+    builder_moved_step: bool,
+    builder_simulated: bool,
+    builder_run_status: String,
+    builder_trace_steps: usize,
+    builder_trace_events: usize,
     batch_status: String,
     analysis_name: String,
     analysis_coverage_complete: usize,
@@ -41,7 +49,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -62,6 +70,14 @@ impl StudioSmokeReport {
             self.bottom_panel_default_open,
             self.canvas_surface,
             self.workflow_status,
+            self.builder_created,
+            self.builder_added_step,
+            self.builder_updated_step,
+            self.builder_moved_step,
+            self.builder_simulated,
+            self.builder_run_status,
+            self.builder_trace_steps,
+            self.builder_trace_events,
             self.batch_status,
             self.analysis_name,
             self.analysis_coverage_complete,
@@ -91,6 +107,14 @@ impl StudioSmokeReport {
             && !self.bottom_panel_default_open
             && self.canvas_surface == "bg/surface-0"
             && self.workflow_status == "Completed"
+            && self.builder_created
+            && self.builder_added_step
+            && self.builder_updated_step
+            && self.builder_moved_step
+            && self.builder_simulated
+            && self.builder_run_status == "Completed"
+            && self.builder_trace_steps >= 2
+            && self.builder_trace_events >= 3
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
             && self.memory_count >= 1
@@ -126,6 +150,14 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             bottom_panel_default_open: true,
             canvas_surface: "FAIL".to_string(),
             workflow_status: format!("FAIL {error}"),
+            builder_created: false,
+            builder_added_step: false,
+            builder_updated_step: false,
+            builder_moved_step: false,
+            builder_simulated: false,
+            builder_run_status: "FAIL".to_string(),
+            builder_trace_steps: 0,
+            builder_trace_events: 0,
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
@@ -161,6 +193,7 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
     )?;
     let workflow_status = format!("{:?}", studio.run_workflow_path(&workflow_path)?.status);
     let history_count = studio.recent_workflow_executions(10)?.len();
+    let builder_smoke = run_workflow_builder_smoke(&mut studio)?;
     let batch_status = format!("{:?}", studio.run_batch_json(&default_batch_json())?.status);
 
     studio.remember_from_studio(
@@ -225,12 +258,77 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         bottom_panel_default_open: layout.bottom_panel_default_open,
         canvas_surface: layout.canvas_surface,
         workflow_status,
+        builder_created: builder_smoke.created,
+        builder_added_step: builder_smoke.added_step,
+        builder_updated_step: builder_smoke.updated_step,
+        builder_moved_step: builder_smoke.moved_step,
+        builder_simulated: builder_smoke.simulated,
+        builder_run_status: builder_smoke.run_status,
+        builder_trace_steps: builder_smoke.trace_steps,
+        builder_trace_events: builder_smoke.trace_events,
         batch_status,
         analysis_name,
         analysis_coverage_complete: coverage.complete,
         memory_count,
         plugin_status,
         history_count,
+    })
+}
+
+struct WorkflowBuilderSmoke {
+    created: bool,
+    added_step: bool,
+    updated_step: bool,
+    moved_step: bool,
+    simulated: bool,
+    run_status: String,
+    trace_steps: usize,
+    trace_events: usize,
+}
+
+fn run_workflow_builder_smoke(
+    studio: &mut StudioApp,
+) -> Result<WorkflowBuilderSmoke, Box<dyn std::error::Error>> {
+    let workflow_path = studio.create_workflow("Builder Smoke", "Builder interaction smoke")?;
+    let created = workflow_path.ends_with("builder-smoke/workflow.md");
+    let first = studio.add_workflow_step(
+        &workflow_path,
+        "Collect builder context",
+        serde_json::json!({"phase": "collect"}),
+    )?;
+    let second = studio.add_workflow_step(
+        &workflow_path,
+        "Validate builder output",
+        serde_json::json!({"phase": "validate"}),
+    )?;
+    let added_step =
+        first.name == "Collect builder context" && second.name == "Validate builder output";
+    let updated = studio.update_workflow_step(
+        &workflow_path,
+        1,
+        Some("Validate edited output"),
+        Some(serde_json::json!({"phase": "edited"})),
+    )?;
+    let moved = studio.move_workflow_step(&workflow_path, 1, 0)?;
+    let simulated = studio.preview_workflow_path(&workflow_path)?.steps.len() == 2;
+    let execution = studio.run_workflow_path(&workflow_path)?.clone();
+    let run_status = format!("{:?}", execution.status);
+    let traces = studio.recent_workflow_traces(10)?;
+    let trace = traces
+        .iter()
+        .find(|trace| trace.execution.workflow_id == execution.workflow_id);
+
+    Ok(WorkflowBuilderSmoke {
+        created,
+        added_step,
+        updated_step: updated.name == "Validate edited output",
+        moved_step: moved.name == "Validate edited output",
+        simulated,
+        run_status,
+        trace_steps: trace.map(|trace| trace.steps.len()).unwrap_or_default(),
+        trace_events: trace
+            .map(|trace| trace.audit_events.len())
+            .unwrap_or_default(),
     })
 }
 
@@ -328,12 +426,21 @@ mod tests {
         let summary = report.summary();
 
         assert!(report.pass());
+        assert_workspace_policy_summary(&summary);
+        assert_shell_layout_summary(&summary);
+        assert_workflow_builder_summary(&summary);
+    }
+
+    fn assert_workspace_policy_summary(summary: &str) {
         assert!(summary.contains("pane_opened=true"));
         assert!(summary.contains("pane_focus_switched=true"));
         assert!(summary.contains("pane_closed=true"));
         assert!(summary.contains("pane_focus_restored=true"));
         assert!(summary.contains("native_child_windows=false"));
         assert!(summary.contains("detached_panels=false"));
+    }
+
+    fn assert_shell_layout_summary(summary: &str) {
         assert!(summary.contains("host_window_size=1280x800"));
         assert!(summary.contains("min_window_size=1080x640"));
         assert!(summary.contains("host_chrome_height=52"));
@@ -345,6 +452,16 @@ mod tests {
         assert!(summary.contains("bottom_panel_height=240"));
         assert!(summary.contains("bottom_panel_default_open=false"));
         assert!(summary.contains("canvas_surface=bg/surface-0"));
+    }
+
+    fn assert_workflow_builder_summary(summary: &str) {
+        assert!(summary.contains("builder_created=true"));
+        assert!(summary.contains("builder_added_step=true"));
+        assert!(summary.contains("builder_updated_step=true"));
+        assert!(summary.contains("builder_moved_step=true"));
+        assert!(summary.contains("builder_simulated=true"));
+        assert!(summary.contains("builder_run_status=Completed"));
+        assert!(summary.contains("builder_trace_steps=2"));
     }
 
     #[test]
