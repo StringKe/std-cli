@@ -253,11 +253,10 @@ mod tests {
         assert_eq!(manager.manifest_paths.len(), 1);
         assert_eq!(manager.preview.as_ref().unwrap().title, "Plugin Smoke");
         assert_eq!(execution.action_name, "Plugin Smoke");
+        assert_eq!(execution.status, std_types::ActionExecutionStatus::Failed);
         assert!(execution
-            .output
-            .unwrap()
-            .to_string()
-            .contains("studio-plugin-smoke"));
+            .message
+            .contains("STD_TEST_MODE blocked shell plugin command"));
     }
 
     #[test]

@@ -28,6 +28,20 @@ pub struct MotionContext {
 }
 
 impl MotionContext {
+    pub fn standard() -> Self {
+        Self {
+            reduced: false,
+            durations: Durations::STANDARD,
+        }
+    }
+
+    pub fn reduced() -> Self {
+        Self {
+            reduced: true,
+            durations: Durations::STANDARD,
+        }
+    }
+
     pub fn from_env() -> Self {
         Self {
             reduced: reduce_motion_env(),
@@ -81,10 +95,7 @@ mod tests {
 
     #[test]
     fn standard_motion_uses_documented_launcher_duration() {
-        let motion = MotionContext {
-            reduced: false,
-            durations: Durations::STANDARD,
-        };
+        let motion = MotionContext::standard();
 
         assert_eq!(motion.launcher_enter(), Duration::from_millis(320));
         assert_eq!(motion.launcher_exit(), Duration::from_millis(140));
@@ -92,10 +103,7 @@ mod tests {
 
     #[test]
     fn reduced_motion_collapses_nonessential_durations() {
-        let motion = MotionContext {
-            reduced: true,
-            durations: Durations::STANDARD,
-        };
+        let motion = MotionContext::reduced();
 
         assert_eq!(motion.launcher_enter(), Duration::ZERO);
         assert_eq!(motion.focus_ring(), Duration::ZERO);

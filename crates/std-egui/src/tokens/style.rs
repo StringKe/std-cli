@@ -4,8 +4,9 @@ use super::{
     typography::{install_fonts_for_a11y, Text, UiScale},
     Color, EffectiveTheme, ThemeMode,
 };
-use crate::a11y::AccessibilityContext;
+use crate::{a11y::AccessibilityContext, motion::MotionContext};
 use egui::{Stroke, TextStyle};
+use std::time::Duration;
 
 pub fn apply_theme(ctx: &egui::Context, mode: ThemeMode) {
     let a11y = AccessibilityContext::from_env();
@@ -14,12 +15,25 @@ pub fn apply_theme(ctx: &egui::Context, mode: ThemeMode) {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ThemeSmokeReport {
-    pub dark_panel: egui::Color32,
-    pub light_panel: egui::Color32,
-    pub dark_window: egui::Color32,
-    pub light_window: egui::Color32,
+    pub dark_surface_0: egui::Color32,
+    pub dark_surface_1: egui::Color32,
+    pub dark_surface_2: egui::Color32,
+    pub dark_surface_3: egui::Color32,
+    pub light_surface_0: egui::Color32,
+    pub light_surface_1: egui::Color32,
+    pub light_surface_2: egui::Color32,
+    pub light_surface_3: egui::Color32,
+    pub dark_selection: egui::Color32,
+    pub light_selection: egui::Color32,
+    pub dark_accent: egui::Color32,
+    pub light_accent: egui::Color32,
+    pub dark_accent_weak_alpha: u8,
+    pub light_accent_weak_alpha: u8,
     pub dark_mode_applied: bool,
     pub light_mode_applied: bool,
+    pub high_contrast_focus_ring_width: u32,
+    pub standard_launcher_enter_ms: u64,
+    pub reduced_launcher_enter_ms: u64,
 }
 
 impl ThemeSmokeReport {
@@ -29,34 +43,75 @@ impl ThemeSmokeReport {
         let dark = ctx.style().visuals.clone();
         apply_theme(&ctx, ThemeMode::Light);
         let light = ctx.style().visuals.clone();
+        let a11y = AccessibilityContext {
+            reduce_motion: false,
+            reduce_transparency: false,
+            high_contrast: true,
+            bold_text: false,
+        };
         Self {
-            dark_panel: dark.panel_fill,
-            light_panel: light.panel_fill,
-            dark_window: dark.window_fill,
-            light_window: light.window_fill,
+            dark_surface_0: dark.panel_fill,
+            dark_surface_1: dark.window_fill,
+            dark_surface_2: dark.widgets.inactive.bg_fill,
+            dark_surface_3: dark.widgets.hovered.bg_fill,
+            light_surface_0: light.panel_fill,
+            light_surface_1: light.window_fill,
+            light_surface_2: light.widgets.inactive.bg_fill,
+            light_surface_3: light.widgets.hovered.bg_fill,
+            dark_selection: dark.selection.bg_fill,
+            light_selection: light.selection.bg_fill,
+            dark_accent: Color::accent_base_for(EffectiveTheme::Dark, &a11y),
+            light_accent: Color::accent_base_for(EffectiveTheme::Light, &a11y),
+            dark_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Dark, &a11y).a(),
+            light_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Light, &a11y).a(),
             dark_mode_applied: dark.dark_mode,
             light_mode_applied: !light.dark_mode,
+            high_contrast_focus_ring_width: a11y.focus_ring_width() as u32,
+            standard_launcher_enter_ms: duration_ms(MotionContext::standard().launcher_enter()),
+            reduced_launcher_enter_ms: duration_ms(MotionContext::reduced().launcher_enter()),
         }
     }
 
     pub fn pass(&self) -> bool {
         self.dark_mode_applied
             && self.light_mode_applied
-            && self.dark_panel != self.light_panel
-            && self.dark_window != self.light_window
-            && self.dark_panel.r() >= 24
+            && self.dark_surface_0 != self.light_surface_0
+            && self.dark_surface_1 != self.light_surface_1
+            && layered_dark_surfaces(self)
+            && layered_light_surfaces(self)
+            && self.dark_selection != self.light_selection
+            && self.dark_accent != self.light_accent
+            && self.dark_accent_weak_alpha == 82
+            && self.light_accent_weak_alpha == 56
+            && self.dark_surface_0.r() >= 24
+            && self.high_contrast_focus_ring_width == 3
+            && self.standard_launcher_enter_ms == 320
+            && self.reduced_launcher_enter_ms == 0
     }
 
     pub fn summary(&self, surface: &str) -> String {
         format!(
-            "{surface}_theme_smoke {}\ndark_panel={}\nlight_panel={}\ndark_window={}\nlight_window={}\ndark_mode_applied={}\nlight_mode_applied={}",
+            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_focus_ring_width={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}",
             if self.pass() { "PASS" } else { "FAIL" },
-            color_hex(self.dark_panel),
-            color_hex(self.light_panel),
-            color_hex(self.dark_window),
-            color_hex(self.light_window),
+            color_hex(self.dark_surface_0),
+            color_hex(self.dark_surface_1),
+            color_hex(self.dark_surface_2),
+            color_hex(self.dark_surface_3),
+            color_hex(self.light_surface_0),
+            color_hex(self.light_surface_1),
+            color_hex(self.light_surface_2),
+            color_hex(self.light_surface_3),
+            color_hex(self.dark_selection),
+            color_hex(self.light_selection),
+            color_hex(self.dark_accent),
+            color_hex(self.light_accent),
+            self.dark_accent_weak_alpha,
+            self.light_accent_weak_alpha,
             self.dark_mode_applied,
-            self.light_mode_applied
+            self.light_mode_applied,
+            self.high_contrast_focus_ring_width,
+            self.standard_launcher_enter_ms,
+            self.reduced_launcher_enter_ms
         )
     }
 }
@@ -69,6 +124,22 @@ impl Default for ThemeSmokeReport {
 
 fn color_hex(color: egui::Color32) -> String {
     format!("#{:02X}{:02X}{:02X}", color.r(), color.g(), color.b())
+}
+
+fn layered_dark_surfaces(report: &ThemeSmokeReport) -> bool {
+    report.dark_surface_0.r() < report.dark_surface_1.r()
+        && report.dark_surface_1.r() < report.dark_surface_2.r()
+        && report.dark_surface_2.r() < report.dark_surface_3.r()
+}
+
+fn layered_light_surfaces(report: &ThemeSmokeReport) -> bool {
+    report.light_surface_0.r() > report.light_surface_1.r()
+        && report.light_surface_1.r() > report.light_surface_2.r()
+        && report.light_surface_2.r() > report.light_surface_3.r()
+}
+
+fn duration_ms(duration: Duration) -> u64 {
+    u64::try_from(duration.as_millis()).unwrap_or(u64::MAX)
 }
 
 fn apply_theme_with_scale(
@@ -193,7 +264,12 @@ mod tests {
             .summary("launcher")
             .contains("launcher_theme_smoke PASS"));
         assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
-        assert_eq!(color_hex(report.dark_panel), "#1C1E22");
-        assert_eq!(color_hex(report.light_panel), "#FFFFFF");
+        assert_eq!(color_hex(report.dark_surface_0), "#1C1E22");
+        assert_eq!(color_hex(report.light_surface_0), "#FFFFFF");
+        assert_eq!(report.high_contrast_focus_ring_width, 3);
+        assert_eq!(report.dark_accent_weak_alpha, 82);
+        assert_eq!(report.light_accent_weak_alpha, 56);
+        assert_eq!(report.standard_launcher_enter_ms, 320);
+        assert_eq!(report.reduced_launcher_enter_ms, 0);
     }
 }
