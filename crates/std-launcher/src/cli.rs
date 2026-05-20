@@ -2,7 +2,7 @@ use crate::gui_smoke::{run_gui_hotkey_smoke, GuiHotkeySmokeConfig};
 use std_egui::tokens::ThemeSmokeReport;
 use std_launcher::{
     hotkey_smoke, HotkeySmokeReport, LauncherKeyboardReport, LauncherSmokeReport, LauncherState,
-    LauncherUiSemanticsReport, LauncherWindowSmokeReport,
+    LauncherSurfaceSmokeReport, LauncherUiSemanticsReport, LauncherWindowSmokeReport,
 };
 
 enum LauncherCliSmoke {
@@ -11,6 +11,7 @@ enum LauncherCliSmoke {
     Window(LauncherWindowSmokeReport),
     Keyboard(LauncherKeyboardReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
+    Surface(LauncherSurfaceSmokeReport),
     GuiHotkey(GuiHotkeySmokeConfig),
     Theme(ThemeSmokeReport),
 }
@@ -34,6 +35,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
             Ok(true)
         }
         Some(LauncherCliSmoke::UiSemantics(report)) => {
+            println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::Surface(report)) => {
             println!("{}", report.summary());
             Ok(true)
         }
@@ -88,6 +93,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
             Some(LauncherCliSmoke::UiSemantics(Box::new(
                 LauncherState::ui_semantics_smoke(query),
             )))
+        }
+        Some("--surface-smoke") => {
+            Some(LauncherCliSmoke::Surface(LauncherSurfaceSmokeReport::new()))
         }
         Some("--theme-smoke") => Some(LauncherCliSmoke::Theme(ThemeSmokeReport::new())),
         Some("--gui-hotkey-smoke") => Some(LauncherCliSmoke::GuiHotkey(GuiHotkeySmokeConfig {
@@ -170,5 +178,17 @@ mod tests {
         assert!(report
             .summary("launcher")
             .contains("launcher_theme_smoke PASS"));
+    }
+
+    #[test]
+    fn surface_smoke_reports_launcher_visual_state_contract() {
+        let args = vec!["std-launcher".to_string(), "--surface-smoke".to_string()];
+        let Some(LauncherCliSmoke::Surface(report)) = smoke_from_args(args) else {
+            panic!("expected surface smoke report");
+        };
+
+        assert!(report.pass(), "{}", report.summary());
+        assert!(report.summary().contains("launcher_surface_smoke PASS"));
+        assert!(report.summary().contains("panel_opaque=true"));
     }
 }

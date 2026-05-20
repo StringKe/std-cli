@@ -7,6 +7,7 @@ mod controller;
 mod hotkey;
 mod keyboard;
 mod semantics;
+mod surface_smoke;
 mod voice;
 
 pub use action_panel::{ActionPanel, ActionPanelItem};
@@ -23,6 +24,7 @@ use std_orchestration::{
     append_workflow_execution, load_workflow, resolve_workflow_input, WorkflowExecutor,
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType};
+pub use surface_smoke::LauncherSurfaceSmokeReport;
 pub use voice::clean_voice_transcript;
 
 const SEARCH_BUDGET_MS: u128 = 16;
