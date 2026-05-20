@@ -31,6 +31,16 @@ pub(crate) fn ask_ai_row_height() -> f32 {
     scale().f32(34.0)
 }
 
+pub(crate) fn no_matches_icon_size() -> egui::Vec2 {
+    crate::ui_metrics_empty::no_matches_icon_size(scale())
+}
+
+pub(crate) fn no_matches_icon_geometry(
+    rect: egui::Rect,
+) -> crate::ui_metrics_empty::EmptySearchIconGeometry {
+    crate::ui_metrics_empty::no_matches_icon_geometry(scale(), rect)
+}
+
 pub(crate) fn action_bar_content_height() -> f32 {
     scale().f32(24.0)
 }
@@ -214,6 +224,14 @@ mod tests {
         assert_eq!(
             crate::ui_metrics_action_panel::metrics_for_scale(UiScale::new(1.5), 700.0),
             (480.0, 219.0, 42.0, 3.0, 48.0)
+        );
+    }
+
+    #[test]
+    fn empty_state_icon_metrics_scale_with_ui_zoom() {
+        assert_eq!(
+            crate::ui_metrics_empty::no_matches_icon_metrics_for_scale(UiScale::new(1.5)),
+            (egui::vec2(48.0, 48.0), 13.5)
         );
     }
 }

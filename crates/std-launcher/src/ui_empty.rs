@@ -52,6 +52,8 @@ fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::md() as f32);
     ui.vertical_centered(|ui| {
+        render_no_matches_icon(ui, &ctx);
+        ui.add_space(Space::xs() as f32);
         ui.label(
             egui::RichText::new(i18n::t("launcher.empty.no_matches.title"))
                 .font(Text::body())
@@ -70,6 +72,17 @@ fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
         ui,
         &format!("{} \"{}\"", i18n::t("launcher.empty.ask_ai"), query),
     )
+}
+
+fn render_no_matches_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let (rect, _response) =
+        ui.allocate_exact_size(ui_metrics::no_matches_icon_size(), egui::Sense::hover());
+    let geometry = ui_metrics::no_matches_icon_geometry(rect);
+    let stroke = egui::Stroke::new(1.6, Color::fg_tertiary(ctx));
+    ui.painter()
+        .circle_stroke(geometry.center, geometry.radius, stroke);
+    ui.painter()
+        .line_segment([geometry.handle_start, geometry.handle_end], stroke);
 }
 
 fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -109,5 +122,15 @@ mod tests {
     #[test]
     fn ask_ai_query_uses_launcher_question_prefix() {
         assert_eq!(ask_ai_query("  missing workflow  "), "? missing workflow");
+    }
+
+    #[test]
+    fn no_matches_icon_uses_docs_lg_size() {
+        let (size, radius) = crate::ui_metrics_empty::no_matches_icon_metrics_for_scale(
+            std_egui::tokens::UiScale::default(),
+        );
+
+        assert_eq!(size, egui::vec2(32.0, 32.0));
+        assert_eq!(radius, 9.0);
     }
 }
