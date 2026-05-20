@@ -1,15 +1,12 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecutionStatus, StdEvent};
 
-const TRACE_ROW_HEIGHT: f32 = 92.0;
-const EVENT_ROW_HEIGHT: f32 = 66.0;
-
 pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), TRACE_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::HISTORY_TRACE_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -26,8 +23,8 @@ pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
             rect,
             &trace.execution.workflow_name,
             &trace.execution.workflow_id.to_string(),
-            19.0,
-            39.0,
+            row_metrics::FILE_TITLE_Y,
+            row_metrics::FILE_DETAIL_Y,
         );
         paint_trace_chips(ui, rect, trace);
         paint_step_preview(ui, rect, &trace.steps);
@@ -37,7 +34,7 @@ pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
 
 pub(crate) fn event_row(ui: &mut egui::Ui, event: &StdEvent) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), EVENT_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::HISTORY_EVENT_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     let title = format!("{:?}", event.event_type);
@@ -51,8 +48,8 @@ pub(crate) fn event_row(ui: &mut egui::Ui, event: &StdEvent) {
             rect,
             &format!("{:?}", event.event_type),
             &event.created_at.to_rfc3339(),
-            18.0,
-            38.0,
+            row_metrics::DENSE_TITLE_Y,
+            row_metrics::DENSE_DETAIL_Y,
         );
         paint_event_chips(ui, rect, event);
         paint_payload_preview(ui, rect, &event.payload);
@@ -68,21 +65,32 @@ fn paint_trace_chips(ui: &mut egui::Ui, rect: egui::Rect, trace: &WorkflowExecut
     ];
     paint_chips(
         ui,
-        rect.left() + Space::SM as f32,
-        rect.bottom() - 43.0,
+        rect.left() + row_metrics::TEXT_INSET_X,
+        rect.bottom() - row_metrics::HISTORY_TRACE_CHIP_Y,
         &chips,
     );
 }
 
 fn paint_step_preview(ui: &mut egui::Ui, rect: egui::Rect, steps: &[WorkflowTraceStep]) {
-    let mut x = rect.left() + Space::SM as f32;
-    let y = rect.bottom() - 19.0;
+    let mut x = rect.left() + row_metrics::TEXT_INSET_X;
+    let y = rect.bottom() - row_metrics::CHIP_ROW_Y_19;
     for step in steps.iter().take(3) {
         let label = step_label(step);
-        let width = (label.len() as f32 * 7.0 + 18.0).clamp(52.0, 150.0);
-        let chip_rect = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(width, 15.0));
+        let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::ANALYSIS_CHIP_MIN_WIDTH,
+                row_metrics::HISTORY_STEP_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(
+                width,
+                row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
+            ),
+        );
         paint_chip(ui, chip_rect, &label, step_fill(ui.ctx(), step));
-        x += width + Space::TWO_XS as f32;
+        x += width + row_metrics::CHIP_GAP;
     }
 }
 
@@ -90,8 +98,8 @@ fn paint_event_chips(ui: &mut egui::Ui, rect: egui::Rect, event: &StdEvent) {
     let chips = [event.source.clone(), event.id.to_string()];
     paint_chips(
         ui,
-        rect.left() + Space::SM as f32,
-        rect.bottom() - 23.0,
+        rect.left() + row_metrics::TEXT_INSET_X,
+        rect.bottom() - row_metrics::CHIP_ROW_Y_23,
         &chips,
     );
 }
@@ -99,11 +107,14 @@ fn paint_event_chips(ui: &mut egui::Ui, rect: egui::Rect, event: &StdEvent) {
 fn paint_payload_preview(ui: &mut egui::Ui, rect: egui::Rect, payload: &serde_json::Value) {
     let text = compact_payload(payload);
     let clip = egui::Rect::from_min_max(
-        egui::pos2(rect.left() + 210.0, rect.top()),
+        egui::pos2(rect.left() + row_metrics::HISTORY_PAYLOAD_X, rect.top()),
         rect.right_bottom(),
     );
     ui.painter().with_clip_rect(clip).text(
-        egui::pos2(rect.left() + 210.0, rect.top() + 38.0),
+        egui::pos2(
+            rect.left() + row_metrics::HISTORY_PAYLOAD_X,
+            rect.top() + row_metrics::DENSE_DETAIL_Y,
+        ),
         egui::Align2::LEFT_CENTER,
         text,
         Text::caption(),
@@ -114,10 +125,21 @@ fn paint_payload_preview(ui: &mut egui::Ui, rect: egui::Rect, payload: &serde_js
 fn paint_chips(ui: &mut egui::Ui, start_x: f32, y: f32, labels: &[String]) {
     let mut x = start_x;
     for label in labels.iter().take(4) {
-        let width = (label.len() as f32 * 7.0 + 18.0).clamp(48.0, 138.0);
-        let chip_rect = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(width, 15.0));
+        let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::HISTORY_CHIP_MIN_WIDTH,
+                row_metrics::HISTORY_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(
+                width,
+                row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
+            ),
+        );
         paint_chip(ui, chip_rect, label, Color::bg_surface_2(ui.ctx()));
-        x += width + Space::TWO_XS as f32;
+        x += width + row_metrics::CHIP_GAP;
     }
 }
 
@@ -157,9 +179,9 @@ fn paint_title_detail(
     y1: f32,
     y2: f32,
 ) {
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     let painter = ui.painter().with_clip_rect(clip);
-    let x = rect.left() + Space::SM as f32;
+    let x = rect.left() + row_metrics::TEXT_INSET_X;
     painter.text(
         egui::pos2(x, rect.top() + y1),
         egui::Align2::LEFT_CENTER,
@@ -192,8 +214,13 @@ fn step_fill(ctx: &egui::Context, step: &WorkflowTraceStep) -> egui::Color32 {
 
 fn compact_payload(payload: &serde_json::Value) -> String {
     let text = payload.to_string();
-    if text.chars().count() > 72 {
-        format!("{}...", text.chars().take(72).collect::<String>())
+    if text.chars().count() > row_metrics::HISTORY_PAYLOAD_LIMIT {
+        format!(
+            "{}...",
+            text.chars()
+                .take(row_metrics::HISTORY_PAYLOAD_LIMIT)
+                .collect::<String>()
+        )
     } else {
         text
     }

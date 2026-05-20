@@ -132,6 +132,13 @@ fn ui_shell_path(path: &Path) -> bool {
                     | "workspace_tabs.rs"
                     | "workflow_rows.rs"
                     | "plugin_rows.rs"
+                    | "analysis_rows.rs"
+                    | "app_rows.rs"
+                    | "dashboard_rows.rs"
+                    | "history_rows.rs"
+                    | "memory_rows.rs"
+                    | "settings_rows.rs"
+                    | "operations_rows.rs"
             )
         })
         .unwrap_or(false)

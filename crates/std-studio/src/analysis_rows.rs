@@ -1,15 +1,14 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 use std_index::{ComponentDigest, IndexCoverage, IndexCoverageItem, IndexDocument};
 
-const OVERVIEW_ROW_HEIGHT: f32 = 88.0;
-const COMPONENT_ROW_HEIGHT: f32 = 74.0;
-const COVERAGE_ROW_HEIGHT: f32 = 78.0;
-
 pub(crate) fn document_overview_row(ui: &mut egui::Ui, document: &IndexDocument) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), OVERVIEW_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::ANALYSIS_OVERVIEW_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -26,8 +25,8 @@ pub(crate) fn document_overview_row(ui: &mut egui::Ui, document: &IndexDocument)
             rect,
             &document.overview.name,
             &document.overview.path.display().to_string(),
-            18.0,
-            38.0,
+            row_metrics::DENSE_TITLE_Y,
+            row_metrics::DENSE_DETAIL_Y,
         );
         paint_document_chips(ui, rect, document);
     }
@@ -36,7 +35,10 @@ pub(crate) fn document_overview_row(ui: &mut egui::Ui, document: &IndexDocument)
 
 pub(crate) fn component_row(ui: &mut egui::Ui, component: &ComponentDigest) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), COMPONENT_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::ANALYSIS_COMPONENT_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     let title = component.path.display().to_string();
@@ -45,7 +47,14 @@ pub(crate) fn component_row(ui: &mut egui::Ui, component: &ComponentDigest) {
     });
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(ui, rect, &title, &component.purpose, 18.0, 38.0);
+        paint_title_detail(
+            ui,
+            rect,
+            &title,
+            &component.purpose,
+            row_metrics::DENSE_TITLE_Y,
+            row_metrics::DENSE_DETAIL_Y,
+        );
         paint_component_chips(ui, rect, component);
     }
     ui.add_space(Space::TWO_XS as f32);
@@ -53,7 +62,10 @@ pub(crate) fn component_row(ui: &mut egui::Ui, component: &ComponentDigest) {
 
 pub(crate) fn coverage_item_row(ui: &mut egui::Ui, item: &IndexCoverageItem) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), COVERAGE_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::ANALYSIS_COVERAGE_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -65,7 +77,14 @@ pub(crate) fn coverage_item_row(ui: &mut egui::Ui, item: &IndexCoverageItem) {
             "components={} relations={} history={}",
             item.component_count, item.relation_count, item.history_count
         );
-        paint_title_detail(ui, rect, &item.name, &detail, 18.0, 38.0);
+        paint_title_detail(
+            ui,
+            rect,
+            &item.name,
+            &detail,
+            row_metrics::DENSE_TITLE_Y,
+            row_metrics::DENSE_DETAIL_Y,
+        );
         paint_coverage_chips(ui, rect, &item.coverage);
     }
     ui.add_space(Space::TWO_XS as f32);
@@ -97,8 +116,8 @@ fn paint_document_chips(ui: &mut egui::Ui, rect: egui::Rect, document: &IndexDoc
     ];
     paint_chips(
         ui,
-        rect.left() + Space::SM as f32,
-        rect.bottom() - 21.0,
+        rect.left() + row_metrics::TEXT_INSET_X,
+        rect.bottom() - row_metrics::CHIP_ROW_Y_21,
         &chips,
     );
 }
@@ -113,8 +132,8 @@ fn paint_component_chips(ui: &mut egui::Ui, rect: egui::Rect, component: &Compon
     }
     paint_chips(
         ui,
-        rect.left() + Space::SM as f32,
-        rect.bottom() - 19.0,
+        rect.left() + row_metrics::TEXT_INSET_X,
+        rect.bottom() - row_metrics::CHIP_ROW_Y_19,
         &chips,
     );
 }
@@ -126,11 +145,22 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
         ("relations", coverage.symbol_relation_index),
         ("history", coverage.historical_context),
     ];
-    let mut x = rect.left() + Space::SM as f32;
-    let y = rect.bottom() - 19.0;
+    let mut x = rect.left() + row_metrics::TEXT_INSET_X;
+    let y = rect.bottom() - row_metrics::CHIP_ROW_Y_19;
     for (label, pass) in chips {
-        let width = (label.len() as f32 * 7.0 + 18.0).clamp(58.0, 104.0);
-        let chip_rect = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(width, 15.0));
+        let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::ANALYSIS_COVERAGE_CHIP_MIN_WIDTH,
+                row_metrics::ANALYSIS_COVERAGE_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(
+                width,
+                row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
+            ),
+        );
         paint_chip(
             ui,
             chip_rect,
@@ -141,17 +171,28 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
                 ui::warn_bg(ui.ctx())
             },
         );
-        x += width + Space::TWO_XS as f32;
+        x += width + row_metrics::CHIP_GAP;
     }
 }
 
 fn paint_chips(ui: &mut egui::Ui, start_x: f32, y: f32, labels: &[String]) {
     let mut x = start_x;
     for label in labels.iter().take(4) {
-        let width = (label.len() as f32 * 7.0 + 18.0).clamp(52.0, 132.0);
-        let chip_rect = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(width, 15.0));
+        let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::ANALYSIS_CHIP_MIN_WIDTH,
+                row_metrics::ANALYSIS_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(
+                width,
+                row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
+            ),
+        );
         paint_chip(ui, chip_rect, label, Color::bg_surface_2(ui.ctx()));
-        x += width + Space::TWO_XS as f32;
+        x += width + row_metrics::CHIP_GAP;
     }
 }
 
@@ -179,8 +220,8 @@ fn paint_title_detail(
     y1: f32,
     y2: f32,
 ) {
-    let x = rect.left() + Space::SM as f32;
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let x = rect.left() + row_metrics::TEXT_INSET_X;
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
         egui::pos2(x, rect.top() + y1),

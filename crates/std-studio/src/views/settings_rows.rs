@@ -1,34 +1,48 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 
-const PATH_ROW_HEIGHT: f32 = 52.0;
-const CONFIG_ROW_HEIGHT: f32 = 40.0;
-
 pub(crate) fn config_path_row(ui: &mut egui::Ui, path: &str) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), CONFIG_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::SETTINGS_CONFIG_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), path));
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(ui, rect, "config", path, 15.0, 31.0);
+        paint_title_detail(
+            ui,
+            rect,
+            "config",
+            path,
+            row_metrics::PATH_TITLE_Y,
+            row_metrics::SETTINGS_CONFIG_DETAIL_Y,
+        );
     }
     ui.add_space(Space::TWO_XS as f32);
 }
 
 pub(crate) fn resolved_path_row(ui: &mut egui::Ui, key: &str, value: &str) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), PATH_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::SETTINGS_PATH_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), key));
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(ui, rect, key, value, 18.0, 37.0);
+        paint_title_detail(
+            ui,
+            rect,
+            key,
+            value,
+            row_metrics::PLUGIN_META_TITLE_Y,
+            row_metrics::PLUGIN_META_DETAIL_Y,
+        );
     }
     ui.add_space(Space::TWO_XS as f32);
 }
@@ -57,8 +71,8 @@ fn paint_title_detail(
     y1: f32,
     y2: f32,
 ) {
-    let text_x = rect.left() + Space::SM as f32;
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let text_x = rect.left() + row_metrics::TEXT_INSET_X;
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
         egui::pos2(text_x, rect.top() + y1),

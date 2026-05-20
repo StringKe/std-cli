@@ -1,11 +1,7 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 use std_types::{MemoryRecord, PlanStep};
-
-const METRIC_ROW_HEIGHT: f32 = 66.0;
-const PLAN_ROW_HEIGHT: f32 = 68.0;
-const MEMORY_ROW_HEIGHT: f32 = 78.0;
 
 struct TextPlacement {
     x: f32,
@@ -15,7 +11,10 @@ struct TextPlacement {
 
 pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: &str) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), METRIC_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::DASHBOARD_METRIC_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     response
@@ -24,7 +23,7 @@ pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: 
         paint_row_frame(ui, rect, response.hovered());
         let value_text = value.to_string();
         ui.painter().text(
-            egui::pos2(rect.left() + Space::SM as f32, rect.center().y),
+            egui::pos2(rect.left() + row_metrics::TEXT_INSET_X, rect.center().y),
             egui::Align2::LEFT_CENTER,
             value_text,
             Text::title(),
@@ -36,9 +35,9 @@ pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: 
             title,
             detail,
             TextPlacement {
-                x: rect.left() + 82.0,
-                title_y: 24.0,
-                detail_y: 44.0,
+                x: rect.left() + row_metrics::DASHBOARD_VALUE_TEXT_X,
+                title_y: row_metrics::DASHBOARD_VALUE_TITLE_Y,
+                detail_y: row_metrics::DASHBOARD_VALUE_DETAIL_Y,
             },
         );
     }
@@ -46,21 +45,30 @@ pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: 
 
 pub(crate) fn plan_goal_row(ui: &mut egui::Ui, label: &str, goal: &str) {
     let title = format!("{label}: {goal}");
-    let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 42.0), egui::Sense::hover());
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), row_metrics::APP_STORAGE_ROW_HEIGHT),
+        egui::Sense::hover(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title.as_str())
     });
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(ui, rect, &title, "planner draft", 16.0, 32.0);
+        paint_title_detail(
+            ui,
+            rect,
+            &title,
+            "planner draft",
+            row_metrics::COMPACT_TITLE_Y,
+            row_metrics::COMPACT_DETAIL_Y,
+        );
     }
     ui.add_space(Space::TWO_XS as f32);
 }
 
 pub(crate) fn plan_step_row(ui: &mut egui::Ui, index: usize, step: &PlanStep) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), PLAN_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::DASHBOARD_PLAN_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -69,8 +77,14 @@ pub(crate) fn plan_step_row(ui: &mut egui::Ui, index: usize, step: &PlanStep) {
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
         let chip_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.left() + Space::SM as f32, rect.center().y - 12.0),
-            egui::vec2(34.0, 24.0),
+            egui::pos2(
+                rect.left() + row_metrics::TEXT_INSET_X,
+                rect.center().y - row_metrics::DASHBOARD_STEP_CHIP_Y_OFFSET,
+            ),
+            egui::vec2(
+                row_metrics::DASHBOARD_STEP_CHIP_WIDTH,
+                row_metrics::DASHBOARD_STEP_CHIP_HEIGHT,
+            ),
         );
         paint_chip(
             ui,
@@ -85,8 +99,8 @@ pub(crate) fn plan_step_row(ui: &mut egui::Ui, index: usize, step: &PlanStep) {
             &step.reason,
             TextPlacement {
                 x: chip_rect.right() + Space::XS as f32,
-                title_y: 24.0,
-                detail_y: 45.0,
+                title_y: row_metrics::DASHBOARD_VALUE_TITLE_Y,
+                detail_y: row_metrics::DASHBOARD_STEP_DETAIL_Y,
             },
         );
     }
@@ -95,7 +109,10 @@ pub(crate) fn plan_step_row(ui: &mut egui::Ui, index: usize, step: &PlanStep) {
 
 pub(crate) fn memory_row(ui: &mut egui::Ui, memory: &MemoryRecord) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), MEMORY_ROW_HEIGHT),
+        egui::vec2(
+            ui.available_width(),
+            row_metrics::DASHBOARD_MEMORY_ROW_HEIGHT,
+        ),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -103,17 +120,27 @@ pub(crate) fn memory_row(ui: &mut egui::Ui, memory: &MemoryRecord) {
     });
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        paint_title_detail(ui, rect, &memory.title, &memory_meta(memory), 18.0, 38.0);
+        paint_title_detail(
+            ui,
+            rect,
+            &memory.title,
+            &memory_meta(memory),
+            row_metrics::DENSE_TITLE_Y,
+            row_metrics::DENSE_DETAIL_Y,
+        );
         paint_memory_preview(ui, rect, &memory.body);
     }
     ui.add_space(Space::TWO_XS as f32);
 }
 
 fn paint_memory_preview(ui: &mut egui::Ui, rect: egui::Rect, body: &str) {
-    let preview = preview_text(body, 88);
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let preview = preview_text(body, row_metrics::MEMORY_PREVIEW_LIMIT);
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     ui.painter().with_clip_rect(clip).text(
-        egui::pos2(rect.left() + Space::SM as f32, rect.bottom() - 17.0),
+        egui::pos2(
+            rect.left() + row_metrics::TEXT_INSET_X,
+            rect.bottom() - row_metrics::MEMORY_PREVIEW_Y,
+        ),
         egui::Align2::LEFT_CENTER,
         preview,
         Text::caption(),
@@ -151,7 +178,7 @@ fn paint_title_detail(
         title,
         detail,
         TextPlacement {
-            x: rect.left() + Space::SM as f32,
+            x: rect.left() + row_metrics::TEXT_INSET_X,
             title_y: y1,
             detail_y: y2,
         },

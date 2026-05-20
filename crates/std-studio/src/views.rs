@@ -6,7 +6,7 @@ mod memory;
 mod memory_rows;
 mod plugin_rows;
 mod plugins;
-mod row_metrics;
+pub(crate) mod row_metrics;
 mod settings;
 mod settings_rows;
 mod workflow_builder;

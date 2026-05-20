@@ -1,10 +1,7 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 use std_types::MemoryRecord;
-
-const MEMORY_ROW_HEIGHT: f32 = 72.0;
-const META_ROW_HEIGHT: f32 = 52.0;
 
 pub(crate) enum MemoryRowEvent {
     None,
@@ -18,7 +15,7 @@ pub(crate) fn memory_row(
     selected: bool,
 ) -> MemoryRowEvent {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), MEMORY_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::MEMORY_ROW_HEIGHT),
         egui::Sense::click(),
     );
     response.widget_info(|| {
@@ -40,7 +37,7 @@ pub(crate) fn memory_row(
 pub(crate) fn memory_metadata(ui: &mut egui::Ui, memory: &MemoryRecord) {
     let detail = format!("id={} updated={}", memory.id, memory.updated_at);
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), META_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::MEMORY_META_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response.widget_info(|| {
@@ -55,15 +52,17 @@ pub(crate) fn memory_metadata(ui: &mut egui::Ui, memory: &MemoryRecord) {
 }
 
 pub(crate) fn last_written(ui: &mut egui::Ui, memory: &MemoryRecord) {
-    let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(ui.available_width(), 36.0), egui::Sense::hover());
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), row_metrics::MEMORY_LAST_ROW_HEIGHT),
+        egui::Sense::hover(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), &memory.title)
     });
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, false, false);
         ui.painter().text(
-            egui::pos2(rect.left() + Space::SM as f32, rect.center().y),
+            egui::pos2(rect.left() + row_metrics::TEXT_INSET_X, rect.center().y),
             egui::Align2::LEFT_CENTER,
             format!("last {}", memory.title),
             Text::caption(),
@@ -87,7 +86,7 @@ fn memory_preview(body: &str) -> String {
         .next()
         .unwrap_or("")
         .chars()
-        .take(96)
+        .take(row_metrics::MEMORY_BODY_LIMIT)
         .collect::<String>();
     if preview.len() < body.len() {
         format!("{preview}...")
@@ -115,7 +114,10 @@ fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected:
     if selected {
         let strip = egui::Rect::from_min_max(
             rect.left_top(),
-            egui::pos2(rect.left() + 3.0, rect.bottom()),
+            egui::pos2(
+                rect.left() + row_metrics::SELECTED_STRIP_WIDTH,
+                rect.bottom(),
+            ),
         );
         ui.painter().rect_filled(
             strip,
@@ -126,18 +128,18 @@ fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected:
 }
 
 fn paint_title_detail(ui: &mut egui::Ui, rect: egui::Rect, title: &str, detail: &str) {
-    let x = rect.left() + Space::SM as f32;
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let x = rect.left() + row_metrics::TEXT_INSET_X;
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
-        egui::pos2(x, rect.top() + 18.0),
+        egui::pos2(x, rect.top() + row_metrics::DENSE_TITLE_Y),
         egui::Align2::LEFT_CENTER,
         title,
         Text::body(),
         ui::strong_text(ui.ctx()),
     );
     painter.text(
-        egui::pos2(x, rect.top() + 38.0),
+        egui::pos2(x, rect.top() + row_metrics::DENSE_DETAIL_Y),
         egui::Align2::LEFT_CENTER,
         detail,
         Text::caption(),
@@ -146,14 +148,25 @@ fn paint_title_detail(ui: &mut egui::Ui, rect: egui::Rect, title: &str, detail: 
 }
 
 fn paint_scope_and_tags(ui: &mut egui::Ui, rect: egui::Rect, scope: &str, tags: &[String]) {
-    let mut x = rect.left() + Space::SM as f32;
-    let y = rect.bottom() - 19.0;
+    let mut x = rect.left() + row_metrics::TEXT_INSET_X;
+    let y = rect.bottom() - row_metrics::CHIP_ROW_Y_19;
     for label in std::iter::once(scope)
         .chain(tags.iter().map(String::as_str))
         .take(4)
     {
-        let width = (label.len() as f32 * 7.0 + 18.0).clamp(42.0, 120.0);
-        let chip_rect = egui::Rect::from_min_size(egui::pos2(x, y), egui::vec2(width, 15.0));
+        let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::MATCH_CHIP_MIN_WIDTH,
+                row_metrics::MEMORY_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(
+                width,
+                row_metrics::STATUS_CHIP_HEIGHT - row_metrics::MATCH_CHIP_CHAR_WIDTH,
+            ),
+        );
         let fill = if label == scope {
             Color::accent_weak(ui.ctx())
         } else {
@@ -168,6 +181,6 @@ fn paint_scope_and_tags(ui: &mut egui::Ui, rect: egui::Rect, scope: &str, tags: 
             Text::caption(),
             ui::strong_text(ui.ctx()),
         );
-        x += width + Space::TWO_XS as f32;
+        x += width + row_metrics::CHIP_GAP;
     }
 }

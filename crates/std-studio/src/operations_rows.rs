@@ -1,12 +1,10 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std_egui::tokens::{Color, Radius, Space, Text};
 
-const GATE_ROW_HEIGHT: f32 = 58.0;
-
 pub(crate) fn gate_row(ui: &mut egui::Ui, label: &str, value: &str, detail: &str) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), GATE_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::OPS_GATE_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response
@@ -43,25 +41,25 @@ fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool) {
 }
 
 fn paint_title_detail(ui: &mut egui::Ui, rect: egui::Rect, label: &str, value: &str, detail: &str) {
-    let text_x = rect.left() + Space::SM as f32;
-    let clip = rect.shrink2(egui::vec2(Space::SM as f32, 0.0));
+    let text_x = rect.left() + row_metrics::TEXT_INSET_X;
+    let clip = rect.shrink2(egui::vec2(row_metrics::WIDE_CLIP_INSET_X, 0.0));
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
-        egui::pos2(text_x, rect.top() + 15.0),
+        egui::pos2(text_x, rect.top() + row_metrics::OPS_LABEL_Y),
         egui::Align2::LEFT_CENTER,
         label,
         Text::caption(),
         ui::muted_text(ui.ctx()),
     );
     painter.text(
-        egui::pos2(text_x, rect.top() + 32.0),
+        egui::pos2(text_x, rect.top() + row_metrics::OPS_VALUE_Y),
         egui::Align2::LEFT_CENTER,
         value,
         Text::body(),
         ui::strong_text(ui.ctx()),
     );
     painter.text(
-        egui::pos2(text_x, rect.top() + 49.0),
+        egui::pos2(text_x, rect.top() + row_metrics::OPS_DETAIL_Y),
         egui::Align2::LEFT_CENTER,
         detail,
         Text::caption(),
