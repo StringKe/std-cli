@@ -1,6 +1,7 @@
 use crate::{ui, views::schema_label, StudioEguiApp};
 use eframe::egui;
 use std::path::{Path, PathBuf};
+use std_egui::tokens::Space;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflows(&mut self, ui: &mut egui::Ui) {
@@ -34,7 +35,7 @@ impl StudioEguiApp {
             });
         });
 
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Saved", "local definitions");
             match self.app.saved_workflows() {
@@ -65,7 +66,7 @@ impl StudioEguiApp {
                         }
                     });
                     ui.small(path.display().to_string());
-                    ui.add_space(6.0);
+                    ui.add_space(Space::XS as f32);
                 }
             });
     }
@@ -75,12 +76,12 @@ impl StudioEguiApp {
             ui::section_header(ui, "Dry Run", "schema, defer, errors");
             self.render_workflow_debug(ui);
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Execution", "last captured run");
             self.render_execution_trace(ui);
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Batch", "external defaults defer");
             self.render_batch_debug(ui);

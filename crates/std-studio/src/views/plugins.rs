@@ -1,5 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::tokens::Space;
 
 impl StudioEguiApp {
     pub(crate) fn render_plugins(&mut self, ui: &mut egui::Ui) {
@@ -9,7 +10,7 @@ impl StudioEguiApp {
             "manifest checks, scoped permissions, JS/TS execution",
         );
         self.render_plugin_toolbar(ui);
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_plugin_manifests(ui));
             columns[1].vertical(|ui| self.render_plugin_actions(ui));
@@ -103,12 +104,12 @@ impl StudioEguiApp {
             ui::section_header(ui, "Checks", "permissions and scopes");
             self.render_plugin_check_reports(ui);
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Preview", "selected action");
             self.render_plugin_preview(ui);
         });
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Execution", "last controlled run");
             self.render_plugin_execution(ui);

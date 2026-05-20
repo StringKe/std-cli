@@ -1,6 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::tokens::Text;
+use std_egui::tokens::{Space, Text};
 use std_types::MemoryRecord;
 
 impl StudioEguiApp {
@@ -11,7 +11,7 @@ impl StudioEguiApp {
             "search, inspect, write through std-core storage",
         );
         self.render_memory_toolbar(ui);
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_memory_records(ui));
             columns[1].vertical(|ui| self.render_memory_detail(ui));
@@ -77,7 +77,7 @@ impl StudioEguiApp {
                 return;
             };
             render_memory_metadata(ui, memory);
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             egui::ScrollArea::vertical()
                 .max_height(480.0)
                 .show(ui, |ui| {
@@ -111,7 +111,7 @@ impl StudioEguiApp {
                 }
             });
             if let Some(memory) = &self.app.memory_browser.last_written {
-                ui.add_space(8.0);
+                ui.add_space(Space::XS as f32);
                 ui::chip(ui, &format!("last: {}", memory.title), ui::ok_bg(ui.ctx()));
             }
         });

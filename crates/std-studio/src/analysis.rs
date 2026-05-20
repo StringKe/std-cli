@@ -1,6 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::tokens::Text;
+use std_egui::tokens::{Space, Text};
 use std_index::{
     IndexAnswer, IndexCoverage, IndexCoverageReport, IndexDocument, IndexInspection,
     IndexSearchResult,
@@ -14,7 +14,7 @@ impl StudioEguiApp {
             "four-layer local understanding and QA",
         );
         self.render_analysis_toolbar(ui);
-        ui.add_space(10.0);
+        ui.add_space(Space::SM as f32);
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_active_analysis(ui));
             columns[1].vertical(|ui| self.render_analysis_query(ui));
@@ -45,7 +45,7 @@ impl StudioEguiApp {
                 return;
             };
             render_document_overview(ui, document);
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             render_components(ui, document);
         });
     }
@@ -65,7 +65,7 @@ impl StudioEguiApp {
                     self.inspect_analysis();
                 }
             });
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             render_output(ui, "Answer", &self.analysis_answer, 180.0);
             render_output(ui, "Search", &self.analysis_search_output, 180.0);
         });
