@@ -51,8 +51,8 @@ impl LauncherController {
                     key: "Space".to_string(),
                 }
             }),
-            visible: true,
-            focused: true,
+            visible: false,
+            focused: false,
             voice_active: false,
         }
     }
@@ -374,6 +374,7 @@ impl LauncherState {
     pub fn window_smoke() -> LauncherWindowSmokeReport {
         let mut state = Self::new();
         let started_at = Instant::now();
+        state.handle_hotkey_toggle();
         let hidden_commands = state.handle_escape_hide();
         let shown_commands = state.handle_hotkey_toggle();
         LauncherWindowSmokeReport {

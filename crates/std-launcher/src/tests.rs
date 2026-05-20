@@ -24,24 +24,27 @@ fn launcher_controller_toggles_visibility() {
     };
     let mut controller = LauncherController::new(&config);
 
-    controller.toggle();
     assert!(!controller.visible);
     assert!(!controller.focused);
-    assert_eq!(
-        LauncherController::window_commands(true, controller.visible),
-        vec![LauncherWindowCommand::SetVisible(false)]
-    );
 
-    controller.show();
+    controller.toggle();
     assert!(controller.visible);
     assert!(controller.focused);
-    assert_eq!(controller.hotkey.display(), "Control+Space");
     assert_eq!(
         LauncherController::window_commands(false, controller.visible),
         vec![
             LauncherWindowCommand::SetVisible(true),
             LauncherWindowCommand::Focus
         ]
+    );
+
+    controller.hide();
+    assert!(!controller.visible);
+    assert!(!controller.focused);
+    assert_eq!(controller.hotkey.display(), "Control+Space");
+    assert_eq!(
+        LauncherController::window_commands(true, controller.visible),
+        vec![LauncherWindowCommand::SetVisible(false)]
     );
 
     controller.start_voice_input();
@@ -120,7 +123,7 @@ fn launcher_state_previews_and_triggers_selected_action() {
     assert_eq!(report.hotkey_budget_ms, 80);
 
     state.toggle_visibility();
-    assert!(!state.controller.visible);
+    assert!(state.controller.visible);
 }
 
 #[test]
@@ -132,7 +135,17 @@ fn launcher_hotkey_toggle_returns_window_show_commands() {
     });
     let mut state = LauncherState::with_core(core);
 
-    let hidden = state.handle_escape_hide();
+    let hidden = state.handle_hotkey_toggle();
+    let hidden = {
+        assert_eq!(
+            hidden,
+            vec![
+                LauncherWindowCommand::SetVisible(true),
+                LauncherWindowCommand::Focus
+            ]
+        );
+        state.handle_escape_hide()
+    };
     let shown = state.handle_hotkey_toggle();
 
     assert_eq!(hidden, vec![LauncherWindowCommand::SetVisible(false)]);
