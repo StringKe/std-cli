@@ -1,12 +1,16 @@
-use crate::{
-    default_batch_json,
-    layout::StudioLayoutState,
-    viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
-    StudioPane,
-};
+mod layout_smoke;
+mod plugin_smoke;
+mod workflow_builder_smoke;
+mod workspace_smoke;
+
+use crate::{default_batch_json, StudioPane};
+use layout_smoke::StudioLayoutSmoke;
+use plugin_smoke::run_plugin_manager_smoke;
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeSmokeReport;
-use std_studio::{StudioApp, WorkspacePaneId};
+use std_studio::StudioApp;
+use workflow_builder_smoke::run_workflow_builder_smoke;
+use workspace_smoke::run_workspace_pane_smoke;
 
 pub(crate) struct StudioSmokeReport {
     workspace_panes: usize,
@@ -42,6 +46,11 @@ pub(crate) struct StudioSmokeReport {
     analysis_coverage_complete: usize,
     memory_count: usize,
     plugin_status: String,
+    plugin_manifest_checks: usize,
+    plugin_permissions: String,
+    plugin_action_count: usize,
+    plugin_preview_kind: String,
+    plugin_runtime: String,
     history_count: usize,
 }
 
@@ -49,7 +58,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_runtime={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -83,6 +92,11 @@ impl StudioSmokeReport {
             self.analysis_coverage_complete,
             self.memory_count,
             self.plugin_status,
+            self.plugin_manifest_checks,
+            self.plugin_permissions,
+            self.plugin_action_count,
+            self.plugin_preview_kind,
+            self.plugin_runtime,
             self.history_count
         )
     }
@@ -119,6 +133,11 @@ impl StudioSmokeReport {
             && self.analysis_coverage_complete >= 1
             && self.memory_count >= 1
             && self.plugin_status == "Completed"
+            && self.plugin_manifest_checks >= 1
+            && self.plugin_permissions.contains("Code")
+            && self.plugin_action_count >= 1
+            && self.plugin_preview_kind == "Command"
+            && self.plugin_runtime == "deno_core"
             && self.history_count >= 1
     }
 }
@@ -163,6 +182,11 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             analysis_coverage_complete: 0,
             memory_count: 0,
             plugin_status: "FAIL".to_string(),
+            plugin_manifest_checks: 0,
+            plugin_permissions: "FAIL".to_string(),
+            plugin_action_count: 0,
+            plugin_preview_kind: "FAIL".to_string(),
+            plugin_runtime: "FAIL".to_string(),
             history_count: 0,
         }),
     }
@@ -183,7 +207,7 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         ..StdConfig::default()
     });
     let mut studio = StudioApp::with_core(core);
-    let layout = StudioLayoutSmoke::from_layout(StudioLayoutState::default());
+    let layout = StudioLayoutSmoke::from_default_layout();
 
     let workflow_path = studio.create_workflow("Studio Smoke", "Headless Studio smoke")?;
     studio.add_workflow_step(
@@ -213,19 +237,7 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
     let analysis_name = studio.analyze_entity(&project_dir)?.overview.name.clone();
     let coverage = studio.analysis_coverage_report()?;
 
-    let plugin_dir = studio.core.config.plugins_dir().join("studio-smoke");
-    std::fs::create_dir_all(&plugin_dir)?;
-    std::fs::write(
-        plugin_dir.join("main.js"),
-        r#"std.emit({ plugin: "studio-smoke", status: "ok" });"#,
-    )?;
-    std::fs::write(plugin_dir.join("plugin.json"), smoke_plugin_manifest())?;
-    studio.reload_plugins()?;
-    studio.search_plugins("studio-smoke");
-    let plugin_status = studio
-        .run_selected_plugin()
-        .map(|execution| format!("{:?}", execution.status))
-        .unwrap_or_else(|| "Missing".to_string());
+    let plugin_smoke = run_plugin_manager_smoke(&mut studio)?;
 
     studio.open_workspace_pane(StudioPane::Dashboard);
     studio.open_workflow_builder(workflow_path);
@@ -270,150 +282,14 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         analysis_name,
         analysis_coverage_complete: coverage.complete,
         memory_count,
-        plugin_status,
+        plugin_status: plugin_smoke.status,
+        plugin_manifest_checks: plugin_smoke.manifest_checks,
+        plugin_permissions: plugin_smoke.permissions,
+        plugin_action_count: plugin_smoke.action_count,
+        plugin_preview_kind: plugin_smoke.preview_kind,
+        plugin_runtime: plugin_smoke.runtime,
         history_count,
     })
-}
-
-struct WorkflowBuilderSmoke {
-    created: bool,
-    added_step: bool,
-    updated_step: bool,
-    moved_step: bool,
-    simulated: bool,
-    run_status: String,
-    trace_steps: usize,
-    trace_events: usize,
-}
-
-fn run_workflow_builder_smoke(
-    studio: &mut StudioApp,
-) -> Result<WorkflowBuilderSmoke, Box<dyn std::error::Error>> {
-    let workflow_path = studio.create_workflow("Builder Smoke", "Builder interaction smoke")?;
-    let created = workflow_path.ends_with("builder-smoke/workflow.md");
-    let first = studio.add_workflow_step(
-        &workflow_path,
-        "Collect builder context",
-        serde_json::json!({"phase": "collect"}),
-    )?;
-    let second = studio.add_workflow_step(
-        &workflow_path,
-        "Validate builder output",
-        serde_json::json!({"phase": "validate"}),
-    )?;
-    let added_step =
-        first.name == "Collect builder context" && second.name == "Validate builder output";
-    let updated = studio.update_workflow_step(
-        &workflow_path,
-        1,
-        Some("Validate edited output"),
-        Some(serde_json::json!({"phase": "edited"})),
-    )?;
-    let moved = studio.move_workflow_step(&workflow_path, 1, 0)?;
-    let simulated = studio.preview_workflow_path(&workflow_path)?.steps.len() == 2;
-    let execution = studio.run_workflow_path(&workflow_path)?.clone();
-    let run_status = format!("{:?}", execution.status);
-    let traces = studio.recent_workflow_traces(10)?;
-    let trace = traces
-        .iter()
-        .find(|trace| trace.execution.workflow_id == execution.workflow_id);
-
-    Ok(WorkflowBuilderSmoke {
-        created,
-        added_step,
-        updated_step: updated.name == "Validate edited output",
-        moved_step: moved.name == "Validate edited output",
-        simulated,
-        run_status,
-        trace_steps: trace.map(|trace| trace.steps.len()).unwrap_or_default(),
-        trace_events: trace
-            .map(|trace| trace.audit_events.len())
-            .unwrap_or_default(),
-    })
-}
-
-struct StudioLayoutSmoke {
-    host_window_size: String,
-    min_window_size: String,
-    host_chrome_height: u32,
-    status_bar_height: u32,
-    sidebar_width: u32,
-    collapsed_sidebar_width: u32,
-    inspector_width: u32,
-    inspector_default_open: bool,
-    bottom_panel_height: u32,
-    bottom_panel_default_open: bool,
-    canvas_surface: String,
-}
-
-impl StudioLayoutSmoke {
-    fn from_layout(layout: StudioLayoutState) -> Self {
-        let collapsed = StudioLayoutState {
-            sidebar_open: false,
-            ..layout.clone()
-        };
-        Self {
-            host_window_size: format_window_size(STUDIO_WINDOW_SIZE),
-            min_window_size: format_window_size(STUDIO_MIN_WINDOW_SIZE),
-            host_chrome_height: 52,
-            status_bar_height: 24,
-            sidebar_width: layout.sidebar_width() as u32,
-            collapsed_sidebar_width: collapsed.sidebar_width() as u32,
-            inspector_width: layout.inspector_width() as u32,
-            inspector_default_open: layout.inspector_open,
-            bottom_panel_height: layout.bottom_panel_height() as u32,
-            bottom_panel_default_open: layout.bottom_panel_open,
-            canvas_surface: "bg/surface-0".to_string(),
-        }
-    }
-}
-
-fn format_window_size(size: [f32; 2]) -> String {
-    format!("{}x{}", size[0] as u32, size[1] as u32)
-}
-
-struct WorkspacePaneSmoke {
-    opened: bool,
-    focus_switched: bool,
-    closed: bool,
-    focus_restored: bool,
-}
-
-fn run_workspace_pane_smoke(
-    studio: &mut StudioApp,
-    close_target: WorkspacePaneId,
-) -> WorkspacePaneSmoke {
-    let settings = studio.open_settings_pane();
-    let opened = studio.focused_pane == Some(settings);
-    let plugin = studio.open_plugin_manager_pane();
-    let focus_switched = studio.focused_pane == Some(plugin);
-    let closed = studio.close_workspace_pane(close_target);
-    let focus_restored = studio.focus_workspace_pane(settings)
-        && studio.close_workspace_pane(settings)
-        && studio.focused_pane == Some(plugin);
-    WorkspacePaneSmoke {
-        opened,
-        focus_switched,
-        closed,
-        focus_restored,
-    }
-}
-
-fn smoke_plugin_manifest() -> String {
-    serde_json::json!({
-        "name": "studio-smoke",
-        "description": "Studio smoke plugin",
-        "permissions": ["code"],
-        "actions": [{
-            "name": "Plugin Studio Smoke",
-            "description": "Run Studio smoke plugin",
-            "when_to_use": "When validating std-studio smoke",
-            "kind": "javascript",
-            "script": "main.js",
-            "tags": ["studio-smoke"]
-        }]
-    })
-    .to_string()
 }
 
 #[cfg(test)]
@@ -462,6 +338,11 @@ mod tests {
         assert!(summary.contains("builder_simulated=true"));
         assert!(summary.contains("builder_run_status=Completed"));
         assert!(summary.contains("builder_trace_steps=2"));
+        assert!(summary.contains("plugin_manifest_checks=1"));
+        assert!(summary.contains("plugin_permissions=Code"));
+        assert!(summary.contains("plugin_action_count=1"));
+        assert!(summary.contains("plugin_preview_kind=Command"));
+        assert!(summary.contains("plugin_runtime=deno_core"));
     }
 
     #[test]
