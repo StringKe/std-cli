@@ -363,7 +363,7 @@ impl StudioEguiApp {
             } else {
                 egui::Color32::TRANSPARENT
             })
-            .inner_margin(egui::Margin::symmetric(8, 4))
+            .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {

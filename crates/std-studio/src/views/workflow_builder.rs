@@ -96,7 +96,7 @@ impl StudioEguiApp {
             self.workflow_step_name = name.to_string();
         }
         ui.small(detail);
-        ui.add_space(4.0);
+        ui.add_space(Space::TWO_XS as f32);
     }
 
     fn render_step_properties(&mut self, ui: &mut egui::Ui) {
