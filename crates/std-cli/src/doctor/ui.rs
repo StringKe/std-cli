@@ -21,7 +21,12 @@ const LAUNCHER_GATES: [&str; 5] = [
     "preview-smoke",
 ];
 
-const STUDIO_GATES: [&str; 3] = ["smoke", "theme-smoke", "preview-smoke"];
+const STUDIO_GATES: [&str; 4] = [
+    "smoke",
+    "workspace-policy-smoke",
+    "theme-smoke",
+    "preview-smoke",
+];
 
 pub(crate) struct UiDoctor {
     pub(crate) docs: &'static str,
@@ -65,6 +70,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "std-launcher --keyboard-smoke index",
         "std-launcher --preview-smoke",
         "std-studio --smoke",
+        "std-studio --workspace-policy-smoke",
         "std-studio --theme-smoke",
         "std-studio --preview-smoke",
         "explicit-opt-in",

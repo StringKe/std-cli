@@ -16,6 +16,7 @@ mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;
 mod smoke;
+mod studio_smoke_cli;
 mod ui;
 mod viewport;
 mod views;
@@ -24,10 +25,11 @@ mod workspace_tabs;
 
 use layout::StudioLayoutState;
 use preview::{run_studio_preview, studio_preview_from_args, StudioPreviewSmokeReport};
-use smoke::{smoke_from_args, theme_smoke_from_args};
+use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std_studio::{StudioApp, StudioPane};
+use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
 use viewport::studio_native_options;
 use windows::WorkspaceCommandQueue;
 
@@ -172,6 +174,10 @@ fn main() -> eframe::Result<()> {
     }
     if let Some(report) = theme_smoke_from_args(&args) {
         println!("{}", report.summary("studio"));
+        return Ok(());
+    }
+    if let Some(report) = workspace_policy_smoke_from_args(&args) {
+        println!("{}", report.output());
         return Ok(());
     }
     if let Some(report) = smoke_from_args(args) {

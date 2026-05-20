@@ -2,6 +2,7 @@ mod analysis_smoke;
 mod layout_smoke;
 mod plugin_smoke;
 mod workflow_builder_smoke;
+pub(crate) mod workspace_policy_smoke;
 mod workspace_smoke;
 
 use crate::{default_batch_json, StudioPane};
@@ -9,7 +10,6 @@ use analysis_smoke::run_analysis_workbench_smoke;
 use layout_smoke::StudioLayoutSmoke;
 use plugin_smoke::run_plugin_manager_smoke;
 use std_core::{StdConfig, StdCore};
-use std_egui::tokens::ThemeSmokeReport;
 use std_studio::StudioApp;
 use workflow_builder_smoke::run_workflow_builder_smoke;
 use workspace_smoke::run_workspace_pane_smoke;
@@ -277,14 +277,6 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
     }
 }
 
-pub(crate) fn theme_smoke_from_args(args: &[String]) -> Option<ThemeSmokeReport> {
-    if args.get(1).map(String::as_str) == Some("--theme-smoke") {
-        Some(ThemeSmokeReport::new())
-    } else {
-        None
-    }
-}
-
 fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
     let temp = tempfile::tempdir()?;
     let core = StdCore::with_config(StdConfig {
@@ -479,14 +471,5 @@ mod tests {
         assert!(summary.contains("analysis_inspect_relations=3"));
         assert!(summary.contains("analysis_inspect_history=1"));
         assert!(summary.contains("analysis_answer_has_evidence=true"));
-    }
-
-    #[test]
-    fn studio_theme_smoke_reports_light_and_dark_tokens() {
-        let args = vec!["std-studio".to_string(), "--theme-smoke".to_string()];
-        let report = theme_smoke_from_args(&args).unwrap();
-
-        assert!(report.pass());
-        assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
     }
 }

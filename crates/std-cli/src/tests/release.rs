@@ -160,6 +160,7 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=std-launcher --keyboard-smoke index",
         "smoke=std-launcher --preview-smoke",
         "smoke=std-studio --smoke",
+        "smoke=std-studio --workspace-policy-smoke",
         "smoke=std-studio --theme-smoke",
         "smoke=std-studio --preview-smoke",
         "smoke=std workflow trace --limit 5",
