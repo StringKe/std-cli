@@ -1,13 +1,14 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::{Path, PathBuf};
+use std_egui::i18n;
 
 impl StudioEguiApp {
     pub(crate) fn render_apps(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
-            "Apps",
-            "register bundles, search aliases, preview safe launch",
+            i18n::t("studio.apps.title"),
+            i18n::t("studio.apps.detail"),
         );
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_app_registration(ui));
@@ -18,14 +19,18 @@ impl StudioEguiApp {
 
     fn render_app_registration(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Register", "copy app bundle into std storage");
-            ui.label("Bundle path");
+            ui::section_header(
+                ui,
+                i18n::t("studio.apps.register.title"),
+                i18n::t("studio.apps.register.detail"),
+            );
+            ui.label(i18n::t("studio.apps.bundle_path"));
             ui.text_edit_singleline(&mut self.app_bundle_path);
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, "Register").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.apps.register")).clicked() {
                     self.register_app_bundle();
                 }
-                if ui::quiet_button(ui, "Use WeChat").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.apps.use_wechat")).clicked() {
                     self.app_bundle_path = "/Applications/WeChat.app".to_string();
                 }
             });
@@ -38,22 +43,26 @@ impl StudioEguiApp {
 
     fn render_app_search(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Search", "localized names and URL schemes");
+            ui::section_header(
+                ui,
+                i18n::t("studio.apps.search.title"),
+                i18n::t("studio.apps.search.detail"),
+            );
             ui.text_edit_singleline(&mut self.app_query);
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, "Search").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.apps.search")).clicked() {
                     self.search_apps_status();
                 }
-                if ui::quiet_button(ui, "Preview").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.apps.preview")).clicked() {
                     self.preview_app_status();
                 }
-                if ui::quiet_button(ui, "Trigger").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.apps.trigger")).clicked() {
                     self.trigger_app_status();
                 }
             });
             ui::chip(
                 ui,
-                "external launch defaults to NeedsExternalRunner",
+                i18n::t("studio.apps.external_defer"),
                 ui::warn_bg(ui.ctx()),
             );
             self.render_app_search_results(ui);
@@ -62,9 +71,15 @@ impl StudioEguiApp {
 
     fn render_registered_apps(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Registered", "managed app bundles");
+            ui::section_header(
+                ui,
+                i18n::t("studio.apps.registered.title"),
+                i18n::t("studio.apps.registered.detail"),
+            );
             match self.app.registered_apps() {
-                Ok(apps) if apps.is_empty() => ui::empty_state(ui, "No app bundles registered"),
+                Ok(apps) if apps.is_empty() => {
+                    ui::empty_state(ui, i18n::t("studio.apps.registered.empty"))
+                }
                 Ok(apps) => render_registered_app_rows(ui, apps, &mut self.app_query),
                 Err(error) => {
                     ui.label(error.to_string());
@@ -111,7 +126,7 @@ impl StudioEguiApp {
             return;
         };
         if results.is_empty() {
-            ui::empty_state(ui, "No matching app actions");
+            ui::empty_state(ui, i18n::t("studio.apps.matches.empty"));
             return;
         }
         egui::ScrollArea::vertical()
@@ -149,7 +164,7 @@ fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>, query: &mut
                 ui::subtle_frame(ui.ctx()).show(ui, |ui| {
                     ui.label(&name);
                     ui.small(path.display().to_string());
-                    if ui::quiet_button(ui, "Select").clicked() {
+                    if ui::quiet_button(ui, i18n::t("studio.apps.select")).clicked() {
                         *query = name;
                     }
                 });

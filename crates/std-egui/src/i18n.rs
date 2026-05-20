@@ -101,4 +101,16 @@ mod tests {
             "还没有执行记录"
         );
     }
+
+    #[test]
+    fn studio_apps_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.apps.external_defer"),
+            "external launch defaults to NeedsExternalRunner"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.apps.external_defer"),
+            "外部启动默认返回 NeedsExternalRunner"
+        );
+    }
 }
