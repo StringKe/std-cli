@@ -120,8 +120,26 @@ impl eframe::App for StudioEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ui::install_visuals(ctx, &self.app.core.config.theme);
         self.layout.handle_keyboard(ctx);
+        self.handle_workspace_tab_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
+    }
+}
+
+impl StudioEguiApp {
+    fn handle_workspace_tab_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        if std_egui::input::studio_close_tab().pressed(ctx) {
+            if let Some(command) =
+                crate::workspace_tabs::workspace_tab_keyboard_command(self.app.focused_pane)
+            {
+                if let Ok(mut queue) = self.workspace_commands.lock() {
+                    queue.push(command);
+                }
+            }
+        }
     }
 }
 

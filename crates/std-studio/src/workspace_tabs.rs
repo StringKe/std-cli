@@ -40,6 +40,12 @@ pub(crate) fn render_workspace_tabs(
     });
 }
 
+pub(crate) fn workspace_tab_keyboard_command(
+    focused: Option<WorkspacePaneId>,
+) -> Option<StudioWorkspaceCommand> {
+    focused.map(StudioWorkspaceCommand::Close)
+}
+
 fn render_workspace_tab(
     ui: &mut egui::Ui,
     spec: &WorkspaceTabSpec,
@@ -97,5 +103,14 @@ mod tests {
         assert!(!specs[0].focused);
         assert!(specs[1].focused);
         assert_eq!(specs[1].title, "Settings");
+    }
+
+    #[test]
+    fn close_tab_keyboard_command_targets_focused_pane() {
+        assert_eq!(
+            workspace_tab_keyboard_command(Some(WorkspacePaneId::new(7))),
+            Some(StudioWorkspaceCommand::Close(WorkspacePaneId::new(7)))
+        );
+        assert_eq!(workspace_tab_keyboard_command(None), None);
     }
 }

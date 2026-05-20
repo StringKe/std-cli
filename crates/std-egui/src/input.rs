@@ -98,6 +98,10 @@ pub fn studio_bottom_panel_toggle() -> KeyBinding {
     KeyBinding::Mod('J')
 }
 
+pub fn studio_close_tab() -> KeyBinding {
+    KeyBinding::Mod('W')
+}
+
 pub fn escape() -> KeyBinding {
     KeyBinding::Plain(egui::Key::Escape)
 }
