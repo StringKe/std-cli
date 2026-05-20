@@ -78,6 +78,30 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.shell.pane_inactive") => Some("inactive"),
         (Locale::ZhCn, "studio.shell.close_pane") => Some("Close Pane"),
         (Locale::EnUs, "studio.shell.close_pane") => Some("Close Pane"),
+        (Locale::ZhCn, "studio.shell.command.show_prefix") => Some("Show"),
+        (Locale::EnUs, "studio.shell.command.show_prefix") => Some("Show"),
+        (Locale::ZhCn, "studio.shell.command.switch_workspace") => {
+            Some("Switch main Studio workspace")
+        }
+        (Locale::EnUs, "studio.shell.command.switch_workspace") => {
+            Some("Switch main Studio workspace")
+        }
+        (Locale::ZhCn, "studio.shell.command.refresh_workspace") => Some("Refresh Workspace State"),
+        (Locale::EnUs, "studio.shell.command.refresh_workspace") => Some("Refresh Workspace State"),
+        (Locale::ZhCn, "studio.shell.command.open_settings") => Some("Open Settings"),
+        (Locale::EnUs, "studio.shell.command.open_settings") => Some("Open Settings"),
+        (Locale::ZhCn, "studio.shell.command.open_workflow_builder") => {
+            Some("Open Workflow Builder")
+        }
+        (Locale::EnUs, "studio.shell.command.open_workflow_builder") => {
+            Some("Open Workflow Builder")
+        }
+        (Locale::ZhCn, "studio.shell.command.open_analysis_workbench") => {
+            Some("Open Analysis Workbench")
+        }
+        (Locale::EnUs, "studio.shell.command.open_analysis_workbench") => {
+            Some("Open Analysis Workbench")
+        }
         _ => None,
     }
 }
@@ -122,6 +146,12 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.shell.pane_manager.detail" => Some("open work"),
         "studio.shell.pane_inactive" => Some("inactive"),
         "studio.shell.close_pane" => Some("Close Pane"),
+        "studio.shell.command.show_prefix" => Some("Show"),
+        "studio.shell.command.switch_workspace" => Some("Switch main Studio workspace"),
+        "studio.shell.command.refresh_workspace" => Some("Refresh Workspace State"),
+        "studio.shell.command.open_settings" => Some("Open Settings"),
+        "studio.shell.command.open_workflow_builder" => Some("Open Workflow Builder"),
+        "studio.shell.command.open_analysis_workbench" => Some("Open Analysis Workbench"),
         _ => None,
     }
 }

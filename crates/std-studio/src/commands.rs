@@ -1,3 +1,4 @@
+use std_egui::i18n;
 use std_studio::{StudioApp, StudioPane, WorkspacePaneKind};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,20 +21,24 @@ pub(crate) fn command_palette_items(app: &StudioApp) -> Vec<StudioCommandItem> {
     let mut items = StudioPane::all()
         .into_iter()
         .map(|pane| StudioCommandItem {
-            title: format!("Show {}", pane.label()),
-            detail: "Switch main Studio workspace".to_string(),
+            title: format!(
+                "{} {}",
+                i18n::t("studio.shell.command.show_prefix"),
+                pane.label()
+            ),
+            detail: i18n::t("studio.shell.command.switch_workspace").to_string(),
             shortcut: "Enter".to_string(),
             action: StudioCommandAction::SwitchPane(pane),
         })
         .collect::<Vec<_>>();
     items.push(StudioCommandItem {
-        title: "Refresh Workspace State".to_string(),
+        title: i18n::t("studio.shell.command.refresh_workspace").to_string(),
         detail: format!("{} open panes", app.open_workspace_panes().count()),
         shortcut: "Enter".to_string(),
         action: StudioCommandAction::Refresh,
     });
     items.push(StudioCommandItem {
-        title: "Open Settings".to_string(),
+        title: i18n::t("studio.shell.command.open_settings").to_string(),
         detail: app.config_path().display().to_string(),
         shortcut: "Mod+,".to_string(),
         action: StudioCommandAction::OpenSettings,
@@ -53,13 +58,13 @@ pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
         .collect::<Vec<_>>();
     if items.is_empty() {
         items.push(StudioCommandItem {
-            title: "Open Workflow Builder".to_string(),
+            title: i18n::t("studio.shell.command.open_workflow_builder").to_string(),
             detail: app.core.config.workflows_dir().display().to_string(),
             shortcut: "Enter".to_string(),
             action: StudioCommandAction::OpenWorkspace(StudioPane::Workflows),
         });
         items.push(StudioCommandItem {
-            title: "Open Analysis Workbench".to_string(),
+            title: i18n::t("studio.shell.command.open_analysis_workbench").to_string(),
             detail: app.core.config.data_dir.display().to_string(),
             shortcut: "Enter".to_string(),
             action: StudioCommandAction::OpenWorkspace(StudioPane::Analysis),

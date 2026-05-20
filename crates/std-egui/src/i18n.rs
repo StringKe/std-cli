@@ -201,6 +201,10 @@ mod tests {
             "Quick Open"
         );
         assert_eq!(
+            translate(Locale::EnUs, "studio.shell.command.open_settings"),
+            "Open Settings"
+        );
+        assert_eq!(
             translate(Locale::ZhCn, "studio.shell.pane_inactive"),
             "inactive"
         );
