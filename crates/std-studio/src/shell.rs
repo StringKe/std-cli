@@ -1,4 +1,5 @@
 use crate::{
+    commands::{command_palette_items, quick_open_items, StudioCommandAction, StudioCommandItem},
     shell_parts::{panel_frame, path_label},
     ui, StudioEguiApp,
 };
@@ -217,27 +218,63 @@ impl StudioEguiApp {
 
     fn render_overlays(&mut self, ctx: &egui::Context) {
         if self.layout.settings_open {
-            self.render_overlay_panel(ctx, "studio_settings_overlay", "Settings", "Mod+,");
+            self.render_settings_overlay(ctx);
         }
         if self.layout.command_palette_open {
-            self.render_overlay_panel(
+            self.render_command_overlay(
                 ctx,
                 "studio_command_palette",
                 "Command Palette",
                 "Mod+/ or Mod+Shift+P",
+                command_palette_items(&self.app),
             );
         }
         if self.layout.quick_open_open {
-            self.render_overlay_panel(ctx, "studio_quick_open", "Quick Open", "Mod+P");
+            self.render_command_overlay(
+                ctx,
+                "studio_quick_open",
+                "Quick Open",
+                "Mod+P",
+                quick_open_items(&self.app),
+            );
         }
     }
 
-    fn render_overlay_panel(
+    fn render_settings_overlay(&mut self, ctx: &egui::Context) {
+        egui::Window::new("Settings")
+            .id(egui::Id::new("studio_settings_overlay"))
+            .collapsible(false)
+            .resizable(false)
+            .default_width(560.0)
+            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
+            .show(ctx, |ui| {
+                ui::section_header(ui, "Settings", "Mod+,");
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("Config").color(ui::muted_text(ctx)));
+                    ui.label(self.app.config_path().display().to_string());
+                });
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("Hotkey").color(ui::muted_text(ctx)));
+                    ui.label(&self.settings_hotkey);
+                });
+                ui.horizontal(|ui| {
+                    ui.label(egui::RichText::new("Theme").color(ui::muted_text(ctx)));
+                    ui.label(&self.settings_theme);
+                });
+                if ui::quiet_button(ui, "Open Settings Pane").clicked() {
+                    self.app.switch_pane(StudioPane::Settings);
+                    self.layout.close_overlays();
+                }
+            });
+    }
+
+    fn render_command_overlay(
         &mut self,
         ctx: &egui::Context,
         id: &'static str,
         title: &str,
         shortcut: &str,
+        items: Vec<StudioCommandItem>,
     ) {
         egui::Window::new(title)
             .id(egui::Id::new(id))
@@ -247,25 +284,48 @@ impl StudioEguiApp {
             .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
             .show(ctx, |ui| {
                 ui::section_header(ui, title, shortcut);
-                ui.label(egui::RichText::new("Studio scoped overlay").color(ui::muted_text(ctx)));
-                ui.horizontal_wrapped(|ui| {
-                    if ui::quiet_button(ui, "Dashboard").clicked() {
-                        self.app.switch_pane(StudioPane::Dashboard);
-                        self.layout.close_overlays();
-                    }
-                    if ui::quiet_button(ui, "Workflows").clicked() {
-                        self.app.switch_pane(StudioPane::Workflows);
-                        self.layout.close_overlays();
-                    }
-                    if ui::quiet_button(ui, "Plugins").clicked() {
-                        self.app.switch_pane(StudioPane::Plugins);
-                        self.layout.close_overlays();
-                    }
-                    if ui::quiet_button(ui, "Close").clicked() {
-                        self.layout.close_overlays();
-                    }
-                });
+                for item in items {
+                    self.render_command_item(ui, item);
+                }
             });
+    }
+
+    fn render_command_item(&mut self, ui: &mut egui::Ui, item: StudioCommandItem) {
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                ui.label(egui::RichText::new(&item.title).color(ui::strong_text(ui.ctx())));
+                ui.label(egui::RichText::new(&item.detail).color(ui::muted_text(ui.ctx())));
+            });
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui::quiet_button(ui, &item.shortcut).clicked() {
+                    self.apply_command_action(item.action);
+                }
+            });
+        });
+    }
+
+    fn apply_command_action(&mut self, action: StudioCommandAction) {
+        match action {
+            StudioCommandAction::SwitchPane(pane) => self.app.switch_pane(pane),
+            StudioCommandAction::OpenWorkspace(pane) => {
+                let id = match pane {
+                    StudioPane::Workflows => self
+                        .app
+                        .open_workflow_builder(self.app.core.config.workflows_dir()),
+                    StudioPane::Analysis => self
+                        .app
+                        .open_analysis_workbench(std::path::PathBuf::from(&self.analysis_path)),
+                    StudioPane::Plugins => self.app.open_plugin_manager_pane(),
+                    StudioPane::Memory => self.app.open_memory_browser_pane(),
+                    StudioPane::History => self.app.open_execution_history_pane(),
+                    _ => self.app.open_workspace_pane(pane),
+                };
+                self.status = format!("opened workspace pane {}", id.value());
+            }
+            StudioCommandAction::OpenSettings => self.app.switch_pane(StudioPane::Settings),
+            StudioCommandAction::Refresh => self.app.refresh(),
+        }
+        self.layout.close_overlays();
     }
 }
 

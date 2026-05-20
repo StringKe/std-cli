@@ -2,6 +2,7 @@
 
 mod analysis;
 mod app_view;
+mod commands;
 mod host_chrome;
 mod layout;
 mod operations;
@@ -277,5 +278,21 @@ mod app_tests {
 
         app.layout.close_overlays();
         assert!(!app.layout.settings_open);
+    }
+
+    #[test]
+    fn studio_command_sources_use_real_app_state() {
+        let mut app = StudioEguiApp::default();
+        let pane = app.app.open_plugin_manager_pane();
+
+        let commands = crate::commands::command_palette_items(&app.app);
+        let quick_open = crate::commands::quick_open_items(&app.app);
+
+        assert!(commands.iter().any(|item| item.title == "Show Settings"));
+        assert!(commands
+            .iter()
+            .any(|item| item.title == "Refresh Workspace State"));
+        assert!(quick_open.iter().any(|item| item.title == "Plugin Manager"));
+        assert_eq!(app.app.focused_pane, Some(pane));
     }
 }
