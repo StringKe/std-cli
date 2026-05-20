@@ -33,15 +33,15 @@ impl UiScale {
         FontId::new(size * self.value, family)
     }
 
-    pub(crate) fn f32(self, value: f32) -> f32 {
+    pub fn f32(self, value: f32) -> f32 {
         value * self.value
     }
 
-    pub(crate) fn i8(self, value: i8) -> i8 {
+    pub fn i8(self, value: i8) -> i8 {
         self.f32(value as f32).round().clamp(0.0, i8::MAX as f32) as i8
     }
 
-    pub(crate) fn u8(self, value: u8) -> u8 {
+    pub fn u8(self, value: u8) -> u8 {
         self.f32(value as f32).round().clamp(0.0, u8::MAX as f32) as u8
     }
 }
