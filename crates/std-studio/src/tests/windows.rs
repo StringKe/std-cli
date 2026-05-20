@@ -33,6 +33,8 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
     assert!(!studio.close_workspace_pane(memory));
     assert!(studio.focus_workspace_pane(analysis));
     assert!(studio.focus_workspace_pane(apps));
+    assert!(studio.close_workspace_pane(apps));
+    assert_eq!(studio.focused_pane, Some(analysis));
 }
 
 #[test]

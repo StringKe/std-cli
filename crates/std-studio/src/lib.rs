@@ -215,7 +215,12 @@ impl StudioApp {
         };
         self.workspace_panes.remove(index);
         if self.focused_pane == Some(id) {
-            self.focused_pane = self.workspace_panes.last().map(|pane| pane.id);
+            self.focused_pane = self
+                .workspace_panes
+                .iter()
+                .filter(|pane| pane.open)
+                .max_by_key(|pane| pane.focused_at)
+                .map(|pane| pane.id);
         }
         true
     }
