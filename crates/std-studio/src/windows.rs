@@ -80,7 +80,7 @@ impl StudioEguiApp {
             ui::section_header(
                 ui,
                 i18n::t("studio.windows.title"),
-                i18n::t("studio.windows.detail"),
+                self.app.workspace_policy.summary(),
             );
             for spec in specs {
                 render_spec(

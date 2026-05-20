@@ -155,6 +155,7 @@ impl StudioApp {
                 format!("actions={}", self.dashboard.action_count),
                 format!("memory={}", self.dashboard.memory_count),
                 format!("audit_events={}", self.dashboard.audit_event_count),
+                format!("workspace_policy={}", self.workspace_policy.summary()),
                 "action=open_workspace_pane".to_string(),
             ],
             StudioPane::Workflows => vec![

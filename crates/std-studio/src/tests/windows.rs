@@ -105,6 +105,9 @@ fn studio_pane_content_snapshots_include_real_state() {
         .lines
         .iter()
         .any(|line| line.starts_with("actions=")));
+    assert!(dashboard_content.lines.iter().any(|line| {
+        line == "workspace_policy=single egui host viewport, internal workspace panes"
+    }));
     assert_eq!(memory_content.content_key, "memory");
     assert!(memory_content.lines.contains(&"memories=1".to_string()));
     assert_eq!(operations_content.content_key, "operations");

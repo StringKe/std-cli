@@ -18,6 +18,16 @@ fn studio_can_be_instantiated() {
     assert_eq!(studio.name, "std-cli Studio");
     assert!(studio.dashboard.action_count >= 3);
     assert_eq!(studio.active_pane, StudioPane::Dashboard);
+    assert_eq!(
+        studio.workspace_policy.host_window,
+        HostWindowPolicy::SingleBorderlessEguiViewport
+    );
+    assert_eq!(
+        studio.workspace_policy.pane_system,
+        PaneSystemPolicy::InternalEguiWorkspacePanes
+    );
+    assert!(!studio.workspace_policy.allows_native_child_windows());
+    assert!(!studio.workspace_policy.allows_detached_panels());
 }
 
 #[test]

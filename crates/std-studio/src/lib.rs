@@ -9,6 +9,7 @@ mod ops_evidence;
 mod trace;
 mod window;
 mod workflow;
+mod workspace_policy;
 
 pub use ops_evidence::{OpsEvidence, OpsGate, OpsStatus};
 use std_core::{StdConfig, StdCore};
@@ -23,6 +24,7 @@ pub use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecution, SearchResult};
 pub use window::{WorkspacePane, WorkspacePaneContent, WorkspacePaneId, WorkspacePaneKind};
 pub use workflow::built_in_studio_preview_workflow;
+pub use workspace_policy::{HostWindowPolicy, PaneSystemPolicy, StudioWorkspacePolicy};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StudioPane {
@@ -95,6 +97,7 @@ pub struct StudioApp {
     pub planned_workflow: Option<Workflow>,
     pub workspace_panes: Vec<WorkspacePane>,
     pub focused_pane: Option<WorkspacePaneId>,
+    pub workspace_policy: StudioWorkspacePolicy,
     next_pane_serial: u64,
 }
 
@@ -119,6 +122,7 @@ impl Default for StudioApp {
             planned_workflow: None,
             workspace_panes: Vec::new(),
             focused_pane: None,
+            workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 1,
         }
     }
@@ -148,6 +152,7 @@ impl StudioApp {
             planned_workflow: None,
             workspace_panes: Vec::new(),
             focused_pane: None,
+            workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 1,
         }
     }

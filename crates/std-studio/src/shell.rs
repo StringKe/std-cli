@@ -127,6 +127,11 @@ impl StudioEguiApp {
                 i18n::t("studio.shell.panes")
             ));
             ui.separator();
+            ui.label(
+                egui::RichText::new(self.app.workspace_policy.summary())
+                    .color(ui::muted_text(ui.ctx())),
+            );
+            ui.separator();
             ui.label(if self.layout.inspector_open {
                 i18n::t("studio.shell.inspector")
             } else {

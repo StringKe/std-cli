@@ -1,9 +1,15 @@
 use eframe::egui;
+use std_studio::{HostWindowPolicy, StudioWorkspacePolicy};
 
 pub(crate) const STUDIO_WINDOW_SIZE: [f32; 2] = [1280.0, 800.0];
 pub(crate) const STUDIO_MIN_WINDOW_SIZE: [f32; 2] = [1080.0, 640.0];
 
 pub(crate) fn studio_native_options() -> eframe::NativeOptions {
+    let policy = StudioWorkspacePolicy::studio_v1();
+    debug_assert_eq!(
+        policy.host_window,
+        HostWindowPolicy::SingleBorderlessEguiViewport
+    );
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size(STUDIO_WINDOW_SIZE)
@@ -25,5 +31,6 @@ mod tests {
         assert!(description.contains("inner_size: Some([1280.0 800.0])"));
         assert!(description.contains("min_inner_size: Some([1080.0 640.0])"));
         assert!(description.contains("decorations: Some(false)"));
+        assert!(!StudioWorkspacePolicy::studio_v1().allows_native_child_windows());
     }
 }
