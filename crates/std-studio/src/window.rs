@@ -1,4 +1,5 @@
 use crate::{StudioApp, StudioPane};
+use std_egui::i18n;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WorkspacePaneId(u64);
@@ -29,15 +30,29 @@ impl WorkspacePaneKind {
         match self {
             WorkspacePaneKind::Pane(pane) => pane.label().to_string(),
             WorkspacePaneKind::WorkflowBuilder { workflow_path } => {
-                format!("Workflow Builder: {}", display_name(workflow_path))
+                format!(
+                    "{}: {}",
+                    i18n::t("studio.shell.open.workflow.title"),
+                    display_name(workflow_path)
+                )
             }
             WorkspacePaneKind::AnalysisWorkbench { entity_path } => {
-                format!("Analysis: {}", display_name(entity_path))
+                format!(
+                    "{}: {}",
+                    i18n::t("studio.shell.open.analysis.title"),
+                    display_name(entity_path)
+                )
             }
-            WorkspacePaneKind::AppManager => "App Manager".to_string(),
-            WorkspacePaneKind::MemoryBrowser => "Memory Browser".to_string(),
-            WorkspacePaneKind::ExecutionHistory => "Execution History".to_string(),
-            WorkspacePaneKind::PluginManager => "Plugin Manager".to_string(),
+            WorkspacePaneKind::AppManager => i18n::t("studio.windows.app_manager").to_string(),
+            WorkspacePaneKind::MemoryBrowser => {
+                i18n::t("studio.windows.memory_browser").to_string()
+            }
+            WorkspacePaneKind::ExecutionHistory => {
+                i18n::t("studio.windows.execution_history").to_string()
+            }
+            WorkspacePaneKind::PluginManager => {
+                i18n::t("studio.windows.plugin_manager").to_string()
+            }
         }
     }
 
@@ -100,7 +115,7 @@ impl StudioApp {
             WorkspacePaneKind::Pane(pane) => self.pane_content(*pane),
             WorkspacePaneKind::WorkflowBuilder { workflow_path } => WorkspacePaneContent {
                 content_key: kind.content_key(),
-                heading: "Workflow Builder".to_string(),
+                heading: i18n::t("studio.shell.open.workflow.title").to_string(),
                 lines: vec![
                     format!("path={}", workflow_path.display()),
                     format!("planned={}", self.planned_workflow.is_some()),
@@ -115,7 +130,7 @@ impl StudioApp {
             },
             WorkspacePaneKind::AnalysisWorkbench { entity_path } => WorkspacePaneContent {
                 content_key: kind.content_key(),
-                heading: "Analysis Workbench".to_string(),
+                heading: i18n::t("studio.shell.open.analysis.title").to_string(),
                 lines: vec![
                     format!("path={}", entity_path.display()),
                     format!(

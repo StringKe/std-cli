@@ -192,6 +192,10 @@ mod tests {
             translate(Locale::ZhCn, "studio.windows.detail"),
             "Studio 内部面板"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.windows.execution_history"),
+            "Execution History"
+        );
     }
 
     #[test]

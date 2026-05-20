@@ -47,7 +47,7 @@ fn studio_pane_titles_reflect_pane_kind() {
         .collect::<Vec<_>>();
 
     assert!(titles.contains(&(workflow, "Workflow Builder: workflow.json")));
-    assert!(titles.contains(&(analysis, "Analysis: std-cli")));
+    assert!(titles.contains(&(analysis, "Analysis Workbench: std-cli")));
     assert!(titles.contains(&(apps, "App Manager")));
     assert!(titles.contains(&(memory, "Memory Browser")));
 }
