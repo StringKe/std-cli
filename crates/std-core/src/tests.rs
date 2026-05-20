@@ -141,22 +141,50 @@ fn core_previews_and_executes_actions_with_feedback() {
 
     assert_eq!(preview.title, "Print Runner Smoke");
     assert_eq!(preview.primary_command, "printf runner-smoke");
-    assert_eq!(execution.status, ActionExecutionStatus::Completed);
+    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert!(execution
+        .message
+        .contains("test command runner blocked external command"));
     assert!(execution
         .output
         .as_ref()
         .unwrap()
-        .get("stdout")
+        .get("error")
         .unwrap()
         .as_str()
         .unwrap()
-        .contains("runner-smoke"));
+        .contains("sh"));
     assert!(events
         .iter()
         .any(|event| event.event_type == StdEventType::ActionPreviewed));
     assert!(events
         .iter()
         .any(|event| event.event_type == StdEventType::ActionExecuted));
+}
+
+#[test]
+fn core_test_runner_blocks_explicit_open_app_commands() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    let mut action = make_test_action("Open Real App Command");
+    action.action_type = ActionType::Command;
+    core.register_action(
+        RegistryEntry::from_action(action, vec!["runner".to_string()])
+            .with_metadata("command", "open -a 1Password"),
+    )
+    .unwrap();
+
+    let result = core.search("real app", 1).unwrap().remove(0);
+    let execution = core.execute_action(result.action.id).unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert!(execution
+        .message
+        .contains("test command runner blocked external command"));
+    assert!(execution.message.contains("open -a 1Password"));
 }
 
 #[test]

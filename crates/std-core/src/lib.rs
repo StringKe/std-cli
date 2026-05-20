@@ -137,25 +137,6 @@ fn default_core_with_config(config: StdConfig) -> StdCore {
 
 #[cfg(test)]
 fn guarded_test_command_runner(program: &str, args: &[String]) -> Result<Output, io::Error> {
-    use std::os::unix::process::ExitStatusExt;
-
-    let command = args
-        .strip_prefix(&["-c".to_string()])
-        .and_then(|rest| rest.first());
-    if program == "sh" && command.is_some_and(|command| command.starts_with("printf ")) {
-        let stdout = command
-            .unwrap()
-            .strip_prefix("printf ")
-            .unwrap_or_default()
-            .as_bytes()
-            .to_vec();
-        return Ok(Output {
-            status: std::process::ExitStatus::from_raw(0),
-            stdout,
-            stderr: Vec::new(),
-        });
-    }
-
     Err(io::Error::new(
         io::ErrorKind::PermissionDenied,
         format!("test command runner blocked external command: {program} {args:?}"),
