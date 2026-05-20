@@ -180,6 +180,10 @@ impl Text {
         FontId::new(18.0, FontFamily::Proportional)
     }
 
+    pub fn display() -> FontId {
+        FontId::new(24.0, FontFamily::Proportional)
+    }
+
     pub fn code() -> FontId {
         FontId::new(12.0, FontFamily::Monospace)
     }

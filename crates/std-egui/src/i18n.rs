@@ -75,6 +75,46 @@ pub fn translate(locale: Locale, key: &str) -> &'static str {
         (Locale::EnUs, "studio.settings.paths.detail") => "Current storage layout",
         (Locale::ZhCn, "studio.settings.saved") => "已保存",
         (Locale::EnUs, "studio.settings.saved") => "saved",
+        (Locale::ZhCn, "studio.dashboard.title") => "Dashboard",
+        (Locale::EnUs, "studio.dashboard.title") => "Dashboard",
+        (Locale::ZhCn, "studio.dashboard.detail") => "本地自动化层的运行概览",
+        (Locale::EnUs, "studio.dashboard.detail") => {
+            "Operational overview for the local automation layer"
+        }
+        (Locale::ZhCn, "studio.dashboard.actions") => "Action",
+        (Locale::EnUs, "studio.dashboard.actions") => "Actions",
+        (Locale::ZhCn, "studio.dashboard.actions.detail") => "可搜索单元",
+        (Locale::EnUs, "studio.dashboard.actions.detail") => "searchable units",
+        (Locale::ZhCn, "studio.dashboard.memory") => "Memory",
+        (Locale::EnUs, "studio.dashboard.memory") => "Memory",
+        (Locale::ZhCn, "studio.dashboard.memory.detail") => "本地记录",
+        (Locale::EnUs, "studio.dashboard.memory.detail") => "local notes",
+        (Locale::ZhCn, "studio.dashboard.audit_events") => "审计事件",
+        (Locale::EnUs, "studio.dashboard.audit_events") => "Audit Events",
+        (Locale::ZhCn, "studio.dashboard.audit_events.detail") => "事件轨迹",
+        (Locale::EnUs, "studio.dashboard.audit_events.detail") => "event trail",
+        (Locale::ZhCn, "studio.dashboard.planner.title") => "Planner 草稿",
+        (Locale::EnUs, "studio.dashboard.planner.title") => "Planner Draft",
+        (Locale::ZhCn, "studio.dashboard.planner.detail") => "AI 本地计划",
+        (Locale::EnUs, "studio.dashboard.planner.detail") => "AI local plan",
+        (Locale::ZhCn, "studio.dashboard.goal") => "目标",
+        (Locale::EnUs, "studio.dashboard.goal") => "Goal",
+        (Locale::ZhCn, "studio.dashboard.recent_memory.title") => "最近 Memory",
+        (Locale::EnUs, "studio.dashboard.recent_memory.title") => "Recent Memory",
+        (Locale::ZhCn, "studio.dashboard.recent_memory.detail") => "共享 core",
+        (Locale::EnUs, "studio.dashboard.recent_memory.detail") => "shared core",
+        (Locale::ZhCn, "studio.dashboard.recent_memory.empty") => "还没有 Memory 记录",
+        (Locale::EnUs, "studio.dashboard.recent_memory.empty") => "No memory records yet",
+        (Locale::ZhCn, "studio.dashboard.next_gates.title") => "下一批 gate",
+        (Locale::EnUs, "studio.dashboard.next_gates.title") => "Next Gates",
+        (Locale::ZhCn, "studio.dashboard.next_gates.detail") => "completion audit",
+        (Locale::EnUs, "studio.dashboard.next_gates.detail") => "completion audit",
+        (Locale::ZhCn, "studio.dashboard.gate.launcher") => "Launcher PASS 证据已存在",
+        (Locale::EnUs, "studio.dashboard.gate.launcher") => "Launcher PASS evidence exists",
+        (Locale::ZhCn, "studio.dashboard.gate.studio") => "Studio 真实 UI audit 进行中",
+        (Locale::EnUs, "studio.dashboard.gate.studio") => "Studio real UI audit ongoing",
+        (Locale::ZhCn, "studio.dashboard.gate.quality") => "质量工具只使用 Rust 生态",
+        (Locale::EnUs, "studio.dashboard.gate.quality") => "Quality rust ecosystem only",
         _ => key_fallback(key),
     }
 }
@@ -107,6 +147,25 @@ fn key_fallback(key: &str) -> &'static str {
         "studio.settings.paths.title" => "Resolved Paths",
         "studio.settings.paths.detail" => "Current storage layout",
         "studio.settings.saved" => "saved",
+        "studio.dashboard.title" => "Dashboard",
+        "studio.dashboard.detail" => "Operational overview for the local automation layer",
+        "studio.dashboard.actions" => "Actions",
+        "studio.dashboard.actions.detail" => "searchable units",
+        "studio.dashboard.memory" => "Memory",
+        "studio.dashboard.memory.detail" => "local notes",
+        "studio.dashboard.audit_events" => "Audit Events",
+        "studio.dashboard.audit_events.detail" => "event trail",
+        "studio.dashboard.planner.title" => "Planner Draft",
+        "studio.dashboard.planner.detail" => "AI local plan",
+        "studio.dashboard.goal" => "Goal",
+        "studio.dashboard.recent_memory.title" => "Recent Memory",
+        "studio.dashboard.recent_memory.detail" => "shared core",
+        "studio.dashboard.recent_memory.empty" => "No memory records yet",
+        "studio.dashboard.next_gates.title" => "Next Gates",
+        "studio.dashboard.next_gates.detail" => "completion audit",
+        "studio.dashboard.gate.launcher" => "Launcher PASS evidence exists",
+        "studio.dashboard.gate.studio" => "Studio real UI audit ongoing",
+        "studio.dashboard.gate.quality" => "Quality rust ecosystem only",
         _ => "UNKNOWN_I18N_KEY",
     }
 }
@@ -139,6 +198,18 @@ mod tests {
         assert_eq!(
             translate(Locale::EnUs, "studio.settings.storage.note"),
             "StdConfig writes and reloads shared core state"
+        );
+    }
+
+    #[test]
+    fn studio_dashboard_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.dashboard.gate.quality"),
+            "Quality rust ecosystem only"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.dashboard.gate.quality"),
+            "质量工具只使用 Rust 生态"
         );
     }
 }
