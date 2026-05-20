@@ -214,6 +214,14 @@ impl StudioApp {
         true
     }
 
+    pub fn focus_next_workspace_pane(&mut self) -> Option<WorkspacePaneId> {
+        self.focus_workspace_pane_by_offset(1)
+    }
+
+    pub fn focus_previous_workspace_pane(&mut self) -> Option<WorkspacePaneId> {
+        self.focus_workspace_pane_by_offset(-1)
+    }
+
     pub fn close_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
         let Some(index) = self.workspace_panes.iter().position(|pane| pane.id == id) else {
             return false;
@@ -232,6 +240,26 @@ impl StudioApp {
 
     pub fn open_workspace_panes(&self) -> impl Iterator<Item = &WorkspacePane> {
         self.workspace_panes.iter().filter(|pane| pane.open)
+    }
+
+    fn focus_workspace_pane_by_offset(&mut self, offset: isize) -> Option<WorkspacePaneId> {
+        let open_ids = self
+            .workspace_panes
+            .iter()
+            .filter(|pane| pane.open)
+            .map(|pane| pane.id)
+            .collect::<Vec<_>>();
+        if open_ids.is_empty() {
+            self.focused_pane = None;
+            return None;
+        }
+        let current = self
+            .focused_pane
+            .and_then(|id| open_ids.iter().position(|open_id| *open_id == id))
+            .unwrap_or(0);
+        let next = (current as isize + offset).rem_euclid(open_ids.len() as isize) as usize;
+        let id = open_ids[next];
+        self.focus_workspace_pane(id).then_some(id)
     }
 
     fn open_pane(&mut self, kind: WorkspacePaneKind) -> WorkspacePaneId {

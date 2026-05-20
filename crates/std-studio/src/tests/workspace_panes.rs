@@ -38,6 +38,38 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
 }
 
 #[test]
+fn studio_cycles_workspace_pane_focus_without_losing_state() {
+    let mut studio = test_studio();
+    let dashboard = studio.open_workspace_pane(StudioPane::Dashboard);
+    let workflow_path = studio
+        .create_workflow("Cycle Workflow", "Keep builder state while switching")
+        .unwrap();
+    let workflow = studio.open_workflow_builder(workflow_path.clone());
+    let analysis = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli"));
+    let memory = studio.open_memory_browser_pane();
+
+    assert_eq!(studio.focused_pane, Some(memory));
+    assert_eq!(studio.focus_next_workspace_pane(), Some(dashboard));
+    assert_eq!(studio.focus_next_workspace_pane(), Some(workflow));
+    assert_eq!(studio.focus_previous_workspace_pane(), Some(dashboard));
+    assert_eq!(studio.focus_previous_workspace_pane(), Some(memory));
+    assert!(studio.close_workspace_pane(memory));
+    assert_eq!(studio.focused_pane, Some(dashboard));
+    assert_eq!(studio.focus_previous_workspace_pane(), Some(analysis));
+    assert!(studio
+        .workspace_pane_content(&WorkspacePaneKind::WorkflowBuilder {
+            workflow_path: workflow_path.clone()
+        })
+        .lines
+        .contains(&format!("path={}", workflow_path.display())));
+    assert!(studio.close_workspace_pane(dashboard));
+    assert!(studio.close_workspace_pane(workflow));
+    assert!(studio.close_workspace_pane(analysis));
+    assert_eq!(studio.focus_next_workspace_pane(), None);
+    assert_eq!(studio.focused_pane, None);
+}
+
+#[test]
 fn studio_pane_titles_reflect_pane_kind() {
     let mut studio = test_studio();
     let workflow = studio.open_workflow_builder(std::path::PathBuf::from("release/workflow.json"));

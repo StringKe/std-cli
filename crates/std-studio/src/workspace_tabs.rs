@@ -34,6 +34,9 @@ pub(crate) fn render_workspace_tabs(
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
     ui.horizontal_wrapped(|ui| {
+        if specs.len() > 1 {
+            render_workspace_cycle_controls(ui, commands);
+        }
         for spec in specs {
             render_workspace_tab(ui, spec, commands);
         }
@@ -44,6 +47,18 @@ pub(crate) fn workspace_tab_keyboard_command(
     focused: Option<WorkspacePaneId>,
 ) -> Option<StudioWorkspaceCommand> {
     focused.map(StudioWorkspaceCommand::Close)
+}
+
+fn render_workspace_cycle_controls(
+    ui: &mut egui::Ui,
+    commands: &crate::workspace_panes::WorkspaceCommandQueue,
+) {
+    if ui::quiet_button(ui, i18n::t("studio.workspace_panes.previous")).clicked() {
+        push_command(commands, StudioWorkspaceCommand::FocusPrevious);
+    }
+    if ui::quiet_button(ui, i18n::t("studio.workspace_panes.next")).clicked() {
+        push_command(commands, StudioWorkspaceCommand::FocusNext);
+    }
 }
 
 fn render_workspace_tab(
@@ -115,5 +130,19 @@ mod tests {
             Some(StudioWorkspaceCommand::Close(WorkspacePaneId::new(7)))
         );
         assert_eq!(workspace_tab_keyboard_command(None), None);
+    }
+
+    #[test]
+    fn cycle_controls_use_workspace_focus_commands() {
+        assert_eq!(i18n::t("studio.workspace_panes.previous"), "Previous");
+        assert_eq!(i18n::t("studio.workspace_panes.next"), "Next");
+        assert_eq!(
+            StudioWorkspaceCommand::FocusPrevious,
+            StudioWorkspaceCommand::FocusPrevious
+        );
+        assert_eq!(
+            StudioWorkspaceCommand::FocusNext,
+            StudioWorkspaceCommand::FocusNext
+        );
     }
 }

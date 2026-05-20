@@ -240,6 +240,38 @@ mod app_tests {
     }
 
     #[test]
+    fn workspace_focus_cycle_commands_switch_internal_tabs() {
+        let mut app = StudioEguiApp::default();
+        let dashboard = app.app.open_workspace_pane(StudioPane::Dashboard);
+        let plugins = app.app.open_plugin_manager_pane();
+        let settings = app.app.open_settings_pane();
+
+        assert_eq!(app.app.focused_pane, Some(settings));
+        app.workspace_commands
+            .lock()
+            .unwrap()
+            .push(StudioWorkspaceCommand::FocusNext);
+        app.consume_workspace_commands();
+        assert_eq!(app.app.focused_pane, Some(dashboard));
+        assert!(app.status.contains(&dashboard.value().to_string()));
+
+        app.workspace_commands
+            .lock()
+            .unwrap()
+            .push(StudioWorkspaceCommand::FocusPrevious);
+        app.consume_workspace_commands();
+        assert_eq!(app.app.focused_pane, Some(settings));
+
+        assert!(app.app.close_workspace_pane(settings));
+        app.workspace_commands
+            .lock()
+            .unwrap()
+            .push(StudioWorkspaceCommand::FocusPrevious);
+        app.consume_workspace_commands();
+        assert_eq!(app.app.focused_pane, Some(plugins));
+    }
+
+    #[test]
     fn workspace_canvas_renders_only_focused_internal_pane() {
         let mut app = StudioEguiApp::default();
         let plugin = app.app.open_plugin_manager_pane();

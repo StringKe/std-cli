@@ -10,6 +10,8 @@ pub(crate) type WorkspaceCommandQueue = Arc<Mutex<Vec<StudioWorkspaceCommand>>>;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum StudioWorkspaceCommand {
     Focus(WorkspacePaneId),
+    FocusNext,
+    FocusPrevious,
     Close(WorkspacePaneId),
     ShowInMain(StudioPane),
     Refresh,
@@ -121,6 +123,16 @@ impl StudioEguiApp {
         match command {
             StudioWorkspaceCommand::Focus(id) => {
                 if self.app.focus_workspace_pane(id) {
+                    self.status = format!("focused workspace pane {}", id.value());
+                }
+            }
+            StudioWorkspaceCommand::FocusNext => {
+                if let Some(id) = self.app.focus_next_workspace_pane() {
+                    self.status = format!("focused workspace pane {}", id.value());
+                }
+            }
+            StudioWorkspaceCommand::FocusPrevious => {
+                if let Some(id) = self.app.focus_previous_workspace_pane() {
                     self.status = format!("focused workspace pane {}", id.value());
                 }
             }
