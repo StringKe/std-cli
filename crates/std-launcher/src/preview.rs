@@ -1,0 +1,187 @@
+use crate::app::LauncherApp;
+use eframe::egui;
+use std::time::{Duration, Instant};
+use std_egui::tokens::ThemeMode;
+use std_launcher::LauncherState;
+use std_types::{ActionExecution, ActionExecutionStatus};
+
+pub(crate) struct LauncherPreviewConfig {
+    theme_mode: ThemeMode,
+    scenario: String,
+    timeout_ms: u64,
+}
+
+struct LauncherPreviewApp {
+    app: LauncherApp,
+    started_at: Instant,
+    timeout_ms: u64,
+}
+
+impl LauncherPreviewApp {
+    fn new(config: LauncherPreviewConfig) -> Self {
+        let mut app = LauncherApp::for_preview(config.theme_mode);
+        apply_preview_scenario(&mut app.state, &config.scenario);
+        Self {
+            app,
+            started_at: Instant::now(),
+            timeout_ms: config.timeout_ms,
+        }
+    }
+}
+
+impl eframe::App for LauncherPreviewApp {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        self.app.update(ctx, frame);
+        if self.started_at.elapsed() >= Duration::from_millis(self.timeout_ms) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        } else {
+            ctx.request_repaint_after(Duration::from_millis(100));
+        }
+    }
+}
+
+pub(crate) fn preview_from_args(args: &[String]) -> Option<LauncherPreviewConfig> {
+    if args.get(1).map(String::as_str) != Some("--ui-preview") {
+        return None;
+    }
+    Some(LauncherPreviewConfig {
+        theme_mode: args
+            .get(2)
+            .map(String::as_str)
+            .map(ThemeMode::resolve)
+            .unwrap_or(ThemeMode::Dark),
+        scenario: args
+            .get(3)
+            .cloned()
+            .unwrap_or_else(|| "results".to_string()),
+        timeout_ms: args
+            .get(4)
+            .and_then(|value| value.parse::<u64>().ok())
+            .unwrap_or(8_000),
+    })
+}
+
+pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
+    eframe::run_native(
+        "std-cli Launcher UI Preview",
+        eframe::NativeOptions {
+            viewport: egui::ViewportBuilder::default()
+                .with_inner_size([680.0, 420.0])
+                .with_decorations(false)
+                .with_transparent(false)
+                .with_visible(true),
+            ..Default::default()
+        },
+        Box::new(|_cc| Ok(Box::new(LauncherPreviewApp::new(config)))),
+    )
+}
+
+fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
+    match scenario {
+        "empty" => {
+            state.update_query("");
+        }
+        "none" | "no-results" => {
+            state.update_query("zzzz-no-launcher-match");
+        }
+        "searching" => {
+            state.view.preview_searching("slow query");
+        }
+        "executing" => {
+            state.update_query("index");
+            state.view.preview_executing();
+        }
+        "defer" => {
+            state.update_query("terminal");
+            select_external_runner_result(state);
+            state.trigger_selected();
+        }
+        "action-panel" => {
+            state.update_query("terminal");
+            select_external_runner_result(state);
+            state.open_action_panel();
+        }
+        "error" => {
+            state.update_query("index");
+            state.view.feedback = Some(std_egui::LauncherFeedback::from_execution(
+                &ActionExecution {
+                    action_id: uuid::Uuid::nil(),
+                    action_name: "Preview Failure".to_string(),
+                    status: ActionExecutionStatus::Failed,
+                    message: "UI preview error state".to_string(),
+                    output: None,
+                    created_at: chrono::Utc::now(),
+                },
+            ));
+            state.view.phase = std_egui::LauncherPhase::Feedback;
+        }
+        _ => {
+            state.update_query("index");
+        }
+    }
+}
+
+fn select_external_runner_result(state: &mut LauncherState) {
+    if let Some(index) = state
+        .view
+        .results
+        .iter()
+        .position(|result| result.action.action_type.needs_external_runner())
+    {
+        state.view.selected = index;
+        state.view.refresh_preview(&state.core);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ui_preview_args_are_explicit_opt_in() {
+        let args = vec![
+            "std-launcher".to_string(),
+            "--ui-preview".to_string(),
+            "light".to_string(),
+            "defer".to_string(),
+            "1200".to_string(),
+        ];
+        let config = preview_from_args(&args).unwrap();
+
+        assert_eq!(config.theme_mode, ThemeMode::Light);
+        assert_eq!(config.scenario, "defer");
+        assert_eq!(config.timeout_ms, 1200);
+    }
+
+    #[test]
+    fn ui_preview_scenarios_seed_visible_launcher_states() {
+        let mut state = LauncherState::new();
+
+        apply_preview_scenario(&mut state, "no-results");
+        assert!(state.view.results.is_empty());
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::NoMatches);
+
+        apply_preview_scenario(&mut state, "searching");
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
+
+        apply_preview_scenario(&mut state, "executing");
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);
+
+        apply_preview_scenario(&mut state, "defer");
+        assert_eq!(
+            state.view.feedback.as_ref().unwrap().status,
+            ActionExecutionStatus::NeedsExternalRunner
+        );
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
+
+        apply_preview_scenario(&mut state, "action-panel");
+        assert!(state.action_panel.open);
+        assert_eq!(state.action_panel.action_name, "Open Terminal");
+
+        apply_preview_scenario(&mut state, "error");
+        assert_eq!(
+            state.view.feedback.as_ref().unwrap().status,
+            ActionExecutionStatus::Failed
+        );
+    }
+}

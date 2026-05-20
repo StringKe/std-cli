@@ -1,3 +1,4 @@
+use crate::window::apply_window_commands;
 use eframe::egui;
 use std::{
     process::Command,
@@ -295,19 +296,6 @@ impl eframe::App for GuiHotkeySmokeApp {
             );
         }
         ctx.request_repaint_after(Duration::from_millis(25));
-    }
-}
-
-fn apply_window_commands(ctx: &egui::Context, commands: &[LauncherWindowCommand]) {
-    for command in commands {
-        match command {
-            LauncherWindowCommand::SetVisible(visible) => {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Visible(*visible));
-            }
-            LauncherWindowCommand::Focus => {
-                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
-            }
-        }
     }
 }
 
