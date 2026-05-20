@@ -11,13 +11,14 @@ const GROUP_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
+const CARRIER_MARGIN: f32 = Space::LG as f32;
 
 pub(crate) fn scale() -> UiScale {
     UiScale::from_env()
 }
 
 pub(crate) fn window_margin() -> f32 {
-    0.0
+    UiScale::from_env().f32(CARRIER_MARGIN)
 }
 
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
@@ -160,9 +161,10 @@ pub(crate) fn initial_window_inner_size() -> egui::Vec2 {
 pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
     let scale = UiScale::from_env();
     let body_height = body_height_for_scale(state, DEFAULT_VIEWPORT_HEIGHT, scale);
+    let margin = carrier_margin_for_scale(scale);
     egui::vec2(
-        scale.f32(PANEL_WIDTH),
-        panel_height_for_scale(state, body_height, scale),
+        scale.f32(PANEL_WIDTH) + margin * 2.0,
+        panel_height_for_scale(state, body_height, scale) + margin * 2.0,
     )
 }
 
@@ -182,7 +184,15 @@ pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
 }
 
 fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(scale.f32(PANEL_WIDTH), scale.f32(SEARCH_HEIGHT))
+    let margin = carrier_margin_for_scale(scale);
+    egui::vec2(
+        scale.f32(PANEL_WIDTH) + margin * 2.0,
+        scale.f32(SEARCH_HEIGHT) + margin * 2.0,
+    )
+}
+
+fn carrier_margin_for_scale(scale: UiScale) -> f32 {
+    scale.f32(CARRIER_MARGIN)
 }
 
 fn panel_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
@@ -236,8 +246,8 @@ mod tests {
         let base = initial_window_inner_size_for_scale(UiScale::default());
         let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
 
-        assert_eq!(base, egui::vec2(720.0, 64.0));
-        assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
+        assert_eq!(base, egui::vec2(768.0, 112.0));
+        assert_eq!(zoomed, egui::vec2(1152.0, 168.0));
     }
 
     #[test]
@@ -319,7 +329,7 @@ mod tests {
     fn panel_width_does_not_fill_medium_carrier() {
         let width = panel_width_for_available(1000.0, window_margin());
 
-        assert_eq!(width, 550.0);
+        assert_eq!(width, 523.60004);
     }
 
     #[test]
@@ -331,8 +341,8 @@ mod tests {
 
         assert_eq!(rect.min.x, window_margin());
         assert_eq!(rect.min.y, window_margin());
-        assert_eq!(rect.max.x, available.right());
-        assert!(rect.max.y <= available.bottom());
+        assert_eq!(rect.max.x, available.right() - window_margin());
+        assert!(rect.max.y <= available.bottom() - window_margin());
     }
 
     #[test]
@@ -343,7 +353,7 @@ mod tests {
             egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(PANEL_WIDTH, 900.0));
         let rect = panel_rect(available, &state);
 
-        assert_eq!(rect.width(), PANEL_WIDTH);
+        assert_eq!(rect.width(), PANEL_WIDTH - window_margin() * 2.0);
         assert!(rect.height() < available.height());
         assert_eq!(
             rect.height(),
@@ -358,7 +368,7 @@ mod tests {
         let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1000.0, 900.0));
         let rect = panel_rect(available, &state);
 
-        assert_eq!(rect.width(), 550.0);
+        assert_eq!(rect.width(), 523.6001);
         assert_eq!(rect.center().x, available.center().x);
         assert!(rect.width() < available.width());
     }
@@ -372,7 +382,7 @@ mod tests {
             egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(PANEL_WIDTH, 400.0));
         let rect = panel_rect(available, &state);
 
-        assert_eq!(rect.width(), PANEL_WIDTH);
+        assert_eq!(rect.width(), PANEL_WIDTH - window_margin() * 2.0);
         assert_eq!(rect.height(), SEARCH_HEIGHT);
         assert!(rect.height() < available.height());
     }
@@ -386,6 +396,21 @@ mod tests {
         let rect = panel_rect(available, &state);
 
         assert!(rect.min.y >= window_margin());
-        assert!(rect.max.y <= available.bottom());
+        assert!(rect.max.y <= available.bottom() - window_margin());
+    }
+
+    #[test]
+    fn carrier_window_keeps_panel_away_from_native_viewport_edges() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(available.width(), PANEL_WIDTH + window_margin() * 2.0);
+        assert_eq!(rect.width(), PANEL_WIDTH);
+        assert_eq!(rect.min.x, window_margin());
+        assert_eq!(rect.max.x, available.right() - window_margin());
+        assert_eq!(rect.min.y, window_margin());
+        assert!(rect.max.y <= available.bottom() - window_margin());
     }
 }

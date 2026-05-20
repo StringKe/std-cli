@@ -130,6 +130,15 @@ fn check_launcher_transparent_carrier(root: &std::path::Path) -> Result<(), CliE
                 .to_string(),
         ));
     }
+    let launcher_metrics = read_required(&root.join("crates/std-launcher/src/ui_metrics.rs"))?;
+    for required in [
+        "const CARRIER_MARGIN",
+        "carrier_margin_for_scale",
+        "scale.f32(PANEL_WIDTH) + margin * 2.0",
+        "carrier_window_keeps_panel_away_from_native_viewport_edges",
+    ] {
+        check_text(&launcher_metrics, required)?;
+    }
     Ok(())
 }
 
