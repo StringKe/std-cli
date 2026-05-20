@@ -1,4 +1,4 @@
-use crate::{ui, StudioEguiApp};
+use crate::{ui, views::workflow_rows, StudioEguiApp};
 use eframe::egui;
 use std::path::Path;
 use std_egui::{
@@ -146,7 +146,7 @@ impl StudioEguiApp {
                 ui::empty_state(ui, i18n::t("studio.workflow_builder.properties.empty"));
                 return;
             };
-            ui.small(path.display().to_string());
+            workflow_rows::path_row(ui, "workflow", &path);
             ui.label(i18n::t("studio.workflow_builder.step_name"));
             ui.text_edit_singleline(&mut self.workflow_step_name);
             ui.label(i18n::t("studio.workflow_builder.parameters"));

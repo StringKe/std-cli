@@ -8,6 +8,7 @@ use std_egui::{
 
 const FILE_ROW_HEIGHT: f32 = 58.0;
 const STATUS_ROW_HEIGHT: f32 = 52.0;
+const PATH_ROW_HEIGHT: f32 = 42.0;
 
 pub(crate) enum WorkflowFileAction {
     None,
@@ -86,6 +87,35 @@ pub(crate) fn status_row(
             detail,
             Text::caption(),
             ui::muted_text(ui.ctx()),
+        );
+    }
+    ui.add_space(Space::TWO_XS as f32);
+}
+
+pub(crate) fn path_row(ui: &mut egui::Ui, label: &str, path: &Path) {
+    let detail = path.display().to_string();
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(ui.available_width(), PATH_ROW_HEIGHT),
+        egui::Sense::hover(),
+    );
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), label));
+    if ui.is_rect_visible(rect) {
+        paint_row_frame(ui, rect, response.hovered(), false);
+        let text_x = rect.left() + Space::SM as f32;
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 15.0),
+            egui::Align2::LEFT_CENTER,
+            label,
+            Text::caption(),
+            ui::muted_text(ui.ctx()),
+        );
+        ui.painter().text(
+            egui::pos2(text_x, rect.top() + 32.0),
+            egui::Align2::LEFT_CENTER,
+            detail,
+            Text::caption(),
+            ui::strong_text(ui.ctx()),
         );
     }
     ui.add_space(Space::TWO_XS as f32);
