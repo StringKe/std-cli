@@ -6,7 +6,10 @@ use crate::{
     ui, StudioEguiApp,
 };
 use eframe::egui;
-use std_egui::{i18n, tokens::Space};
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space},
+};
 use std_studio::StudioPane;
 
 impl StudioEguiApp {
@@ -74,40 +77,34 @@ impl StudioEguiApp {
     }
 
     fn render_settings_overlay(&mut self, ctx: &egui::Context) {
-        egui::Window::new(i18n::t("studio.settings.title"))
-            .id(egui::Id::new("studio_settings_overlay"))
-            .collapsible(false)
-            .resizable(false)
-            .default_width(560.0)
-            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
-            .show(ctx, |ui| {
-                ui::section_header(ui, i18n::t("studio.settings.title"), "Mod+,");
-                ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new(i18n::t("studio.settings.paths.title"))
-                            .color(ui::muted_text(ctx)),
-                    );
-                    ui.label(self.app.config_path().display().to_string());
-                });
-                ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new(i18n::t("studio.settings.hotkey.label"))
-                            .color(ui::muted_text(ctx)),
-                    );
-                    ui.label(&self.settings_hotkey);
-                });
-                ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new(i18n::t("studio.settings.theme.label"))
-                            .color(ui::muted_text(ctx)),
-                    );
-                    ui.label(&self.settings_theme);
-                });
-                if ui::quiet_button(ui, i18n::t("studio.shell.settings.open")).clicked() {
-                    self.app.switch_pane(StudioPane::Settings);
-                    self.layout.close_overlays();
-                }
+        render_host_overlay(ctx, "studio_settings_overlay", 560.0, |ui| {
+            ui::section_header(ui, i18n::t("studio.settings.title"), "Mod+,");
+            ui.horizontal(|ui| {
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.settings.paths.title"))
+                        .color(ui::muted_text(ctx)),
+                );
+                ui.label(self.app.config_path().display().to_string());
             });
+            ui.horizontal(|ui| {
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.settings.hotkey.label"))
+                        .color(ui::muted_text(ctx)),
+                );
+                ui.label(&self.settings_hotkey);
+            });
+            ui.horizontal(|ui| {
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.settings.theme.label"))
+                        .color(ui::muted_text(ctx)),
+                );
+                ui.label(&self.settings_theme);
+            });
+            if ui::quiet_button(ui, i18n::t("studio.shell.settings.open")).clicked() {
+                self.app.switch_pane(StudioPane::Settings);
+                self.layout.close_overlays();
+            }
+        });
     }
 
     fn render_command_overlay(
@@ -118,43 +115,37 @@ impl StudioEguiApp {
         shortcut: &str,
         items: Vec<StudioCommandItem>,
     ) {
-        egui::Window::new(title)
-            .id(egui::Id::new(id))
-            .collapsible(false)
-            .resizable(false)
-            .default_width(520.0)
-            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
-            .show(ctx, |ui| {
-                ui::section_header(ui, title, shortcut);
-                let query = if id == "studio_command_palette" {
-                    &mut self.layout.command_query
-                } else {
-                    &mut self.layout.quick_open_query
-                };
-                let response = ui.add(
-                    egui::TextEdit::singleline(query)
-                        .hint_text(i18n::t("studio.shell.filter.hint"))
-                        .desired_width(f32::INFINITY),
-                );
-                if response.changed() {
-                    self.layout.overlay_selected = 0;
-                }
-                response.request_focus();
-                ui.add_space(Space::XS as f32);
+        render_host_overlay(ctx, id, 520.0, |ui| {
+            ui::section_header(ui, title, shortcut);
+            let query = if id == "studio_command_palette" {
+                &mut self.layout.command_query
+            } else {
+                &mut self.layout.quick_open_query
+            };
+            let response = ui.add(
+                egui::TextEdit::singleline(query)
+                    .hint_text(i18n::t("studio.shell.filter.hint"))
+                    .desired_width(f32::INFINITY),
+            );
+            if response.changed() {
+                self.layout.overlay_selected = 0;
+            }
+            response.request_focus();
+            ui.add_space(Space::XS as f32);
 
-                let filtered_items = filter_items(&items, query);
-                self.layout.clamp_overlay_selection(filtered_items.len());
-                if filtered_items.is_empty() {
-                    ui.label(
-                        egui::RichText::new(i18n::t("studio.shell.no_matches"))
-                            .color(ui::muted_text(ctx)),
-                    );
-                    return;
-                }
-                for (index, item) in filtered_items.into_iter().enumerate() {
-                    self.render_command_item(ui, item, index == self.layout.overlay_selected);
-                }
-            });
+            let filtered_items = filter_items(&items, query);
+            self.layout.clamp_overlay_selection(filtered_items.len());
+            if filtered_items.is_empty() {
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.shell.no_matches"))
+                        .color(ui::muted_text(ctx)),
+                );
+                return;
+            }
+            for (index, item) in filtered_items.into_iter().enumerate() {
+                self.render_command_item(ui, item, index == self.layout.overlay_selected);
+            }
+        });
     }
 
     fn render_command_item(&mut self, ui: &mut egui::Ui, item: StudioCommandItem, selected: bool) {
@@ -203,4 +194,27 @@ impl StudioEguiApp {
         }
         self.layout.close_overlays();
     }
+}
+
+fn render_host_overlay(
+    ctx: &egui::Context,
+    id: &'static str,
+    width: f32,
+    add_contents: impl FnOnce(&mut egui::Ui),
+) {
+    egui::Area::new(egui::Id::new(id))
+        .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
+        .order(egui::Order::Foreground)
+        .constrain(true)
+        .show(ctx, |ui| {
+            egui::Frame::new()
+                .fill(Color::bg_surface_1(ctx))
+                .stroke(egui::Stroke::new(1.0, Color::stroke_border(ctx)))
+                .corner_radius(egui::CornerRadius::same(Radius::MD))
+                .inner_margin(egui::Margin::same(Space::MD))
+                .show(ui, |ui| {
+                    ui.set_width(width);
+                    add_contents(ui);
+                });
+        });
 }

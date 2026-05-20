@@ -282,6 +282,15 @@ mod app_tests {
     }
 
     #[test]
+    fn studio_overlays_do_not_use_egui_windows() {
+        let overlays = include_str!("shell_overlays.rs");
+
+        assert!(!overlays.contains("egui::Window::new"));
+        assert!(!overlays.contains("Window::new"));
+        assert!(overlays.contains("egui::Area::new"));
+    }
+
+    #[test]
     fn studio_command_sources_use_real_app_state() {
         let mut app = StudioEguiApp::default();
         let pane = app.app.open_plugin_manager_pane();
