@@ -10,6 +10,7 @@ mod resident;
 mod ui;
 mod ui_action_panel;
 mod ui_empty;
+mod ui_keyboard;
 mod ui_parts;
 mod ui_results;
 mod window;

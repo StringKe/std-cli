@@ -1,5 +1,5 @@
 use crate::{
-    ui_action_panel,
+    ui_action_panel, ui_keyboard,
     ui_parts::{keycap, quiet_button, quiet_label, weak_status_fill},
     ui_results,
 };
@@ -7,11 +7,11 @@ use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
     i18n, input,
-    tokens::{self, Color, Elevation, Radius, Space, Text},
+    tokens::{Color, Elevation, Radius, Space, Text},
     LauncherFeedback, LauncherPhase,
 };
-use std_launcher::{LauncherKey, LauncherPerformanceReport, LauncherState};
-use std_types::{ActionExecution, ActionExecutionStatus};
+use std_launcher::{LauncherPerformanceReport, LauncherState};
+use std_types::ActionExecutionStatus;
 
 const PANEL_WIDTH: f32 = 720.0;
 const WINDOW_MARGIN: f32 = Space::SM as f32;
@@ -184,45 +184,7 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
             });
         });
 
-    if tokens::ime_composing(&ctx) {
-        return;
-    }
-    if input::mod_arrow_down().pressed(&ctx) {
-        state.handle_keyboard_input(LauncherKey::JumpToLast, false);
-    } else if input::arrow_down().pressed(&ctx) {
-        state.handle_keyboard_input(LauncherKey::ArrowDown, false);
-    }
-    if input::mod_arrow_up().pressed(&ctx) {
-        state.handle_keyboard_input(LauncherKey::JumpToFirst, false);
-    } else if input::arrow_up().pressed(&ctx) {
-        state.handle_keyboard_input(LauncherKey::ArrowUp, false);
-    }
-    if input::enter().pressed(&ctx) {
-        if let Some(execution) = state.handle_keyboard_input_by_user(LauncherKey::Enter, false) {
-            *hide_requested = execution_hides_launcher(&execution);
-        }
-    }
-    if input::launcher_action_panel().pressed(&ctx) {
-        state.handle_keyboard_input_by_user(LauncherKey::ActionPanel, false);
-    }
-    if input::launcher_delete_previous_token().pressed(&ctx) {
-        state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
-    }
-    if let Some(index) = pressed_result_shortcut(ui.ctx()) {
-        if let Some(execution) =
-            state.handle_keyboard_input_by_user(LauncherKey::TriggerResult(index), false)
-        {
-            *hide_requested = execution_hides_launcher(&execution);
-        }
-    }
-}
-
-fn execution_hides_launcher(execution: &ActionExecution) -> bool {
-    execution.status == ActionExecutionStatus::Completed
-}
-
-fn pressed_result_shortcut(ctx: &egui::Context) -> Option<usize> {
-    input::pressed_mod_number(ctx, 9)
+    ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
