@@ -4,6 +4,7 @@ use std_studio::StudioPane;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StudioOpenRequest {
     Analysis,
+    Apps,
     History,
     Memory,
     Plugins,
@@ -14,6 +15,7 @@ impl StudioOpenRequest {
     fn target(self) -> &'static str {
         match self {
             Self::Analysis => "analysis",
+            Self::Apps => "apps",
             Self::History => "history",
             Self::Memory => "memory",
             Self::Plugins => "plugins",
@@ -28,6 +30,7 @@ pub(crate) fn studio_open_request_from_args(args: &[String]) -> Option<StudioOpe
     }
     match args.get(2).map(String::as_str) {
         Some("analysis") => Some(StudioOpenRequest::Analysis),
+        Some("apps") => Some(StudioOpenRequest::Apps),
         Some("history") => Some(StudioOpenRequest::History),
         Some("memory") => Some(StudioOpenRequest::Memory),
         Some("plugins") => Some(StudioOpenRequest::Plugins),
@@ -42,6 +45,10 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
             let id = app
                 .app
                 .open_analysis_workbench(std::path::PathBuf::from(&app.analysis_path));
+            app.pending_workspace_focus = Some(id);
+        }
+        StudioOpenRequest::Apps => {
+            let id = app.app.open_app_manager_pane();
             app.pending_workspace_focus = Some(id);
         }
         StudioOpenRequest::History => {
@@ -94,6 +101,7 @@ pub(crate) fn run_studio_open_request(request: StudioOpenRequest) -> eframe::Res
 fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
     match request {
         StudioOpenRequest::Analysis => Some(StudioPane::Analysis),
+        StudioOpenRequest::Apps => Some(StudioPane::Apps),
         StudioOpenRequest::Memory => Some(StudioPane::Memory),
         StudioOpenRequest::Plugins => Some(StudioPane::Plugins),
         StudioOpenRequest::Workflows => Some(StudioPane::Workflows),
@@ -109,6 +117,7 @@ mod tests {
     fn parses_supported_open_requests() {
         for (target, request) in [
             ("analysis", StudioOpenRequest::Analysis),
+            ("apps", StudioOpenRequest::Apps),
             ("history", StudioOpenRequest::History),
             ("memory", StudioOpenRequest::Memory),
             ("plugins", StudioOpenRequest::Plugins),
@@ -123,6 +132,7 @@ mod tests {
     fn applies_open_requests_to_internal_workspace_panes() {
         for request in [
             StudioOpenRequest::Analysis,
+            StudioOpenRequest::Apps,
             StudioOpenRequest::History,
             StudioOpenRequest::Memory,
             StudioOpenRequest::Plugins,

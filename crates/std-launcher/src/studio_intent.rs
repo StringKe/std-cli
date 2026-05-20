@@ -1,4 +1,5 @@
 use crate::LauncherState;
+use std::collections::HashMap;
 use std_types::ActionType;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,6 +16,7 @@ pub enum StudioLaunchTarget {
     Memory,
     Plugins,
     Analysis,
+    Apps,
 }
 
 impl StudioLaunchTarget {
@@ -25,6 +27,7 @@ impl StudioLaunchTarget {
             Self::Memory => "std-studio --open memory",
             Self::Plugins => "std-studio --open plugins",
             Self::Analysis => "std-studio --open analysis",
+            Self::Apps => "std-studio --open apps",
         }
     }
 }
@@ -42,7 +45,13 @@ impl LauncherState {
 
     pub fn open_selected_action_in_studio(&mut self) -> Option<StudioLaunchIntent> {
         let result = self.view.selected_result()?.clone();
-        let target = studio_target_for_action_type(&result.action.action_type);
+        let preview = self.core.preview_action(result.action.id).ok();
+        let empty_metadata = HashMap::new();
+        let metadata = preview
+            .as_ref()
+            .map(|preview| &preview.metadata)
+            .unwrap_or(&empty_metadata);
+        let target = studio_target_for_action(&result.action.action_type, metadata);
         Some(self.record_studio_intent(target, result.action.name))
     }
 
@@ -61,13 +70,18 @@ impl LauncherState {
     }
 }
 
-fn studio_target_for_action_type(action_type: &ActionType) -> StudioLaunchTarget {
+fn studio_target_for_action(
+    action_type: &ActionType,
+    metadata: &HashMap<String, String>,
+) -> StudioLaunchTarget {
     match action_type {
         ActionType::Workflow => StudioLaunchTarget::Workflows,
         ActionType::Skill | ActionType::Clipboard => StudioLaunchTarget::Memory,
-        ActionType::Command | ActionType::AppLaunch | ActionType::Custom(_) => {
-            StudioLaunchTarget::Analysis
-        }
+        ActionType::Command if metadata.contains_key("plugin") => StudioLaunchTarget::Plugins,
+        ActionType::Command => StudioLaunchTarget::Analysis,
+        ActionType::AppLaunch => StudioLaunchTarget::Apps,
+        ActionType::Custom(kind) if kind == "file" => StudioLaunchTarget::Analysis,
+        ActionType::Custom(_) => StudioLaunchTarget::Analysis,
     }
 }
 
@@ -77,17 +91,27 @@ mod tests {
 
     #[test]
     fn maps_launcher_action_types_to_studio_targets() {
+        let empty = HashMap::new();
         assert_eq!(
-            studio_target_for_action_type(&ActionType::Workflow),
+            studio_target_for_action(&ActionType::Workflow, &empty),
             StudioLaunchTarget::Workflows
         );
         assert_eq!(
-            studio_target_for_action_type(&ActionType::Skill),
+            studio_target_for_action(&ActionType::Skill, &empty),
             StudioLaunchTarget::Memory
         );
         assert_eq!(
-            studio_target_for_action_type(&ActionType::Command),
+            studio_target_for_action(&ActionType::Command, &empty),
             StudioLaunchTarget::Analysis
+        );
+        assert_eq!(
+            studio_target_for_action(&ActionType::AppLaunch, &empty),
+            StudioLaunchTarget::Apps
+        );
+        let plugin = HashMap::from([("plugin".to_string(), "demo".to_string())]);
+        assert_eq!(
+            studio_target_for_action(&ActionType::Command, &plugin),
+            StudioLaunchTarget::Plugins
         );
     }
 }
