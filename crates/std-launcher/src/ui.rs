@@ -120,7 +120,7 @@ fn launcher_panel_height(state: &LauncherState, body_height: f32) -> f32 {
 }
 
 fn launcher_panel_is_expanded(state: &LauncherState) -> bool {
-    state.view.phase != LauncherPhase::Empty
+    (state.view.phase != LauncherPhase::Empty || !state.view.results.is_empty())
         || state.controller.voice_active
         || state.view.feedback.is_some()
         || state.action_panel.open

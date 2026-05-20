@@ -68,14 +68,15 @@ mod tests {
     }
 
     #[test]
-    fn launcher_window_collapses_until_query_expands_results() {
+    fn launcher_window_opens_with_suggested_results_for_empty_query() {
         let mut state = std_launcher::LauncherState::new();
         let empty_size = ui::launcher_window_inner_size(&state);
 
         state.update_query("index");
         let expanded_size = ui::launcher_window_inner_size(&state);
 
-        assert_eq!(empty_size, egui::vec2(744.0, 88.0));
-        assert!(expanded_size.y > empty_size.y);
+        assert!(empty_size.y > 88.0);
+        assert_eq!(expanded_size.x, empty_size.x);
+        assert!(expanded_size.y > 88.0);
     }
 }
