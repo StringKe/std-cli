@@ -1,5 +1,6 @@
 use crate::{default_batch_json, StudioPane};
 use std_core::{StdConfig, StdCore};
+use std_egui::tokens::ThemeSmokeReport;
 use std_studio::{StudioApp, WorkspacePaneId};
 
 pub(crate) struct StudioSmokeReport {
@@ -83,6 +84,14 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             plugin_status: "FAIL".to_string(),
             history_count: 0,
         }),
+    }
+}
+
+pub(crate) fn theme_smoke_from_args(args: &[String]) -> Option<ThemeSmokeReport> {
+    if args.get(1).map(String::as_str) == Some("--theme-smoke") {
+        Some(ThemeSmokeReport::new())
+    } else {
+        None
     }
 }
 
@@ -224,5 +233,14 @@ mod tests {
         assert!(summary.contains("pane_focus_restored=true"));
         assert!(summary.contains("native_child_windows=false"));
         assert!(summary.contains("detached_panels=false"));
+    }
+
+    #[test]
+    fn studio_theme_smoke_reports_light_and_dark_tokens() {
+        let args = vec!["std-studio".to_string(), "--theme-smoke".to_string()];
+        let report = theme_smoke_from_args(&args).unwrap();
+
+        assert!(report.pass());
+        assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
     }
 }

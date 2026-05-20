@@ -12,6 +12,65 @@ pub fn apply_theme(ctx: &egui::Context, mode: ThemeMode) {
     apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ThemeSmokeReport {
+    pub dark_panel: egui::Color32,
+    pub light_panel: egui::Color32,
+    pub dark_window: egui::Color32,
+    pub light_window: egui::Color32,
+    pub dark_mode_applied: bool,
+    pub light_mode_applied: bool,
+}
+
+impl ThemeSmokeReport {
+    pub fn new() -> Self {
+        let ctx = egui::Context::default();
+        apply_theme(&ctx, ThemeMode::Dark);
+        let dark = ctx.style().visuals.clone();
+        apply_theme(&ctx, ThemeMode::Light);
+        let light = ctx.style().visuals.clone();
+        Self {
+            dark_panel: dark.panel_fill,
+            light_panel: light.panel_fill,
+            dark_window: dark.window_fill,
+            light_window: light.window_fill,
+            dark_mode_applied: dark.dark_mode,
+            light_mode_applied: !light.dark_mode,
+        }
+    }
+
+    pub fn pass(&self) -> bool {
+        self.dark_mode_applied
+            && self.light_mode_applied
+            && self.dark_panel != self.light_panel
+            && self.dark_window != self.light_window
+            && self.dark_panel.r() >= 24
+    }
+
+    pub fn summary(&self, surface: &str) -> String {
+        format!(
+            "{surface}_theme_smoke {}\ndark_panel={}\nlight_panel={}\ndark_window={}\nlight_window={}\ndark_mode_applied={}\nlight_mode_applied={}",
+            if self.pass() { "PASS" } else { "FAIL" },
+            color_hex(self.dark_panel),
+            color_hex(self.light_panel),
+            color_hex(self.dark_window),
+            color_hex(self.light_window),
+            self.dark_mode_applied,
+            self.light_mode_applied
+        )
+    }
+}
+
+impl Default for ThemeSmokeReport {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn color_hex(color: egui::Color32) -> String {
+    format!("#{:02X}{:02X}{:02X}", color.r(), color.g(), color.b())
+}
+
 fn apply_theme_with_scale(
     ctx: &egui::Context,
     mode: ThemeMode,
@@ -123,5 +182,18 @@ mod tests {
         assert_eq!(ctx.style().text_styles[&TextStyle::Heading].size, 27.0);
         assert_eq!(ctx.style().spacing.item_spacing.x, 12.0);
         assert_eq!(ctx.style().spacing.indent, 24.0);
+    }
+
+    #[test]
+    fn theme_smoke_report_covers_forced_light_and_dark_tokens() {
+        let report = ThemeSmokeReport::new();
+
+        assert!(report.pass());
+        assert!(report
+            .summary("launcher")
+            .contains("launcher_theme_smoke PASS"));
+        assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
+        assert_eq!(color_hex(report.dark_panel), "#1C1E22");
+        assert_eq!(color_hex(report.light_panel), "#FFFFFF");
     }
 }

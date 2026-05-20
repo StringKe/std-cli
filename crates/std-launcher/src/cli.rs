@@ -1,4 +1,5 @@
 use crate::gui_smoke::{run_gui_hotkey_smoke, GuiHotkeySmokeConfig};
+use std_egui::tokens::ThemeSmokeReport;
 use std_launcher::{
     hotkey_smoke, HotkeySmokeReport, LauncherKeyboardReport, LauncherSmokeReport, LauncherState,
     LauncherUiSemanticsReport, LauncherWindowSmokeReport,
@@ -11,6 +12,7 @@ enum LauncherCliSmoke {
     Keyboard(LauncherKeyboardReport),
     UiSemantics(LauncherUiSemanticsReport),
     GuiHotkey(GuiHotkeySmokeConfig),
+    Theme(ThemeSmokeReport),
 }
 
 pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
@@ -38,6 +40,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
         Some(LauncherCliSmoke::GuiHotkey(config)) => {
             let report = run_gui_hotkey_smoke(config)?;
             println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::Theme(report)) => {
+            println!("{}", report.summary("launcher"));
             Ok(true)
         }
         None => Ok(false),
@@ -83,6 +89,7 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 LauncherState::ui_semantics_smoke(query),
             ))
         }
+        Some("--theme-smoke") => Some(LauncherCliSmoke::Theme(ThemeSmokeReport::new())),
         Some("--gui-hotkey-smoke") => Some(LauncherCliSmoke::GuiHotkey(GuiHotkeySmokeConfig {
             accelerator: args
                 .get(2)
@@ -152,5 +159,18 @@ mod tests {
             .as_deref()
             .unwrap()
             .contains("STD_TEST_MODE blocked GUI hotkey smoke"));
+    }
+
+    #[test]
+    fn theme_smoke_reports_launcher_light_and_dark_tokens() {
+        let args = vec!["std-launcher".to_string(), "--theme-smoke".to_string()];
+        let Some(LauncherCliSmoke::Theme(report)) = smoke_from_args(args) else {
+            panic!("expected theme smoke report");
+        };
+
+        assert!(report.pass());
+        assert!(report
+            .summary("launcher")
+            .contains("launcher_theme_smoke PASS"));
     }
 }
