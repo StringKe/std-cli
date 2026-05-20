@@ -82,6 +82,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.action.filter.a11y") => Some("Action Panel filter"),
         (Locale::ZhCn, "launcher.action.no_matches") => Some("No matching actions"),
         (Locale::EnUs, "launcher.action.no_matches") => Some("No matching actions"),
+        (Locale::ZhCn, "launcher.feedback.copy") => Some("复制"),
+        (Locale::EnUs, "launcher.feedback.copy") => Some("Copy"),
+        (Locale::ZhCn, "launcher.feedback.retry") => Some("重试"),
+        (Locale::EnUs, "launcher.feedback.retry") => Some("Retry"),
+        (Locale::ZhCn, "launcher.feedback.open_studio") => Some("打开 Studio"),
+        (Locale::EnUs, "launcher.feedback.open_studio") => Some("Open Studio"),
         _ => None,
     }
 }
@@ -126,6 +132,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.action.filter.hint" => Some("Filter actions"),
         "launcher.action.filter.a11y" => Some("Action Panel filter"),
         "launcher.action.no_matches" => Some("No matching actions"),
+        "launcher.feedback.copy" => Some("Copy"),
+        "launcher.feedback.retry" => Some("Retry"),
+        "launcher.feedback.open_studio" => Some("Open Studio"),
         _ => None,
     }
 }

@@ -11,6 +11,7 @@ mod ui;
 mod ui_action_bar;
 mod ui_action_panel;
 mod ui_empty;
+mod ui_feedback;
 mod ui_keyboard;
 mod ui_metrics;
 mod ui_metrics_action_panel;

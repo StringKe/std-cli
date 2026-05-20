@@ -1,5 +1,6 @@
 use crate::{
-    ui_action_bar, ui_action_panel, ui_keyboard, ui_metrics, ui_parts::quiet_button, ui_results,
+    ui_action_bar, ui_action_panel, ui_feedback, ui_keyboard, ui_metrics, ui_parts::quiet_button,
+    ui_results,
 };
 use eframe::egui;
 use std_egui::{
@@ -83,7 +84,7 @@ pub(crate) fn render_launcher_panel(
             ui.add_space(Space::xs() as f32);
             let action_bar_rect = ui_action_bar::render(ui, state, hotkey_status, resident_status);
             render_voice(ui, state, voice_transcript);
-            ui_action_bar::render_feedback(ui, state);
+            ui_feedback::render(ui, state);
             ui_action_panel::render(ui.ctx(), action_bar_rect, state);
         });
     hide_requested

@@ -1,15 +1,14 @@
 use crate::{
     ui_metrics,
-    ui_parts::{keycap, quiet_label, weak_status_fill},
+    ui_parts::{keycap, quiet_label},
 };
 use eframe::egui;
 use std_egui::{
     i18n, input,
     tokens::{Color, Radius, Space, Text},
-    LauncherFeedback, LauncherPhase,
+    LauncherPhase,
 };
-use std_launcher::{LauncherPerformanceReport, LauncherState};
-use std_types::ActionExecutionStatus;
+use std_launcher::LauncherState;
 
 pub(crate) fn render(
     ui: &mut egui::Ui,
@@ -41,27 +40,6 @@ pub(crate) fn render(
         })
         .response
         .rect
-}
-
-pub(crate) fn render_feedback(ui: &mut egui::Ui, state: &LauncherState) {
-    let ctx = ui.ctx().clone();
-    let feedback = state.view.feedback.as_ref();
-    if feedback.is_none() {
-        return;
-    }
-    egui::Frame::new()
-        .fill(feedback_fill(&ctx, feedback))
-        .stroke(egui::Stroke::new(1.0, feedback_stroke(&ctx, feedback)))
-        .corner_radius(egui::CornerRadius::same(Radius::md()))
-        .inner_margin(egui::Margin::symmetric(Space::sm(), Space::xs()))
-        .show(ui, |ui| {
-            ui.horizontal_wrapped(|ui| {
-                if let Some(feedback) = feedback {
-                    render_feedback_text(ui, &ctx, feedback);
-                }
-                render_performance(ui, &state.performance_report());
-            });
-        });
 }
 
 fn render_status_hints(
@@ -150,73 +128,6 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         )
         .truncate(),
     );
-}
-
-fn render_feedback_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
-    ui.label(
-        egui::RichText::new(feedback_marker(feedback))
-            .font(Text::body())
-            .color(feedback_stroke(ctx, Some(feedback))),
-    );
-    ui.label(
-        egui::RichText::new(&feedback.title)
-            .font(Text::body())
-            .color(Color::fg_primary(ctx))
-            .strong(),
-    );
-    ui.label(
-        egui::RichText::new(&feedback.action_name)
-            .font(Text::footnote())
-            .color(Color::fg_primary(ctx)),
-    );
-    ui.label(
-        egui::RichText::new(&feedback.detail)
-            .font(Text::footnote())
-            .color(Color::fg_secondary(ctx)),
-    );
-}
-
-fn render_performance(ui: &mut egui::Ui, report: &LauncherPerformanceReport) {
-    let ctx = ui.ctx().clone();
-    let text = format!(
-        "{}ms search  {}ms preview  {}ms action",
-        report.last_search_ms, report.last_preview_ms, report.last_trigger_ms
-    );
-    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-        ui.label(
-            egui::RichText::new(text)
-                .font(Text::code())
-                .color(Color::fg_secondary(&ctx)),
-        );
-    });
-}
-
-fn feedback_fill(ctx: &egui::Context, feedback: Option<&LauncherFeedback>) -> egui::Color32 {
-    match feedback.map(|feedback| &feedback.status) {
-        Some(ActionExecutionStatus::Completed) => weak_status_fill(ctx, Color::status_success(ctx)),
-        Some(ActionExecutionStatus::Failed) => weak_status_fill(ctx, Color::status_danger(ctx)),
-        Some(ActionExecutionStatus::NeedsExternalRunner) => {
-            weak_status_fill(ctx, Color::status_warning(ctx))
-        }
-        None => Color::bg_surface_1(ctx),
-    }
-}
-
-fn feedback_stroke(ctx: &egui::Context, feedback: Option<&LauncherFeedback>) -> egui::Color32 {
-    match feedback.map(|feedback| &feedback.status) {
-        Some(ActionExecutionStatus::Completed) => Color::status_success(ctx),
-        Some(ActionExecutionStatus::Failed) => Color::status_danger(ctx),
-        Some(ActionExecutionStatus::NeedsExternalRunner) => Color::status_warning(ctx),
-        None => Color::stroke_divider(ctx),
-    }
-}
-
-fn feedback_marker(feedback: &LauncherFeedback) -> &'static str {
-    match feedback.status {
-        ActionExecutionStatus::Completed => "OK",
-        ActionExecutionStatus::Failed => "ERR",
-        ActionExecutionStatus::NeedsExternalRunner => "WAIT",
-    }
 }
 
 #[cfg(test)]

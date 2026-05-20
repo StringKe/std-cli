@@ -57,6 +57,14 @@ pub(crate) fn action_summary_label_height() -> f32 {
     scale().f32(18.0)
 }
 
+pub(crate) fn feedback_text_height() -> f32 {
+    scale().f32(40.0)
+}
+
+pub(crate) fn feedback_detail_height() -> f32 {
+    scale().f32(18.0)
+}
+
 pub(crate) fn search_bar_min_height() -> f32 {
     crate::ui_metrics_search::search_bar_min_height(scale())
 }
