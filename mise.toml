@@ -7,18 +7,22 @@ run = "cargo fmt --all --check"
 
 [tasks.clippy]
 description = "Run Clippy for all workspace targets"
+env = { STD_TEST_MODE = "1" }
 run = "cargo clippy --workspace --all-targets -- -D warnings"
 
 [tasks.dylint]
 description = "Run local Dylint workspace lints"
+env = { STD_TEST_MODE = "1" }
 run = "DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets"
 
 [tasks.dylint-test]
 description = "Run local Dylint lint tests"
+env = { STD_TEST_MODE = "1" }
 run = "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml"
 
 [tasks.file-limits]
 description = "Enforce Rust source and config file length gates"
+env = { STD_TEST_MODE = "1" }
 run = "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib"
 
 [tasks.test]
