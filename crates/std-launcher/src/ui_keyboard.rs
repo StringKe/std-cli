@@ -22,7 +22,7 @@ pub(crate) fn handle_search_shortcuts(
         state.handle_keyboard_input(LauncherKey::ArrowUp, false);
     }
     if input::enter().pressed(ctx) {
-        handle_safe_execution(state, LauncherKey::Enter, hide_requested);
+        handle_user_execution(state, LauncherKey::Enter, hide_requested);
     }
     if input::shift_tab().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
@@ -36,12 +36,12 @@ pub(crate) fn handle_search_shortcuts(
         state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
     }
     if let Some(index) = input::pressed_mod_number(ctx, 9) {
-        handle_safe_execution(state, LauncherKey::TriggerResult(index), hide_requested);
+        handle_user_execution(state, LauncherKey::TriggerResult(index), hide_requested);
     }
 }
 
-fn handle_safe_execution(state: &mut LauncherState, key: LauncherKey, hide_requested: &mut bool) {
-    if let Some(execution) = state.handle_keyboard_input(key, false) {
+fn handle_user_execution(state: &mut LauncherState, key: LauncherKey, hide_requested: &mut bool) {
+    if let Some(execution) = state.handle_keyboard_input_by_user(key, false) {
         *hide_requested = execution_hides_launcher(&execution);
     }
 }

@@ -1,4 +1,5 @@
 use crate::{LauncherKey, LauncherState};
+use std::sync::{Arc, Mutex};
 use std_core::{StdConfig, StdCore};
 use std_types::ActionExecutionStatus;
 
@@ -122,6 +123,58 @@ fn launcher_main_enter_defers_app_launch_without_user_external_opt_in() {
             .and_then(|value| value.as_str()),
         Some("external runner action requires explicit user trigger")
     );
+}
+
+#[test]
+fn launcher_user_enter_keeps_runner_blocked_in_tests() {
+    let temp = tempfile::tempdir().unwrap();
+    let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
+    let recorded_commands = Arc::clone(&commands);
+    let core = StdCore::with_config_and_command_runner(
+        StdConfig {
+            data_dir: temp.path().join("data"),
+            ..StdConfig::default()
+        },
+        move |program, args| {
+            recorded_commands
+                .lock()
+                .unwrap()
+                .push((program.to_string(), args.to_vec()));
+            Err(std::io::Error::other("runner should stay blocked in tests"))
+        },
+    );
+    let mut action = std_types::Action::new(
+        "User Runner Fixture",
+        "Records runner path",
+        "When verifying Launcher Enter",
+        std_types::ActionType::Command,
+    );
+    action.created_at = chrono::Utc::now();
+    action.updated_at = chrono::Utc::now();
+    core.register_action(
+        std_types::RegistryEntry::from_action(action, vec!["runner".to_string()])
+            .with_metadata("command", "printf user-runner-fixture"),
+    )
+    .unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("user runner fixture");
+    let safe_execution = state
+        .handle_keyboard_input(LauncherKey::Enter, false)
+        .unwrap();
+    let user_execution = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(
+        safe_execution.status,
+        ActionExecutionStatus::NeedsExternalRunner
+    );
+    assert_eq!(
+        user_execution.status,
+        ActionExecutionStatus::NeedsExternalRunner
+    );
+    assert!(commands.lock().unwrap().is_empty());
 }
 
 fn write_multilingual_app_bundle(app: &std::path::Path) {

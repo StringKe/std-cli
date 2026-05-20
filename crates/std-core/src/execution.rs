@@ -77,7 +77,7 @@ fn execute_command_action(
 }
 
 fn external_runner_allowed(allow_external_runner: bool) -> bool {
-    allow_external_runner && crate::desktop_automation_allowed() && !crate::std_test_mode_enabled()
+    allow_external_runner && !crate::std_test_mode_enabled()
 }
 
 fn execute_echo(
