@@ -181,4 +181,28 @@ mod tests {
             "Studio 内部面板"
         );
     }
+
+    #[test]
+    fn studio_shell_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.shell.workspace.detail"),
+            "main views"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.workspace.detail"),
+            "主视图"
+        );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.shell.close_pane"),
+            "Close Pane"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.quick_open.title"),
+            "Quick Open"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.pane_inactive"),
+            "inactive"
+        );
+    }
 }

@@ -1,13 +1,9 @@
 use crate::{
-    commands::{
-        command_palette_items, filter_items, quick_open_items, selected_action,
-        StudioCommandAction, StudioCommandItem,
-    },
     shell_parts::{panel_frame, path_label},
     ui, StudioEguiApp,
 };
 use eframe::egui;
-use std_egui::tokens::Space;
+use std_egui::{i18n, tokens::Space};
 use std_studio::StudioPane;
 
 impl StudioEguiApp {
@@ -63,7 +59,11 @@ impl StudioEguiApp {
             return;
         }
         ui.vertical(|ui| {
-            ui::section_header(ui, "Workspace", "main views");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.workspace.title"),
+                i18n::t("studio.shell.workspace.detail"),
+            );
             for pane in StudioPane::all() {
                 let selected = self.app.active_pane == pane;
                 if ui
@@ -86,22 +86,41 @@ impl StudioEguiApp {
         });
         ui.add_space(Space::LG as f32);
         ui.vertical(|ui| {
-            ui::section_header(ui, "Open", "workspace panes");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.open.title"),
+                i18n::t("studio.shell.open.detail"),
+            );
             self.open_row(
                 ui,
-                "Workflow Builder",
-                "edit and run",
+                i18n::t("studio.shell.open.workflow.title"),
+                i18n::t("studio.shell.open.workflow.detail"),
                 StudioPane::Workflows,
             );
             self.open_row(
                 ui,
-                "Analysis Workbench",
-                "index and ask",
+                i18n::t("studio.shell.open.analysis.title"),
+                i18n::t("studio.shell.open.analysis.detail"),
                 StudioPane::Analysis,
             );
-            self.open_row(ui, "Plugin Manager", "manifest checks", StudioPane::Plugins);
-            self.open_row(ui, "Memory Browser", "local recall", StudioPane::Memory);
-            self.open_row(ui, "Execution History", "trace review", StudioPane::History);
+            self.open_row(
+                ui,
+                i18n::t("studio.plugins.title"),
+                i18n::t("studio.shell.open.plugins.detail"),
+                StudioPane::Plugins,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.memory.title"),
+                i18n::t("studio.shell.open.memory.detail"),
+                StudioPane::Memory,
+            );
+            self.open_row(
+                ui,
+                i18n::t("studio.shell.open.history.title"),
+                i18n::t("studio.shell.open.history.detail"),
+                StudioPane::History,
+            );
         });
         ui.add_space(Space::LG as f32);
         self.render_workspace_pane_manager(ui);
@@ -126,7 +145,11 @@ impl StudioEguiApp {
 
     fn render_context(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Context", "workspace signals");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.context.title"),
+                i18n::t("studio.shell.context.detail"),
+            );
             ui::metric(ui, "Actions", self.app.dashboard.action_count, "registered");
             ui.add_space(Space::XS as f32);
             ui::metric(ui, "Memory", self.app.dashboard.memory_count, "records");
@@ -140,7 +163,11 @@ impl StudioEguiApp {
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Runtime", "local paths");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.runtime.title"),
+                i18n::t("studio.shell.runtime.detail"),
+            );
             path_label(ui, "Config", self.app.config_path().display().to_string());
             path_label(
                 ui,
@@ -155,9 +182,16 @@ impl StudioEguiApp {
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Status", "latest result");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.status.title"),
+                i18n::t("studio.shell.status.detail"),
+            );
             if self.status.is_empty() {
-                ui.label(egui::RichText::new("Idle").color(ui::muted_text(ui.ctx())));
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.shell.idle"))
+                        .color(ui::muted_text(ui.ctx())),
+                );
             } else {
                 ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
             }
@@ -171,32 +205,38 @@ impl StudioEguiApp {
                     .color(ui::muted_text(ui.ctx())),
             );
             ui.separator();
-            ui.label(format!("{} panes", self.app.open_workspace_panes().count()));
+            ui.label(format!(
+                "{} {}",
+                self.app.open_workspace_panes().count(),
+                i18n::t("studio.shell.panes")
+            ));
             ui.separator();
             ui.label(if self.layout.inspector_open {
-                "inspector"
+                i18n::t("studio.shell.inspector")
             } else {
-                "inspector hidden"
+                i18n::t("studio.shell.inspector_hidden")
             });
             ui.separator();
             ui.label(if self.layout.bottom_panel_open {
-                "bottom panel"
+                i18n::t("studio.shell.bottom_panel")
             } else {
-                "bottom hidden"
+                i18n::t("studio.shell.bottom_hidden")
             });
             ui.separator();
             ui.label(format!(
-                "{} plugins",
-                self.app.plugin_manager.manifest_paths.len()
+                "{} {}",
+                self.app.plugin_manager.manifest_paths.len(),
+                i18n::t("studio.shell.plugins")
             ));
             ui.separator();
             ui.label(format!(
-                "{} memories",
-                self.app.memory_browser.memories.len()
+                "{} {}",
+                self.app.memory_browser.memories.len(),
+                i18n::t("studio.shell.memories")
             ));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.label(
-                    egui::RichText::new("external actions deferred")
+                    egui::RichText::new(i18n::t("studio.shell.external_deferred"))
                         .color(ui::muted_text(ui.ctx())),
                 );
             });
@@ -205,7 +245,11 @@ impl StudioEguiApp {
 
     fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Batch Debug", "Logs / Problems / Performance");
+            ui::section_header(
+                ui,
+                i18n::t("studio.shell.batch_debug.title"),
+                i18n::t("studio.shell.batch_debug.detail"),
+            );
             if let Some(report) = self.app.last_batch_report.as_ref() {
                 ui.label(egui::RichText::new(format!("batch {:?}", report.status)));
             } else if let Some(execution) = self.app.last_workflow_execution.as_ref() {
@@ -214,197 +258,16 @@ impl StudioEguiApp {
                     execution.status
                 )));
             } else if self.status.is_empty() {
-                ui.label(egui::RichText::new("Idle").color(ui::muted_text(ui.ctx())));
+                ui.label(
+                    egui::RichText::new(i18n::t("studio.shell.idle"))
+                        .color(ui::muted_text(ui.ctx())),
+                );
             } else {
                 ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
             }
         });
     }
 
-    fn render_overlays(&mut self, ctx: &egui::Context) {
-        if self.layout.settings_open {
-            self.render_settings_overlay(ctx);
-        }
-        if self.layout.command_palette_open {
-            self.render_command_overlay(
-                ctx,
-                "studio_command_palette",
-                "Command Palette",
-                "Mod+/ or Mod+Shift+P",
-                command_palette_items(&self.app),
-            );
-        }
-        if self.layout.quick_open_open {
-            self.render_command_overlay(
-                ctx,
-                "studio_quick_open",
-                "Quick Open",
-                "Mod+P",
-                quick_open_items(&self.app),
-            );
-        }
-    }
-
-    fn handle_overlay_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
-            return;
-        }
-        let items = if self.layout.command_palette_open {
-            filter_items(
-                &command_palette_items(&self.app),
-                &self.layout.command_query,
-            )
-        } else if self.layout.quick_open_open {
-            filter_items(&quick_open_items(&self.app), &self.layout.quick_open_query)
-        } else {
-            Vec::new()
-        };
-        self.layout.clamp_overlay_selection(items.len());
-        if items.is_empty() && !self.layout.settings_open {
-            return;
-        }
-
-        if std_egui::input::escape().pressed(ctx) {
-            self.layout.close_overlays();
-            return;
-        }
-        if !items.is_empty() && std_egui::input::arrow_down().pressed(ctx) {
-            self.layout.move_overlay_selection(1, items.len());
-        }
-        if !items.is_empty() && std_egui::input::arrow_up().pressed(ctx) {
-            self.layout.move_overlay_selection(-1, items.len());
-        }
-        if std_egui::input::enter().pressed(ctx) {
-            if let Some(action) = selected_action(&items, self.layout.overlay_selected) {
-                self.apply_command_action(action);
-            } else if self.layout.settings_open {
-                self.app.switch_pane(StudioPane::Settings);
-                self.layout.close_overlays();
-            }
-        }
-    }
-
-    fn render_settings_overlay(&mut self, ctx: &egui::Context) {
-        egui::Window::new("Settings")
-            .id(egui::Id::new("studio_settings_overlay"))
-            .collapsible(false)
-            .resizable(false)
-            .default_width(560.0)
-            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
-            .show(ctx, |ui| {
-                ui::section_header(ui, "Settings", "Mod+,");
-                ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("Config").color(ui::muted_text(ctx)));
-                    ui.label(self.app.config_path().display().to_string());
-                });
-                ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("Hotkey").color(ui::muted_text(ctx)));
-                    ui.label(&self.settings_hotkey);
-                });
-                ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("Theme").color(ui::muted_text(ctx)));
-                    ui.label(&self.settings_theme);
-                });
-                if ui::quiet_button(ui, "Open Settings Pane").clicked() {
-                    self.app.switch_pane(StudioPane::Settings);
-                    self.layout.close_overlays();
-                }
-            });
-    }
-
-    fn render_command_overlay(
-        &mut self,
-        ctx: &egui::Context,
-        id: &'static str,
-        title: &str,
-        shortcut: &str,
-        items: Vec<StudioCommandItem>,
-    ) {
-        egui::Window::new(title)
-            .id(egui::Id::new(id))
-            .collapsible(false)
-            .resizable(false)
-            .default_width(520.0)
-            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
-            .show(ctx, |ui| {
-                ui::section_header(ui, title, shortcut);
-                let query = if id == "studio_command_palette" {
-                    &mut self.layout.command_query
-                } else {
-                    &mut self.layout.quick_open_query
-                };
-                let response = ui.add(
-                    egui::TextEdit::singleline(query)
-                        .hint_text("Filter commands")
-                        .desired_width(f32::INFINITY),
-                );
-                if response.changed() {
-                    self.layout.overlay_selected = 0;
-                }
-                response.request_focus();
-                ui.add_space(Space::XS as f32);
-
-                let filtered_items = filter_items(&items, query);
-                self.layout.clamp_overlay_selection(filtered_items.len());
-                if filtered_items.is_empty() {
-                    ui.label(egui::RichText::new("No matches").color(ui::muted_text(ctx)));
-                    return;
-                }
-                for (index, item) in filtered_items.into_iter().enumerate() {
-                    self.render_command_item(ui, item, index == self.layout.overlay_selected);
-                }
-            });
-    }
-
-    fn render_command_item(&mut self, ui: &mut egui::Ui, item: StudioCommandItem, selected: bool) {
-        egui::Frame::new()
-            .fill(if selected {
-                ui::selected_bg(ui.ctx())
-            } else {
-                egui::Color32::TRANSPARENT
-            })
-            .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    ui.vertical(|ui| {
-                        ui.label(egui::RichText::new(&item.title).color(ui::strong_text(ui.ctx())));
-                        ui.label(egui::RichText::new(&item.detail).color(ui::muted_text(ui.ctx())));
-                    });
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui::quiet_button(ui, &item.shortcut).clicked() {
-                            self.apply_command_action(item.action);
-                        }
-                    });
-                });
-            });
-    }
-
-    fn apply_command_action(&mut self, action: StudioCommandAction) {
-        match action {
-            StudioCommandAction::SwitchPane(pane) => self.app.switch_pane(pane),
-            StudioCommandAction::OpenWorkspace(pane) => {
-                let id = match pane {
-                    StudioPane::Workflows => self
-                        .app
-                        .open_workflow_builder(self.app.core.config.workflows_dir()),
-                    StudioPane::Analysis => self
-                        .app
-                        .open_analysis_workbench(std::path::PathBuf::from(&self.analysis_path)),
-                    StudioPane::Plugins => self.app.open_plugin_manager_pane(),
-                    StudioPane::Memory => self.app.open_memory_browser_pane(),
-                    StudioPane::History => self.app.open_execution_history_pane(),
-                    _ => self.app.open_workspace_pane(pane),
-                };
-                self.status = format!("opened workspace pane {}", id.value());
-            }
-            StudioCommandAction::OpenSettings => self.app.switch_pane(StudioPane::Settings),
-            StudioCommandAction::Refresh => self.app.refresh(),
-        }
-        self.layout.close_overlays();
-    }
-}
-
-impl StudioEguiApp {
     fn open_row(&mut self, ui: &mut egui::Ui, title: &str, detail: &str, pane: StudioPane) {
         let response = ui
             .horizontal(|ui| {
@@ -413,7 +276,7 @@ impl StudioEguiApp {
                     ui.label(egui::RichText::new(detail).color(ui::muted_text(ui.ctx())));
                 });
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui::quiet_button(ui, "Open")
+                    ui::quiet_button(ui, i18n::t("studio.shell.open"))
                 })
                 .inner
             })

@@ -8,6 +8,7 @@ mod layout;
 mod operations;
 mod preview;
 mod shell;
+mod shell_overlays;
 mod shell_parts;
 mod smoke;
 mod ui;
@@ -20,6 +21,7 @@ use preview::{run_studio_preview, studio_preview_from_args};
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std_egui::i18n;
 use std_studio::{StudioApp, StudioPane};
 use viewport::studio_native_options;
 use windows::WorkspaceCommandQueue;
@@ -131,13 +133,17 @@ impl StudioEguiApp {
         }
 
         ui.vertical(|ui| {
-            ui::section_header(ui, "Workspace Panes", "open work");
+            ui::section_header(
+                ui,
+                i18n::t("studio.windows.title"),
+                i18n::t("studio.shell.pane_manager.detail"),
+            );
             for (id, title, open) in panes {
                 ui.horizontal(|ui| {
                     let label = if open {
                         title.clone()
                     } else {
-                        format!("{title} inactive")
+                        format!("{title} {}", i18n::t("studio.shell.pane_inactive"))
                     };
                     if ui
                         .selectable_label(self.app.focused_pane == Some(id), label)
@@ -145,7 +151,7 @@ impl StudioEguiApp {
                     {
                         self.app.focus_workspace_pane(id);
                     }
-                    if ui::quiet_button(ui, "Close Pane").clicked() {
+                    if ui::quiet_button(ui, i18n::t("studio.shell.close_pane")).clicked() {
                         self.app.close_workspace_pane(id);
                     }
                 });
