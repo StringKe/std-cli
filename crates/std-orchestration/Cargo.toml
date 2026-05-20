@@ -1,0 +1,22 @@
+[package]
+name = "std-orchestration"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+std-types = { path = "../std-types", version = "0.1.0" }
+std-core = { path = "../std-core", version = "0.1.0" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+jsonschema = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true

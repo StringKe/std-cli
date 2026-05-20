@@ -1,0 +1,17 @@
+{
+  "name": "typed-ts",
+  "description": "Minimal deno_core TypeScript plugin example",
+  "version": "0.1.0",
+  "permissions": ["code"],
+  "actions": [
+    {
+      "name": "Plugin Typed TS",
+      "description": "Run a minimal TypeScript plugin",
+      "when_to_use": "When validating std-cli TypeScript plugin execution",
+      "kind": "typescript",
+      "script": "main.ts",
+      "timeout_ms": 1000,
+      "tags": ["plugin-typed-ts", "example"]
+    }
+  ]
+}

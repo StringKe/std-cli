@@ -1,0 +1,21 @@
+{
+  "stop_on_error": false,
+  "allow_external": false,
+  "steps": [
+    {
+      "name": "rebuild",
+      "kind": "action",
+      "target": "index"
+    },
+    {
+      "name": "smoke",
+      "kind": "workflow",
+      "target": "smoke"
+    },
+    {
+      "name": "terminal",
+      "kind": "action",
+      "target": "terminal"
+    }
+  ]
+}

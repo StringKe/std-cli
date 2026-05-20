@@ -1,0 +1,16 @@
+too-many-lines-threshold = 120
+too-many-arguments-threshold = 6
+cognitive-complexity-threshold = 25
+type-complexity-threshold = 250
+array-size-threshold = 512000
+enum-variant-name-threshold = 3
+disallowed-names = ["foo", "bar", "baz"]
+avoid-breaking-exported-api = false
+trivial-copy-size-limit = 64
+max-struct-bools = 3
+max-fn-params-bools = 3
+allow-dbg-in-tests = true
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-indexing-slicing-in-tests = true

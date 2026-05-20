@@ -1,4 +1,4 @@
-# 02. Design Principles — std-cli 设计宪法
+# 02. Design Principles - std-cli 设计宪法
 
 本文件是 std-cli 的最高决策准则。所有架构、技术选型、功能取舍、代码实现都必须遵循以下原则。遇到冲突时，以本文件为准。
 
@@ -24,7 +24,7 @@
 
 **Studio 是开发者进行专业工作的场所，可以更丰富，但仍需保持工具感。**
 
-- 支持多窗口
+- 支持单宿主窗口内的多 workspace pane
 - 支持 Workflow 的完整构建、调试、分析
 - 支持对应用、项目、工具的结构化理解（Eney 方向）
 - 不追求消费级视觉效果，优先信息密度和操作效率
@@ -67,7 +67,7 @@ AI Planner 应该能轻松发现、调用、组合、生成这些抽象。
 - 强 Core + 多表面
 - Tool / Action 的统一 trait + Registry 设计
 - 清晰的事件协议
-- Mise 工具链隔离
+- 显式配置、权限边界和审计日志
 - 文档先行文化
 - 设计原则作为宪法
 
@@ -116,4 +116,4 @@ Workflow、Skill 等能力的首选描述方式是声明式（目录 + frontmatt
 
 ---
 
-**StringKe · std-cli 宪法 · 2026**
+**StringKe std-cli 宪法 2026**

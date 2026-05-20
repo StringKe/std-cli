@@ -1,0 +1,18 @@
+{
+  "name": "scoped-fs",
+  "description": "Scoped file read and write plugin example",
+  "version": "0.1.0",
+  "permissions": ["code", "fs_scoped"],
+  "fs_scopes": ["data"],
+  "actions": [
+    {
+      "name": "Plugin Scoped FS",
+      "description": "Read a scoped input file and write a scoped output file",
+      "when_to_use": "When validating std-cli scoped file plugin execution",
+      "kind": "javascript",
+      "script": "main.js",
+      "timeout_ms": 1000,
+      "tags": ["plugin-scoped-fs", "example"]
+    }
+  ]
+}

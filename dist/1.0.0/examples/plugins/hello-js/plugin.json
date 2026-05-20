@@ -1,0 +1,17 @@
+{
+  "name": "hello-js",
+  "description": "Minimal deno_core JavaScript plugin example",
+  "version": "0.1.0",
+  "permissions": ["code"],
+  "actions": [
+    {
+      "name": "Plugin Hello JS",
+      "description": "Run a minimal JavaScript plugin",
+      "when_to_use": "When validating std-cli JavaScript plugin execution",
+      "kind": "javascript",
+      "script": "main.js",
+      "timeout_ms": 1000,
+      "tags": ["plugin-hello-js", "example"]
+    }
+  ]
+}

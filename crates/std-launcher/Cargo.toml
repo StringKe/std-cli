@@ -1,0 +1,29 @@
+[package]
+name = "std-launcher"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "std-launcher"
+path = "src/main.rs"
+
+[dependencies]
+std-types = { path = "../std-types", version = "0.1.0" }
+std-core = { path = "../std-core", version = "0.1.0" }
+std-egui = { path = "../std-egui", version = "0.1.0" }
+std-orchestration = { path = "../std-orchestration", version = "0.1.0" }
+egui = { workspace = true }
+eframe = { workspace = true }
+global-hotkey = { workspace = true }
+tray-icon = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+proptest = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true

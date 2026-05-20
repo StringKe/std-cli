@@ -1,74 +1,119 @@
-# 13. Implementation Roadmap — 实现路线图
+# 13. Implementation Roadmap - 实现路线图
 
-**原则**：小步快跑、文档先行、避免 devkitx 式过度工程。
+## 当前状态
 
-## Phase 0: 地基（0~4 周）—— 可用 Launcher
+当前实现进入 v1.0 convergence。目标不是继续扩大概念范围，而是把已经落地的 Launcher、Studio、Terminal、Core、Index、Plugin、Release 和质量门禁收敛成可安装、可验证、可发布的软件。
 
-**目标**：拥有一个能全局热键弹出的极简 Launcher，能搜索本地内容并执行简单操作。
+## 已落地能力
 
-- 初始化 Cargo workspace（按 Architecture 推荐的 crate 结构）
-- 搭建 `std-core` + `std-types` 基础
-- 实现 Launcher 窗口（egui + winit，2026 最新方式）
-- 全局热键集成 + macOS 浮动窗口行为打磨
-- 基础模糊搜索（nucleo）
-- 简单的 Action 注册与触发
-- 终端 CLI 框架（clap）
-- 完成第一个可运行的 release（能用热键弹出搜索面板）
+### Core
 
-**里程碑**：`v0.1.0` — “能用的全局入口”
+- `std-core` 是 GUI 中立业务中心
+- Registry、Action、Skill、Command、Memory、Plugin、Tool、Event、Storage、Config 都从 core 暴露
+- Launcher、Studio、Terminal 共享同一套 core 行为，不各自实现业务分支
+- 外部 runner 默认 defer，显式 opt-in 才执行
 
-## Phase 1: Workflow 闭环（5~10 周）
+### Terminal
 
-- 完善 Workflow 数据模型（declarative frontmatter 风格）
-- 实现基础 Workflow 执行引擎（顺序步骤 + 错误处理）
-- ToolRegistry 设计（参考 devkitx AgentTool trait）
-- Launcher 支持搜索和触发 Workflow
-- 简单 AI Planner（把自然语言转成可执行步骤）
-- 基础执行历史记录
+- `std config`
+- `std run`
+- `std batch`
+- `std workflow new/list/check/history/trace/step`
+- `std index rebuild/list/show/inspect/coverage/search/ask`
+- `std files index/search`
+- `std plugin check/list/search/run`
+- `std memory`
+- `std skill`
+- `std command`
+- `std app`
+- `std release plan/package/verify`
+- `std install plan/run/verify`
+- `std doctor`
 
-**里程碑**：`v0.3.0` — “Workflow 能跑，AI 可以参与规划”
+### Launcher
 
-## Phase 2: Studio 基础能力（11~18 周）
+- 热键注册计划和运行时封装
+- 搜索、预览、键盘移动、触发反馈
+- App、文件、Workflow、Clipboard、Memory、Action 搜索
+- 语音 transcript 输入和清洗
+- `std-launcher --smoke "rebuild index"` 输出 smoke/perf 证据
 
-- 实现 Studio 主窗口框架（多窗口管理）
-- Workflow 编辑器（列表 + 属性面板模式）
-- AI 辅助生成/修复 Workflow 面板
-- 简单执行模拟器与轨迹查看
-- 剪切板历史增强（搜索、分类、语义）
+### Studio
 
-**里程碑**：`v0.5.0` — “有真正的构建界面”
+- Dashboard、Workflow、Apps、Memory、Plugins、Analysis、History、Settings pane
+- Workspace pane 打开、聚焦、关闭、重复 pane 去重
+- Workflow 创建、编辑、模拟、执行、trace 查看
+- Batch Debug 复用 `std-orchestration::BatchExecutor`
+- Plugin Manager 读取 manifest check report
+- Analysis Workbench 复用 `std-index`
+- Memory Browser 复用 core storage
 
-## Phase 3: 个人理解能力（19~28 周）—— Eney 方向起步
+### Index
 
-- 实现 `std-index` 层（多层索引框架）
-  - 项目/Workflow 概览层
-  - 文件与步骤摘要层
-  - 符号/调用关系层
-- Studio 中支持“分析一个项目/Workflow”
-- AI 可以基于索引回答结构化问题
-- Mise 工具链隔离集成
+- Entity Overview
+- Component Digest
+- Symbol / Relation Index
+- Historical Context
+- Coverage、Inspect、Search、Ask
+- Studio 和 Terminal 共用同一套 index storage
 
-**里程碑**：`v0.8.0` — “开始能理解自己东西的内部结构”
+### Plugin
 
-## Phase 4: 生态与深化（29 周以后）
+- `deno_core` JavaScript / TypeScript runtime
+- scoped fs、network、clipboard、code permission
+- manifest check 独立于 action 执行
+- shell tool timeout 和 JS infinite loop timeout
 
-- deno_core 插件系统 + `@std-cli/sdk`
-- 更强的可视化 Workflow 编辑（如果需要）
-- 语音全程打通（高质量 STT + TTS）
-- 个人 Memory 系统（长期 + 向量）
-- 插件市场 / 远程 Workflow 来源（可选）
-- 性能、主题、macOS 深度集成打磨
+### Release 和质量
 
-**长期目标**：`v1.0+` 接近 Eney 级个人开发者智能层，但保持克制和专注。
+- macOS app bundle packaging
+- release manifest
+- checksum verify
+- install plan/run/verify
+- packaged docs/examples/quality evidence
+- rustfmt、Clippy、Dylint、cargo-deny、cargo-machete
+- Rust 源文件 500 行 Dylint 硬门槛
+- 配置文件 300 行 doctor 硬门槛
 
-## 版本策略
+## 剩余收敛项
 
-- 0.x 阶段：快速迭代，每 2-4 周一个有价值的 milestone
-- 每个 Phase 结束时更新 Architecture 和 Roadmap
-- 严格遵守 Design Principles
+- 继续做 requirement-by-requirement completion audit，不用局部测试替代完整证明
+- 让 docs 中所有设计声明和当前代码能力一致
+- 对接真实 release build 产物执行 `std release package` 和 `std release verify`
+- 在安装目录上执行真实 `std install run` 和 `std install verify`
+- 在安装后的二进制上执行 smoke evidence：
+  - `std doctor`
+  - `std-launcher --smoke "rebuild index"`
+  - `std workflow trace --limit 5`
+  - `std index coverage`
+  - `std plugin check examples/plugins/hello-js`
+- 本机或 CI 环境安装 `cargo-deny` 后执行 `cargo deny check`
 
-**当前状态**：Phase 0 启动中。
+## v1.0 完成门槛
 
----
+v1.0 只能在以下证据全部 PASS 后宣布完成：
+
+- `cargo fmt --all --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `DYLINT_RUSTFLAGS="-D warnings" cargo dylint --workspace --all -- --all-targets`
+- `cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml`
+- `cargo test --workspace -- --test-threads=1`
+- `cargo deny check`
+- `cargo machete`
+- `std doctor`
+- `std release package --version 1.0.0`
+- `std release verify --dist <dist>`
+- `std install run --prefix <prefix> --from <dist>/bin`
+- `std install verify --prefix <prefix>`
+- installed `std`, `std-launcher`, `std-studio` smoke evidence
+
+## 维护原则
+
+- 不恢复 `std quality` 自研命令
+- Rust 质量管理优先使用 Rust 生态工具
+- 新源码文件低于 500 行
+- 配置文件低于 300 行
+- 测试和默认命令不得唤起 Terminal、App 或外部 runner
+- 外部行为必须显式 `--allow-external` 或同等 opt-in
 
 **维护者**：StringKe

@@ -1,0 +1,91 @@
+use serde_json::json;
+use std::path::PathBuf;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct DoctorReport {
+    pub(crate) status: &'static str,
+    pub(crate) storage: &'static str,
+    pub(crate) actions: usize,
+    pub(crate) planner: &'static str,
+    pub(crate) workflow_dry_run: &'static str,
+    pub(crate) index_components: usize,
+    pub(crate) index_relations: usize,
+    pub(crate) plugins: usize,
+    pub(crate) audit_events: usize,
+    pub(crate) quality: &'static str,
+    pub(crate) quality_ci: &'static str,
+    pub(crate) dylint_lint: &'static str,
+    pub(crate) quality_tools: Vec<&'static str>,
+    pub(crate) source_file_limit: usize,
+    pub(crate) config_file_limit: usize,
+    pub(crate) source_files: usize,
+    pub(crate) max_source_file: PathBuf,
+    pub(crate) max_source_lines: usize,
+    pub(crate) workspace_crates: usize,
+    pub(crate) launcher: &'static str,
+    pub(crate) studio: &'static str,
+    pub(crate) release_plan: &'static str,
+    pub(crate) install_plan: &'static str,
+    pub(crate) config_path: PathBuf,
+}
+
+impl DoctorReport {
+    pub(crate) fn text(&self) -> String {
+        format!(
+            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
+            status = self.status,
+            storage = self.storage,
+            actions = self.actions,
+            planner = self.planner,
+            workflow_dry_run = self.workflow_dry_run,
+            index_components = self.index_components,
+            index_relations = self.index_relations,
+            plugins = self.plugins,
+            audit_events = self.audit_events,
+            quality = self.quality,
+            quality_ci = self.quality_ci,
+            dylint_lint = self.dylint_lint,
+            quality_tools = self.quality_tools.join(","),
+            source_file_limit = self.source_file_limit,
+            config_file_limit = self.config_file_limit,
+            source_files = self.source_files,
+            max_source_file = self.max_source_file.display(),
+            max_source_lines = self.max_source_lines,
+            workspace_crates = self.workspace_crates,
+            launcher = self.launcher,
+            studio = self.studio,
+            release_plan = self.release_plan,
+            install_plan = self.install_plan,
+            config_path = self.config_path.display(),
+        )
+    }
+
+    pub(crate) fn json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(&json!({
+            "status": self.status,
+            "storage": self.storage,
+            "actions": self.actions,
+            "planner": self.planner,
+            "workflow_dry_run": self.workflow_dry_run,
+            "index_components": self.index_components,
+            "index_relations": self.index_relations,
+            "plugins": self.plugins,
+            "audit_events": self.audit_events,
+            "quality": self.quality,
+            "quality_ci": self.quality_ci,
+            "dylint_lint": self.dylint_lint,
+            "quality_tools": self.quality_tools,
+            "source_file_limit": self.source_file_limit,
+            "config_file_limit": self.config_file_limit,
+            "source_files": self.source_files,
+            "max_source_file": self.max_source_file,
+            "max_source_lines": self.max_source_lines,
+            "workspace_crates": self.workspace_crates,
+            "launcher": self.launcher,
+            "studio": self.studio,
+            "release_plan": self.release_plan,
+            "install_plan": self.install_plan,
+            "config_path": self.config_path,
+        }))
+    }
+}
