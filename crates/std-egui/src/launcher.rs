@@ -1,6 +1,6 @@
 use std::time::Instant;
 use std_core::StdCore;
-use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, SearchResult};
+use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType, SearchResult};
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct LauncherTelemetry {
@@ -64,7 +64,8 @@ impl LauncherFeedback {
 impl LauncherViewModel {
     pub fn new(core: &StdCore) -> Self {
         let started_at = Instant::now();
-        let results = core.search("", 10).unwrap_or_default();
+        let mut results = core.search("", 10).unwrap_or_default();
+        sort_launcher_results(&mut results);
         let elapsed_ms = started_at.elapsed().as_millis();
         let result_count = results.len();
         let mut view = Self {
@@ -90,6 +91,7 @@ impl LauncherViewModel {
         self.query = normalize_query(query.into());
         let started_at = Instant::now();
         self.results = core.search(&self.query, 10).unwrap_or_default();
+        sort_launcher_results(&mut self.results);
         self.result_mode = result_mode(&self.query, self.results.is_empty());
         self.telemetry.last_search_ms = started_at.elapsed().as_millis();
         self.telemetry.last_result_count = self.results.len();
@@ -166,6 +168,26 @@ fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {
         LauncherResultMode::NoMatches
     } else {
         LauncherResultMode::Matches
+    }
+}
+
+fn sort_launcher_results(results: &mut [SearchResult]) {
+    results.sort_by(|left, right| {
+        group_rank(&left.action.action_type)
+            .cmp(&group_rank(&right.action.action_type))
+            .then_with(|| right.score.total_cmp(&left.score))
+            .then_with(|| left.action.name.cmp(&right.action.name))
+    });
+}
+
+fn group_rank(action_type: &ActionType) -> u8 {
+    match action_type {
+        ActionType::Workflow | ActionType::Command => 0,
+        ActionType::AppLaunch => 1,
+        ActionType::Custom(kind) if kind == "file" => 1,
+        ActionType::Clipboard => 2,
+        ActionType::Skill => 3,
+        ActionType::Custom(_) => 4,
     }
 }
 

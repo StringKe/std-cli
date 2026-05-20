@@ -321,10 +321,12 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
         }
         "defer" => {
             state.update_query("terminal");
+            select_external_runner_result(state);
             state.trigger_selected();
         }
         "action-panel" => {
             state.update_query("terminal");
+            select_external_runner_result(state);
             state.open_action_panel();
         }
         "error" => {
@@ -351,9 +353,6 @@ fn apply_window_commands(ctx: &egui::Context, commands: Vec<LauncherWindowComman
         match command {
             LauncherWindowCommand::SetVisible(visible) => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(visible));
-                if visible {
-                    activate_current_app();
-                }
             }
             LauncherWindowCommand::Focus => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
@@ -362,21 +361,15 @@ fn apply_window_commands(ctx: &egui::Context, commands: Vec<LauncherWindowComman
     }
 }
 
-fn activate_current_app() {
-    #[cfg(target_os = "macos")]
+fn select_external_runner_result(state: &mut LauncherState) {
+    if let Some(index) = state
+        .view
+        .results
+        .iter()
+        .position(|result| result.action.action_type.needs_external_runner())
     {
-        let process = std::env::current_exe()
-            .ok()
-            .and_then(|path| path.file_name().map(|name| name.to_owned()))
-            .and_then(|name| name.to_str().map(ToString::to_string))
-            .unwrap_or_else(|| "std-launcher".to_string());
-        let script = format!(
-            "tell application \"System Events\" to set frontmost of process \"{process}\" to true"
-        );
-        let _ = std::process::Command::new("/usr/bin/osascript")
-            .arg("-e")
-            .arg(script)
-            .status();
+        state.view.selected = index;
+        state.view.refresh_preview(&state.core);
     }
 }
 impl LauncherApp {

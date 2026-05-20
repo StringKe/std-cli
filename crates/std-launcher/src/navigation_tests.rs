@@ -16,7 +16,7 @@ fn mod_arrow_keys_jump_to_result_edges() {
 #[test]
 fn mod_arrow_keys_jump_inside_action_panel() {
     let mut state = LauncherState::new();
-    state.update_query("");
+    state.update_query("terminal");
     state.handle_keyboard_input(LauncherKey::ActionPanel, false);
     assert!(state.action_panel.open);
     assert!(state.action_panel.visible_items().len() > 1);

@@ -30,6 +30,7 @@ pub fn summarize_json(value: &serde_json::Value) -> String {
 mod tests {
     use super::*;
     use std_core::{StdConfig, StdCore};
+    use std_types::ActionType;
 
     fn test_core() -> StdCore {
         let temp = tempfile::tempdir().unwrap();
@@ -102,6 +103,29 @@ mod tests {
         assert_eq!(model.result_mode, LauncherResultMode::Matches);
         model.update_query(&core, "zzzz-no-launcher-match");
         assert_eq!(model.result_mode, LauncherResultMode::NoMatches);
+    }
+
+    #[test]
+    fn launcher_results_follow_documented_group_order() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "");
+        let ranks = model
+            .results
+            .iter()
+            .map(|result| match &result.action.action_type {
+                ActionType::Workflow | ActionType::Command => 0,
+                ActionType::AppLaunch => 1,
+                ActionType::Custom(kind) if kind == "file" => 1,
+                ActionType::Clipboard => 2,
+                ActionType::Skill => 3,
+                ActionType::Custom(_) => 4,
+            })
+            .collect::<Vec<_>>();
+
+        assert!(!ranks.is_empty());
+        assert!(ranks.windows(2).all(|window| window[0] <= window[1]));
     }
 
     #[test]

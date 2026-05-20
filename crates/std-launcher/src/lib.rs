@@ -484,6 +484,8 @@ pub fn launcher_version() -> &'static str {
 #[cfg(test)]
 mod action_panel_tests;
 #[cfg(test)]
+mod app_tests;
+#[cfg(test)]
 mod navigation_tests;
 #[cfg(test)]
 mod shortcut_tests;
