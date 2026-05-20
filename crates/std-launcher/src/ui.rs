@@ -96,6 +96,9 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
     if input::launcher_action_panel().pressed(&ctx) {
         state.handle_keyboard_input_by_user(LauncherKey::ActionPanel, false);
     }
+    if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::Backspace)) {
+        state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+    }
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {

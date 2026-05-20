@@ -100,3 +100,19 @@ fn action_panel_filters_actions_and_resets_selection() {
         "Copy command"
     );
 }
+
+#[test]
+fn mod_backspace_deletes_previous_query_token() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("  open   terminal now ");
+    state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+
+    assert_eq!(state.view.query, "open terminal");
+}

@@ -8,6 +8,7 @@ pub enum LauncherKey {
     Enter,
     Escape,
     ActionPanel,
+    DeletePreviousToken,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -70,6 +71,10 @@ impl LauncherState {
             LauncherKey::Enter => self.trigger_selected(),
             LauncherKey::ActionPanel => {
                 self.open_action_panel();
+                None
+            }
+            LauncherKey::DeletePreviousToken => {
+                self.view.delete_previous_query_token(&self.core);
                 None
             }
             LauncherKey::Escape if self.action_panel.open => {

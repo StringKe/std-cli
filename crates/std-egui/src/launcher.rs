@@ -87,7 +87,7 @@ impl LauncherViewModel {
     }
 
     pub fn update_query(&mut self, core: &StdCore, query: impl Into<String>) {
-        self.query = query.into();
+        self.query = normalize_query(query.into());
         let started_at = Instant::now();
         self.results = core.search(&self.query, 10).unwrap_or_default();
         self.result_mode = result_mode(&self.query, self.results.is_empty());
@@ -95,6 +95,12 @@ impl LauncherViewModel {
         self.telemetry.last_result_count = self.results.len();
         self.selected = 0;
         self.refresh_preview(core);
+    }
+
+    pub fn delete_previous_query_token(&mut self, core: &StdCore) {
+        let mut tokens = self.query.split_whitespace().collect::<Vec<_>>();
+        tokens.pop();
+        self.update_query(core, tokens.join(" "));
     }
 
     pub fn move_selection(&mut self, delta: isize) {
@@ -137,6 +143,10 @@ impl LauncherViewModel {
         self.feedback = Some(LauncherFeedback::from_execution(&execution));
         Some(execution)
     }
+}
+
+fn normalize_query(query: String) -> String {
+    query.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {

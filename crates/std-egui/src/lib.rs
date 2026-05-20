@@ -105,6 +105,19 @@ mod tests {
     }
 
     #[test]
+    fn launcher_query_is_normalized_and_deletes_previous_token() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "  rebuild   index  now ");
+        assert_eq!(model.query, "rebuild index now");
+        model.delete_previous_query_token(&core);
+        assert_eq!(model.query, "rebuild index");
+        model.delete_previous_query_token(&core);
+        assert_eq!(model.query, "rebuild");
+    }
+
+    #[test]
     fn launcher_records_search_preview_and_trigger_telemetry() {
         let core = test_core();
         let mut model = LauncherViewModel::new(&core);
