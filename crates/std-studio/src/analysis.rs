@@ -1,13 +1,11 @@
-use crate::{ui, StudioEguiApp};
+use crate::{analysis_rows, ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::{
-    i18n,
-    tokens::{Space, Text},
-};
+use std_egui::{i18n, tokens::Space};
 use std_index::{
-    IndexAnswer, IndexCoverage, IndexCoverageReport, IndexDocument, IndexInspection,
-    IndexSearchResult,
+    IndexAnswer, IndexCoverageReport, IndexDocument, IndexInspection, IndexSearchResult,
 };
+
+const ANALYSIS_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_analysis(&mut self, ui: &mut egui::Ui) {
@@ -18,10 +16,38 @@ impl StudioEguiApp {
         );
         self.render_analysis_toolbar(ui);
         ui.add_space(Space::SM as f32);
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_active_analysis(ui));
-            columns[1].vertical(|ui| self.render_analysis_query(ui));
-            columns[2].vertical(|ui| self.render_analysis_coverage(ui));
+        self.render_analysis_workspace(ui);
+    }
+
+    fn render_analysis_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 940.0 {
+            self.render_active_analysis(ui);
+            ui.add_space(ANALYSIS_PANEL_GAP);
+            self.render_analysis_query(ui);
+            ui.add_space(ANALYSIS_PANEL_GAP);
+            self.render_analysis_coverage(ui);
+            return;
+        }
+        let column_width = (available_width - ANALYSIS_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_active_analysis(ui),
+            );
+            ui.add_space(ANALYSIS_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_analysis_query(ui),
+            );
+            ui.add_space(ANALYSIS_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_analysis_coverage(ui),
+            );
         });
     }
 
@@ -165,34 +191,7 @@ impl StudioEguiApp {
 }
 
 fn render_document_overview(ui: &mut egui::Ui, document: &IndexDocument) {
-    ui.label(
-        egui::RichText::new(&document.overview.name)
-            .strong()
-            .font(Text::headline()),
-    );
-    ui.horizontal_wrapped(|ui| {
-        ui::chip(
-            ui,
-            &format!("{:?}", document.overview.kind),
-            ui::selected_bg(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("components={}", document.components.len()),
-            ui::panel_alt(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("relations={}", document.relations.len()),
-            ui::panel_alt(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("history={}", document.history.len()),
-            ui::panel_alt(ui.ctx()),
-        );
-    });
-    ui.small(document.overview.path.display().to_string());
+    analysis_rows::document_overview_row(ui, document);
     ui.label(&document.overview.summary);
 }
 
@@ -201,70 +200,20 @@ fn render_components(ui: &mut egui::Ui, document: &IndexDocument) {
         .max_height(450.0)
         .show(ui, |ui| {
             for component in document.components.iter().take(12) {
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.label(component.path.display().to_string());
-                    ui.small(format!("{} {}", component.language, component.purpose));
-                    if !component.symbols.is_empty() {
-                        ui.small(format!("symbols: {}", component.symbols.join(", ")));
-                    }
-                });
+                analysis_rows::component_row(ui, component);
             }
         });
 }
 
 fn render_coverage_report(ui: &mut egui::Ui, report: &IndexCoverageReport) {
-    ui.horizontal_wrapped(|ui| {
-        ui::chip(
-            ui,
-            &format!("total={}", report.total),
-            ui::panel_alt(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("complete={}", report.complete),
-            ui::ok_bg(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("incomplete={}", report.incomplete),
-            ui::warn_bg(ui.ctx()),
-        );
-    });
+    analysis_rows::coverage_summary(ui, report.total, report.complete, report.incomplete);
     egui::ScrollArea::vertical()
         .max_height(460.0)
         .show(ui, |ui| {
             for item in &report.items {
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.label(&item.name);
-                    render_coverage_chips(ui, &item.coverage);
-                    ui.small(format!(
-                        "components={} relations={} history={}",
-                        item.component_count, item.relation_count, item.history_count
-                    ));
-                });
+                analysis_rows::coverage_item_row(ui, item);
             }
         });
-}
-
-fn render_coverage_chips(ui: &mut egui::Ui, coverage: &IndexCoverage) {
-    ui.horizontal_wrapped(|ui| {
-        coverage_chip(ui, "overview", coverage.entity_overview);
-        coverage_chip(ui, "components", coverage.component_digest);
-        coverage_chip(ui, "relations", coverage.symbol_relation_index);
-        coverage_chip(ui, "history", coverage.historical_context);
-    });
-}
-
-fn coverage_chip(ui: &mut egui::Ui, label: &str, pass: bool) {
-    ui::chip(
-        ui,
-        label,
-        if pass {
-            ui::ok_bg(ui.ctx())
-        } else {
-            ui::warn_bg(ui.ctx())
-        },
-    );
 }
 
 fn render_output(ui: &mut egui::Ui, title: &str, value: &str, height: f32) {
