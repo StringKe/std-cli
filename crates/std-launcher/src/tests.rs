@@ -85,20 +85,32 @@ fn hotkey_smoke_is_skipped_in_test_mode() {
 }
 
 #[test]
+fn hotkey_runtime_register_is_blocked_in_tests() {
+    let result = GlobalHotkeyRuntime::register(HotkeyRegistrationPlan {
+        accelerator: "Alt+Space".to_string(),
+        enabled: true,
+    });
+
+    let Err(error) = result else {
+        panic!("test mode must block global hotkey registration");
+    };
+    assert!(error.contains("STD_TEST_MODE blocked global hotkey registration"));
+}
+
+#[test]
 fn hotkey_runtime_matches_registered_event_id() {
     let plan = HotkeyRegistrationPlan {
         accelerator: "Alt+Space".to_string(),
         enabled: true,
     };
-    let mut runtime = GlobalHotkeyRuntime::disabled(plan.clone());
-    let hotkey = global_hotkey::hotkey::HotKey::try_from(plan.accelerator.as_str()).unwrap();
-    runtime.set_hotkey_id_for_test(hotkey.id());
+    let mut runtime = GlobalHotkeyRuntime::disabled(plan);
+    runtime.set_hotkey_id_for_test(42);
     let pressed = global_hotkey::GlobalHotKeyEvent {
-        id: hotkey.id(),
+        id: 42,
         state: global_hotkey::HotKeyState::Pressed,
     };
     let released = global_hotkey::GlobalHotKeyEvent {
-        id: hotkey.id(),
+        id: 42,
         state: global_hotkey::HotKeyState::Released,
     };
 

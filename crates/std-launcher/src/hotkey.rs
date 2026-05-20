@@ -50,6 +50,12 @@ pub struct GlobalHotkeyRuntime {
 
 impl GlobalHotkeyRuntime {
     pub fn register(plan: HotkeyRegistrationPlan) -> Result<Self, String> {
+        if std_core::std_test_mode_enabled() {
+            return Err(
+                "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in"
+                    .to_string(),
+            );
+        }
         let hotkey = global_hotkey::hotkey::HotKey::try_from(plan.accelerator.as_str())
             .map_err(|error| error.to_string())?;
         let manager =
