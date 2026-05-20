@@ -28,6 +28,8 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
                     ui.set_width(width);
                     header(ui, state);
                     ui.add_space(Space::XS as f32);
+                    search(ui, state);
+                    ui.add_space(Space::XS as f32);
                     actions(ui, state);
                 });
         });
@@ -53,8 +55,43 @@ fn header(ui: &mut egui::Ui, state: &LauncherState) {
     });
 }
 
+fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
+    let ctx = ui.ctx().clone();
+    let response = ui.add_sized(
+        [ui.available_width(), 28.0],
+        egui::TextEdit::singleline(&mut state.action_panel.query)
+            .hint_text("Filter actions")
+            .font(Text::body()),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            "Action Panel filter",
+        )
+    });
+    if response.changed() {
+        state.update_action_panel_query(state.action_panel.query.clone());
+    }
+    ui.painter().rect_stroke(
+        response.rect.expand(2.0),
+        egui::CornerRadius::same(Radius::MD),
+        egui::Stroke::new(1.0, Color::stroke_divider(&ctx)),
+        egui::StrokeKind::Outside,
+    );
+}
+
 fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
-    let items = state.action_panel.items.clone();
+    let items = state
+        .action_panel
+        .visible_items()
+        .into_iter()
+        .cloned()
+        .collect::<Vec<_>>();
+    if items.is_empty() {
+        quiet_label(ui, "No matching actions");
+        return;
+    }
     for (index, item) in items.iter().enumerate() {
         if action_row(ui, item, index == state.action_panel.selected).clicked() {
             state.action_panel.selected = index;

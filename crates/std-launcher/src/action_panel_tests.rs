@@ -70,3 +70,33 @@ fn action_panel_ime_blocks_open_and_trigger() {
     assert!(trigger.is_none());
     assert!(state.view.feedback.is_none());
 }
+
+#[test]
+fn action_panel_filters_actions_and_resets_selection() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.open_action_panel();
+    state.move_action_panel_selection(1);
+    state.update_action_panel_query("copy");
+
+    let visible_titles = state
+        .action_panel
+        .visible_items()
+        .into_iter()
+        .map(|item| item.title().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(state.action_panel.selected, 0);
+    assert_eq!(visible_titles, vec!["Copy command"]);
+    assert_eq!(
+        state.action_panel.selected_item().unwrap().title(),
+        "Copy command"
+    );
+}

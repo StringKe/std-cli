@@ -12,6 +12,7 @@ pub struct ActionPanel {
     pub open: bool,
     pub selected: usize,
     pub action_name: String,
+    pub query: String,
     pub items: Vec<ActionPanelItem>,
 }
 
@@ -21,6 +22,7 @@ impl ActionPanel {
             open: false,
             selected: 0,
             action_name: String::new(),
+            query: String::new(),
             items: Vec::new(),
         }
     }
@@ -29,28 +31,46 @@ impl ActionPanel {
         self.open = true;
         self.selected = 0;
         self.action_name = action.name.clone();
+        self.query.clear();
         self.items = action_panel_items(action);
     }
 
     pub fn close(&mut self) {
         self.open = false;
         self.selected = 0;
+        self.query.clear();
     }
 
     pub fn move_selection(&mut self, delta: isize) {
-        if self.items.is_empty() {
+        let visible_len = self.visible_items().len();
+        if visible_len == 0 {
             self.selected = 0;
             return;
         }
         let next = self.selected.saturating_add_signed(delta);
-        self.selected = next.min(self.items.len() - 1);
+        self.selected = next.min(visible_len - 1);
+    }
+
+    pub fn update_query(&mut self, query: impl Into<String>) {
+        self.query = query.into().trim().to_lowercase();
+        self.selected = 0;
     }
 
     pub fn selected_item(&self) -> Option<&ActionPanelItem> {
         if !self.open {
             return None;
         }
-        self.items.get(self.selected)
+        self.visible_items().get(self.selected).copied()
+    }
+
+    pub fn visible_items(&self) -> Vec<&ActionPanelItem> {
+        if self.query.is_empty() {
+            return self.items.iter().collect();
+        }
+        self.items
+            .iter()
+            .filter(|item| item.matches(&self.query))
+            .collect()
     }
 }
 
@@ -69,6 +89,11 @@ impl ActionPanelItem {
             Self::Defer => "Shift+Enter",
             Self::CopyCommand(_) => "Cmd+C",
         }
+    }
+
+    fn matches(&self, query: &str) -> bool {
+        self.title().to_lowercase().contains(query)
+            || self.shortcut().to_lowercase().contains(query)
     }
 }
 

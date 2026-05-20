@@ -257,6 +257,10 @@ impl LauncherState {
         self.action_panel.move_selection(delta);
     }
 
+    pub fn update_action_panel_query(&mut self, query: impl Into<String>) {
+        self.action_panel.update_query(query);
+    }
+
     pub fn trigger_action_panel_selection(&mut self) -> Option<ActionExecution> {
         match self.action_panel.selected_item()?.clone() {
             ActionPanelItem::Run => self.trigger_selected_by_user(),
