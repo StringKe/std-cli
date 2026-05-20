@@ -1,6 +1,7 @@
 //! std-studio - Professional environment (full product)
 
 mod analysis;
+mod app_rows;
 mod app_view;
 mod commands;
 mod host_chrome;

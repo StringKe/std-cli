@@ -1,7 +1,12 @@
-use crate::{ui, StudioEguiApp};
+use crate::{
+    app_rows::{self, AppRowEvent},
+    ui, StudioEguiApp,
+};
 use eframe::egui;
-use std::path::{Path, PathBuf};
-use std_egui::i18n;
+use std::path::PathBuf;
+use std_egui::{i18n, tokens::Space};
+
+const APP_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_apps(&mut self, ui: &mut egui::Ui) {
@@ -10,10 +15,38 @@ impl StudioEguiApp {
             i18n::t("studio.apps.title"),
             i18n::t("studio.apps.detail"),
         );
-        ui.columns(3, |columns| {
-            columns[0].vertical(|ui| self.render_app_registration(ui));
-            columns[1].vertical(|ui| self.render_app_search(ui));
-            columns[2].vertical(|ui| self.render_registered_apps(ui));
+        self.render_apps_workspace(ui);
+    }
+
+    fn render_apps_workspace(&mut self, ui: &mut egui::Ui) {
+        let available_width = ui.available_width();
+        if available_width < 900.0 {
+            self.render_app_registration(ui);
+            ui.add_space(APP_PANEL_GAP);
+            self.render_app_search(ui);
+            ui.add_space(APP_PANEL_GAP);
+            self.render_registered_apps(ui);
+            return;
+        }
+        let column_width = (available_width - APP_PANEL_GAP * 2.0) / 3.0;
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_app_registration(ui),
+            );
+            ui.add_space(APP_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_app_search(ui),
+            );
+            ui.add_space(APP_PANEL_GAP);
+            ui.allocate_ui_with_layout(
+                egui::vec2(column_width, 0.0),
+                egui::Layout::top_down(egui::Align::Min),
+                |ui| self.render_registered_apps(ui),
+            );
         });
     }
 
@@ -34,10 +67,7 @@ impl StudioEguiApp {
                     self.app_bundle_path = "/Applications/WeChat.app".to_string();
                 }
             });
-            ui.small(format!(
-                "storage={}",
-                self.app.core.config.apps_dir().display()
-            ));
+            app_rows::storage_row(ui, &self.app.core.config.apps_dir());
         });
     }
 
@@ -80,7 +110,11 @@ impl StudioEguiApp {
                 Ok(apps) if apps.is_empty() => {
                     ui::empty_state(ui, i18n::t("studio.apps.registered.empty"))
                 }
-                Ok(apps) => render_registered_app_rows(ui, apps, &mut self.app_query),
+                Ok(apps) => {
+                    if let Some(name) = render_registered_app_rows(ui, apps) {
+                        self.app_query = name;
+                    }
+                }
                 Err(error) => {
                     ui.label(error.to_string());
                 }
@@ -133,52 +167,24 @@ impl StudioEguiApp {
             .max_height(430.0)
             .show(ui, |ui| {
                 for result in results {
-                    ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                        if ui.button(&result.action.name).clicked() {
-                            self.app_query = result.action.name.replace("Open App: ", "");
-                        }
-                        ui.horizontal_wrapped(|ui| {
-                            ui::chip(
-                                ui,
-                                &format!("score={:.2}", result.score),
-                                ui::panel_alt(ui.ctx()),
-                            );
-                            ui::chip(
-                                ui,
-                                i18n::t("studio.apps.external_runner.status"),
-                                ui::warn_bg(ui.ctx()),
-                            );
-                            for field in &result.matched_fields {
-                                ui::chip(ui, field, ui::selected_bg(ui.ctx()));
-                            }
-                        });
-                        ui.small(&result.action.description);
-                    });
+                    if let AppRowEvent::Select(name) = app_rows::search_result_row(ui, &result) {
+                        self.app_query = name;
+                    }
                 }
             });
     }
 }
 
-fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>, query: &mut String) {
+fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>) -> Option<String> {
+    let mut selected_name = None;
     egui::ScrollArea::vertical()
         .max_height(560.0)
         .show(ui, |ui| {
             for path in apps {
-                let name = app_name(&path);
-                ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                    ui.label(&name);
-                    ui.small(path.display().to_string());
-                    if ui::quiet_button(ui, i18n::t("studio.apps.select")).clicked() {
-                        *query = name;
-                    }
-                });
+                if let AppRowEvent::Select(name) = app_rows::registered_app_row(ui, &path) {
+                    selected_name = Some(name);
+                }
             }
         });
-}
-
-fn app_name(path: &Path) -> String {
-    path.file_stem()
-        .and_then(|name| name.to_str())
-        .unwrap_or("App")
-        .to_string()
+    selected_name
 }
