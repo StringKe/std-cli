@@ -25,7 +25,7 @@ const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 pub(crate) fn launcher_initial_window_inner_size() -> egui::Vec2 {
     egui::vec2(
         PANEL_WIDTH + WINDOW_MARGIN * 2.0,
-        compact_panel_height() + WINDOW_MARGIN * 2.0,
+        SEARCH_HEIGHT + WINDOW_MARGIN * 2.0,
     )
 }
 
@@ -92,6 +92,9 @@ pub(crate) fn render_launcher_panel(
         .show(ui, |ui| {
             ui.set_width(panel_rect.width() - Space::MD as f32 * 2.0);
             render_search_bar(ui, state, &mut hide_requested);
+            if !launcher_panel_is_expanded(state) {
+                return;
+            }
             ui.add_space(Space::XS as f32);
             render_body(ui, state, body_height);
             ui.add_space(Space::XS as f32);
@@ -103,21 +106,23 @@ pub(crate) fn render_launcher_panel(
     hide_requested
 }
 
-fn compact_panel_height() -> f32 {
-    SEARCH_HEIGHT
-        + launcher_body_min_height()
-        + ACTION_BAR_HEIGHT
-        + Space::MD as f32
-        + Space::SM as f32
-}
-
 fn launcher_panel_height(state: &LauncherState, body_height: f32) -> f32 {
+    if !launcher_panel_is_expanded(state) {
+        return SEARCH_HEIGHT;
+    }
     SEARCH_HEIGHT
         + body_height
         + ACTION_BAR_HEIGHT
         + Space::MD as f32
         + Space::SM as f32
         + extra_status_height(state)
+}
+
+fn launcher_panel_is_expanded(state: &LauncherState) -> bool {
+    state.view.phase != LauncherPhase::Empty
+        || state.controller.voice_active
+        || state.view.feedback.is_some()
+        || state.action_panel.open
 }
 
 fn launcher_body_height(state: &LauncherState, viewport_height: f32) -> f32 {

@@ -62,7 +62,19 @@ mod tests {
         assert!(description.contains("visible: Some(false)"));
         assert_eq!(
             ui::launcher_initial_window_inner_size(),
-            egui::vec2(744.0, 280.0)
+            egui::vec2(744.0, 88.0)
         );
+    }
+
+    #[test]
+    fn launcher_window_collapses_until_query_expands_results() {
+        let mut state = std_launcher::LauncherState::new();
+        let empty_size = ui::launcher_window_inner_size(&state);
+
+        state.update_query("index");
+        let expanded_size = ui::launcher_window_inner_size(&state);
+
+        assert_eq!(empty_size, egui::vec2(744.0, 88.0));
+        assert!(expanded_size.y > empty_size.y);
     }
 }

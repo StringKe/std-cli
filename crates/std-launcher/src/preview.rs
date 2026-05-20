@@ -168,7 +168,7 @@ mod tests {
         assert!(description.contains("visible: Some(true)"));
         assert_eq!(
             ui::launcher_initial_window_inner_size(),
-            egui::vec2(744.0, 280.0)
+            egui::vec2(744.0, 88.0)
         );
     }
 
