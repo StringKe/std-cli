@@ -21,15 +21,24 @@ pub(crate) fn scale() -> UiScale {
 }
 
 pub(crate) fn window_margin() -> f32 {
-    Space::sm() as f32
+    0.0
 }
 
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
     let panel_width = panel_width().min((available.width() - margin * 2.0).max(320.0));
     let body_height = body_height(state, available.height());
-    let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
+    let computed_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
+    let panel_height = if native_viewport_is_panel_sized(available, panel_width, margin) {
+        available.height()
+    } else {
+        computed_height
+    };
     panel_rect_for_available(available, panel_width, panel_height, margin, false)
+}
+
+fn native_viewport_is_panel_sized(available: egui::Rect, panel_width: f32, margin: f32) -> bool {
+    margin == 0.0 && (available.width() - panel_width).abs() <= 1.0
 }
 
 fn panel_rect_for_available(
@@ -157,8 +166,8 @@ pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
     let scale = UiScale::from_env();
     let body_height = body_height_for_scale(state, DEFAULT_VIEWPORT_HEIGHT, scale);
     egui::vec2(
-        scale.f32(PANEL_WIDTH) + scale.f32(Space::SM as f32) * 2.0,
-        panel_height_for_scale(state, body_height, scale) + scale.f32(Space::SM as f32) * 2.0,
+        scale.f32(PANEL_WIDTH),
+        panel_height_for_scale(state, body_height, scale),
     )
 }
 
@@ -178,10 +187,7 @@ pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
 }
 
 fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(
-        scale.f32(PANEL_WIDTH) + scale.f32(Space::SM as f32) * 2.0,
-        scale.f32(SEARCH_HEIGHT) + scale.f32(Space::SM as f32) * 2.0,
-    )
+    egui::vec2(scale.f32(PANEL_WIDTH), scale.f32(SEARCH_HEIGHT))
 }
 
 fn panel_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
@@ -235,8 +241,8 @@ mod tests {
         let base = initial_window_inner_size_for_scale(UiScale::default());
         let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
 
-        assert_eq!(base, egui::vec2(744.0, 88.0));
-        assert_eq!(zoomed, egui::vec2(1116.0, 132.0));
+        assert_eq!(base, egui::vec2(720.0, 64.0));
+        assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
     }
 
     #[test]
@@ -316,8 +322,8 @@ mod tests {
 
         assert_eq!(rect.min.x, window_margin());
         assert_eq!(rect.min.y, window_margin());
-        assert!(rect.max.x <= available.right() - window_margin());
-        assert!(rect.max.y <= available.bottom() - window_margin());
+        assert_eq!(rect.max.x, available.right());
+        assert_eq!(rect.max.y, available.bottom());
     }
 
     #[test]
@@ -329,6 +335,6 @@ mod tests {
         let rect = panel_rect(available, &state);
 
         assert!(rect.min.y >= window_margin());
-        assert!(rect.max.y <= available.bottom() - window_margin());
+        assert!(rect.max.y <= available.bottom());
     }
 }

@@ -10,7 +10,8 @@ pub struct LauncherSurfaceSmokeReport {
     pub light_panel_fill: String,
     pub panel_opaque: bool,
     pub panel_radius: u8,
-    pub panel_margin: i8,
+    pub native_viewport_margin: i8,
+    pub panel_inner_padding: i8,
     pub search_surface_layer: String,
     pub result_surface_layer: String,
     pub selected_surface_layer: String,
@@ -31,7 +32,8 @@ impl LauncherSurfaceSmokeReport {
             panel_opaque: Color::bg_surface_0(&dark).a() == 255
                 && Color::bg_surface_0(&light).a() == 255,
             panel_radius: Radius::xl(),
-            panel_margin: Space::md(),
+            native_viewport_margin: 0,
+            panel_inner_padding: Space::md(),
             search_surface_layer: layer("search", "bg/surface-1", &dark),
             result_surface_layer: layer("results", "bg/surface-1", &dark),
             selected_surface_layer: layer("selected", "accent/weak", &dark),
@@ -48,7 +50,8 @@ impl LauncherSurfaceSmokeReport {
             && self.light_panel_fill == "#FFFFFF"
             && self.panel_opaque
             && self.panel_radius == 16
-            && self.panel_margin == 16
+            && self.native_viewport_margin == 0
+            && self.panel_inner_padding == 16
             && self.search_surface_layer == "search=bg/surface-1:#24272C"
             && self.result_surface_layer == "results=bg/surface-1:#24272C"
             && self.selected_surface_layer == "selected=accent/weak:#4E9CFF@46"
@@ -61,13 +64,14 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\npanel_margin={}\nsearch_surface_layer={}\nresult_surface_layer={}\nselected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_margin={}\npanel_inner_padding={}\nsearch_surface_layer={}\nresult_surface_layer={}\nselected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
             self.panel_opaque,
             self.panel_radius,
-            self.panel_margin,
+            self.native_viewport_margin,
+            self.panel_inner_padding,
             self.search_surface_layer,
             self.result_surface_layer,
             self.selected_surface_layer,

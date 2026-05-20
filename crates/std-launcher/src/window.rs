@@ -54,19 +54,19 @@ mod tests {
     fn launcher_window_position_anchors_native_window_to_spec_region() {
         let position = launcher_window_position_for_monitor(
             egui::vec2(1440.0, 900.0),
-            egui::vec2(744.0, 88.0),
+            egui::vec2(720.0, 64.0),
         );
 
-        assert_eq!(position, egui::pos2(348.0, 252.0));
+        assert_eq!(position, egui::pos2(360.0, 252.0));
     }
 
     #[test]
     fn launcher_window_position_clamps_when_panel_is_taller_than_monitor() {
         let position = launcher_window_position_for_monitor(
             egui::vec2(800.0, 240.0),
-            egui::vec2(744.0, 320.0),
+            egui::vec2(720.0, 320.0),
         );
 
-        assert_eq!(position, egui::pos2(28.0, 0.0));
+        assert_eq!(position, egui::pos2(40.0, 0.0));
     }
 }
