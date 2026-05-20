@@ -16,17 +16,20 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
     let apps = studio.open_app_manager_pane();
     let plugin = studio.open_plugin_manager_pane();
     let memory = studio.open_memory_browser_pane();
-    let history = studio.open_execution_history_pane();
+    studio.open_execution_history_pane();
+    let settings = studio.open_settings_pane();
+    let duplicate_settings = studio.open_settings_pane();
 
     assert_eq!(dashboard.value(), 1);
     assert_eq!(workflow, duplicate);
-    assert_eq!(studio.workspace_panes.len(), 7);
-    assert_eq!(studio.focused_pane, Some(history));
-    assert_eq!(studio.open_workspace_panes().count(), 7);
+    assert_eq!(settings, duplicate_settings);
+    assert_eq!(studio.workspace_panes.len(), 8);
+    assert_eq!(studio.focused_pane, Some(settings));
+    assert_eq!(studio.open_workspace_panes().count(), 8);
     assert!(studio.focus_workspace_pane(plugin));
     assert_eq!(studio.focused_pane, Some(plugin));
     assert!(studio.close_workspace_pane(memory));
-    assert_eq!(studio.workspace_panes.len(), 6);
+    assert_eq!(studio.workspace_panes.len(), 7);
     assert!(!studio.close_workspace_pane(memory));
     assert!(studio.focus_workspace_pane(analysis));
     assert!(studio.focus_workspace_pane(apps));
@@ -39,6 +42,7 @@ fn studio_pane_titles_reflect_pane_kind() {
     let analysis = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli"));
     let apps = studio.open_app_manager_pane();
     let memory = studio.open_memory_browser_pane();
+    let settings = studio.open_settings_pane();
 
     let titles = studio
         .workspace_panes
@@ -50,6 +54,7 @@ fn studio_pane_titles_reflect_pane_kind() {
     assert!(titles.contains(&(analysis, "Analysis Workbench: std-cli")));
     assert!(titles.contains(&(apps, "App Manager")));
     assert!(titles.contains(&(memory, "Memory Browser")));
+    assert!(titles.contains(&(settings, "Settings")));
 }
 
 #[test]
@@ -63,6 +68,7 @@ fn studio_pane_kinds_map_to_real_pane_content() {
     let memory = studio.open_memory_browser_pane();
     let history = studio.open_execution_history_pane();
     let plugins = studio.open_plugin_manager_pane();
+    let settings = studio.open_settings_pane();
 
     let content = studio
         .workspace_panes
@@ -78,6 +84,7 @@ fn studio_pane_kinds_map_to_real_pane_content() {
     assert!(content.contains(&(memory, "memory")));
     assert!(content.contains(&(history, "history")));
     assert!(content.contains(&(plugins, "plugins")));
+    assert!(content.contains(&(settings, "settings")));
 }
 
 #[test]

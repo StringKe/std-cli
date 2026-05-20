@@ -195,6 +195,10 @@ impl StudioApp {
         self.open_pane(WorkspacePaneKind::ExecutionHistory)
     }
 
+    pub fn open_settings_pane(&mut self) -> WorkspacePaneId {
+        self.open_pane(WorkspacePaneKind::Pane(StudioPane::Settings))
+    }
+
     pub fn focus_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
         let Some(pane) = self.workspace_panes.iter_mut().find(|pane| pane.id == id) else {
             return false;

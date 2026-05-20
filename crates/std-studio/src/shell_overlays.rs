@@ -70,7 +70,7 @@ impl StudioEguiApp {
             if let Some(action) = selected_action(&items, self.layout.overlay_selected) {
                 self.apply_command_action(action);
             } else if self.layout.settings_open {
-                self.app.switch_pane(StudioPane::Settings);
+                self.open_settings_workspace_pane();
                 self.layout.close_overlays();
             }
         }
@@ -101,7 +101,7 @@ impl StudioEguiApp {
                 ui.label(&self.settings_theme);
             });
             if ui::quiet_button(ui, i18n::t("studio.shell.settings.open")).clicked() {
-                self.app.switch_pane(StudioPane::Settings);
+                self.open_settings_workspace_pane();
                 self.layout.close_overlays();
             }
         });
@@ -189,10 +189,17 @@ impl StudioEguiApp {
                 };
                 self.status = format!("opened workspace pane {}", id.value());
             }
-            StudioCommandAction::OpenSettings => self.app.switch_pane(StudioPane::Settings),
+            StudioCommandAction::OpenSettings => {
+                self.open_settings_workspace_pane();
+            }
             StudioCommandAction::Refresh => self.app.refresh(),
         }
         self.layout.close_overlays();
+    }
+
+    fn open_settings_workspace_pane(&mut self) {
+        let id = self.app.open_settings_pane();
+        self.status = format!("opened workspace pane {}", id.value());
     }
 }
 

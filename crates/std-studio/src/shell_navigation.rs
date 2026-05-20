@@ -105,6 +105,7 @@ impl StudioEguiApp {
                 StudioPane::Plugins => self.app.open_plugin_manager_pane(),
                 StudioPane::Memory => self.app.open_memory_browser_pane(),
                 StudioPane::History => self.app.open_execution_history_pane(),
+                StudioPane::Settings => self.app.open_settings_pane(),
                 _ => self.app.open_workspace_pane(pane),
             };
             self.status = format!(
