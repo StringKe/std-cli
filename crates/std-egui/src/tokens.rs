@@ -28,48 +28,72 @@ pub struct Color;
 
 impl Color {
     pub fn bg_surface_0(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::bg_surface_0_for)
+    }
+
+    fn bg_surface_0_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(14, 15, 17),
             Color32::from_rgb(255, 255, 255),
         )
     }
 
     pub fn bg_surface_1(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::bg_surface_1_for)
+    }
+
+    fn bg_surface_1_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(22, 24, 27),
             Color32::from_rgb(247, 248, 250),
         )
     }
 
     pub fn bg_surface_2(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::bg_surface_2_for)
+    }
+
+    fn bg_surface_2_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(30, 33, 38),
             Color32::from_rgb(238, 240, 243),
         )
     }
 
     pub fn bg_surface_3(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::bg_surface_3_for)
+    }
+
+    fn bg_surface_3_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(38, 42, 48),
             Color32::from_rgb(227, 230, 234),
         )
     }
 
     pub fn fg_primary(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::fg_primary_for)
+    }
+
+    fn fg_primary_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(236, 238, 241),
             Color32::from_rgb(26, 28, 32),
         )
     }
 
     pub fn fg_secondary(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::fg_secondary_for)
+    }
+
+    fn fg_secondary_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(181, 186, 193),
             Color32::from_rgb(75, 80, 87),
         )
@@ -80,56 +104,84 @@ impl Color {
     }
 
     pub fn stroke_divider(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::stroke_divider_for)
+    }
+
+    fn stroke_divider_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(38, 42, 48),
             Color32::from_rgb(227, 230, 234),
         )
     }
 
     pub fn stroke_border(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::stroke_border_for)
+    }
+
+    fn stroke_border_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(52, 57, 63),
             Color32::from_rgb(208, 212, 217),
         )
     }
 
     pub fn accent_base(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::accent_base_for)
+    }
+
+    fn accent_base_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(78, 156, 255),
             Color32::from_rgb(10, 107, 255),
         )
     }
 
     pub fn accent_weak(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::accent_weak_for)
+    }
+
+    fn accent_weak_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgba_premultiplied(78, 156, 255, 46),
             Color32::from_rgba_premultiplied(10, 107, 255, 31),
         )
     }
 
     pub fn status_success(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::status_success_for)
+    }
+
+    fn status_success_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(61, 203, 124),
             Color32::from_rgb(19, 135, 80),
         )
     }
 
     pub fn status_warning(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::status_warning_for)
+    }
+
+    fn status_warning_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(245, 182, 67),
             Color32::from_rgb(178, 117, 0),
         )
     }
 
     pub fn status_danger(ctx: &egui::Context) -> Color32 {
-        themed(
-            ctx,
+        themed(ctx, Self::status_danger_for)
+    }
+
+    fn status_danger_for(theme: EffectiveTheme) -> Color32 {
+        color_for(
+            theme,
             Color32::from_rgb(255, 106, 106),
             Color32::from_rgb(200, 49, 43),
         )
@@ -228,16 +280,16 @@ pub fn apply_theme(ctx: &egui::Context, mode: ThemeMode) {
         EffectiveTheme::Dark => egui::Visuals::dark(),
         EffectiveTheme::Light => egui::Visuals::light(),
     };
-    visuals.panel_fill = Color::bg_surface_0(ctx);
-    visuals.window_fill = Color::bg_surface_1(ctx);
-    visuals.extreme_bg_color = Color::bg_surface_0(ctx);
-    visuals.faint_bg_color = Color::bg_surface_1(ctx);
-    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, Color::fg_primary(ctx));
-    visuals.widgets.inactive.bg_fill = Color::bg_surface_2(ctx);
-    visuals.widgets.hovered.bg_fill = Color::bg_surface_3(ctx);
-    visuals.widgets.active.bg_fill = Color::accent_weak(ctx);
-    visuals.selection.bg_fill = Color::accent_weak(ctx);
-    visuals.selection.stroke = Stroke::new(1.0, Color::accent_base(ctx));
+    visuals.panel_fill = Color::bg_surface_0_for(effective);
+    visuals.window_fill = Color::bg_surface_1_for(effective);
+    visuals.extreme_bg_color = Color::bg_surface_0_for(effective);
+    visuals.faint_bg_color = Color::bg_surface_1_for(effective);
+    visuals.widgets.noninteractive.fg_stroke = Stroke::new(1.0, Color::fg_primary_for(effective));
+    visuals.widgets.inactive.bg_fill = Color::bg_surface_2_for(effective);
+    visuals.widgets.hovered.bg_fill = Color::bg_surface_3_for(effective);
+    visuals.widgets.active.bg_fill = Color::accent_weak_for(effective);
+    visuals.selection.bg_fill = Color::accent_weak_for(effective);
+    visuals.selection.stroke = Stroke::new(1.0, Color::accent_base_for(effective));
     ctx.set_visuals(visuals);
 
     let mut style = (*ctx.style()).clone();
@@ -295,8 +347,12 @@ pub fn reduce_motion() -> bool {
         .unwrap_or(false)
 }
 
-fn themed(ctx: &egui::Context, dark: Color32, light: Color32) -> Color32 {
-    match effective_theme(ctx, ThemeMode::System) {
+fn themed(ctx: &egui::Context, color: fn(EffectiveTheme) -> Color32) -> Color32 {
+    color(effective_theme(ctx, ThemeMode::System))
+}
+
+fn color_for(theme: EffectiveTheme, dark: Color32, light: Color32) -> Color32 {
+    match theme {
         EffectiveTheme::Dark => dark,
         EffectiveTheme::Light => light,
     }
@@ -372,5 +428,21 @@ mod tests {
         assert!(!ctx.style().visuals.dark_mode);
         apply_theme(&ctx, ThemeMode::Dark);
         assert!(ctx.style().visuals.dark_mode);
+    }
+
+    #[test]
+    fn apply_theme_uses_requested_mode_for_surface_tokens() {
+        let ctx = egui::Context::default();
+
+        apply_theme(&ctx, ThemeMode::Dark);
+        apply_theme(&ctx, ThemeMode::Light);
+
+        let visuals = &ctx.style().visuals;
+        assert_eq!(visuals.panel_fill, Color32::from_rgb(255, 255, 255));
+        assert_eq!(visuals.window_fill, Color32::from_rgb(247, 248, 250));
+        assert_eq!(
+            visuals.selection.bg_fill,
+            Color32::from_rgba_premultiplied(10, 107, 255, 31)
+        );
     }
 }
