@@ -14,6 +14,33 @@ pub fn apply_theme(ctx: &egui::Context, mode: ThemeMode) {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ThemeProfile {
+    pub requested: ThemeMode,
+    pub effective: EffectiveTheme,
+    pub high_contrast: bool,
+    pub reduce_motion: bool,
+    pub focus_ring_width: u32,
+}
+
+impl ThemeProfile {
+    pub fn apply(ctx: &egui::Context, mode: ThemeMode) -> Self {
+        let a11y = AccessibilityContext::from_env();
+        apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
+        Self::from_applied(ctx, mode, &a11y)
+    }
+
+    fn from_applied(ctx: &egui::Context, mode: ThemeMode, a11y: &AccessibilityContext) -> Self {
+        Self {
+            requested: mode,
+            effective: effective_theme(ctx, mode),
+            high_contrast: a11y.high_contrast,
+            reduce_motion: MotionContext::from_env().is_reduced(),
+            focus_ring_width: a11y.focus_ring_width() as u32,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ThemeSmokeReport {
     pub dark_surface_0: egui::Color32,
     pub dark_surface_1: egui::Color32,
@@ -280,5 +307,18 @@ mod tests {
 
         assert_ne!(report.light_surface_0, egui::Color32::WHITE);
         assert_eq!(color_hex(report.light_surface_0), "#FAFBFD");
+    }
+
+    #[test]
+    fn theme_profile_reports_runtime_theme_a11y_and_motion_state() {
+        let ctx = egui::Context::default();
+
+        let profile = ThemeProfile::apply(&ctx, ThemeMode::Light);
+
+        assert_eq!(profile.requested, ThemeMode::Light);
+        assert_eq!(profile.effective, EffectiveTheme::Light);
+        assert!(!ctx.style().visuals.dark_mode);
+        assert_eq!(profile.focus_ring_width, 2);
+        assert!(!profile.high_contrast);
     }
 }

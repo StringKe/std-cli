@@ -5,7 +5,7 @@ use eframe::egui;
 use std::time::Duration;
 use std_egui::{
     input,
-    tokens::{apply_theme, ThemeMode},
+    tokens::{ThemeMode, ThemeProfile},
 };
 use std_launcher::{GlobalHotkeyRuntime, LauncherState};
 
@@ -17,6 +17,7 @@ pub(crate) struct LauncherApp {
     resident_status: String,
     voice_transcript: String,
     pub(crate) theme_mode: ThemeMode,
+    pub(crate) theme_profile: Option<ThemeProfile>,
     pub(crate) allow_close: bool,
 }
 
@@ -34,7 +35,7 @@ impl eframe::App for LauncherApp {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        apply_theme(ctx, self.theme_mode);
+        self.apply_theme_profile(ctx);
         let panel_size = ui::launcher_window_inner_size(&self.state);
         if ctx.input(|input| input.viewport().close_requested()) && !self.allow_close {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
@@ -91,6 +92,10 @@ fn launcher_clear_color() -> [f32; 4] {
 }
 
 impl LauncherApp {
+    pub(crate) fn apply_theme_profile(&mut self, ctx: &egui::Context) {
+        self.theme_profile = Some(ThemeProfile::apply(ctx, self.theme_mode));
+    }
+
     pub(crate) fn for_preview(theme_mode: ThemeMode) -> Self {
         let mut state = LauncherState::new();
         state.hide();
@@ -103,6 +108,7 @@ impl LauncherApp {
             resident_entry: None,
             resident_status: "preview".to_string(),
             voice_transcript: String::new(),
+            theme_profile: None,
             allow_close: true,
         };
         app.state.controller.show();
@@ -133,6 +139,7 @@ impl LauncherApp {
             resident_entry,
             resident_status,
             voice_transcript: String::new(),
+            theme_profile: None,
             allow_close: false,
         }
     }
@@ -159,5 +166,17 @@ mod tests {
         assert!(app.resident_entry.is_none());
         assert_eq!(app.hotkey_status, "preview disabled");
         assert_eq!(app.resident_status, "preview");
+    }
+
+    #[test]
+    fn launcher_app_tracks_applied_theme_profile() {
+        let mut app = LauncherApp::for_preview(ThemeMode::Light);
+        let ctx = egui::Context::default();
+
+        app.apply_theme_profile(&ctx);
+
+        let profile = app.theme_profile.unwrap();
+        assert_eq!(profile.requested, ThemeMode::Light);
+        assert_eq!(profile.effective, std_egui::tokens::EffectiveTheme::Light);
     }
 }

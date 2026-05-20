@@ -33,6 +33,7 @@ use preview::{
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std_egui::tokens::ThemeProfile;
 use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 use studio_open::{
     apply_studio_open_request, run_studio_open_request, studio_open_blocked_summary,
@@ -71,6 +72,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) batch_json: String,
     pub(crate) status: String,
     pub(crate) host_maximized: bool,
+    pub(crate) theme_profile: Option<ThemeProfile>,
     pub(crate) layout: StudioLayoutState,
     pub(crate) workspace_commands: WorkspaceCommandQueue,
     pub(crate) pending_workspace_focus: Option<WorkspacePaneId>,
@@ -107,6 +109,7 @@ impl Default for StudioEguiApp {
             batch_json: default_batch_json(),
             status: String::new(),
             host_maximized: false,
+            theme_profile: None,
             layout: StudioLayoutState::default(),
             workspace_commands: Arc::new(Mutex::new(Vec::new())),
             pending_workspace_focus: None,
@@ -131,7 +134,7 @@ impl StudioEguiApp {
 
 impl eframe::App for StudioEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        ui::install_visuals(ctx, &self.app.core.config.theme);
+        self.theme_profile = Some(ui::install_visuals(ctx, &self.app.core.config.theme));
         self.layout.handle_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
         self.consume_workspace_commands();

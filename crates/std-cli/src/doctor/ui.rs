@@ -42,6 +42,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     let root = find_workspace_root()?;
     check_ui_docs(&root)?;
     check_quality_report_gates(&root)?;
+    check_runtime_theme_profiles(&root)?;
     check_preview_matrices(&root)?;
     check_desktop_automation_boundary(&root)?;
     Ok(UiDoctor {
@@ -84,6 +85,27 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
             "desktop automation must not be a default smoke gate".to_string(),
         ));
     }
+    Ok(())
+}
+
+fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> {
+    let egui_tokens = read_required(&root.join("crates/std-egui/src/tokens/style.rs"))?;
+    for required in [
+        "pub struct ThemeProfile",
+        "pub fn apply(ctx: &egui::Context, mode: ThemeMode) -> Self",
+        "pub requested: ThemeMode",
+        "pub effective: EffectiveTheme",
+        "pub high_contrast: bool",
+        "pub reduce_motion: bool",
+    ] {
+        check_text(&egui_tokens, required)?;
+    }
+    let launcher = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
+    check_text(&launcher, "pub(crate) theme_profile: Option<ThemeProfile>")?;
+    check_text(&launcher, "ThemeProfile::apply(ctx, self.theme_mode)")?;
+    let studio = read_required(&root.join("crates/std-studio/src/main.rs"))?;
+    check_text(&studio, "pub(crate) theme_profile: Option<ThemeProfile>")?;
+    check_text(&studio, "self.theme_profile = Some(ui::install_visuals")?;
     Ok(())
 }
 

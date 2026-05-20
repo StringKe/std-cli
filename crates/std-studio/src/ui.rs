@@ -1,8 +1,8 @@
 use eframe::egui;
-use std_egui::tokens::{apply_theme, Color, Radius, Space, Text, ThemeMode};
+use std_egui::tokens::{Color, Radius, Space, Text, ThemeMode, ThemeProfile};
 
-pub(crate) fn install_visuals(ctx: &egui::Context, theme: &str) {
-    apply_theme(ctx, ThemeMode::resolve(theme));
+pub(crate) fn install_visuals(ctx: &egui::Context, theme: &str) -> ThemeProfile {
+    ThemeProfile::apply(ctx, ThemeMode::resolve(theme))
 }
 
 pub(crate) fn panel_alt(ctx: &egui::Context) -> egui::Color32 {
