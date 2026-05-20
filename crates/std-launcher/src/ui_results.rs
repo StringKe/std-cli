@@ -208,12 +208,31 @@ fn result_title_is_strong(selected: bool) -> bool {
 fn group_header(ui: &mut egui::Ui, group: &str) {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::xs() as f32);
+    render_group_divider(ui, &ctx);
+    ui.add_space(Space::two_xs() as f32);
     ui.label(
-        egui::RichText::new(group)
+        egui::RichText::new(group_header_label(group))
             .font(Text::footnote())
             .color(Color::fg_tertiary(&ctx))
             .strong(),
     );
+}
+
+fn render_group_divider(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let available_width = ui.available_width();
+    let height = ui_metrics::group_divider_rect(available_width, egui::Pos2::ZERO).height();
+    let (rect, _response) =
+        ui.allocate_exact_size(egui::vec2(available_width, height), egui::Sense::hover());
+    let divider_rect = ui_metrics::group_divider_rect(available_width, rect.min);
+    ui.painter().rect_filled(
+        divider_rect,
+        egui::CornerRadius::ZERO,
+        Color::stroke_border(ctx),
+    );
+}
+
+fn group_header_label(group: &str) -> String {
+    group.to_uppercase()
 }
 
 fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
@@ -280,5 +299,10 @@ mod tests {
     fn result_title_weight_matches_selection_state() {
         assert!(result_title_is_strong(true));
         assert!(!result_title_is_strong(false));
+    }
+
+    #[test]
+    fn group_header_label_is_uppercase() {
+        assert_eq!(group_header_label("Action / Workflow"), "ACTION / WORKFLOW");
     }
 }

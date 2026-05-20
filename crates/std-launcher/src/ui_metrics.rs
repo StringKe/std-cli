@@ -31,6 +31,10 @@ pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) 
     crate::ui_metrics_results::loading_progress_rect(scale(), available_width, top_left)
 }
 
+pub(crate) fn group_divider_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
+    crate::ui_metrics_results::group_divider_rect(scale(), available_width, top_left)
+}
+
 pub(crate) fn ask_ai_row_height() -> f32 {
     scale().f32(34.0)
 }
@@ -244,6 +248,14 @@ mod tests {
         assert_eq!(
             crate::ui_metrics_results::loading_progress_metrics_for_scale(UiScale::new(1.5), 600.0),
             (228.0, 3.0)
+        );
+    }
+
+    #[test]
+    fn group_header_divider_scales_with_ui_zoom() {
+        assert_eq!(
+            crate::ui_metrics_results::group_header_metrics_for_scale(UiScale::new(1.5), 600.0),
+            (600.0, 1.5)
         );
     }
 }
