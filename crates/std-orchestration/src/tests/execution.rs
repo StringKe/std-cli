@@ -211,7 +211,7 @@ fn dry_run_and_execute_reject_schema_invalid_parameters() {
 }
 
 #[test]
-fn workflow_external_runner_can_be_explicitly_allowed() {
+fn workflow_external_runner_still_defers_in_tests() {
     let core = StdCore::new();
     let action = std_types::Action::new(
         "Open Missing App",
@@ -249,15 +249,17 @@ fn workflow_external_runner_can_be_explicitly_allowed() {
     let result = executor.execute(&wf).unwrap();
 
     assert_eq!(result.status, ExecutionStatus::Completed);
-    assert_ne!(
+    assert_eq!(
         result.results[0].output["status"].as_str(),
         Some("NeedsExternalRunner")
     );
-    assert!(result.results[0].output["output"].get("deferred").is_none());
     assert_eq!(
-        result.results[0].output["output"]["command"].as_str(),
+        result.results[0].output["message"].as_str(),
         Some("open /tmp/std-cli-missing-app")
     );
+    assert!(result.results[0].output["output"]["deferred"]
+        .as_bool()
+        .unwrap());
 }
 
 #[test]

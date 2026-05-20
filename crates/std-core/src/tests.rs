@@ -141,19 +141,15 @@ fn core_previews_and_executes_actions_with_feedback() {
 
     assert_eq!(preview.title, "Print Runner Smoke");
     assert_eq!(preview.primary_command, "printf runner-smoke");
-    assert_eq!(execution.status, ActionExecutionStatus::Failed);
-    assert!(execution
-        .message
-        .contains("test command runner blocked external command"));
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.message, "printf runner-smoke");
     assert!(execution
         .output
         .as_ref()
         .unwrap()
-        .get("error")
-        .unwrap()
-        .as_str()
-        .unwrap()
-        .contains("sh"));
+        .get("deferred")
+        .and_then(|value| value.as_bool())
+        .unwrap());
     assert!(events
         .iter()
         .any(|event| event.event_type == StdEventType::ActionPreviewed));
@@ -180,11 +176,14 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
     let result = core.search("real app", 1).unwrap().remove(0);
     let execution = core.execute_action(result.action.id).unwrap();
 
-    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.message, "open -a 1Password");
     assert!(execution
-        .message
-        .contains("test command runner blocked external command"));
-    assert!(execution.message.contains("open -a 1Password"));
+        .output
+        .unwrap()
+        .get("deferred")
+        .and_then(|value| value.as_bool())
+        .unwrap());
 }
 
 #[test]

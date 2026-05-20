@@ -168,6 +168,12 @@ pub fn std_test_mode_enabled() -> bool {
         .unwrap_or(false)
 }
 
+pub fn desktop_automation_allowed() -> bool {
+    std::env::var("STD_ALLOW_DESKTOP_AUTOMATION")
+        .map(|value| value == "1")
+        .unwrap_or(false)
+}
+
 impl Default for StdCore {
     fn default() -> Self {
         Self::new()

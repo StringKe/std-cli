@@ -45,11 +45,15 @@ pub(crate) fn execute_registry_entry(
         ActionType::Command if entry.action.name == "Rebuild Index" => {
             rebuild_current_index(core, entry, now)
         }
-        ActionType::Command => execute_command_action(core, entry, now),
-        ActionType::AppLaunch if allow_external_runner => execute_app_launch(core, entry, now),
+        ActionType::Command => execute_command_action(core, entry, allow_external_runner, now),
+        ActionType::AppLaunch if external_runner_allowed(allow_external_runner) => {
+            execute_app_launch(core, entry, now)
+        }
         ActionType::AppLaunch => Ok(needs_external_runner(entry, now)),
         ActionType::Custom(kind) if kind == "file" => match entry.metadata.get("path") {
-            Some(path) if allow_external_runner => Ok(run_open_path(core, entry, path, now)),
+            Some(path) if external_runner_allowed(allow_external_runner) => {
+                Ok(run_open_path(core, entry, path, now))
+            }
             Some(_) => Ok(needs_external_runner(entry, now)),
             None => Ok(needs_external_runner(entry, now)),
         },
@@ -60,15 +64,20 @@ pub(crate) fn execute_registry_entry(
 fn execute_command_action(
     core: &StdCore,
     entry: &RegistryEntry,
+    allow_external_runner: bool,
     created_at: chrono::DateTime<chrono::Utc>,
 ) -> Result<ActionExecution, CoreError> {
     match entry.metadata.get("command") {
-        Some(_) if entry.metadata.contains_key("command_id") && crate::std_test_mode_enabled() => {
+        Some(_) if !allow_external_runner || crate::std_test_mode_enabled() => {
             Ok(needs_external_runner(entry, created_at))
         }
         Some(command) => Ok(run_shell_command(core, entry, command, created_at)),
         None => Ok(needs_external_runner(entry, created_at)),
     }
+}
+
+fn external_runner_allowed(allow_external_runner: bool) -> bool {
+    allow_external_runner && crate::desktop_automation_allowed() && !crate::std_test_mode_enabled()
 }
 
 fn execute_echo(
