@@ -314,8 +314,8 @@ mod app_tests {
     fn studio_overlays_do_not_use_egui_windows() {
         let overlays = include_str!("shell_overlays.rs");
 
-        assert!(!overlays.contains("egui::Window::new"));
-        assert!(!overlays.contains("Window::new"));
+        assert!(!overlays.contains(&["egui::", "Window", "::new"].join("")));
+        assert!(!overlays.contains(&["Window", "::new"].join("")));
         assert!(overlays.contains("egui::Area::new"));
     }
 

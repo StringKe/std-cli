@@ -77,6 +77,7 @@ mod analysis;
 mod plugins;
 mod trace;
 mod workspace_panes;
+mod workspace_policy_guard;
 
 #[test]
 fn studio_plans_workflow_from_goal() {
