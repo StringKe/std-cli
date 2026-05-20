@@ -63,9 +63,14 @@ fn studio_operations_evidence_reports_current_quality_release_and_install_state(
     ));
     assert_eq!(evidence.runtime.status, OpsStatus::Manual);
     assert!(lines.iter().any(|line| line.contains("qa=PASS")));
+    assert!(lines.iter().any(|line| line.contains("result=")));
     assert!(lines.iter().any(|line| line.contains("std doctor")));
     assert!(lines.iter().any(|line| line.contains("release verify")));
     assert!(lines.iter().any(|line| line.contains("install verify")));
+    assert!(!evidence.qa.result.is_empty());
+    assert!(evidence.doctor.result.contains("doctor implementation"));
+    assert!(!evidence.release.result.is_empty());
+    assert!(!evidence.install.result.is_empty());
 }
 
 mod analysis;

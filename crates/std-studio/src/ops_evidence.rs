@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    time::UNIX_EPOCH,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpsEvidence {
@@ -15,6 +18,7 @@ pub struct OpsGate {
     pub command: String,
     pub status: OpsStatus,
     pub evidence: String,
+    pub result: String,
     pub detail: String,
 }
 
@@ -47,6 +51,7 @@ impl OpsEvidence {
                 status: quality_status(&root),
                 evidence: "mise.toml, .github/workflows/quality.yml, crates/file_too_long"
                     .to_string(),
+                result: quality_result(&root),
                 detail: "rustfmt, clippy, dylint, cargo-deny, cargo-machete".to_string(),
             },
             doctor: OpsGate {
@@ -54,6 +59,7 @@ impl OpsEvidence {
                 command: "std doctor".to_string(),
                 status: doctor_status(&root),
                 evidence: "StdConfig, storage, registry, workspace quality".to_string(),
+                result: doctor_result(&root),
                 detail: "doctor reports quality, release plan, install plan".to_string(),
             },
             release: OpsGate {
@@ -61,6 +67,7 @@ impl OpsEvidence {
                 command: format!("std release verify --dist {}", release_dir.display()),
                 status: release_status(&release_dir),
                 evidence: release_dir.display().to_string(),
+                result: release_result(&release_dir),
                 detail: "manifest, binaries, app bundles, docs, examples, quality".to_string(),
             },
             install: OpsGate {
@@ -68,6 +75,7 @@ impl OpsEvidence {
                 command: format!("std install verify --prefix {}", install_prefix.display()),
                 status: install_status(&install_prefix),
                 evidence: install_prefix.display().to_string(),
+                result: install_result(&install_prefix),
                 detail: "installed binaries, app bundles, storage directories".to_string(),
             },
             runtime: OpsGate {
@@ -75,6 +83,7 @@ impl OpsEvidence {
                 command: "std-launcher --gui-hotkey-smoke Alt+Space 5000".to_string(),
                 status: OpsStatus::Manual,
                 evidence: "explicit opt-in desktop smoke".to_string(),
+                result: "manual desktop opt-in required".to_string(),
                 detail: "default tests must not open GUI or external runners".to_string(),
             },
         }
@@ -91,11 +100,12 @@ impl OpsEvidence {
         .into_iter()
         .map(|gate| {
             format!(
-                "{}={} command={} evidence={}",
+                "{}={} command={} evidence={} result={}",
                 gate.title.to_ascii_lowercase(),
                 gate.status.label(),
                 gate.command,
-                gate.evidence
+                gate.evidence,
+                gate.result,
             )
         })
         .collect()
@@ -118,6 +128,16 @@ fn quality_status(root: &Path) -> OpsStatus {
     }
 }
 
+fn quality_result(root: &Path) -> String {
+    let report = release_evidence_dir(root)
+        .join("quality")
+        .join("quality-report.txt");
+    if report.is_file() {
+        return format!("packaged report {}", file_summary(&report));
+    }
+    "quality report not packaged yet".to_string()
+}
+
 fn doctor_status(root: &Path) -> OpsStatus {
     if root.join("crates/std-cli/src/doctor.rs").is_file()
         && root
@@ -127,6 +147,14 @@ fn doctor_status(root: &Path) -> OpsStatus {
         OpsStatus::Pass
     } else {
         OpsStatus::Missing
+    }
+}
+
+fn doctor_result(root: &Path) -> String {
+    if doctor_status(root) == OpsStatus::Pass {
+        "doctor implementation present".to_string()
+    } else {
+        "doctor implementation missing".to_string()
     }
 }
 
@@ -147,6 +175,14 @@ fn release_status(dist_dir: &Path) -> OpsStatus {
     }
 }
 
+fn release_result(dist_dir: &Path) -> String {
+    let manifest = dist_dir.join("release-manifest.json");
+    if !manifest.is_file() {
+        return "release manifest missing".to_string();
+    }
+    format!("manifest {}", file_summary(&manifest))
+}
+
 fn install_status(prefix: &Path) -> OpsStatus {
     let required = [
         prefix.join("bin").join("std"),
@@ -160,6 +196,31 @@ fn install_status(prefix: &Path) -> OpsStatus {
     } else {
         OpsStatus::Missing
     }
+}
+
+fn install_result(prefix: &Path) -> String {
+    if install_status(prefix) == OpsStatus::Pass {
+        format!("installed artifacts present in {}", prefix.display())
+    } else {
+        format!("install artifacts missing in {}", prefix.display())
+    }
+}
+
+fn file_summary(path: &Path) -> String {
+    std::fs::metadata(path)
+        .and_then(|metadata| {
+            metadata
+                .modified()
+                .map(|modified| (metadata.len(), modified))
+        })
+        .map(|(len, modified)| {
+            let modified_secs = modified
+                .duration_since(UNIX_EPOCH)
+                .map(|duration| duration.as_secs())
+                .unwrap_or_default();
+            format!("{} bytes modified_at_unix={}", len, modified_secs)
+        })
+        .unwrap_or_else(|_| path.display().to_string())
 }
 
 fn release_evidence_dir(root: &Path) -> PathBuf {

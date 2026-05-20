@@ -127,6 +127,10 @@ fn studio_pane_content_snapshots_include_real_state() {
     assert!(operations_content
         .lines
         .iter()
+        .any(|line| line.contains("result=")));
+    assert!(operations_content
+        .lines
+        .iter()
         .any(|line| line.contains("std release verify")));
     assert_eq!(workflow_content.content_key, "workflows");
     assert!(workflow_content
