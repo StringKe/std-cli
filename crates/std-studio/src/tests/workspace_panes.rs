@@ -197,3 +197,13 @@ fn studio_ui_uses_workspace_pane_language_not_window_language() {
     assert!(pane_source.contains("studio.workspace_panes"));
     assert!(tabs_source.contains("studio.workspace_panes.close"));
 }
+
+#[test]
+fn studio_core_uses_workspace_pane_module_not_window_module() {
+    let lib_source = include_str!("../lib.rs");
+
+    assert!(!lib_source.contains("mod window;"));
+    assert!(!lib_source.contains("pub use window::"));
+    assert!(lib_source.contains("mod workspace_pane;"));
+    assert!(lib_source.contains("pub use workspace_pane::"));
+}
