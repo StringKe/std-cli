@@ -121,6 +121,15 @@ mod tests {
     }
 
     #[test]
+    fn test_default_data_dir_is_isolated_from_user_profile() {
+        let cfg = StdConfig::default();
+
+        assert!(cfg.data_dir.starts_with(env::temp_dir()));
+        assert!(cfg.data_dir.ends_with(std::process::id().to_string()));
+        assert!(!cfg.data_dir.ends_with(".std-cli"));
+    }
+
+    #[test]
     fn config_can_get_set_and_save_fields() {
         let temp = tempfile::tempdir().unwrap();
         let path = temp.path().join("std-cli.json");

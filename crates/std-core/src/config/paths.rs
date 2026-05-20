@@ -8,6 +8,18 @@ pub(super) fn home_config_path(relative: &str) -> PathBuf {
 }
 
 pub(super) fn default_data_dir() -> PathBuf {
+    default_data_root()
+}
+
+#[cfg(test)]
+fn default_data_root() -> PathBuf {
+    env::temp_dir()
+        .join("std-cli-test-data")
+        .join(std::process::id().to_string())
+}
+
+#[cfg(not(test))]
+fn default_data_root() -> PathBuf {
     home_dir().join(".std-cli")
 }
 
