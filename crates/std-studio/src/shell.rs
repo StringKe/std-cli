@@ -12,15 +12,24 @@ impl StudioEguiApp {
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
             .show(ctx, |ui| self.render_app_chrome(ui));
         egui::SidePanel::left("studio_nav")
-            .resizable(false)
-            .exact_width(208.0)
+            .resizable(self.layout.sidebar_open)
+            .default_width(self.layout.sidebar_width())
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
             .show(ctx, |ui| self.render_navigation(ui));
-        egui::SidePanel::right("studio_context")
-            .resizable(true)
-            .default_width(300.0)
-            .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
-            .show(ctx, |ui| self.render_context(ui));
+        if self.layout.inspector_open {
+            egui::SidePanel::right("studio_context")
+                .resizable(true)
+                .default_width(self.layout.inspector_width())
+                .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
+                .show(ctx, |ui| self.render_context(ui));
+        }
+        if self.layout.bottom_panel_open {
+            egui::TopBottomPanel::bottom("studio_bottom_panel")
+                .resizable(true)
+                .default_height(self.layout.bottom_panel_height())
+                .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
+                .show(ctx, |ui| self.render_bottom_panel(ui));
+        }
         egui::TopBottomPanel::bottom("studio_status")
             .exact_height(24.0)
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
@@ -32,6 +41,20 @@ impl StudioEguiApp {
 
     fn render_navigation(&mut self, ui: &mut egui::Ui) {
         ui.add_space(8.0);
+        if !self.layout.sidebar_open {
+            for pane in StudioPane::all() {
+                let label = pane.label().chars().next().unwrap_or('?').to_string();
+                let selected = self.app.active_pane == pane;
+                if ui
+                    .selectable_label(selected, label)
+                    .on_hover_text(pane.label())
+                    .clicked()
+                {
+                    self.app.switch_pane(pane);
+                }
+            }
+            return;
+        }
         ui.vertical(|ui| {
             ui::section_header(ui, "Workspace", "main views");
             for pane in StudioPane::all() {
@@ -143,6 +166,18 @@ impl StudioEguiApp {
             ui.separator();
             ui.label(format!("{} panes", self.app.open_workspace_panes().count()));
             ui.separator();
+            ui.label(if self.layout.inspector_open {
+                "inspector"
+            } else {
+                "inspector hidden"
+            });
+            ui.separator();
+            ui.label(if self.layout.bottom_panel_open {
+                "bottom panel"
+            } else {
+                "bottom hidden"
+            });
+            ui.separator();
             ui.label(format!(
                 "{} plugins",
                 self.app.plugin_manager.manifest_paths.len()
@@ -158,6 +193,24 @@ impl StudioEguiApp {
                         .color(ui::muted_text(ui.ctx())),
                 );
             });
+        });
+    }
+
+    fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            ui::section_header(ui, "Batch Debug", "Logs / Problems / Performance");
+            if let Some(report) = self.app.last_batch_report.as_ref() {
+                ui.label(egui::RichText::new(format!("batch {:?}", report.status)));
+            } else if let Some(execution) = self.app.last_workflow_execution.as_ref() {
+                ui.label(egui::RichText::new(format!(
+                    "workflow {:?}",
+                    execution.status
+                )));
+            } else if self.status.is_empty() {
+                ui.label(egui::RichText::new("Idle").color(ui::muted_text(ui.ctx())));
+            } else {
+                ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
+            }
         });
     }
 }

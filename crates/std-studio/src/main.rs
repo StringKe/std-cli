@@ -3,6 +3,7 @@
 mod analysis;
 mod app_view;
 mod host_chrome;
+mod layout;
 mod operations;
 mod preview;
 mod shell;
@@ -13,6 +14,7 @@ mod views;
 mod windows;
 
 use eframe::egui;
+use layout::StudioLayoutState;
 use preview::{run_studio_preview, studio_preview_from_args};
 use smoke::smoke_from_args;
 use std::path::PathBuf;
@@ -49,6 +51,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) batch_json: String,
     pub(crate) status: String,
     pub(crate) host_maximized: bool,
+    pub(crate) layout: StudioLayoutState,
     pub(crate) workspace_commands: WorkspaceCommandQueue,
 }
 
@@ -83,6 +86,7 @@ impl Default for StudioEguiApp {
             batch_json: default_batch_json(),
             status: String::new(),
             host_maximized: false,
+            layout: StudioLayoutState::default(),
             workspace_commands: Arc::new(Mutex::new(Vec::new())),
         }
         .with_loaded_settings()
@@ -106,6 +110,7 @@ impl StudioEguiApp {
 impl eframe::App for StudioEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         ui::install_visuals(ctx, &self.app.core.config.theme);
+        self.layout.handle_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
     }
@@ -239,5 +244,17 @@ mod app_tests {
         assert_eq!(app.app.active_pane, StudioPane::Workflows);
         assert!(app.app.workflow_debug.is_some());
         assert!(app.status.contains("workspace preview"));
+    }
+
+    #[test]
+    fn studio_shell_layout_defaults_to_single_host_workspace() {
+        let app = StudioEguiApp::default();
+
+        assert!(app.layout.sidebar_open);
+        assert!(!app.layout.inspector_open);
+        assert!(!app.layout.bottom_panel_open);
+        assert_eq!(app.layout.sidebar_width(), 240.0);
+        assert_eq!(app.layout.inspector_width(), 320.0);
+        assert_eq!(app.layout.bottom_panel_height(), 240.0);
     }
 }
