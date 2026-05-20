@@ -1,5 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::tokens::Text;
 use std_index::{
     IndexAnswer, IndexCoverage, IndexCoverageReport, IndexDocument, IndexInspection,
     IndexSearchResult,
@@ -137,7 +138,7 @@ fn render_document_overview(ui: &mut egui::Ui, document: &IndexDocument) {
     ui.label(
         egui::RichText::new(&document.overview.name)
             .strong()
-            .size(18.0),
+            .font(Text::headline()),
     );
     ui.horizontal_wrapped(|ui| {
         ui::chip(

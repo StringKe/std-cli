@@ -1,5 +1,6 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::tokens::Text;
 use std_types::MemoryRecord;
 
 impl StudioEguiApp {
@@ -136,7 +137,11 @@ impl StudioEguiApp {
 }
 
 fn render_memory_metadata(ui: &mut egui::Ui, memory: &MemoryRecord) {
-    ui.label(egui::RichText::new(&memory.title).strong().size(18.0));
+    ui.label(
+        egui::RichText::new(&memory.title)
+            .strong()
+            .font(Text::headline()),
+    );
     ui.horizontal_wrapped(|ui| {
         ui::chip(ui, &memory.scope, ui::selected_bg(ui.ctx()));
         for tag in &memory.tags {
