@@ -63,8 +63,8 @@ impl StudioEguiApp {
                 if ui::quiet_button(ui, i18n::t("studio.apps.register")).clicked() {
                     self.register_app_bundle();
                 }
-                if ui::quiet_button(ui, i18n::t("studio.apps.use_wechat")).clicked() {
-                    self.app_bundle_path = "/Applications/WeChat.app".to_string();
+                if ui::quiet_button(ui, i18n::t("studio.apps.use_fixture_app")).clicked() {
+                    self.app_bundle_path = "/tmp/StdFixture.app".to_string();
                 }
             });
             app_rows::storage_row(ui, &self.app.core.config.apps_dir());

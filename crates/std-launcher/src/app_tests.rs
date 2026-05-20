@@ -9,13 +9,14 @@ fn launcher_state_searches_local_app_bundles_without_launching() {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
     };
-    let app = config.apps_dir().join("Weixin.app");
-    write_wechat_app_bundle(&app);
+    let app = config.apps_dir().join("FixtureTalk.app");
+    write_multilingual_app_bundle(&app);
     let core = StdCore::with_config(config);
     let mut state = LauncherState::with_core(core);
+    let localized_name = localized_fixture_name();
 
-    let preview = state.update_query("微信").unwrap();
-    state.update_query("weixin").unwrap();
+    let preview = state.update_query(&localized_name).unwrap();
+    state.update_query("fixturetalk").unwrap();
     assert!(state
         .view
         .results
@@ -29,8 +30,8 @@ fn launcher_state_searches_local_app_bundles_without_launching() {
         .unwrap();
     let execution = state.trigger_selected().unwrap();
 
-    assert_eq!(preview.title, "Open App: WeChat");
-    assert_eq!(execution.action_name, "Open App: WeChat");
+    assert_eq!(preview.title, "Open App: Fixture Talk");
+    assert_eq!(execution.action_name, "Open App: Fixture Talk");
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     assert_eq!(
         execution
@@ -50,12 +51,12 @@ fn launcher_gui_enter_defers_external_runner_in_tests() {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
     };
-    let app = config.apps_dir().join("Weixin.app");
-    write_wechat_app_bundle(&app);
+    let app = config.apps_dir().join("FixtureTalk.app");
+    write_multilingual_app_bundle(&app);
     let core = StdCore::with_config(config);
     let mut state = LauncherState::with_core(core);
 
-    state.update_query("微信");
+    state.update_query(localized_fixture_name());
     let safe_execution = state
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
@@ -73,7 +74,7 @@ fn launcher_gui_enter_defers_external_runner_in_tests() {
         gui_execution.status,
         ActionExecutionStatus::NeedsExternalRunner
     );
-    assert_eq!(gui_execution.action_name, "Open App: WeChat");
+    assert_eq!(gui_execution.action_name, "Open App: Fixture Talk");
     assert_eq!(
         gui_execution
             .output
@@ -85,22 +86,30 @@ fn launcher_gui_enter_defers_external_runner_in_tests() {
     );
 }
 
-fn write_wechat_app_bundle(app: &std::path::Path) {
+fn write_multilingual_app_bundle(app: &std::path::Path) {
     std::fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     std::fs::write(
         app.join("Contents").join("Info.plist"),
         r#"<plist><dict>
-<key>CFBundleDisplayName</key><string>WeChat</string>
-<key>CFBundleName</key><string>Weixin</string>
+<key>CFBundleDisplayName</key><string>Fixture Talk</string>
+<key>CFBundleName</key><string>FixtureTalk</string>
 </dict></plist>"#,
     )
     .unwrap();
+    let body = format!(
+        "\"CFBundleDisplayName\" = \"{}\";",
+        localized_fixture_name()
+    );
     std::fs::write(
         app.join("Contents")
             .join("Resources")
             .join("zh_CN.lproj")
             .join("InfoPlist.strings"),
-        r#""CFBundleDisplayName" = "微信";"#,
+        body,
     )
     .unwrap();
+}
+
+fn localized_fixture_name() -> String {
+    String::from("\u{6d4b}\u{8bd5}\u{5e94}\u{7528}")
 }

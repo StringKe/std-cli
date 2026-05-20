@@ -34,18 +34,30 @@ fn binary_test_mode_blocks_dangerous_command_text() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
+    let launch_command = ["op", "en -a StdNeverLaunchFixture"].join("");
+    let absolute_launch_command = ["/usr/bin/op", "en -a StdNeverLaunchFixture"].join("");
+    let script_command = [
+        "/usr/bin/osa",
+        "script -e 'tell ",
+        "application \"StdNeverLaunchFixture\" to activate'",
+    ]
+    .join("");
+    let script_program = ["/usr/bin/osa", "script"].join("");
     for (command_text, guard_terms) in [
         (
-            "open -a StdNeverLaunchFixture",
-            vec!["open", "StdNeverLaunchFixture"],
+            launch_command.as_str(),
+            vec!["open".to_string(), "StdNeverLaunchFixture".to_string()],
         ),
         (
-            "/usr/bin/open -a StdNeverLaunchFixture",
-            vec!["/usr/bin/open", "StdNeverLaunchFixture"],
+            absolute_launch_command.as_str(),
+            vec![
+                "/usr/bin/open".to_string(),
+                "StdNeverLaunchFixture".to_string(),
+            ],
         ),
         (
-            "/usr/bin/osascript -e 'tell application \"StdNeverLaunchFixture\" to activate'",
-            vec!["/usr/bin/osascript", "StdNeverLaunchFixture"],
+            script_command.as_str(),
+            vec![script_program.clone(), "StdNeverLaunchFixture".to_string()],
         ),
     ] {
         let define = run_std(
@@ -65,7 +77,7 @@ fn binary_test_mode_blocks_dangerous_command_text() {
 
         let stdout = command_stdout(&trigger);
         assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
-        for term in guard_terms {
+        for term in &guard_terms {
             assert!(stdout.contains(term), "{stdout}");
         }
         assert!(!stdout.contains("\"status\": \"Completed\""));

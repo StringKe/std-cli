@@ -25,7 +25,15 @@ fn test_sources_do_not_reference_real_app_launch_targets() {
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
+        ["We", "Chat"].join(""),
+        ["Wei", "xin"].join(""),
+        String::from("\u{5fae}\u{4fe1}"),
         ["open -a ", "Terminal"].join(""),
+        ["open", " -a "].join(""),
+        ["/usr/bin/", "open", " -a "].join(""),
+        ["osa", "script"].join(""),
+        ["System", " Events"].join(""),
+        ["tell ", "application"].join(""),
         ["/Applications/", "1", "Password.app"].join(""),
         ["tell application \"", "1", "Password\""].join(""),
     ]
@@ -41,7 +49,10 @@ fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<St
             scan_rs_files(&path, forbidden_terms, violations);
             continue;
         }
-        if path.extension().and_then(|ext| ext.to_str()) != Some("rs") || !is_test_path(&path) {
+        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
+            || !is_test_path(&path)
+            || is_guard_file(&path)
+        {
             continue;
         }
         let body = fs::read_to_string(&path).unwrap();
@@ -60,4 +71,11 @@ fn is_test_path(path: &Path) -> bool {
             .and_then(|name| name.to_str())
             .map(|name| name.ends_with("_tests.rs") || name == "tests.rs")
             .unwrap_or(false)
+}
+
+fn is_guard_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| name == "desktop_guard.rs")
+        .unwrap_or(false)
 }

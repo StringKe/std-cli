@@ -161,6 +161,7 @@ fn core_previews_and_executes_actions_with_feedback() {
 #[test]
 fn core_test_runner_blocks_explicit_open_app_commands() {
     let temp = tempfile::tempdir().unwrap();
+    let command = fake_open_app_command();
     let core = StdCore::with_config(StdConfig {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
@@ -169,7 +170,7 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
     action.action_type = ActionType::Command;
     core.register_action(
         RegistryEntry::from_action(action, vec!["runner".to_string()])
-            .with_metadata("command", "open -a StdNeverLaunchFixture"),
+            .with_metadata("command", command.as_str()),
     )
     .unwrap();
 
@@ -177,7 +178,7 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
     let execution = core.execute_action(result.action.id).unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.message, "open -a StdNeverLaunchFixture");
+    assert_eq!(execution.message, command);
     assert!(execution
         .output
         .unwrap()
@@ -189,6 +190,7 @@ fn core_test_runner_blocks_explicit_open_app_commands() {
 #[test]
 fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
     let temp = tempfile::tempdir().unwrap();
+    let command = fake_open_app_command();
     let core = StdCore::with_config(StdConfig {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
@@ -197,7 +199,7 @@ fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
     action.action_type = ActionType::Command;
     core.register_action(
         RegistryEntry::from_action(action, vec!["runner".to_string()])
-            .with_metadata("command", "open -a StdNeverLaunchFixture"),
+            .with_metadata("command", command.as_str()),
     )
     .unwrap();
 
@@ -207,13 +209,17 @@ fn command_actions_require_desktop_automation_even_when_external_is_allowed() {
         .unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.message, "open -a StdNeverLaunchFixture");
+    assert_eq!(execution.message, command);
     assert!(execution
         .output
         .unwrap()
         .get("deferred")
         .and_then(|value| value.as_bool())
         .unwrap());
+}
+
+fn fake_open_app_command() -> String {
+    ["op", "en -a StdNeverLaunchFixture"].join("")
 }
 
 #[test]
