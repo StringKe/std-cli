@@ -22,6 +22,7 @@ pub fn translate(locale: Locale, key: &str) -> &'static str {
         .or_else(|| translate_settings(locale, key))
         .or_else(|| translate_dashboard(locale, key))
         .or_else(|| translate_operations(locale, key))
+        .or_else(|| translate_workflows(locale, key))
         .unwrap_or_else(|| key_fallback(key))
 }
 
@@ -171,6 +172,54 @@ fn translate_operations(locale: Locale, key: &str) -> Option<&'static str> {
     }
 }
 
+fn translate_workflows(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
+        (Locale::ZhCn, "studio.workflows.title") => Some("Workflow Workbench"),
+        (Locale::EnUs, "studio.workflows.title") => Some("Workflow Workbench"),
+        (Locale::ZhCn, "studio.workflows.detail") => Some("创建、编辑、模拟、运行、追踪"),
+        (Locale::EnUs, "studio.workflows.detail") => Some("create, edit, simulate, run, trace"),
+        (Locale::ZhCn, "studio.workflows.create.title") => Some("创建"),
+        (Locale::EnUs, "studio.workflows.create.title") => Some("Create"),
+        (Locale::ZhCn, "studio.workflows.create.detail") => Some("markdown workflow"),
+        (Locale::EnUs, "studio.workflows.create.detail") => Some("markdown workflow"),
+        (Locale::ZhCn, "studio.workflows.name") => Some("名称"),
+        (Locale::EnUs, "studio.workflows.name") => Some("Name"),
+        (Locale::ZhCn, "studio.workflows.description") => Some("描述"),
+        (Locale::EnUs, "studio.workflows.description") => Some("Description"),
+        (Locale::ZhCn, "studio.workflows.create") => Some("创建"),
+        (Locale::EnUs, "studio.workflows.create") => Some("Create"),
+        (Locale::ZhCn, "studio.workflows.refresh") => Some("刷新"),
+        (Locale::EnUs, "studio.workflows.refresh") => Some("Refresh"),
+        (Locale::ZhCn, "studio.workflows.saved.title") => Some("已保存"),
+        (Locale::EnUs, "studio.workflows.saved.title") => Some("Saved"),
+        (Locale::ZhCn, "studio.workflows.saved.detail") => Some("本地定义"),
+        (Locale::EnUs, "studio.workflows.saved.detail") => Some("local definitions"),
+        (Locale::ZhCn, "studio.workflows.saved.empty") => Some("没有已保存 Workflow"),
+        (Locale::EnUs, "studio.workflows.saved.empty") => Some("No saved workflows"),
+        (Locale::ZhCn, "studio.workflows.open") => Some("打开"),
+        (Locale::EnUs, "studio.workflows.open") => Some("Open"),
+        (Locale::ZhCn, "studio.workflows.dry_run.title") => Some("Dry Run"),
+        (Locale::EnUs, "studio.workflows.dry_run.title") => Some("Dry Run"),
+        (Locale::ZhCn, "studio.workflows.dry_run.detail") => Some("schema、defer、errors"),
+        (Locale::EnUs, "studio.workflows.dry_run.detail") => Some("schema, defer, errors"),
+        (Locale::ZhCn, "studio.workflows.execution.title") => Some("执行"),
+        (Locale::EnUs, "studio.workflows.execution.title") => Some("Execution"),
+        (Locale::ZhCn, "studio.workflows.execution.detail") => Some("最近捕获的运行"),
+        (Locale::EnUs, "studio.workflows.execution.detail") => Some("last captured run"),
+        (Locale::ZhCn, "studio.workflows.batch.title") => Some("Batch"),
+        (Locale::EnUs, "studio.workflows.batch.title") => Some("Batch"),
+        (Locale::ZhCn, "studio.workflows.batch.detail") => Some("外部动作默认 defer"),
+        (Locale::EnUs, "studio.workflows.batch.detail") => Some("external defaults defer"),
+        (Locale::ZhCn, "studio.workflows.no_dry_run") => Some("没有 dry-run report"),
+        (Locale::EnUs, "studio.workflows.no_dry_run") => Some("No dry-run report"),
+        (Locale::ZhCn, "studio.workflows.no_execution") => Some("没有捕获执行记录"),
+        (Locale::EnUs, "studio.workflows.no_execution") => Some("No execution captured"),
+        (Locale::ZhCn, "studio.workflows.run_batch") => Some("运行 Batch"),
+        (Locale::EnUs, "studio.workflows.run_batch") => Some("Run Batch"),
+        _ => None,
+    }
+}
+
 fn key_fallback(key: &str) -> &'static str {
     match key {
         "launcher.search.placeholder" => "Search Workflows, apps, clipboard...",
@@ -229,6 +278,27 @@ fn key_fallback(key: &str) -> &'static str {
         "studio.operations.completion.note" => {
             "Each area requires current runtime evidence before completion."
         }
+        "studio.workflows.title" => "Workflow Workbench",
+        "studio.workflows.detail" => "create, edit, simulate, run, trace",
+        "studio.workflows.create.title" => "Create",
+        "studio.workflows.create.detail" => "markdown workflow",
+        "studio.workflows.name" => "Name",
+        "studio.workflows.description" => "Description",
+        "studio.workflows.create" => "Create",
+        "studio.workflows.refresh" => "Refresh",
+        "studio.workflows.saved.title" => "Saved",
+        "studio.workflows.saved.detail" => "local definitions",
+        "studio.workflows.saved.empty" => "No saved workflows",
+        "studio.workflows.open" => "Open",
+        "studio.workflows.dry_run.title" => "Dry Run",
+        "studio.workflows.dry_run.detail" => "schema, defer, errors",
+        "studio.workflows.execution.title" => "Execution",
+        "studio.workflows.execution.detail" => "last captured run",
+        "studio.workflows.batch.title" => "Batch",
+        "studio.workflows.batch.detail" => "external defaults defer",
+        "studio.workflows.no_dry_run" => "No dry-run report",
+        "studio.workflows.no_execution" => "No execution captured",
+        "studio.workflows.run_batch" => "Run Batch",
         _ => "UNKNOWN_I18N_KEY",
     }
 }
@@ -285,6 +355,18 @@ mod tests {
         assert_eq!(
             translate(Locale::ZhCn, "studio.operations.completion.note"),
             "每个区域都需要当前运行时证据才能完成"
+        );
+    }
+
+    #[test]
+    fn studio_workflows_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.workflows.run_batch"),
+            "Run Batch"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.workflows.run_batch"),
+            "运行 Batch"
         );
     }
 }

@@ -1,14 +1,14 @@
 use crate::{ui, views::schema_label, StudioEguiApp};
 use eframe::egui;
 use std::path::{Path, PathBuf};
-use std_egui::tokens::Space;
+use std_egui::{i18n, tokens::Space};
 
 impl StudioEguiApp {
     pub(crate) fn render_workflows(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
-            "Workflow Workbench",
-            "create, edit, simulate, run, trace",
+            i18n::t("studio.workflows.title"),
+            i18n::t("studio.workflows.detail"),
         );
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_workflow_library(ui));
@@ -19,16 +19,20 @@ impl StudioEguiApp {
 
     fn render_workflow_library(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Create", "markdown workflow");
-            ui.label("Name");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflows.create.title"),
+                i18n::t("studio.workflows.create.detail"),
+            );
+            ui.label(i18n::t("studio.workflows.name"));
             ui.text_edit_singleline(&mut self.workflow_name);
-            ui.label("Description");
+            ui.label(i18n::t("studio.workflows.description"));
             ui.text_edit_multiline(&mut self.workflow_description);
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, "Create").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflows.create")).clicked() {
                     self.create_workflow_from_form();
                 }
-                if ui::quiet_button(ui, "Refresh").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflows.refresh")).clicked() {
                     self.app.refresh();
                     self.status = "workflow library refreshed".to_string();
                 }
@@ -37,9 +41,15 @@ impl StudioEguiApp {
 
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Saved", "local definitions");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflows.saved.title"),
+                i18n::t("studio.workflows.saved.detail"),
+            );
             match self.app.saved_workflows() {
-                Ok(workflows) if workflows.is_empty() => ui::empty_state(ui, "No saved workflows"),
+                Ok(workflows) if workflows.is_empty() => {
+                    ui::empty_state(ui, i18n::t("studio.workflows.saved.empty"))
+                }
                 Ok(workflows) => self.render_saved_workflow_rows(ui, workflows),
                 Err(error) => {
                     ui.colored_label(ui::warn_bg(ui.ctx()), error.to_string());
@@ -60,7 +70,7 @@ impl StudioEguiApp {
                             self.workflow_selected_path = Some(path.clone());
                             self.preview_workflow_path(&path);
                         }
-                        if ui.small_button("Open").clicked() {
+                        if ui.small_button(i18n::t("studio.workflows.open")).clicked() {
                             self.app.open_workflow_builder(path.clone());
                             self.workflow_selected_path = Some(path.clone());
                         }
@@ -73,24 +83,36 @@ impl StudioEguiApp {
 
     fn render_workflow_runtime(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Dry Run", "schema, defer, errors");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflows.dry_run.title"),
+                i18n::t("studio.workflows.dry_run.detail"),
+            );
             self.render_workflow_debug(ui);
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Execution", "last captured run");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflows.execution.title"),
+                i18n::t("studio.workflows.execution.detail"),
+            );
             self.render_execution_trace(ui);
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Batch", "external defaults defer");
+            ui::section_header(
+                ui,
+                i18n::t("studio.workflows.batch.title"),
+                i18n::t("studio.workflows.batch.detail"),
+            );
             self.render_batch_debug(ui);
         });
     }
 
     fn render_workflow_debug(&self, ui: &mut egui::Ui) {
         let Some(debug) = &self.app.workflow_debug else {
-            ui::empty_state(ui, "No dry-run report");
+            ui::empty_state(ui, i18n::t("studio.workflows.no_dry_run"));
             return;
         };
         ui.horizontal(|ui| {
@@ -127,7 +149,7 @@ impl StudioEguiApp {
 
     fn render_execution_trace(&self, ui: &mut egui::Ui) {
         let Some(execution) = &self.app.last_workflow_execution else {
-            ui::empty_state(ui, "No execution captured");
+            ui::empty_state(ui, i18n::t("studio.workflows.no_execution"));
             return;
         };
         ui.horizontal(|ui| {
@@ -156,7 +178,7 @@ impl StudioEguiApp {
             [ui.available_width(), 110.0],
             egui::TextEdit::multiline(&mut self.batch_json),
         );
-        if ui::quiet_button(ui, "Run Batch").clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.workflows.run_batch")).clicked() {
             let body = self.batch_json.clone();
             match self.app.run_batch_json(&body) {
                 Ok(report) => {
