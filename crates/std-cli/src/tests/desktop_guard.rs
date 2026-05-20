@@ -44,6 +44,24 @@ fn test_sources_do_not_inherit_desktop_automation_opt_ins() {
     );
 }
 
+#[test]
+fn test_binary_spawns_are_forced_into_test_mode() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut violations = Vec::new();
+
+    scan_rs_files_for_binary_spawns(&root.join("crates"), &mut violations);
+
+    assert!(
+        violations.is_empty(),
+        "test binary spawns must set STD_TEST_MODE=1 and remove desktop opt-ins: {}",
+        violations.join(", ")
+    );
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
@@ -90,6 +108,38 @@ fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<St
         for term in forbidden_terms {
             if body.contains(term) {
                 violations.push(format!("{} contains {}", path.display(), term));
+            }
+        }
+    }
+}
+
+fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if path.is_dir() {
+            scan_rs_files_for_binary_spawns(&path, violations);
+            continue;
+        }
+        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
+            || !is_test_path(&path)
+            || is_guard_file(&path)
+        {
+            continue;
+        }
+        let body = fs::read_to_string(&path).unwrap();
+        if !body.contains("CARGO_BIN_EXE_") {
+            continue;
+        }
+        for required in [
+            ".env(\"STD_TEST_MODE\", \"1\")",
+            ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")",
+            ".env_remove(\"STD_ALLOW_UI_PREVIEW\")",
+        ] {
+            if !body.contains(required) {
+                violations.push(format!("{} missing {}", path.display(), required));
             }
         }
     }

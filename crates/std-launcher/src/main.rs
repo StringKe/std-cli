@@ -43,7 +43,16 @@ fn main() -> eframe::Result<()> {
     if cli::run_smoke_from_args(args)? {
         return Ok(());
     }
+    if let Some(reason) = native_app_blocked_by_test_mode() {
+        println!("{reason}");
+        return Ok(());
+    }
     run_launcher_app()
+}
+
+fn native_app_blocked_by_test_mode() -> Option<&'static str> {
+    std_core::std_test_mode_enabled()
+        .then_some("launcher_native_app SKIP reason=STD_TEST_MODE blocked native app startup")
 }
 
 fn run_launcher_app() -> eframe::Result<()> {
@@ -94,5 +103,13 @@ mod tests {
         assert!(empty_size.y > 64.0);
         assert_eq!(expanded_size.x, empty_size.x);
         assert!(expanded_size.y > 64.0);
+    }
+
+    #[test]
+    fn test_mode_blocks_native_launcher_startup() {
+        assert_eq!(
+            native_app_blocked_by_test_mode(),
+            Some("launcher_native_app SKIP reason=STD_TEST_MODE blocked native app startup")
+        );
     }
 }
