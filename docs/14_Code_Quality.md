@@ -43,15 +43,22 @@ Release 包还必须附带 v1.0 表面 smoke 证据：
 ```bash
 std doctor
 std-launcher --smoke "rebuild index"
-std-launcher --hotkey-smoke Alt+Space
 std-launcher --window-smoke
+std-launcher --theme-smoke
+std-launcher --surface-smoke
+std-launcher --ui-semantics-smoke index
+std-launcher --keyboard-smoke index
+std-launcher --preview-smoke
 std-studio --smoke
+std-studio --workspace-policy-smoke
+std-studio --theme-smoke
+std-studio --preview-smoke
 std workflow trace --limit 5
 std index coverage
 std plugin check examples/plugins/hello-js
 ```
 
-真实桌面热键验证使用显式 opt-in 命令，不进入默认 `mise run quality`：
+真实桌面热键验证属于人工桌面验收，必须单独显式 opt-in，不能进入默认 `mise run quality` 或 release smoke gate：
 
 ```bash
 STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 5000

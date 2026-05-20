@@ -33,6 +33,7 @@ pub(crate) struct UiDoctor {
     pub(crate) docs_count: usize,
     pub(crate) launcher_gates: Vec<&'static str>,
     pub(crate) studio_gates: Vec<&'static str>,
+    pub(crate) manual_desktop_acceptance: &'static str,
     pub(crate) desktop_automation_default: &'static str,
     pub(crate) completion: &'static str,
 }
@@ -48,6 +49,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
         docs_count: UI_DOCS.len(),
         launcher_gates: LAUNCHER_GATES.to_vec(),
         studio_gates: STUDIO_GATES.to_vec(),
+        manual_desktop_acceptance: "explicit_opt_in_only",
         desktop_automation_default: "blocked",
         completion: "INCOMPLETE_REAL_GUI_REQUIRED",
     })
@@ -73,9 +75,14 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "std-studio --workspace-policy-smoke",
         "std-studio --theme-smoke",
         "std-studio --preview-smoke",
-        "explicit-opt-in",
+        "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
     ] {
         check_text(&body, required)?;
+    }
+    if body.contains("smoke=STD_ALLOW_DESKTOP_AUTOMATION=1") {
+        return Err(CliError::Config(
+            "desktop automation must not be a default smoke gate".to_string(),
+        ));
     }
     Ok(())
 }
@@ -127,6 +134,7 @@ mod tests {
 
         assert_eq!(report.docs, "PASS");
         assert_eq!(report.docs_count, UI_DOCS.len());
+        assert_eq!(report.manual_desktop_acceptance, "explicit_opt_in_only");
         assert_eq!(report.desktop_automation_default, "blocked");
         assert_eq!(report.completion, "INCOMPLETE_REAL_GUI_REQUIRED");
         assert!(report.launcher_gates.contains(&"preview-smoke"));

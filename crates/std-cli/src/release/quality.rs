@@ -26,7 +26,7 @@ const QUALITY_COMMANDS: [&str; 8] = [
     "cargo machete",
 ];
 
-const SMOKE_COMMANDS: [&str; 16] = [
+const SMOKE_COMMANDS: [&str; 15] = [
     "std doctor",
     "std-launcher --smoke \"rebuild index\"",
     "std-launcher --window-smoke",
@@ -42,8 +42,10 @@ const SMOKE_COMMANDS: [&str; 16] = [
     "std workflow trace --limit 5",
     "std index coverage",
     "std plugin check examples/plugins/hello-js",
-    "STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
 ];
+
+const MANUAL_DESKTOP_ACCEPTANCE: [&str; 1] =
+    ["STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space"];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
     fs::create_dir_all(quality_dir)?;
@@ -116,6 +118,9 @@ fn quality_report() -> String {
     for command in SMOKE_COMMANDS {
         lines.push(format!("smoke={command}"));
     }
+    for command in MANUAL_DESKTOP_ACCEPTANCE {
+        lines.push(format!("manual_desktop_acceptance={command}"));
+    }
     lines.join("\n")
 }
 
@@ -149,7 +154,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "std workflow trace --limit 5",
         "std index coverage",
         "std plugin check examples/plugins/hello-js",
-        "STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space # explicit-opt-in",
+        "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(

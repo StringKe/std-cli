@@ -134,6 +134,7 @@ fn assert_doctor_ui_output(output: &str) {
         output.contains("studio_ui_gates=smoke,workspace-policy-smoke,theme-smoke,preview-smoke")
     );
     assert!(output.contains("desktop_automation_default=blocked"));
+    assert!(output.contains("manual_desktop_acceptance=explicit_opt_in_only"));
     assert!(output.contains("ui_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
 
@@ -169,6 +170,10 @@ fn doctor_command_can_print_machine_readable_json() {
     assert_eq!(report["studio"].as_str(), Some("PASS"));
     assert_eq!(report["ui_docs"].as_str(), Some("PASS"));
     assert_eq!(report["ui_docs_count"].as_u64(), Some(7));
+    assert_eq!(
+        report["manual_desktop_acceptance"].as_str(),
+        Some("explicit_opt_in_only")
+    );
     assert_eq!(
         report["desktop_automation_default"].as_str(),
         Some("blocked")

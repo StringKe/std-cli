@@ -93,6 +93,7 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
         ui_docs_count: ui.docs_count,
         launcher_ui_gates: ui.launcher_gates,
         studio_ui_gates: ui.studio_gates,
+        manual_desktop_acceptance: ui.manual_desktop_acceptance,
         desktop_automation_default: ui.desktop_automation_default,
         ui_completion: ui.completion,
         release_plan: "PASS",
