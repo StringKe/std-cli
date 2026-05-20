@@ -5,10 +5,10 @@ pub(crate) const DARK_SURFACE_1: Color32 = Color32::from_rgb(36, 39, 44);
 pub(crate) const DARK_SURFACE_2: Color32 = Color32::from_rgb(45, 49, 56);
 pub(crate) const DARK_SURFACE_3: Color32 = Color32::from_rgb(55, 60, 68);
 
-pub(crate) const LIGHT_SURFACE_0: Color32 = Color32::from_rgb(255, 255, 255);
-pub(crate) const LIGHT_SURFACE_1: Color32 = Color32::from_rgb(247, 248, 250);
-pub(crate) const LIGHT_SURFACE_2: Color32 = Color32::from_rgb(238, 240, 243);
-pub(crate) const LIGHT_SURFACE_3: Color32 = Color32::from_rgb(227, 230, 234);
+pub(crate) const LIGHT_SURFACE_0: Color32 = Color32::from_rgb(250, 251, 253);
+pub(crate) const LIGHT_SURFACE_1: Color32 = Color32::from_rgb(242, 245, 248);
+pub(crate) const LIGHT_SURFACE_2: Color32 = Color32::from_rgb(232, 236, 241);
+pub(crate) const LIGHT_SURFACE_3: Color32 = Color32::from_rgb(219, 225, 232);
 
 pub(crate) const DARK_FG_PRIMARY: Color32 = Color32::from_rgb(236, 238, 241);
 pub(crate) const LIGHT_FG_PRIMARY: Color32 = Color32::from_rgb(26, 28, 32);

@@ -84,6 +84,7 @@ impl ThemeSmokeReport {
             && self.dark_accent_weak_alpha == 82
             && self.light_accent_weak_alpha == 56
             && self.dark_surface_0.r() >= 24
+            && self.light_surface_0 != egui::Color32::WHITE
             && self.high_contrast_focus_ring_width == 3
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
@@ -265,11 +266,19 @@ mod tests {
             .contains("launcher_theme_smoke PASS"));
         assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
         assert_eq!(color_hex(report.dark_surface_0), "#1C1E22");
-        assert_eq!(color_hex(report.light_surface_0), "#FFFFFF");
+        assert_eq!(color_hex(report.light_surface_0), "#FAFBFD");
         assert_eq!(report.high_contrast_focus_ring_width, 3);
         assert_eq!(report.dark_accent_weak_alpha, 82);
         assert_eq!(report.light_accent_weak_alpha, 56);
         assert_eq!(report.standard_launcher_enter_ms, 320);
         assert_eq!(report.reduced_launcher_enter_ms, 0);
+    }
+
+    #[test]
+    fn light_theme_surface_is_tinted_not_pure_white() {
+        let report = ThemeSmokeReport::new();
+
+        assert_ne!(report.light_surface_0, egui::Color32::WHITE);
+        assert_eq!(color_hex(report.light_surface_0), "#FAFBFD");
     }
 }

@@ -47,7 +47,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn pass(&self) -> bool {
         self.dark_panel_fill == "#1C1E22"
-            && self.light_panel_fill == "#FFFFFF"
+            && self.light_panel_fill == "#FAFBFD"
             && self.panel_opaque
             && self.panel_radius == 16
             && self.native_viewport_margin == 0

@@ -79,10 +79,10 @@
 
 | Token | dark | light | 用途 |
 | --- | --- | --- | --- |
-| `bg/surface-0` | #0E0F11 | #FFFFFF | Launcher 浮层底、Studio 窗口底 |
-| `bg/surface-1` | #16181B | #F7F8FA | 默认面板背景 |
-| `bg/surface-2` | #1E2126 | #EEF0F3 | 嵌套面板、Hover 行 |
-| `bg/surface-3` | #262A30 | #E3E6EA | Selected 行、Inspector 区分 |
+| `bg/surface-0` | #0E0F11 | #FAFBFD | Launcher 浮层底、Studio 窗口底 |
+| `bg/surface-1` | #16181B | #F2F5F8 | 默认面板背景 |
+| `bg/surface-2` | #1E2126 | #E8ECF1 | 嵌套面板、Hover 行 |
+| `bg/surface-3` | #262A30 | #DBE1E8 | Selected 行、Inspector 区分 |
 | `bg/overlay` | rgba(0,0,0,0.36) | rgba(0,0,0,0.18) | Modal 遮罩 |
 | `fg/primary` | #ECEEF1 | #1A1C20 | 主文字 |
 | `fg/secondary` | #B5BAC1 | #4B5057 | 次要文字 |
