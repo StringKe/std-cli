@@ -121,4 +121,28 @@ mod tests {
             "外部启动默认返回 NeedsExternalRunner"
         );
     }
+
+    #[test]
+    fn studio_history_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.history.events.empty"),
+            "No audit events"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.history.events.empty"),
+            "没有 audit event"
+        );
+    }
+
+    #[test]
+    fn studio_memory_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::EnUs, "studio.memory.detail.empty"),
+            "Select a memory"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.memory.detail.empty"),
+            "选择一条 memory"
+        );
+    }
 }

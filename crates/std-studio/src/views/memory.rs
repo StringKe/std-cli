@@ -1,14 +1,17 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::tokens::{Space, Text};
+use std_egui::{
+    i18n,
+    tokens::{Space, Text},
+};
 use std_types::MemoryRecord;
 
 impl StudioEguiApp {
     pub(crate) fn render_memory(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
-            "Memory Browser",
-            "search, inspect, write through std-core storage",
+            i18n::t("studio.memory.title"),
+            i18n::t("studio.memory.detail"),
         );
         self.render_memory_toolbar(ui);
         ui.add_space(Space::SM as f32);
@@ -25,9 +28,9 @@ impl StudioEguiApp {
                 ui.add_sized(
                     [ui.available_width() - 110.0, 28.0],
                     egui::TextEdit::singleline(&mut self.memory_query)
-                        .hint_text("title, body, tag, scope"),
+                        .hint_text(i18n::t("studio.memory.search.hint")),
                 );
-                if ui::quiet_button(ui, "Search").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.memory.search")).clicked() {
                     let query = self.memory_query.clone();
                     let results = self.app.search_memory(&query);
                     self.status = format!("{} memories", results.len());
@@ -38,9 +41,13 @@ impl StudioEguiApp {
 
     fn render_memory_records(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Records", "local recall results");
+            ui::section_header(
+                ui,
+                i18n::t("studio.memory.records.title"),
+                i18n::t("studio.memory.records.detail"),
+            );
             if self.app.memory_browser.memories.is_empty() {
-                ui::empty_state(ui, "No memory records");
+                ui::empty_state(ui, i18n::t("studio.memory.records.empty"));
                 return;
             }
             let mut clicked_memory = None;
@@ -71,9 +78,13 @@ impl StudioEguiApp {
 
     fn render_memory_detail(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Detail", "selected memory");
+            ui::section_header(
+                ui,
+                i18n::t("studio.memory.detail.title"),
+                i18n::t("studio.memory.detail.detail"),
+            );
             let Some(memory) = self.app.memory_browser.selected_memory() else {
-                ui::empty_state(ui, "Select a memory");
+                ui::empty_state(ui, i18n::t("studio.memory.detail.empty"));
                 return;
             };
             render_memory_metadata(ui, memory);
@@ -88,23 +99,27 @@ impl StudioEguiApp {
 
     fn render_memory_writer(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Write", "persist new context");
-            ui.label("Scope");
+            ui::section_header(
+                ui,
+                i18n::t("studio.memory.write.title"),
+                i18n::t("studio.memory.write.detail"),
+            );
+            ui.label(i18n::t("studio.memory.scope"));
             ui.text_edit_singleline(&mut self.memory_scope);
-            ui.label("Title");
+            ui.label(i18n::t("studio.memory.item_title"));
             ui.text_edit_singleline(&mut self.memory_title);
-            ui.label("Body");
+            ui.label(i18n::t("studio.memory.body"));
             ui.add_sized(
                 [ui.available_width(), 220.0],
                 egui::TextEdit::multiline(&mut self.memory_body),
             );
-            ui.label("Tags");
+            ui.label(i18n::t("studio.memory.tags"));
             ui.text_edit_singleline(&mut self.memory_tags);
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, "Remember").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.memory.remember")).clicked() {
                     self.write_memory_from_form();
                 }
-                if ui::quiet_button(ui, "Clear").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.memory.clear")).clicked() {
                     self.memory_title.clear();
                     self.memory_body.clear();
                     self.memory_tags.clear();
