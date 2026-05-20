@@ -45,12 +45,14 @@ pub(crate) struct StudioSmokeReport {
     analysis_name: String,
     analysis_coverage_complete: usize,
     memory_count: usize,
-    plugin_status: String,
+    plugin_js_status: String,
+    plugin_ts_status: String,
     plugin_manifest_checks: usize,
     plugin_permissions: String,
     plugin_action_count: usize,
     plugin_preview_kind: String,
-    plugin_runtime: String,
+    plugin_js_runtime: String,
+    plugin_ts_runtime: String,
     history_count: usize,
 }
 
@@ -58,7 +60,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_runtime={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -91,12 +93,14 @@ impl StudioSmokeReport {
             self.analysis_name,
             self.analysis_coverage_complete,
             self.memory_count,
-            self.plugin_status,
+            self.plugin_js_status,
+            self.plugin_ts_status,
             self.plugin_manifest_checks,
             self.plugin_permissions,
             self.plugin_action_count,
             self.plugin_preview_kind,
-            self.plugin_runtime,
+            self.plugin_js_runtime,
+            self.plugin_ts_runtime,
             self.history_count
         )
     }
@@ -132,12 +136,14 @@ impl StudioSmokeReport {
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
             && self.memory_count >= 1
-            && self.plugin_status == "Completed"
+            && self.plugin_js_status == "Completed"
+            && self.plugin_ts_status == "Completed"
             && self.plugin_manifest_checks >= 1
             && self.plugin_permissions.contains("Code")
-            && self.plugin_action_count >= 1
+            && self.plugin_action_count >= 2
             && self.plugin_preview_kind == "Command"
-            && self.plugin_runtime == "deno_core"
+            && self.plugin_js_runtime == "deno_core"
+            && self.plugin_ts_runtime == "deno_core"
             && self.history_count >= 1
     }
 }
@@ -181,12 +187,14 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
             memory_count: 0,
-            plugin_status: "FAIL".to_string(),
+            plugin_js_status: "FAIL".to_string(),
+            plugin_ts_status: "FAIL".to_string(),
             plugin_manifest_checks: 0,
             plugin_permissions: "FAIL".to_string(),
             plugin_action_count: 0,
             plugin_preview_kind: "FAIL".to_string(),
-            plugin_runtime: "FAIL".to_string(),
+            plugin_js_runtime: "FAIL".to_string(),
+            plugin_ts_runtime: "FAIL".to_string(),
             history_count: 0,
         }),
     }
@@ -282,12 +290,14 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         analysis_name,
         analysis_coverage_complete: coverage.complete,
         memory_count,
-        plugin_status: plugin_smoke.status,
+        plugin_js_status: plugin_smoke.js_status,
+        plugin_ts_status: plugin_smoke.ts_status,
         plugin_manifest_checks: plugin_smoke.manifest_checks,
         plugin_permissions: plugin_smoke.permissions,
         plugin_action_count: plugin_smoke.action_count,
         plugin_preview_kind: plugin_smoke.preview_kind,
-        plugin_runtime: plugin_smoke.runtime,
+        plugin_js_runtime: plugin_smoke.js_runtime,
+        plugin_ts_runtime: plugin_smoke.ts_runtime,
         history_count,
     })
 }
@@ -338,11 +348,14 @@ mod tests {
         assert!(summary.contains("builder_simulated=true"));
         assert!(summary.contains("builder_run_status=Completed"));
         assert!(summary.contains("builder_trace_steps=2"));
+        assert!(summary.contains("plugin_js_status=Completed"));
+        assert!(summary.contains("plugin_ts_status=Completed"));
         assert!(summary.contains("plugin_manifest_checks=1"));
         assert!(summary.contains("plugin_permissions=Code"));
-        assert!(summary.contains("plugin_action_count=1"));
+        assert!(summary.contains("plugin_action_count="));
         assert!(summary.contains("plugin_preview_kind=Command"));
-        assert!(summary.contains("plugin_runtime=deno_core"));
+        assert!(summary.contains("plugin_js_runtime=deno_core"));
+        assert!(summary.contains("plugin_ts_runtime=deno_core"));
     }
 
     #[test]

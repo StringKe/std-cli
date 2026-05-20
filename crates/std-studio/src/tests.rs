@@ -361,17 +361,22 @@ fn studio_manages_plugin_actions() {
     let plugin_dir = studio.core.config.plugins_dir().join("smoke");
     std::fs::create_dir_all(&plugin_dir).unwrap();
     std::fs::write(
+        plugin_dir.join("main.js"),
+        r#"std.emit({ plugin: "studio-plugin-smoke" });"#,
+    )
+    .unwrap();
+    std::fs::write(
         plugin_dir.join("plugin.json"),
         serde_json::json!({
             "name": "smoke",
             "description": "Smoke plugin",
-            "permissions": ["shell"],
+            "permissions": ["code"],
             "actions": [{
                 "name": "Plugin Smoke",
                 "description": "Run plugin smoke",
                 "when_to_use": "When validating Studio plugin manager",
-                "kind": "shell",
-                "command": "printf studio-plugin-smoke",
+                "kind": "javascript",
+                "script": "main.js",
                 "tags": ["studio-plugin-smoke"]
             }]
         })
