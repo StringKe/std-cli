@@ -87,6 +87,50 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
     );
 }
 
+#[test]
+fn release_quality_keeps_desktop_smoke_manual_only() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-cli/src/release/quality.rs")).unwrap();
+
+    assert!(
+        body.contains("manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1"),
+        "release quality report must document real desktop acceptance as manual only"
+    );
+    let smoke_commands = source_section(&body, "const SMOKE_COMMANDS", "const MANUAL_DESKTOP");
+    for forbidden in ["STD_ALLOW_DESKTOP_AUTOMATION", "STD_ALLOW_UI_PREVIEW"] {
+        assert!(
+            !smoke_commands.contains(forbidden),
+            "release default quality gates must not include desktop opt-in: {forbidden}"
+        );
+    }
+}
+
+#[test]
+fn std_core_test_mode_limits_app_discovery_to_local_fixtures() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-core/src/app_bundle.rs")).unwrap();
+
+    for required in [
+        "fn app_discovery_dirs",
+        "crate::std_test_mode_enabled()",
+        "return vec![local_apps_dir.to_path_buf()]",
+        "test_mode_app_discovery_uses_only_local_fixture_dir",
+    ] {
+        assert!(
+            body.contains(required),
+            "app discovery must hard block system app dirs in STD_TEST_MODE: {required}"
+        );
+    }
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
@@ -101,6 +145,8 @@ fn forbidden_test_app_terms() -> Vec<String> {
         ["tell ", "application"].join(""),
         ["/Applications/", "1", "Password.app"].join(""),
         ["tell application \"", "1", "Password\""].join(""),
+        "/Applications/".to_string(),
+        "/System/Applications".to_string(),
     ]
 }
 
@@ -121,6 +167,15 @@ fn task_has_std_test_mode(body: &str, task: &str) -> bool {
     let rest = &body[start + header.len()..];
     let end = rest.find("\n[tasks.").unwrap_or(rest.len());
     rest[..end].contains("env = { STD_TEST_MODE = \"1\" }")
+}
+
+fn source_section<'a>(body: &'a str, start: &str, end: &str) -> &'a str {
+    let start_index = body.find(start).unwrap();
+    let end_index = body[start_index..]
+        .find(end)
+        .map(|offset| start_index + offset)
+        .unwrap_or(body.len());
+    &body[start_index..end_index]
 }
 
 fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<String>) {

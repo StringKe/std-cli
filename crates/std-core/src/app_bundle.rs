@@ -6,17 +6,21 @@ use std::{
 use std_types::{Action, ActionType, RegistryEntry};
 
 pub(crate) fn discover_app_actions(local_apps_dir: &Path) -> Vec<RegistryEntry> {
+    app_discovery_dirs(local_apps_dir)
+        .into_iter()
+        .flat_map(|dir| discover_apps_in_dir(&dir))
+        .collect()
+}
+
+fn app_discovery_dirs(local_apps_dir: &Path) -> Vec<PathBuf> {
     if crate::std_test_mode_enabled() {
-        return discover_apps_in_dir(local_apps_dir);
+        return vec![local_apps_dir.to_path_buf()];
     }
-    [
+    vec![
         local_apps_dir.to_path_buf(),
         default_apps_dir(),
         system_apps_dir(),
     ]
-    .into_iter()
-    .flat_map(|dir| discover_apps_in_dir(&dir))
-    .collect()
 }
 
 fn discover_apps_in_dir(dir: &Path) -> Vec<RegistryEntry> {
@@ -240,4 +244,17 @@ fn default_apps_dir() -> PathBuf {
 
 fn system_apps_dir() -> PathBuf {
     PathBuf::from("/System/Applications")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mode_app_discovery_uses_only_local_fixture_dir() {
+        let local = PathBuf::from("/tmp/std-cli-fixture-apps");
+        let dirs = app_discovery_dirs(&local);
+
+        assert_eq!(dirs, vec![local]);
+    }
 }
