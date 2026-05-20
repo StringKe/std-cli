@@ -1,9 +1,14 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::i18n;
 
 impl StudioEguiApp {
     pub(crate) fn render_settings(&mut self, ui: &mut egui::Ui) {
-        ui::section_header(ui, "Settings", "shared configuration and resolved paths");
+        ui::section_header(
+            ui,
+            i18n::t("studio.settings.title"),
+            i18n::t("studio.settings.detail"),
+        );
         ui.columns(3, |columns| {
             columns[0].vertical(|ui| self.render_runtime_settings(ui));
             columns[1].vertical(|ui| self.render_storage_settings(ui));
@@ -13,21 +18,28 @@ impl StudioEguiApp {
 
     fn render_runtime_settings(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Runtime", "launcher and AI");
-            ui.label("Launcher hotkey");
+            ui::section_header(
+                ui,
+                i18n::t("studio.settings.runtime.title"),
+                i18n::t("studio.settings.runtime.detail"),
+            );
+            ui.label(i18n::t("studio.settings.hotkey.label"));
             ui.text_edit_singleline(&mut self.settings_hotkey);
-            if ui::quiet_button(ui, "Save Hotkey").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.settings.hotkey.save")).clicked() {
                 self.save_setting("launcher_hotkey", self.settings_hotkey.clone());
             }
             ui.add_space(8.0);
-            ui.checkbox(&mut self.settings_enable_ai, "Enable AI planner");
-            if ui::quiet_button(ui, "Save AI").clicked() {
+            ui.checkbox(
+                &mut self.settings_enable_ai,
+                i18n::t("studio.settings.ai.enable"),
+            );
+            if ui::quiet_button(ui, i18n::t("studio.settings.ai.save")).clicked() {
                 self.save_setting("enable_ai", self.settings_enable_ai.to_string());
             }
             ui.add_space(8.0);
-            ui.label("Theme");
+            ui.label(i18n::t("studio.settings.theme.label"));
             ui.text_edit_singleline(&mut self.settings_theme);
-            if ui::quiet_button(ui, "Save Theme").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.settings.theme.save")).clicked() {
                 self.save_setting("theme", self.settings_theme.clone());
             }
         });
@@ -35,17 +47,21 @@ impl StudioEguiApp {
 
     fn render_storage_settings(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Storage", "config path and data root");
+            ui::section_header(
+                ui,
+                i18n::t("studio.settings.storage.title"),
+                i18n::t("studio.settings.storage.detail"),
+            );
             ui.small(format!("config={}", self.app.config_path().display()));
-            ui.label("Data dir");
+            ui.label(i18n::t("studio.settings.data_dir.label"));
             ui.text_edit_singleline(&mut self.settings_data_dir);
-            if ui::quiet_button(ui, "Save Data Dir").clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.settings.data_dir.save")).clicked() {
                 self.save_setting("data_dir", self.settings_data_dir.clone());
             }
             ui.add_space(8.0);
             ui::chip(
                 ui,
-                "StdConfig writes and reloads shared core state",
+                i18n::t("studio.settings.storage.note"),
                 ui::selected_bg(ui.ctx()),
             );
         });
@@ -53,7 +69,11 @@ impl StudioEguiApp {
 
     fn render_resolved_paths(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, "Resolved Paths", "current storage layout");
+            ui::section_header(
+                ui,
+                i18n::t("studio.settings.paths.title"),
+                i18n::t("studio.settings.paths.detail"),
+            );
             for (key, value) in self.resolved_paths() {
                 ui::subtle_frame(ui.ctx()).show(ui, |ui| {
                     ui.label(egui::RichText::new(key).strong());
@@ -98,7 +118,9 @@ impl StudioEguiApp {
 
     fn save_setting(&mut self, key: &str, value: String) {
         match self.app.save_config_field(key, &value) {
-            Ok(path) => self.status = format!("saved {}", path.display()),
+            Ok(path) => {
+                self.status = format!("{} {}", i18n::t("studio.settings.saved"), path.display())
+            }
             Err(error) => self.status = error,
         }
         self.sync_settings_from_app();
