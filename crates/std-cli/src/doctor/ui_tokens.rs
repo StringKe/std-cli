@@ -130,6 +130,8 @@ fn ui_shell_path(path: &Path) -> bool {
                     | "host_chrome.rs"
                     | "bottom_panel.rs"
                     | "workspace_tabs.rs"
+                    | "workflow_rows.rs"
+                    | "plugin_rows.rs"
             )
         })
         .unwrap_or(false)

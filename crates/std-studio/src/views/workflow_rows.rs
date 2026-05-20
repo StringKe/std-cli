@@ -1,15 +1,10 @@
-use crate::ui;
+use crate::{ui, views::row_metrics};
 use eframe::egui;
 use std::path::{Path, PathBuf};
 use std_egui::{
     i18n,
     tokens::{Color, Radius, Space, Text},
 };
-
-const FILE_ROW_HEIGHT: f32 = 58.0;
-const STATUS_ROW_HEIGHT: f32 = 52.0;
-const PATH_ROW_HEIGHT: f32 = 42.0;
-const BUILDER_STEP_ROW_HEIGHT: f32 = 48.0;
 
 pub(crate) enum WorkflowFileAction {
     None,
@@ -23,7 +18,7 @@ pub(crate) fn workflow_file_row(
     selected: bool,
 ) -> WorkflowFileAction {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), FILE_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::FILE_ROW_HEIGHT),
         egui::Sense::click(),
     );
     let title = workflow_label(path);
@@ -31,8 +26,14 @@ pub(crate) fn workflow_file_row(
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), &title)
     });
     let open_rect = egui::Rect::from_min_size(
-        egui::pos2(rect.right() - 58.0, rect.center().y - 13.0),
-        egui::vec2(52.0, 26.0),
+        egui::pos2(
+            rect.right() - row_metrics::FILE_ACTION_RIGHT_INSET,
+            rect.center().y - row_metrics::FILE_ACTION_Y_OFFSET,
+        ),
+        egui::vec2(
+            row_metrics::FILE_ACTION_WIDTH,
+            row_metrics::FILE_ACTION_HEIGHT,
+        ),
     );
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered(), selected);
@@ -62,7 +63,7 @@ pub(crate) fn status_row(
     fill: egui::Color32,
 ) {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), STATUS_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::STATUS_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response
@@ -70,20 +71,26 @@ pub(crate) fn status_row(
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered(), false);
         let chip_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.left() + Space::XS as f32, rect.center().y - 11.0),
-            egui::vec2(88.0, 22.0),
+            egui::pos2(
+                rect.left() + Space::XS as f32,
+                rect.center().y - row_metrics::STATUS_CHIP_Y_OFFSET,
+            ),
+            egui::vec2(
+                row_metrics::STATUS_CHIP_WIDTH,
+                row_metrics::STATUS_CHIP_HEIGHT,
+            ),
         );
         paint_status_chip(ui, chip_rect, status, fill);
         let text_x = chip_rect.right() + Space::XS as f32;
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 18.0),
+            egui::pos2(text_x, rect.top() + row_metrics::STATUS_TITLE_Y),
             egui::Align2::LEFT_CENTER,
             title,
             Text::body(),
             ui::strong_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 36.0),
+            egui::pos2(text_x, rect.top() + row_metrics::STATUS_DETAIL_Y),
             egui::Align2::LEFT_CENTER,
             detail,
             Text::caption(),
@@ -96,23 +103,23 @@ pub(crate) fn status_row(
 pub(crate) fn path_row(ui: &mut egui::Ui, label: &str, path: &Path) {
     let detail = path.display().to_string();
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), PATH_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::PATH_ROW_HEIGHT),
         egui::Sense::hover(),
     );
     response
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), label));
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered(), false);
-        let text_x = rect.left() + Space::SM as f32;
+        let text_x = rect.left() + row_metrics::TEXT_INSET_X;
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 15.0),
+            egui::pos2(text_x, rect.top() + row_metrics::PATH_TITLE_Y),
             egui::Align2::LEFT_CENTER,
             label,
             Text::caption(),
             ui::muted_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 32.0),
+            egui::pos2(text_x, rect.top() + row_metrics::PATH_DETAIL_Y),
             egui::Align2::LEFT_CENTER,
             detail,
             Text::caption(),
@@ -166,7 +173,7 @@ pub(crate) fn builder_step_row(
     selected: bool,
 ) -> egui::Response {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), BUILDER_STEP_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::BUILDER_STEP_ROW_HEIGHT),
         egui::Sense::click(),
     );
     response
@@ -174,20 +181,26 @@ pub(crate) fn builder_step_row(
     if ui.is_rect_visible(rect) {
         paint_builder_step_row(ui, rect, response.hovered(), selected);
         let index_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.left() + Space::XS as f32, rect.center().y - 11.0),
-            egui::vec2(32.0, 22.0),
+            egui::pos2(
+                rect.left() + Space::XS as f32,
+                rect.center().y - row_metrics::STATUS_CHIP_Y_OFFSET,
+            ),
+            egui::vec2(
+                row_metrics::BUILDER_INDEX_WIDTH,
+                row_metrics::BUILDER_INDEX_HEIGHT,
+            ),
         );
         paint_builder_step_index(ui, index_rect, index + 1, selected);
         let text_x = index_rect.right() + Space::XS as f32;
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 17.0),
+            egui::pos2(text_x, rect.top() + row_metrics::STEP_TITLE_Y),
             egui::Align2::LEFT_CENTER,
             name,
             Text::body(),
             ui::strong_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + 34.0),
+            egui::pos2(text_x, rect.top() + row_metrics::STEP_DETAIL_Y),
             egui::Align2::LEFT_CENTER,
             detail,
             Text::caption(),
@@ -226,7 +239,10 @@ fn paint_builder_step_row(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, se
     if selected {
         let strip = egui::Rect::from_min_max(
             rect.left_top(),
-            egui::pos2(rect.left() + 3.0, rect.bottom()),
+            egui::pos2(
+                rect.left() + row_metrics::SELECTED_STRIP_WIDTH,
+                rect.bottom(),
+            ),
         );
         ui.painter().rect_filled(
             strip,
@@ -277,22 +293,22 @@ fn paint_row_frame(ui: &mut egui::Ui, rect: egui::Rect, hovered: bool, selected:
 }
 
 fn paint_file_text(ui: &mut egui::Ui, rect: egui::Rect, title: &str, detail: &str) {
-    let text_x = rect.left() + Space::SM as f32;
-    let right_limit = rect.right() - 68.0;
+    let text_x = rect.left() + row_metrics::TEXT_INSET_X;
+    let right_limit = rect.right() - row_metrics::FILE_RIGHT_CLIP_INSET;
     let clip = egui::Rect::from_min_max(
         egui::pos2(text_x, rect.top()),
         egui::pos2(right_limit, rect.bottom()),
     );
     let painter = ui.painter().with_clip_rect(clip);
     painter.text(
-        egui::pos2(text_x, rect.top() + 19.0),
+        egui::pos2(text_x, rect.top() + row_metrics::FILE_TITLE_Y),
         egui::Align2::LEFT_CENTER,
         title,
         Text::body(),
         ui::strong_text(ui.ctx()),
     );
     painter.text(
-        egui::pos2(text_x, rect.top() + 39.0),
+        egui::pos2(text_x, rect.top() + row_metrics::FILE_DETAIL_Y),
         egui::Align2::LEFT_CENTER,
         detail,
         Text::caption(),
