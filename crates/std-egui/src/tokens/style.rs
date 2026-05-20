@@ -28,9 +28,10 @@ pub struct Elevation;
 
 impl Elevation {
     pub fn level_2(ctx: &egui::Context) -> egui::Shadow {
+        let a11y = AccessibilityContext::from_env();
         shadow(
             [0, 8],
-            24,
+            elevation_blur(24, &a11y),
             Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
                 128
             } else {
@@ -40,15 +41,24 @@ impl Elevation {
     }
 
     pub fn level_3(ctx: &egui::Context) -> egui::Shadow {
+        let a11y = AccessibilityContext::from_env();
         shadow(
             [0, 16],
-            48,
+            elevation_blur(48, &a11y),
             Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
                 153
             } else {
                 41
             }),
         )
+    }
+}
+
+fn elevation_blur(default_blur: u8, a11y: &AccessibilityContext) -> u8 {
+    if a11y.reduce_transparency {
+        4
+    } else {
+        default_blur
     }
 }
 
@@ -223,5 +233,18 @@ mod tests {
             visuals.selection.bg_fill,
             Color32::from_rgba_premultiplied(10, 107, 255, 31)
         );
+    }
+
+    #[test]
+    fn reduce_transparency_uses_harder_elevation_edges() {
+        let a11y = AccessibilityContext {
+            reduce_motion: false,
+            reduce_transparency: true,
+            high_contrast: false,
+            bold_text: false,
+        };
+
+        assert_eq!(elevation_blur(24, &a11y), 4);
+        assert_eq!(elevation_blur(48, &a11y), 4);
     }
 }

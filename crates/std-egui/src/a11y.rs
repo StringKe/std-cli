@@ -1,6 +1,7 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AccessibilityContext {
     pub reduce_motion: bool,
+    pub reduce_transparency: bool,
     pub high_contrast: bool,
     pub bold_text: bool,
 }
@@ -9,6 +10,7 @@ impl AccessibilityContext {
     pub fn from_env() -> Self {
         Self {
             reduce_motion: crate::motion::reduce_motion_env(),
+            reduce_transparency: env_flag("STD_REDUCE_TRANSPARENCY"),
             high_contrast: env_flag("STD_HIGH_CONTRAST"),
             bold_text: env_flag("STD_BOLD_TEXT"),
         }
@@ -55,6 +57,7 @@ mod tests {
     fn launcher_labels_include_required_screen_reader_context() {
         let a11y = AccessibilityContext {
             reduce_motion: false,
+            reduce_transparency: false,
             high_contrast: false,
             bold_text: false,
         };
@@ -70,6 +73,7 @@ mod tests {
     fn high_contrast_increases_focus_ring_width() {
         let a11y = AccessibilityContext {
             reduce_motion: false,
+            reduce_transparency: false,
             high_contrast: true,
             bold_text: false,
         };

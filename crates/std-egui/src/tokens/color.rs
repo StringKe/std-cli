@@ -262,6 +262,7 @@ mod tests {
     fn a11y(high_contrast: bool) -> AccessibilityContext {
         AccessibilityContext {
             reduce_motion: false,
+            reduce_transparency: false,
             high_contrast,
             bold_text: false,
         }
