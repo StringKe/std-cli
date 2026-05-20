@@ -245,6 +245,9 @@ impl StudioEguiApp {
     }
 
     fn handle_overlay_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
         let items = if self.layout.command_palette_open {
             filter_items(
                 &command_palette_items(&self.app),

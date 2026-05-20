@@ -1,7 +1,7 @@
 use crate::ui_parts::keycap;
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Radius, Space, Text},
 };
 
@@ -17,7 +17,8 @@ pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyA
     }
 
     let fallback = render_no_matches(ui, trimmed);
-    let enter_pressed = ui.input(|input| input.key_pressed(egui::Key::Enter));
+    let enter_pressed =
+        !input::ime_composing(ui.ctx()) && ui.input(|input| input.key_pressed(egui::Key::Enter));
     if fallback.clicked() || enter_pressed {
         Some(EmptyAction::AskAi(ask_ai_query(trimmed)))
     } else {

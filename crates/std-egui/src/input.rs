@@ -49,6 +49,18 @@ pub fn studio_command_palette() -> KeyBinding {
     KeyBinding::ModShift('P')
 }
 
+pub fn ime_composing(ctx: &egui::Context) -> bool {
+    ctx.input(|input| {
+        input.events.iter().any(|event| {
+            matches!(
+                event,
+                egui::Event::Ime(egui::ImeEvent::Enabled)
+                    | egui::Event::Ime(egui::ImeEvent::Preedit(_))
+            )
+        })
+    })
+}
+
 fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
     let key = match key.to_ascii_uppercase() {
         'K' => egui::Key::K,
@@ -72,5 +84,12 @@ mod tests {
     #[test]
     fn studio_palette_binding_matches_docs() {
         assert!(studio_command_palette().label().ends_with("+P"));
+    }
+
+    #[test]
+    fn ime_guard_api_is_available_to_ui_surfaces() {
+        let ctx = egui::Context::default();
+
+        assert!(!ime_composing(&ctx));
     }
 }

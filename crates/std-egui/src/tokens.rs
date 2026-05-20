@@ -249,15 +249,7 @@ fn load_cjk_font() -> Option<FontData> {
 }
 
 pub fn ime_composing(ctx: &egui::Context) -> bool {
-    ctx.input(|input| {
-        input.events.iter().any(|event| {
-            matches!(
-                event,
-                egui::Event::Ime(egui::ImeEvent::Enabled)
-                    | egui::Event::Ime(egui::ImeEvent::Preedit(_))
-            )
-        })
-    })
+    crate::input::ime_composing(ctx)
 }
 
 pub fn reduce_motion() -> bool {
