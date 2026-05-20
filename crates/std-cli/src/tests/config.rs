@@ -96,6 +96,14 @@ fn doctor_command_checks_local_runtime_surface() {
 
     std::env::remove_var("STDCLI_CONFIG");
 
+    assert_doctor_runtime_output(&output);
+    assert_doctor_ui_output(&output);
+    assert!(temp.path().join("data").join("workflows").is_dir());
+    assert!(temp.path().join("data").join("index").is_dir());
+    assert!(temp.path().join("data").join("memory").is_dir());
+}
+
+fn assert_doctor_runtime_output(output: &str) {
     assert!(output.contains("doctor PASS"));
     assert!(output.contains("storage=PASS"));
     assert!(output.contains("planner=PASS"));
@@ -116,9 +124,15 @@ fn doctor_command_checks_local_runtime_surface() {
     assert!(output.contains("release_plan=PASS"));
     assert!(output.contains("install_plan=PASS"));
     assert!(output.contains("config_path="));
-    assert!(temp.path().join("data").join("workflows").is_dir());
-    assert!(temp.path().join("data").join("index").is_dir());
-    assert!(temp.path().join("data").join("memory").is_dir());
+}
+
+fn assert_doctor_ui_output(output: &str) {
+    assert!(output.contains("ui_docs=PASS"));
+    assert!(output.contains("ui_docs_count=7"));
+    assert!(output.contains("launcher_ui_gates=theme-smoke,surface-smoke"));
+    assert!(output.contains("studio_ui_gates=smoke,theme-smoke,preview-smoke"));
+    assert!(output.contains("desktop_automation_default=blocked"));
+    assert!(output.contains("ui_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
 
 #[test]
@@ -151,6 +165,26 @@ fn doctor_command_can_print_machine_readable_json() {
     assert!(report["max_config_lines"].as_u64().unwrap() <= 300);
     assert_eq!(report["launcher"].as_str(), Some("PASS"));
     assert_eq!(report["studio"].as_str(), Some("PASS"));
+    assert_eq!(report["ui_docs"].as_str(), Some("PASS"));
+    assert_eq!(report["ui_docs_count"].as_u64(), Some(7));
+    assert_eq!(
+        report["desktop_automation_default"].as_str(),
+        Some("blocked")
+    );
+    assert_eq!(
+        report["ui_completion"].as_str(),
+        Some("INCOMPLETE_REAL_GUI_REQUIRED")
+    );
+    assert!(report["launcher_ui_gates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|gate| gate.as_str() == Some("preview-smoke")));
+    assert!(report["studio_ui_gates"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|gate| gate.as_str() == Some("preview-smoke")));
     assert_eq!(report["release_plan"].as_str(), Some("PASS"));
     assert_eq!(report["install_plan"].as_str(), Some("PASS"));
     assert!(report["quality_tools"]

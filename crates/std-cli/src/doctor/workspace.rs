@@ -245,7 +245,7 @@ fn ui_token_exception(path: &Path, forbidden: &str) -> bool {
     forbidden == "Color32::from_rgba(" && file_name == "ui_parts.rs"
 }
 
-fn find_workspace_root() -> Result<PathBuf, CliError> {
+pub(crate) fn find_workspace_root() -> Result<PathBuf, CliError> {
     let mut current = std::env::current_dir()?;
     loop {
         if current.join("Cargo.toml").is_file() && current.join("crates").is_dir() {
@@ -257,7 +257,7 @@ fn find_workspace_root() -> Result<PathBuf, CliError> {
     }
 }
 
-fn read_required(path: &Path) -> Result<String, CliError> {
+pub(crate) fn read_required(path: &Path) -> Result<String, CliError> {
     if !path.is_file() {
         return Err(CliError::Doctor(format!(
             "required file missing: {}",

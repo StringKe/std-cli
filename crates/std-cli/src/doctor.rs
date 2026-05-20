@@ -1,4 +1,5 @@
 mod report;
+mod ui;
 mod workspace;
 
 use crate::CliError;
@@ -8,6 +9,7 @@ use std::path::Path;
 use std_core::{discover_plugin_manifests, AiPlanner, StdConfig, StdCore};
 use std_index::Indexer;
 use std_orchestration::{workflow_from_plan, ExecutionStatus, WorkflowExecutor};
+use ui::check_ui_completion_evidence;
 use workspace::{check_text, check_workspace_quality};
 
 pub(crate) fn doctor(core: &StdCore, json: bool) -> Result<String, CliError> {
@@ -51,6 +53,7 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
     }
 
     let workspace = check_workspace_quality()?;
+    let ui = check_ui_completion_evidence()?;
     let release = release_plan(core, "1.0.0")?;
     check_text(&release, "verify=mise run quality")?;
     check_text(&release, "std release verify --dist")?;
@@ -86,6 +89,12 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
         workspace_crates: workspace.workspace_crates,
         launcher: "PASS",
         studio: "PASS",
+        ui_docs: ui.docs,
+        ui_docs_count: ui.docs_count,
+        launcher_ui_gates: ui.launcher_gates,
+        studio_ui_gates: ui.studio_gates,
+        desktop_automation_default: ui.desktop_automation_default,
+        ui_completion: ui.completion,
         release_plan: "PASS",
         install_plan: "PASS",
         config_path: StdConfig::writable_config_path(),
