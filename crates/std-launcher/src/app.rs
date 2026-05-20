@@ -71,19 +71,15 @@ impl eframe::App for LauncherApp {
         }
 
         ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(panel_size));
-        egui::CentralPanel::default()
-            .frame(egui::Frame::NONE.fill(egui::Color32::TRANSPARENT))
-            .show(ctx, |ui| {
-                if ui::render_launcher_overlay(
-                    ui,
-                    &mut self.state,
-                    &self.hotkey_status,
-                    &self.resident_status,
-                    &mut self.voice_transcript,
-                ) {
-                    apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
-                }
-            });
+        if ui::render_launcher_carrier(
+            ctx,
+            &mut self.state,
+            &self.hotkey_status,
+            &self.resident_status,
+            &mut self.voice_transcript,
+        ) {
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), panel_size);
+        }
     }
 }
 

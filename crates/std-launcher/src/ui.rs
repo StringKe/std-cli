@@ -13,6 +13,32 @@ use std_egui::{
 use std_launcher::LauncherFocusSection;
 use std_launcher::LauncherState;
 
+pub(crate) fn render_launcher_carrier(
+    ctx: &egui::Context,
+    state: &mut LauncherState,
+    hotkey_status: &str,
+    resident_status: &str,
+    voice_transcript: &mut String,
+) -> bool {
+    let mut hide_requested = false;
+    egui::CentralPanel::default()
+        .frame(launcher_carrier_frame())
+        .show(ctx, |ui| {
+            hide_requested = render_launcher_overlay(
+                ui,
+                state,
+                hotkey_status,
+                resident_status,
+                voice_transcript,
+            );
+        });
+    hide_requested
+}
+
+pub(crate) fn launcher_carrier_frame() -> egui::Frame {
+    egui::Frame::NONE.fill(egui::Color32::TRANSPARENT)
+}
+
 pub(crate) fn launcher_initial_window_inner_size() -> egui::Vec2 {
     ui_metrics::initial_window_inner_size()
 }
@@ -244,5 +270,13 @@ mod tests {
         state.focus_section = LauncherFocusSection::Results;
 
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
+    }
+
+    #[test]
+    fn launcher_carrier_frame_is_transparent_and_unstyled() {
+        let frame = launcher_carrier_frame();
+
+        assert_eq!(frame.fill, egui::Color32::TRANSPARENT);
+        assert_eq!(frame.stroke, egui::Stroke::NONE);
     }
 }

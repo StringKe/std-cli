@@ -43,6 +43,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_ui_docs(&root)?;
     check_quality_report_gates(&root)?;
     check_runtime_theme_profiles(&root)?;
+    check_launcher_transparent_carrier(&root)?;
     check_preview_matrices(&root)?;
     check_desktop_automation_boundary(&root)?;
     Ok(UiDoctor {
@@ -106,6 +107,29 @@ fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> 
     let studio = read_required(&root.join("crates/std-studio/src/main.rs"))?;
     check_text(&studio, "pub(crate) theme_profile: Option<ThemeProfile>")?;
     check_text(&studio, "self.theme_profile = Some(ui::install_visuals")?;
+    Ok(())
+}
+
+fn check_launcher_transparent_carrier(root: &std::path::Path) -> Result<(), CliError> {
+    let launcher_ui = read_required(&root.join("crates/std-launcher/src/ui.rs"))?;
+    for required in [
+        "pub(crate) fn render_launcher_carrier",
+        "pub(crate) fn launcher_carrier_frame() -> egui::Frame",
+        "egui::Frame::NONE.fill(egui::Color32::TRANSPARENT)",
+        "launcher_carrier_frame_is_transparent_and_unstyled",
+    ] {
+        check_text(&launcher_ui, required)?;
+    }
+    let launcher_app = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
+    check_text(&launcher_app, "ui::render_launcher_carrier")?;
+    if launcher_app.contains("CentralPanel::default()")
+        || launcher_app.contains("Frame::NONE.fill(egui::Color32::TRANSPARENT)")
+    {
+        return Err(CliError::Config(
+            "launcher app must delegate viewport carrier rendering to ui::render_launcher_carrier"
+                .to_string(),
+        ));
+    }
     Ok(())
 }
 
