@@ -3,7 +3,7 @@ use crate::ui;
 use crate::window::apply_window_commands;
 use eframe::egui;
 use std::time::Duration;
-use std_egui::tokens::{apply_theme, Color, Space, ThemeMode};
+use std_egui::tokens::{apply_theme, ThemeMode};
 use std_launcher::{GlobalHotkeyRuntime, LauncherState};
 
 pub(crate) struct LauncherApp {
@@ -84,14 +84,9 @@ impl eframe::App for LauncherApp {
         }
 
         egui::CentralPanel::default()
-            .frame(
-                egui::Frame::new()
-                    .fill(Color::bg_surface_0(ctx))
-                    .inner_margin(egui::Margin::same(Space::MD)),
-            )
+            .frame(egui::Frame::NONE.fill(egui::Color32::TRANSPARENT))
             .show(ctx, |ui| {
-                ui.set_width(ui.available_width());
-                if ui::render_launcher_panel(
+                if ui::render_launcher_overlay(
                     ui,
                     &mut self.state,
                     &self.hotkey_status,

@@ -30,18 +30,35 @@ fn main() -> eframe::Result<()> {
 }
 
 fn run_launcher_app() -> eframe::Result<()> {
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([680.0, 420.0])
-            .with_decorations(false)
-            .with_transparent(false)
-            .with_visible(false),
-        ..Default::default()
-    };
-
     eframe::run_native(
         "std-cli Launcher",
-        options,
+        launcher_native_options(),
         Box::new(|_cc| Ok(Box::new(LauncherApp::default()))),
     )
+}
+
+fn launcher_native_options() -> eframe::NativeOptions {
+    eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([880.0, 520.0])
+            .with_decorations(false)
+            .with_transparent(true)
+            .with_visible(false),
+        ..Default::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn launcher_window_uses_transparent_hidden_chrome() {
+        let options = launcher_native_options();
+        let description = format!("{:?}", options.viewport);
+
+        assert!(description.contains("transparent: Some(true)"));
+        assert!(description.contains("decorations: Some(false)"));
+        assert!(description.contains("visible: Some(false)"));
+    }
 }

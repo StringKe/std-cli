@@ -64,16 +64,20 @@ pub(crate) fn preview_from_args(args: &[String]) -> Option<LauncherPreviewConfig
 pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
     eframe::run_native(
         "std-cli Launcher UI Preview",
-        eframe::NativeOptions {
-            viewport: egui::ViewportBuilder::default()
-                .with_inner_size([680.0, 420.0])
-                .with_decorations(false)
-                .with_transparent(false)
-                .with_visible(true),
-            ..Default::default()
-        },
+        preview_native_options(),
         Box::new(|_cc| Ok(Box::new(LauncherPreviewApp::new(config)))),
     )
+}
+
+fn preview_native_options() -> eframe::NativeOptions {
+    eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size([880.0, 520.0])
+            .with_decorations(false)
+            .with_transparent(true)
+            .with_visible(true),
+        ..Default::default()
+    }
 }
 
 fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
@@ -151,6 +155,16 @@ mod tests {
         assert_eq!(config.theme_mode, ThemeMode::Light);
         assert_eq!(config.scenario, "defer");
         assert_eq!(config.timeout_ms, 1200);
+    }
+
+    #[test]
+    fn ui_preview_uses_transparent_visible_chrome() {
+        let options = preview_native_options();
+        let description = format!("{:?}", options.viewport);
+
+        assert!(description.contains("transparent: Some(true)"));
+        assert!(description.contains("decorations: Some(false)"));
+        assert!(description.contains("visible: Some(true)"));
     }
 
     #[test]

@@ -12,6 +12,14 @@ use std_egui::{
 use std_launcher::LauncherState;
 use std_types::{ActionType, SearchResult};
 
+pub(crate) fn group_count(results: &[SearchResult]) -> usize {
+    results
+        .iter()
+        .map(action_group)
+        .collect::<std::collections::BTreeSet<_>>()
+        .len()
+}
+
 pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
     surface_frame(ui.ctx()).show(ui, |ui| {
         section_header(
