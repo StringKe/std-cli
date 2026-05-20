@@ -10,7 +10,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub light_panel_fill: String,
     pub panel_opaque: bool,
     pub panel_radius: u8,
-    pub native_viewport_margin: i8,
+    pub panel_does_not_fill_viewport: bool,
     pub panel_inner_padding: i8,
     pub search_surface_layer: String,
     pub result_surface_layer: String,
@@ -32,7 +32,7 @@ impl LauncherSurfaceSmokeReport {
             panel_opaque: Color::bg_surface_0(&dark).a() == 255
                 && Color::bg_surface_0(&light).a() == 255,
             panel_radius: Radius::xl(),
-            native_viewport_margin: 0,
+            panel_does_not_fill_viewport: true,
             panel_inner_padding: Space::md(),
             search_surface_layer: layer("search", "bg/surface-1", &dark),
             result_surface_layer: layer("results", "bg/surface-1", &dark),
@@ -50,7 +50,7 @@ impl LauncherSurfaceSmokeReport {
             && self.light_panel_fill == "#FAFBFD"
             && self.panel_opaque
             && self.panel_radius == 16
-            && self.native_viewport_margin == 0
+            && self.panel_does_not_fill_viewport
             && self.panel_inner_padding == 16
             && self.search_surface_layer == "search=bg/surface-1:#24272C"
             && self.result_surface_layer == "results=bg/surface-1:#24272C"
@@ -64,13 +64,13 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_margin={}\npanel_inner_padding={}\nsearch_surface_layer={}\nresult_surface_layer={}\nselected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\npanel_does_not_fill_viewport={}\npanel_inner_padding={}\nsearch_surface_layer={}\nresult_surface_layer={}\nselected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
             self.panel_opaque,
             self.panel_radius,
-            self.native_viewport_margin,
+            self.panel_does_not_fill_viewport,
             self.panel_inner_padding,
             self.search_surface_layer,
             self.result_surface_layer,

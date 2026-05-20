@@ -28,17 +28,8 @@ pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::
     let margin = window_margin();
     let panel_width = panel_width().min((available.width() - margin * 2.0).max(320.0));
     let body_height = body_height(state, available.height());
-    let computed_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
-    let panel_height = if native_viewport_is_panel_sized(available, panel_width, margin) {
-        available.height()
-    } else {
-        computed_height
-    };
+    let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
     panel_rect_for_available(available, panel_width, panel_height, margin, false)
-}
-
-fn native_viewport_is_panel_sized(available: egui::Rect, panel_width: f32, margin: f32) -> bool {
-    margin == 0.0 && (available.width() - panel_width).abs() <= 1.0
 }
 
 fn panel_rect_for_available(
@@ -327,7 +318,37 @@ mod tests {
         assert_eq!(rect.min.x, window_margin());
         assert_eq!(rect.min.y, window_margin());
         assert_eq!(rect.max.x, available.right());
-        assert_eq!(rect.max.y, available.bottom());
+        assert!(rect.max.y <= available.bottom());
+    }
+
+    #[test]
+    fn panel_rect_does_not_expand_to_full_viewport_height() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let available =
+            egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(PANEL_WIDTH, 900.0));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(rect.width(), PANEL_WIDTH);
+        assert!(rect.height() < available.height());
+        assert_eq!(
+            rect.height(),
+            panel_height(&state, body_height(&state, available.height()))
+        );
+    }
+
+    #[test]
+    fn collapsed_panel_rect_keeps_native_viewport_as_transparent_carrier() {
+        let mut state = LauncherState::new();
+        state.view.results.clear();
+        state.view.preview = None;
+        let available =
+            egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(PANEL_WIDTH, 400.0));
+        let rect = panel_rect(available, &state);
+
+        assert_eq!(rect.width(), PANEL_WIDTH);
+        assert_eq!(rect.height(), SEARCH_HEIGHT);
+        assert!(rect.height() < available.height());
     }
 
     #[test]
