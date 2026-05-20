@@ -37,31 +37,25 @@ impl Default for StudioLayoutState {
 
 impl StudioLayoutState {
     pub(crate) fn handle_keyboard(&mut self, ctx: &egui::Context) {
-        ctx.input(|input| {
-            if input.modifiers.command && input.key_pressed(egui::Key::B) {
-                self.sidebar_open = !self.sidebar_open;
-            }
-            if input.modifiers.command && input.key_pressed(egui::Key::I) {
-                self.inspector_open = !self.inspector_open;
-            }
-            if input.modifiers.command && input.key_pressed(egui::Key::J) {
-                self.bottom_panel_open = !self.bottom_panel_open;
-            }
-            if input.modifiers.command && input.key_pressed(egui::Key::Comma) {
-                self.open_settings();
-            }
-            if input.modifiers.command && input.key_pressed(egui::Key::Slash) {
-                self.open_command_palette();
-            }
-            if input.modifiers.command && input.modifiers.shift && input.key_pressed(egui::Key::P) {
-                self.open_command_palette();
-            } else if input.modifiers.command
-                && !input.modifiers.shift
-                && input.key_pressed(egui::Key::P)
-            {
-                self.open_quick_open();
-            }
-        });
+        if std_egui::input::studio_sidebar_toggle().pressed(ctx) {
+            self.sidebar_open = !self.sidebar_open;
+        }
+        if std_egui::input::studio_inspector_toggle().pressed(ctx) {
+            self.inspector_open = !self.inspector_open;
+        }
+        if std_egui::input::studio_bottom_panel_toggle().pressed(ctx) {
+            self.bottom_panel_open = !self.bottom_panel_open;
+        }
+        if std_egui::input::studio_settings().pressed(ctx) {
+            self.open_settings();
+        }
+        if std_egui::input::studio_command_palette_slash().pressed(ctx)
+            || std_egui::input::studio_command_palette().pressed(ctx)
+        {
+            self.open_command_palette();
+        } else if std_egui::input::studio_quick_open().pressed(ctx) {
+            self.open_quick_open();
+        }
     }
 
     pub(crate) fn open_settings(&mut self) {

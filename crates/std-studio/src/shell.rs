@@ -263,17 +263,17 @@ impl StudioEguiApp {
             return;
         }
 
-        if ctx.input(|input| input.key_pressed(egui::Key::Escape)) {
+        if std_egui::input::escape().pressed(ctx) {
             self.layout.close_overlays();
             return;
         }
-        if !items.is_empty() && ctx.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
+        if !items.is_empty() && std_egui::input::arrow_down().pressed(ctx) {
             self.layout.move_overlay_selection(1, items.len());
         }
-        if !items.is_empty() && ctx.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
+        if !items.is_empty() && std_egui::input::arrow_up().pressed(ctx) {
             self.layout.move_overlay_selection(-1, items.len());
         }
-        if ctx.input(|input| input.key_pressed(egui::Key::Enter)) {
+        if std_egui::input::enter().pressed(ctx) {
             if let Some(action) = selected_action(&items, self.layout.overlay_selected) {
                 self.apply_command_action(action);
             } else if self.layout.settings_open {
