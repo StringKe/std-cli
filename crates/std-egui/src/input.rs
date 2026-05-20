@@ -4,6 +4,7 @@ pub enum KeyBinding {
     ModShift(char),
     ModNamed(egui::Key),
     ModShiftNamed(egui::Key),
+    ShiftNamed(egui::Key),
     Plain(egui::Key),
     Named(&'static str),
 }
@@ -27,6 +28,7 @@ impl KeyBinding {
                     named_key_label(key)
                 )
             }
+            Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
             Self::Named(name) => name.to_string(),
         }
@@ -45,6 +47,13 @@ impl KeyBinding {
             }
             Self::ModShiftNamed(key) => {
                 input.modifiers.command && input.modifiers.shift && input.key_pressed(key)
+            }
+            Self::ShiftNamed(key) => {
+                !input.modifiers.command
+                    && input.modifiers.shift
+                    && !input.modifiers.alt
+                    && !input.modifiers.ctrl
+                    && input.key_pressed(key)
             }
             Self::Plain(key) => {
                 !input.modifiers.command
@@ -108,6 +117,14 @@ pub fn escape() -> KeyBinding {
 
 pub fn enter() -> KeyBinding {
     KeyBinding::Plain(egui::Key::Enter)
+}
+
+pub fn tab() -> KeyBinding {
+    KeyBinding::Plain(egui::Key::Tab)
+}
+
+pub fn shift_tab() -> KeyBinding {
+    KeyBinding::ShiftNamed(egui::Key::Tab)
 }
 
 pub fn arrow_down() -> KeyBinding {
@@ -185,6 +202,7 @@ fn named_key_label(key: egui::Key) -> &'static str {
         egui::Key::Enter => "Enter",
         egui::Key::Escape => "Esc",
         egui::Key::Slash => "/",
+        egui::Key::Tab => "Tab",
         _ => "Key",
     }
 }
@@ -209,6 +227,8 @@ mod tests {
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));
+        assert_eq!(tab().label(), "Tab");
+        assert_eq!(shift_tab().label(), "Shift+Tab");
     }
 
     #[test]

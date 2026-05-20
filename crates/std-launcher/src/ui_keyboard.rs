@@ -24,6 +24,11 @@ pub(crate) fn handle_search_shortcuts(
     if input::enter().pressed(ctx) {
         handle_user_execution(state, LauncherKey::Enter, hide_requested);
     }
+    if input::shift_tab().pressed(ctx) {
+        state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+    } else if input::tab().pressed(ctx) {
+        state.handle_keyboard_input(LauncherKey::FocusNext, false);
+    }
     if input::launcher_action_panel().pressed(ctx) {
         state.handle_keyboard_input_by_user(LauncherKey::ActionPanel, false);
     }

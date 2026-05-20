@@ -15,7 +15,7 @@ pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
 };
-pub use keyboard::{LauncherKey, LauncherKeyboardReport};
+pub use keyboard::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport};
 pub use semantics::LauncherUiSemanticsReport;
 use std::time::Instant;
 use std_core::{StdConfig, StdCore};
@@ -37,6 +37,7 @@ pub struct LauncherState {
     pub view: LauncherViewModel,
     pub controller: LauncherController,
     pub action_panel: ActionPanel,
+    pub focus_section: LauncherFocusSection,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -104,6 +105,7 @@ impl Default for LauncherState {
             view,
             controller,
             action_panel: ActionPanel::closed(),
+            focus_section: LauncherFocusSection::Search,
         }
     }
 }
@@ -122,6 +124,7 @@ impl LauncherState {
             view,
             controller,
             action_panel: ActionPanel::closed(),
+            focus_section: LauncherFocusSection::Search,
         }
     }
 
@@ -149,23 +152,27 @@ impl LauncherState {
 
     pub fn hide(&mut self) {
         self.action_panel.close();
+        self.focus_section = LauncherFocusSection::Search;
         self.controller.hide();
     }
 
     pub fn update_query(&mut self, query: impl Into<String>) -> Option<ActionPreview> {
         self.action_panel.close();
+        self.focus_section = LauncherFocusSection::Search;
         self.view.update_query(&self.core, query);
         self.view.preview.clone()
     }
 
     pub fn move_selection(&mut self, delta: isize) -> Option<ActionPreview> {
         self.action_panel.close();
+        self.focus_section = LauncherFocusSection::Results;
         self.view.move_selection_with_preview(&self.core, delta);
         self.view.preview.clone()
     }
 
     pub fn jump_selection(&mut self, first: bool) -> Option<ActionPreview> {
         self.action_panel.close();
+        self.focus_section = LauncherFocusSection::Results;
         self.view.jump_selection(&self.core, first);
         self.view.preview.clone()
     }
@@ -176,11 +183,13 @@ impl LauncherState {
             return false;
         };
         self.action_panel.open_for(&result.action);
+        self.focus_section = LauncherFocusSection::ActionPanel;
         true
     }
 
     pub fn close_action_panel(&mut self) {
         self.action_panel.close();
+        self.focus_section = LauncherFocusSection::Results;
     }
 
     pub fn move_action_panel_selection(&mut self, delta: isize) {

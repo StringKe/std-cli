@@ -1,4 +1,4 @@
-use crate::{LauncherKey, LauncherState};
+use crate::{LauncherFocusSection, LauncherKey, LauncherState};
 
 #[test]
 fn mod_arrow_keys_jump_to_result_edges() {
@@ -58,4 +58,49 @@ fn escape_closes_action_panel_before_clearing_query() {
     assert!(!state.action_panel.open);
     assert_eq!(state.view.query, "open");
     assert!(state.controller.visible);
+    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+}
+
+#[test]
+fn tab_keys_cycle_launcher_focus_sections_without_wrapping_into_mouse_only_state() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+    state.handle_keyboard_input(LauncherKey::FocusNext, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+
+    state.handle_keyboard_input(LauncherKey::FocusNext, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+    state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+
+    state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+}
+
+#[test]
+fn tab_keys_include_action_panel_when_it_is_open() {
+    let mut state = LauncherState::new();
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+
+    state.handle_keyboard_input(LauncherKey::FocusNext, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+    state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+    assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+}
+
+#[test]
+fn ime_composition_blocks_focus_section_shortcuts() {
+    let mut state = LauncherState::new();
+    state.update_query("index");
+
+    state.handle_keyboard_input(LauncherKey::FocusNext, true);
+
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
 }

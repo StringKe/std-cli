@@ -7,11 +7,20 @@ pub enum LauncherKey {
     ArrowUp,
     JumpToFirst,
     JumpToLast,
+    FocusNext,
+    FocusPrevious,
     Enter,
     Escape,
     ActionPanel,
     DeletePreviousToken,
     TriggerResult(usize),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LauncherFocusSection {
+    Search,
+    Results,
+    ActionPanel,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -24,6 +33,8 @@ pub struct LauncherKeyboardReport {
     pub ime_selection_unchanged: bool,
     pub ime_trigger_blocked: bool,
     pub ime_escape_blocked: bool,
+    pub focus_after_tab: LauncherFocusSection,
+    pub focus_after_shift_tab: LauncherFocusSection,
 }
 
 impl LauncherState {
@@ -85,11 +96,20 @@ impl LauncherState {
                 self.jump_selection(false);
                 None
             }
+            LauncherKey::FocusNext => {
+                self.focus_next_section();
+                None
+            }
+            LauncherKey::FocusPrevious => {
+                self.focus_previous_section();
+                None
+            }
             LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),
             LauncherKey::Enter if allow_external_runner => self.trigger_selected_by_user(),
             LauncherKey::Enter => self.trigger_selected(),
             LauncherKey::ActionPanel => {
                 self.open_action_panel();
+                self.focus_section = LauncherFocusSection::ActionPanel;
                 None
             }
             LauncherKey::DeletePreviousToken => {
@@ -99,6 +119,7 @@ impl LauncherState {
             LauncherKey::TriggerResult(index) => self.trigger_result_by_user(index),
             LauncherKey::Escape if self.action_panel.open => {
                 self.close_action_panel();
+                self.focus_section = LauncherFocusSection::Results;
                 None
             }
             LauncherKey::Escape if !self.view.query.is_empty() => {
@@ -124,6 +145,11 @@ impl LauncherState {
         let before_ime = state.view.selected;
         state.handle_keyboard_input(LauncherKey::ArrowDown, true);
         let ime_selection_unchanged = state.view.selected == before_ime;
+        state.focus_section = LauncherFocusSection::Search;
+        state.handle_keyboard_input(LauncherKey::FocusNext, false);
+        let focus_after_tab = state.focus_section;
+        state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+        let focus_after_shift_tab = state.focus_section;
         let ime_trigger_blocked = state
             .handle_keyboard_input(LauncherKey::Enter, true)
             .is_none()
@@ -144,7 +170,27 @@ impl LauncherState {
             ime_selection_unchanged,
             ime_trigger_blocked,
             ime_escape_blocked,
+            focus_after_tab,
+            focus_after_shift_tab,
         }
+    }
+
+    fn focus_next_section(&mut self) {
+        self.focus_section = match (self.focus_section, self.action_panel.open) {
+            (LauncherFocusSection::Search, _) => LauncherFocusSection::Results,
+            (LauncherFocusSection::Results, true) => LauncherFocusSection::ActionPanel,
+            (LauncherFocusSection::Results, false) => LauncherFocusSection::Search,
+            (LauncherFocusSection::ActionPanel, _) => LauncherFocusSection::Search,
+        };
+    }
+
+    fn focus_previous_section(&mut self) {
+        self.focus_section = match (self.focus_section, self.action_panel.open) {
+            (LauncherFocusSection::Search, true) => LauncherFocusSection::ActionPanel,
+            (LauncherFocusSection::Search, false) => LauncherFocusSection::Results,
+            (LauncherFocusSection::Results, _) => LauncherFocusSection::Search,
+            (LauncherFocusSection::ActionPanel, _) => LauncherFocusSection::Results,
+        };
     }
 }
 
@@ -157,11 +203,13 @@ impl LauncherKeyboardReport {
             && self.ime_selection_unchanged
             && self.ime_trigger_blocked
             && self.ime_escape_blocked
+            && self.focus_after_tab == LauncherFocusSection::Results
+            && self.focus_after_shift_tab == LauncherFocusSection::Search
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -173,7 +221,9 @@ impl LauncherKeyboardReport {
             self.closed_after_escape,
             self.ime_selection_unchanged,
             self.ime_trigger_blocked,
-            self.ime_escape_blocked
+            self.ime_escape_blocked,
+            self.focus_after_tab,
+            self.focus_after_shift_tab
         )
     }
 }
