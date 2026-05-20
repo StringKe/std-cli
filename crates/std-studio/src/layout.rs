@@ -5,7 +5,6 @@ pub(crate) struct StudioLayoutState {
     pub sidebar_open: bool,
     pub inspector_open: bool,
     pub bottom_panel_open: bool,
-    pub settings_open: bool,
     pub command_palette_open: bool,
     pub quick_open_open: bool,
     pub command_query: String,
@@ -22,7 +21,6 @@ impl Default for StudioLayoutState {
             sidebar_open: true,
             inspector_open: false,
             bottom_panel_open: false,
-            settings_open: false,
             command_palette_open: false,
             quick_open_open: false,
             command_query: String::new(),
@@ -46,9 +44,6 @@ impl StudioLayoutState {
         if std_egui::input::studio_bottom_panel_toggle().pressed(ctx) {
             self.bottom_panel_open = !self.bottom_panel_open;
         }
-        if std_egui::input::studio_settings().pressed(ctx) {
-            self.open_settings();
-        }
         if std_egui::input::studio_command_palette_slash().pressed(ctx)
             || std_egui::input::studio_command_palette().pressed(ctx)
         {
@@ -56,15 +51,6 @@ impl StudioLayoutState {
         } else if std_egui::input::studio_quick_open().pressed(ctx) {
             self.open_quick_open();
         }
-    }
-
-    pub(crate) fn open_settings(&mut self) {
-        self.settings_open = true;
-        self.command_palette_open = false;
-        self.quick_open_open = false;
-        self.command_query.clear();
-        self.quick_open_query.clear();
-        self.overlay_selected = 0;
     }
 
     pub(crate) fn open_command_palette(&mut self) {
@@ -84,7 +70,6 @@ impl StudioLayoutState {
     }
 
     pub(crate) fn close_overlays(&mut self) {
-        self.settings_open = false;
         self.command_palette_open = false;
         self.quick_open_open = false;
         self.command_query.clear();
@@ -132,7 +117,6 @@ mod tests {
         assert!(layout.sidebar_open);
         assert!(!layout.inspector_open);
         assert!(!layout.bottom_panel_open);
-        assert!(!layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
         assert!(layout.command_query.is_empty());
@@ -185,14 +169,7 @@ mod tests {
         assert!(layout.command_query.is_empty());
         assert_eq!(layout.overlay_selected, 0);
 
-        layout.open_settings();
-        assert!(layout.settings_open);
-        assert!(!layout.command_palette_open);
-        assert!(!layout.quick_open_open);
-        assert!(layout.command_query.is_empty());
-
         layout.close_overlays();
-        assert!(!layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
         assert_eq!(layout.overlay_selected, 0);

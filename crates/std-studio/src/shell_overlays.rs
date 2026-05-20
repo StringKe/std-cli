@@ -17,9 +17,6 @@ const HOST_OVERLAY_Y: f32 = 96.0;
 
 impl StudioEguiApp {
     pub(crate) fn render_overlays(&mut self, ctx: &egui::Context) {
-        if self.layout.settings_open {
-            self.render_settings_overlay(ctx);
-        }
         if self.layout.command_palette_open {
             self.render_command_overlay(
                 ctx,
@@ -55,7 +52,7 @@ impl StudioEguiApp {
             Vec::new()
         };
         self.layout.clamp_overlay_selection(items.len());
-        if items.is_empty() && !self.layout.settings_open {
+        if items.is_empty() {
             return;
         }
 
@@ -72,42 +69,8 @@ impl StudioEguiApp {
         if std_egui::input::enter().pressed(ctx) {
             if let Some(action) = selected_action(&items, self.layout.overlay_selected) {
                 self.apply_command_action(action);
-            } else if self.layout.settings_open {
-                self.open_settings_workspace_pane();
-                self.layout.close_overlays();
             }
         }
-    }
-
-    fn render_settings_overlay(&mut self, ctx: &egui::Context) {
-        render_host_overlay(ctx, "studio_settings_overlay", 560.0, |ui| {
-            ui::section_header(ui, i18n::t("studio.settings.title"), "Mod+,");
-            ui.horizontal(|ui| {
-                ui.label(
-                    egui::RichText::new(i18n::t("studio.settings.paths.title"))
-                        .color(ui::muted_text(ctx)),
-                );
-                ui.label(self.app.config_path().display().to_string());
-            });
-            ui.horizontal(|ui| {
-                ui.label(
-                    egui::RichText::new(i18n::t("studio.settings.hotkey.label"))
-                        .color(ui::muted_text(ctx)),
-                );
-                ui.label(&self.settings_hotkey);
-            });
-            ui.horizontal(|ui| {
-                ui.label(
-                    egui::RichText::new(i18n::t("studio.settings.theme.label"))
-                        .color(ui::muted_text(ctx)),
-                );
-                ui.label(&self.settings_theme);
-            });
-            if ui::quiet_button(ui, i18n::t("studio.shell.settings.open")).clicked() {
-                self.open_settings_workspace_pane();
-                self.layout.close_overlays();
-            }
-        });
     }
 
     fn render_command_overlay(
@@ -200,7 +163,7 @@ impl StudioEguiApp {
         self.layout.close_overlays();
     }
 
-    fn open_settings_workspace_pane(&mut self) {
+    pub(crate) fn open_settings_workspace_pane(&mut self) {
         let id = self.app.open_settings_pane();
         self.status = format!("opened workspace pane {}", id.value());
     }

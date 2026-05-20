@@ -136,6 +136,7 @@ impl eframe::App for StudioEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.theme_profile = Some(ui::install_visuals(ctx, &self.app.core.config.theme));
         self.layout.handle_keyboard(ctx);
+        self.handle_settings_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
@@ -143,6 +144,16 @@ impl eframe::App for StudioEguiApp {
 }
 
 impl StudioEguiApp {
+    fn handle_settings_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        if std_egui::input::studio_settings().pressed(ctx) {
+            self.open_settings_workspace_pane();
+            self.layout.close_overlays();
+        }
+    }
+
     fn handle_workspace_tab_keyboard(&mut self, ctx: &egui::Context) {
         if std_egui::input::ime_composing(ctx) {
             return;
@@ -447,15 +458,10 @@ mod app_tests {
 
         app.layout.open_command_palette();
         assert!(app.layout.command_palette_open);
-        assert!(!app.layout.quick_open_open);
-
-        app.layout.open_settings();
-        assert!(app.layout.settings_open);
-        assert!(!app.layout.command_palette_open);
-        assert!(!app.layout.quick_open_open);
 
         app.layout.close_overlays();
-        assert!(!app.layout.settings_open);
+        assert!(!app.layout.command_palette_open);
+        assert!(!app.layout.quick_open_open);
     }
 
     #[test]
@@ -465,6 +471,7 @@ mod app_tests {
         assert!(!overlays.contains(&["egui::", "Window", "::new"].join("")));
         assert!(!overlays.contains(&["Window", "::new"].join("")));
         assert!(overlays.contains("egui::Area::new"));
+        assert!(!overlays.contains(&["studio", "_settings", "_overlay"].join("")));
     }
 
     #[test]
