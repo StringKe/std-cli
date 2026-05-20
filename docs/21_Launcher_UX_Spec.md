@@ -239,8 +239,8 @@
 | --- | --- | --- | --- |
 | 热键 -> 主面板可见 | ≤ 80ms | `LauncherPerformanceReport.hotkey_to_paint` | 已落地 |
 | keystroke -> 列表更新 | ≤ 16ms (95p) | 同 report | 已落地 |
-| Mod+K -> Action Panel 可见 | ≤ 50ms | smoke 断言 | 待补 |
-| 主面板关闭 -> 完全消失 | ≤ 200ms | smoke 断言 | 待补 |
+| Mod+K -> Action Panel 可见 | ≤ 50ms | `std-launcher --action-panel-smoke` | 已落地 |
+| 主面板关闭 -> 完全消失 | ≤ 200ms | `std-launcher --close-smoke` | 已落地 |
 | Cold start（first launch） | ≤ 600ms | std doctor | 已落地 |
 
 **回归门禁**：
