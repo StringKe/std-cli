@@ -1,3 +1,4 @@
+use crate::ui;
 use crate::window::apply_window_commands;
 use eframe::egui;
 use std::{
@@ -85,7 +86,7 @@ pub(crate) fn run_gui_hotkey_smoke(
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([480.0, 360.0])
+            .with_inner_size(ui::launcher_initial_window_inner_size())
             .with_decorations(false)
             .with_transparent(true)
             .with_visible(false),

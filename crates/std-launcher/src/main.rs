@@ -40,7 +40,7 @@ fn run_launcher_app() -> eframe::Result<()> {
 fn launcher_native_options() -> eframe::NativeOptions {
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([880.0, 520.0])
+            .with_inner_size(ui::launcher_initial_window_inner_size())
             .with_decorations(false)
             .with_transparent(true)
             .with_visible(false),
@@ -60,5 +60,9 @@ mod tests {
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(false)"));
+        assert_eq!(
+            ui::launcher_initial_window_inner_size(),
+            egui::vec2(744.0, 280.0)
+        );
     }
 }

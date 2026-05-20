@@ -1,4 +1,5 @@
 use crate::app::LauncherApp;
+use crate::ui;
 use eframe::egui;
 use std::time::{Duration, Instant};
 use std_egui::tokens::ThemeMode;
@@ -72,7 +73,7 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 fn preview_native_options() -> eframe::NativeOptions {
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([880.0, 520.0])
+            .with_inner_size(ui::launcher_initial_window_inner_size())
             .with_decorations(false)
             .with_transparent(true)
             .with_visible(true),
@@ -165,6 +166,10 @@ mod tests {
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
+        assert_eq!(
+            ui::launcher_initial_window_inner_size(),
+            egui::vec2(744.0, 280.0)
+        );
     }
 
     #[test]

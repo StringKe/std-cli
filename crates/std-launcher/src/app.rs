@@ -86,6 +86,9 @@ impl eframe::App for LauncherApp {
             return;
         }
 
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(
+            ui::launcher_window_inner_size(&self.state),
+        ));
         egui::CentralPanel::default()
             .frame(egui::Frame::NONE.fill(egui::Color32::TRANSPARENT))
             .show(ctx, |ui| {
