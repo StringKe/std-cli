@@ -76,7 +76,7 @@ pub fn reduce_motion() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use egui::Color32;
+    use crate::tokens::palette;
 
     #[test]
     fn apply_theme_sets_expected_visual_mode() {
@@ -95,12 +95,21 @@ mod tests {
         apply_theme(&ctx, ThemeMode::Light);
 
         let visuals = &ctx.style().visuals;
-        assert_eq!(visuals.panel_fill, Color32::from_rgb(255, 255, 255));
-        assert_eq!(visuals.window_fill, Color32::from_rgb(247, 248, 250));
-        assert_eq!(
-            visuals.selection.bg_fill,
-            Color32::from_rgba_premultiplied(10, 107, 255, 31)
-        );
+        assert_eq!(visuals.panel_fill, palette::LIGHT_SURFACE_0);
+        assert_eq!(visuals.window_fill, palette::LIGHT_SURFACE_1);
+        assert_eq!(visuals.selection.bg_fill, palette::LIGHT_ACCENT_WEAK);
+    }
+
+    #[test]
+    fn apply_theme_uses_non_black_dark_surface_tokens() {
+        let ctx = egui::Context::default();
+
+        apply_theme(&ctx, ThemeMode::Dark);
+
+        let visuals = &ctx.style().visuals;
+        assert_eq!(visuals.panel_fill, palette::DARK_SURFACE_0);
+        assert_eq!(visuals.window_fill, palette::DARK_SURFACE_1);
+        assert!(visuals.panel_fill.r() >= 24);
     }
 
     #[test]

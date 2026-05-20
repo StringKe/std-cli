@@ -1,4 +1,5 @@
 use crate::a11y::AccessibilityContext;
+use crate::tokens::palette;
 use egui::Color32;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,11 +33,7 @@ impl Color {
     }
 
     pub(crate) fn bg_surface_0_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(14, 15, 17),
-            Color32::from_rgb(255, 255, 255),
-        )
+        color_for(theme, palette::DARK_SURFACE_0, palette::LIGHT_SURFACE_0)
     }
 
     pub fn bg_surface_1(ctx: &egui::Context) -> Color32 {
@@ -44,11 +41,7 @@ impl Color {
     }
 
     pub(crate) fn bg_surface_1_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(22, 24, 27),
-            Color32::from_rgb(247, 248, 250),
-        )
+        color_for(theme, palette::DARK_SURFACE_1, palette::LIGHT_SURFACE_1)
     }
 
     pub fn bg_surface_2(ctx: &egui::Context) -> Color32 {
@@ -56,11 +49,7 @@ impl Color {
     }
 
     pub(crate) fn bg_surface_2_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(30, 33, 38),
-            Color32::from_rgb(238, 240, 243),
-        )
+        color_for(theme, palette::DARK_SURFACE_2, palette::LIGHT_SURFACE_2)
     }
 
     pub fn bg_surface_3(ctx: &egui::Context) -> Color32 {
@@ -68,11 +57,7 @@ impl Color {
     }
 
     pub(crate) fn bg_surface_3_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(38, 42, 48),
-            Color32::from_rgb(227, 230, 234),
-        )
+        color_for(theme, palette::DARK_SURFACE_3, palette::LIGHT_SURFACE_3)
     }
 
     pub fn fg_primary(ctx: &egui::Context) -> Color32 {
@@ -80,11 +65,7 @@ impl Color {
     }
 
     pub(crate) fn fg_primary_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(236, 238, 241),
-            Color32::from_rgb(26, 28, 32),
-        )
+        color_for(theme, palette::DARK_FG_PRIMARY, palette::LIGHT_FG_PRIMARY)
     }
 
     pub fn fg_secondary(ctx: &egui::Context) -> Color32 {
@@ -95,14 +76,14 @@ impl Color {
         if a11y.high_contrast {
             return color_for(
                 theme,
-                Color32::from_rgb(220, 223, 227),
-                Color32::from_rgb(42, 45, 50),
+                palette::DARK_FG_SECONDARY_HC,
+                palette::LIGHT_FG_SECONDARY_HC,
             );
         }
         color_for(
             theme,
-            Color32::from_rgb(181, 186, 193),
-            Color32::from_rgb(75, 80, 87),
+            palette::DARK_FG_SECONDARY,
+            palette::LIGHT_FG_SECONDARY,
         )
     }
 
@@ -114,11 +95,11 @@ impl Color {
         if a11y.high_contrast {
             return color_for(
                 theme,
-                Color32::from_rgb(181, 186, 193),
-                Color32::from_rgb(75, 80, 87),
+                palette::DARK_FG_SECONDARY,
+                palette::LIGHT_FG_SECONDARY,
             );
         }
-        Color32::from_rgb(122, 128, 137)
+        palette::FG_TERTIARY
     }
 
     pub fn stroke_divider(ctx: &egui::Context) -> Color32 {
@@ -132,11 +113,7 @@ impl Color {
         if a11y.high_contrast {
             return Self::stroke_border_for(theme, a11y);
         }
-        color_for(
-            theme,
-            Color32::from_rgb(38, 42, 48),
-            Color32::from_rgb(227, 230, 234),
-        )
+        color_for(theme, palette::DARK_SURFACE_3, palette::LIGHT_SURFACE_3)
     }
 
     pub fn stroke_border(ctx: &egui::Context) -> Color32 {
@@ -149,8 +126,8 @@ impl Color {
     ) -> Color32 {
         color_for(
             theme,
-            Color32::from_rgb(52, 57, 63),
-            Color32::from_rgb(208, 212, 217),
+            palette::DARK_STROKE_BORDER,
+            palette::LIGHT_STROKE_BORDER,
         )
     }
 
@@ -159,11 +136,7 @@ impl Color {
     }
 
     pub(crate) fn accent_base_for(theme: EffectiveTheme, _a11y: &AccessibilityContext) -> Color32 {
-        color_for(
-            theme,
-            Color32::from_rgb(78, 156, 255),
-            Color32::from_rgb(10, 107, 255),
-        )
+        color_for(theme, palette::DARK_ACCENT_BASE, palette::LIGHT_ACCENT_BASE)
     }
 
     pub fn accent_weak(ctx: &egui::Context) -> Color32 {
@@ -174,15 +147,11 @@ impl Color {
         if a11y.high_contrast {
             return color_for(
                 theme,
-                Color32::from_rgba_premultiplied(78, 156, 255, 82),
-                Color32::from_rgba_premultiplied(10, 107, 255, 56),
+                palette::DARK_ACCENT_WEAK_HC,
+                palette::LIGHT_ACCENT_WEAK_HC,
             );
         }
-        color_for(
-            theme,
-            Color32::from_rgba_premultiplied(78, 156, 255, 46),
-            Color32::from_rgba_premultiplied(10, 107, 255, 31),
-        )
+        color_for(theme, palette::DARK_ACCENT_WEAK, palette::LIGHT_ACCENT_WEAK)
     }
 
     pub fn status_success(ctx: &egui::Context) -> Color32 {
@@ -195,8 +164,8 @@ impl Color {
     ) -> Color32 {
         color_for(
             theme,
-            Color32::from_rgb(61, 203, 124),
-            Color32::from_rgb(19, 135, 80),
+            palette::DARK_STATUS_SUCCESS,
+            palette::LIGHT_STATUS_SUCCESS,
         )
     }
 
@@ -210,8 +179,8 @@ impl Color {
     ) -> Color32 {
         color_for(
             theme,
-            Color32::from_rgb(245, 182, 67),
-            Color32::from_rgb(178, 117, 0),
+            palette::DARK_STATUS_WARNING,
+            palette::LIGHT_STATUS_WARNING,
         )
     }
 
@@ -225,8 +194,8 @@ impl Color {
     ) -> Color32 {
         color_for(
             theme,
-            Color32::from_rgb(255, 106, 106),
-            Color32::from_rgb(200, 49, 43),
+            palette::DARK_STATUS_DANGER,
+            palette::LIGHT_STATUS_DANGER,
         )
     }
 }
@@ -293,5 +262,19 @@ mod tests {
             Color::accent_weak_for(EffectiveTheme::Dark, &standard),
             Color::accent_weak_for(EffectiveTheme::Dark, &high_contrast)
         );
+    }
+
+    #[test]
+    fn dark_surfaces_are_layered_without_near_black_panel_fill() {
+        let standard = a11y(false);
+
+        assert_eq!(
+            Color::bg_surface_0_for(EffectiveTheme::Dark, &standard),
+            palette::DARK_SURFACE_0
+        );
+        assert!(palette::DARK_SURFACE_0.r() >= 24);
+        assert!(palette::DARK_SURFACE_1.r() > palette::DARK_SURFACE_0.r());
+        assert!(palette::DARK_SURFACE_2.r() > palette::DARK_SURFACE_1.r());
+        assert!(palette::DARK_SURFACE_3.r() > palette::DARK_SURFACE_2.r());
     }
 }
