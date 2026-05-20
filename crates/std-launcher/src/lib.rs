@@ -4,6 +4,7 @@
 
 mod action_panel;
 mod action_panel_smoke;
+mod close_smoke;
 mod controller;
 mod hotkey;
 mod keyboard;
@@ -15,6 +16,7 @@ mod voice;
 
 pub use action_panel::{ActionPanel, ActionPanelItem};
 pub use action_panel_smoke::LauncherActionPanelSmokeReport;
+pub use close_smoke::LauncherCloseSmokeReport;
 pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
