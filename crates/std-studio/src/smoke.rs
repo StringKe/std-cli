@@ -1,9 +1,11 @@
+mod analysis_smoke;
 mod layout_smoke;
 mod plugin_smoke;
 mod workflow_builder_smoke;
 mod workspace_smoke;
 
 use crate::{default_batch_json, StudioPane};
+use analysis_smoke::run_analysis_workbench_smoke;
 use layout_smoke::StudioLayoutSmoke;
 use plugin_smoke::run_plugin_manager_smoke;
 use std_core::{StdConfig, StdCore};
@@ -48,6 +50,13 @@ pub(crate) struct StudioSmokeReport {
     batch_status: String,
     analysis_name: String,
     analysis_coverage_complete: usize,
+    analysis_coverage_layers: String,
+    analysis_search_hits: usize,
+    analysis_answer_sources: usize,
+    analysis_inspect_components: usize,
+    analysis_inspect_relations: usize,
+    analysis_inspect_history: usize,
+    analysis_answer_has_evidence: bool,
     memory_count: usize,
     plugin_js_status: String,
     plugin_ts_status: String,
@@ -64,7 +73,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -100,6 +109,13 @@ impl StudioSmokeReport {
             self.batch_status,
             self.analysis_name,
             self.analysis_coverage_complete,
+            self.analysis_coverage_layers,
+            self.analysis_search_hits,
+            self.analysis_answer_sources,
+            self.analysis_inspect_components,
+            self.analysis_inspect_relations,
+            self.analysis_inspect_history,
+            self.analysis_answer_has_evidence,
             self.memory_count,
             self.plugin_js_status,
             self.plugin_ts_status,
@@ -147,6 +163,15 @@ impl StudioSmokeReport {
             && self.builder_side_effect_model == "simulate=dry-run,run=audit-log"
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
+            && self
+                .analysis_coverage_layers
+                .contains("overview=true,components=true,relations=true,history=true")
+            && self.analysis_search_hits >= 1
+            && self.analysis_answer_sources >= 1
+            && self.analysis_inspect_components >= 1
+            && self.analysis_inspect_relations >= 1
+            && self.analysis_inspect_history >= 1
+            && self.analysis_answer_has_evidence
             && self.memory_count >= 1
             && self.plugin_js_status == "Completed"
             && self.plugin_ts_status == "Completed"
@@ -202,6 +227,13 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
+            analysis_coverage_layers: "FAIL".to_string(),
+            analysis_search_hits: 0,
+            analysis_answer_sources: 0,
+            analysis_inspect_components: 0,
+            analysis_inspect_relations: 0,
+            analysis_inspect_history: 0,
+            analysis_answer_has_evidence: false,
             memory_count: 0,
             plugin_js_status: "FAIL".to_string(),
             plugin_ts_status: "FAIL".to_string(),
@@ -260,6 +292,7 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
     )?;
     let analysis_name = studio.analyze_entity(&project_dir)?.overview.name.clone();
     let coverage = studio.analysis_coverage_report()?;
+    let analysis_smoke = run_analysis_workbench_smoke(&studio, "StudioSmoke", "project")?;
 
     let plugin_smoke = run_plugin_manager_smoke(&mut studio)?;
 
@@ -309,6 +342,13 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         batch_status,
         analysis_name,
         analysis_coverage_complete: coverage.complete,
+        analysis_coverage_layers: analysis_smoke.coverage_layers,
+        analysis_search_hits: analysis_smoke.search_hits,
+        analysis_answer_sources: analysis_smoke.answer_sources,
+        analysis_inspect_components: analysis_smoke.inspect_components,
+        analysis_inspect_relations: analysis_smoke.inspect_relations,
+        analysis_inspect_history: analysis_smoke.inspect_history,
+        analysis_answer_has_evidence: analysis_smoke.answer_has_evidence,
         memory_count,
         plugin_js_status: plugin_smoke.js_status,
         plugin_ts_status: plugin_smoke.ts_status,
@@ -335,6 +375,7 @@ mod tests {
         assert_workspace_policy_summary(&summary);
         assert_shell_layout_summary(&summary);
         assert_workflow_builder_summary(&summary);
+        assert_analysis_workbench_summary(&summary);
     }
 
     fn assert_workspace_policy_summary(summary: &str) {
@@ -381,6 +422,18 @@ mod tests {
         assert!(summary.contains("plugin_preview_kind=Command"));
         assert!(summary.contains("plugin_js_runtime=deno_core"));
         assert!(summary.contains("plugin_ts_runtime=deno_core"));
+    }
+
+    fn assert_analysis_workbench_summary(summary: &str) {
+        assert!(summary.contains(
+            "analysis_coverage_layers=overview=true,components=true,relations=true,history=true"
+        ));
+        assert!(summary.contains("analysis_search_hits=2"));
+        assert!(summary.contains("analysis_answer_sources=2"));
+        assert!(summary.contains("analysis_inspect_components=1"));
+        assert!(summary.contains("analysis_inspect_relations=3"));
+        assert!(summary.contains("analysis_inspect_history=1"));
+        assert!(summary.contains("analysis_answer_has_evidence=true"));
     }
 
     #[test]
