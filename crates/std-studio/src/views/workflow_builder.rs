@@ -1,18 +1,19 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::Path;
+use std_egui::tokens::Space;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Workflow Builder", "steps, properties, AI assist");
             self.render_builder_toolbar(ui);
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             ui.columns(2, |columns| {
                 columns[0].vertical(|ui| self.render_builder_steps(ui));
                 columns[1].vertical(|ui| self.render_step_properties(ui));
             });
-            ui.add_space(8.0);
+            ui.add_space(Space::XS as f32);
             self.render_ai_assist_panel(ui);
         });
     }

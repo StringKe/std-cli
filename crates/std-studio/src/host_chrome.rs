@@ -1,11 +1,12 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
+use std_egui::tokens::Space;
 
 impl StudioEguiApp {
     pub(crate) fn render_app_chrome(&mut self, ui: &mut egui::Ui) {
         let frame = egui::Frame::new()
             .fill(std_egui::tokens::Color::bg_surface_1(ui.ctx()))
-            .inner_margin(egui::Margin::symmetric(14, 8));
+            .inner_margin(egui::Margin::symmetric(Space::SM, Space::XS));
         frame.show(ui, |ui| {
             let drag_rect = ui.max_rect();
             let drag_response = ui.interact(
@@ -20,7 +21,7 @@ impl StudioEguiApp {
                 self.render_top_identity(ui);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     host_window_controls(ui, &mut self.host_maximized);
-                    ui.add_space(12.0);
+                    ui.add_space(Space::SM as f32);
                     self.render_top_actions(ui);
                 });
             });

@@ -2,6 +2,7 @@ use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+use std_egui::tokens::Space;
 use std_studio::{StudioPane, WorkspacePane, WorkspacePaneId, WorkspacePaneKind};
 
 pub(crate) type WorkspaceCommandQueue = Arc<Mutex<Vec<StudioWorkspaceCommand>>>;
@@ -74,12 +75,12 @@ impl StudioEguiApp {
             return;
         }
 
-        ui.add_space(12.0);
+        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, "Workspace Panes", "inside Studio");
             for spec in specs {
                 render_spec(ui, &spec, "active workspace", &self.workspace_commands);
-                ui.add_space(8.0);
+                ui.add_space(Space::XS as f32);
             }
         });
     }
@@ -153,11 +154,11 @@ fn render_spec(
     ui::surface_frame(ui.ctx()).show(ui, |ui| {
         ui::section_header(ui, &spec.heading, class_label);
         render_workspace_summary(ui, spec);
-        ui.add_space(6.0);
+        ui.add_space(Space::XS as f32);
         for line in &spec.lines {
             render_workspace_line(ui, line);
         }
-        ui.add_space(6.0);
+        ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
     });
 }
