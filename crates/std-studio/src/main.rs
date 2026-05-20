@@ -8,6 +8,7 @@ mod layout;
 mod operations;
 mod preview;
 mod shell;
+mod shell_icons;
 mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;
