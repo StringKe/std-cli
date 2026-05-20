@@ -9,6 +9,7 @@ pub enum LauncherKey {
     Escape,
     ActionPanel,
     DeletePreviousToken,
+    TriggerResult(usize),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -77,6 +78,7 @@ impl LauncherState {
                 self.view.delete_previous_query_token(&self.core);
                 None
             }
+            LauncherKey::TriggerResult(index) => self.trigger_result_by_user(index),
             LauncherKey::Escape if self.action_panel.open => {
                 self.close_action_panel();
                 None

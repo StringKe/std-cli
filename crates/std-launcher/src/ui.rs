@@ -99,6 +99,30 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
     if ui.input(|input| input.modifiers.command && input.key_pressed(egui::Key::Backspace)) {
         state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
     }
+    if let Some(index) = pressed_result_shortcut(ui.ctx()) {
+        state.handle_keyboard_input_by_user(LauncherKey::TriggerResult(index), false);
+    }
+}
+
+fn pressed_result_shortcut(ctx: &egui::Context) -> Option<usize> {
+    ctx.input(|input| {
+        if !input.modifiers.command || input.modifiers.shift {
+            return None;
+        }
+        [
+            egui::Key::Num1,
+            egui::Key::Num2,
+            egui::Key::Num3,
+            egui::Key::Num4,
+            egui::Key::Num5,
+            egui::Key::Num6,
+            egui::Key::Num7,
+            egui::Key::Num8,
+            egui::Key::Num9,
+        ]
+        .iter()
+        .position(|key| input.key_pressed(*key))
+    })
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {

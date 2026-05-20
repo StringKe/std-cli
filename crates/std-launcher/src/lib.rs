@@ -277,6 +277,16 @@ impl LauncherState {
         self.trigger_selected_with_external_runner(true)
     }
 
+    pub fn trigger_result_by_user(&mut self, index: usize) -> Option<ActionExecution> {
+        if index >= self.view.results.len() || index >= 9 {
+            return None;
+        }
+        self.action_panel.close();
+        self.view.selected = index;
+        self.view.refresh_preview(&self.core);
+        self.trigger_selected_by_user()
+    }
+
     fn trigger_selected_with_external_runner(
         &mut self,
         allow_external_runner: bool,
@@ -463,5 +473,7 @@ pub fn launcher_version() -> &'static str {
 
 #[cfg(test)]
 mod action_panel_tests;
+#[cfg(test)]
+mod shortcut_tests;
 #[cfg(test)]
 mod tests;
