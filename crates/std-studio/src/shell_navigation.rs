@@ -130,7 +130,7 @@ impl StudioEguiApp {
         ui.vertical(|ui| {
             ui::section_header(
                 ui,
-                i18n::t("studio.windows.title"),
+                i18n::t("studio.workspace_panes.title"),
                 i18n::t("studio.shell.pane_manager.detail"),
             );
             for (id, title, open) in panes {

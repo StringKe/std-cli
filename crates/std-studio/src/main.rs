@@ -20,7 +20,7 @@ mod studio_smoke_cli;
 mod ui;
 mod viewport;
 mod views;
-mod windows;
+mod workspace_panes;
 mod workspace_tabs;
 
 use layout::StudioLayoutState;
@@ -31,7 +31,7 @@ use std::sync::{Arc, Mutex};
 use std_studio::{StudioApp, StudioPane};
 use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
 use viewport::studio_native_options;
-use windows::WorkspaceCommandQueue;
+use workspace_panes::WorkspaceCommandQueue;
 
 pub(crate) struct StudioEguiApp {
     pub(crate) app: StudioApp,
@@ -195,7 +195,7 @@ fn main() -> eframe::Result<()> {
 #[cfg(test)]
 mod app_tests {
     use super::*;
-    use crate::windows::{focused_workspace_spec, StudioWorkspaceCommand};
+    use crate::workspace_panes::{focused_workspace_spec, StudioWorkspaceCommand};
     use std_core::{StdConfig, StdCore};
 
     #[test]

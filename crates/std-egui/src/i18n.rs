@@ -184,17 +184,17 @@ mod tests {
     }
 
     #[test]
-    fn studio_windows_strings_have_zh_cn_and_en_us_values() {
+    fn studio_workspace_panes_strings_have_zh_cn_and_en_us_values() {
         assert_eq!(
-            translate(Locale::EnUs, "studio.windows.preview_workflow"),
+            translate(Locale::EnUs, "studio.workspace_panes.preview_workflow"),
             "Preview Workflow"
         );
         assert_eq!(
-            translate(Locale::ZhCn, "studio.windows.detail"),
+            translate(Locale::ZhCn, "studio.workspace_panes.detail"),
             "Studio 内部面板"
         );
         assert_eq!(
-            translate(Locale::EnUs, "studio.windows.execution_history"),
+            translate(Locale::EnUs, "studio.workspace_panes.execution_history"),
             "Execution History"
         );
         assert_eq!(

@@ -87,7 +87,7 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
-                i18n::t("studio.windows.title"),
+                i18n::t("studio.workspace_panes.title"),
                 self.app.workspace_policy.summary(),
             );
             let tabs = crate::workspace_tabs::workspace_tab_specs(
@@ -99,7 +99,7 @@ impl StudioEguiApp {
             render_spec(
                 ui,
                 &spec,
-                i18n::t("studio.windows.active"),
+                i18n::t("studio.workspace_panes.active"),
                 &self.workspace_commands,
             );
         });
@@ -193,13 +193,13 @@ fn render_workspace_summary(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
         ui.label(egui::RichText::new(spec.content_key).color(ui::muted_text(ui.ctx())));
         if spec.workflow_path.is_some() {
             ui.label(
-                egui::RichText::new(i18n::t("studio.windows.workflow_editor"))
+                egui::RichText::new(i18n::t("studio.workspace_panes.workflow_editor"))
                     .color(ui::muted_text(ui.ctx())),
             );
         }
         if spec.analysis_path.is_some() {
             ui.label(
-                egui::RichText::new(i18n::t("studio.windows.analysis_target"))
+                egui::RichText::new(i18n::t("studio.workspace_panes.analysis_target"))
                     .color(ui::muted_text(ui.ctx())),
             );
         }
@@ -239,34 +239,34 @@ fn render_workspace_actions(
     commands: &WorkspaceCommandQueue,
 ) {
     ui.horizontal_wrapped(|ui| {
-        if ui::quiet_button(ui, i18n::t("studio.windows.show_in_main")).clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.show_in_main")).clicked() {
             push_command(commands, StudioWorkspaceCommand::ShowInMain(spec.pane));
         }
         if let Some(path) = &spec.workflow_path {
-            if ui::quiet_button(ui, i18n::t("studio.windows.preview_workflow")).clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.preview_workflow")).clicked() {
                 push_command(
                     commands,
                     StudioWorkspaceCommand::PreviewWorkflow(path.clone()),
                 );
             }
-            if ui::quiet_button(ui, i18n::t("studio.windows.run_workflow")).clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.run_workflow")).clicked() {
                 push_command(commands, StudioWorkspaceCommand::RunWorkflow(path.clone()));
             }
         }
         if let Some(path) = &spec.analysis_path {
-            if ui::quiet_button(ui, i18n::t("studio.windows.analyze")).clicked() {
+            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.analyze")).clicked() {
                 push_command(commands, StudioWorkspaceCommand::Analyze(path.clone()));
             }
         }
         if spec.content_key == "plugins"
-            && ui::quiet_button(ui, i18n::t("studio.windows.reload_plugins")).clicked()
+            && ui::quiet_button(ui, i18n::t("studio.workspace_panes.reload_plugins")).clicked()
         {
             push_command(commands, StudioWorkspaceCommand::ReloadPlugins);
         }
-        if ui::quiet_button(ui, i18n::t("studio.windows.refresh")).clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.refresh")).clicked() {
             push_command(commands, StudioWorkspaceCommand::Refresh);
         }
-        if ui::quiet_button(ui, i18n::t("studio.windows.close")).clicked() {
+        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.close")).clicked() {
             push_command(commands, StudioWorkspaceCommand::Close(spec.id));
         }
     });

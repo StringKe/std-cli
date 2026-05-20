@@ -76,7 +76,7 @@ fn studio_operations_evidence_reports_current_quality_release_and_install_state(
 mod analysis;
 mod plugins;
 mod trace;
-mod windows;
+mod workspace_panes;
 
 #[test]
 fn studio_plans_workflow_from_goal() {

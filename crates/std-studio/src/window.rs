@@ -43,15 +43,17 @@ impl WorkspacePaneKind {
                     display_name(entity_path)
                 )
             }
-            WorkspacePaneKind::AppManager => i18n::t("studio.windows.app_manager").to_string(),
+            WorkspacePaneKind::AppManager => {
+                i18n::t("studio.workspace_panes.app_manager").to_string()
+            }
             WorkspacePaneKind::MemoryBrowser => {
-                i18n::t("studio.windows.memory_browser").to_string()
+                i18n::t("studio.workspace_panes.memory_browser").to_string()
             }
             WorkspacePaneKind::ExecutionHistory => {
-                i18n::t("studio.windows.execution_history").to_string()
+                i18n::t("studio.workspace_panes.execution_history").to_string()
             }
             WorkspacePaneKind::PluginManager => {
-                i18n::t("studio.windows.plugin_manager").to_string()
+                i18n::t("studio.workspace_panes.plugin_manager").to_string()
             }
         }
     }

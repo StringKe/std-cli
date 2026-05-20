@@ -49,7 +49,7 @@ fn studio_pane_titles_reflect_pane_kind() {
     let titles = studio
         .workspace_panes
         .iter()
-        .map(|window| (window.id, window.title.as_str()))
+        .map(|pane| (pane.id, pane.title.as_str()))
         .collect::<Vec<_>>();
 
     assert!(titles.contains(&(workflow, "Workflow Builder: workflow.json")));
@@ -75,7 +75,7 @@ fn studio_pane_kinds_map_to_real_pane_content() {
     let content = studio
         .workspace_panes
         .iter()
-        .map(|window| (window.id, window.kind.content_key()))
+        .map(|pane| (pane.id, pane.kind.content_key()))
         .collect::<Vec<_>>();
 
     assert!(content.contains(&(dashboard, "dashboard")));
@@ -180,4 +180,20 @@ fn workspace_panes_cover_interactive_workbench_surfaces() {
             || line.contains("plugin_actions=")
             || line.contains("trace=")));
     }
+}
+
+#[test]
+fn studio_ui_uses_workspace_pane_language_not_window_language() {
+    let main_source = include_str!("../main.rs");
+    let pane_source = include_str!("../workspace_panes.rs");
+    let tabs_source = include_str!("../workspace_tabs.rs");
+
+    for source in [main_source, pane_source, tabs_source] {
+        assert!(!source.contains("mod windows"));
+        assert!(!source.contains("crate::windows"));
+        assert!(!source.contains("studio.windows"));
+    }
+    assert!(main_source.contains("mod workspace_panes"));
+    assert!(pane_source.contains("studio.workspace_panes"));
+    assert!(tabs_source.contains("studio.workspace_panes.close"));
 }

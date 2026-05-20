@@ -7,9 +7,9 @@ mod operations;
 mod plugins;
 mod settings;
 mod shell;
-mod windows;
 mod workflow_builder;
 mod workflows;
+mod workspace_panes;
 
 use crate::i18n::Locale;
 
@@ -24,7 +24,7 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         .or_else(|| plugins::translate(locale, key))
         .or_else(|| shell::translate(locale, key))
         .or_else(|| workflow_builder::translate(locale, key))
-        .or_else(|| windows::translate(locale, key))
+        .or_else(|| workspace_panes::translate(locale, key))
         .or_else(|| workflows::translate(locale, key))
 }
 
@@ -39,6 +39,6 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         .or_else(|| plugins::fallback(key))
         .or_else(|| shell::fallback(key))
         .or_else(|| workflow_builder::fallback(key))
-        .or_else(|| windows::fallback(key))
+        .or_else(|| workspace_panes::fallback(key))
         .or_else(|| workflows::fallback(key))
 }

@@ -1,4 +1,4 @@
-use crate::{ui, windows::StudioWorkspaceCommand};
+use crate::{ui, workspace_panes::StudioWorkspaceCommand};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -31,7 +31,7 @@ pub(crate) fn workspace_tab_specs(
 pub(crate) fn render_workspace_tabs(
     ui: &mut egui::Ui,
     specs: &[WorkspaceTabSpec],
-    commands: &crate::windows::WorkspaceCommandQueue,
+    commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
     ui.horizontal_wrapped(|ui| {
         for spec in specs {
@@ -49,7 +49,7 @@ pub(crate) fn workspace_tab_keyboard_command(
 fn render_workspace_tab(
     ui: &mut egui::Ui,
     spec: &WorkspaceTabSpec,
-    commands: &crate::windows::WorkspaceCommandQueue,
+    commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
     let fill = if spec.focused {
         ui::selected_bg(ui.ctx())
@@ -66,14 +66,17 @@ fn render_workspace_tab(
                 if ui::quiet_button(ui, &spec.title).clicked() {
                     push_command(commands, StudioWorkspaceCommand::Focus(spec.id));
                 }
-                if ui::quiet_button(ui, i18n::t("studio.windows.close")).clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workspace_panes.close")).clicked() {
                     push_command(commands, StudioWorkspaceCommand::Close(spec.id));
                 }
             });
         });
 }
 
-fn push_command(commands: &crate::windows::WorkspaceCommandQueue, command: StudioWorkspaceCommand) {
+fn push_command(
+    commands: &crate::workspace_panes::WorkspaceCommandQueue,
+    command: StudioWorkspaceCommand,
+) {
     if let Ok(mut queue) = commands.lock() {
         queue.push(command);
     }
