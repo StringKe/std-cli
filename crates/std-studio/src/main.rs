@@ -4,6 +4,7 @@ mod analysis;
 mod analysis_rows;
 mod app_rows;
 mod app_view;
+mod bottom_panel;
 mod commands;
 mod host_chrome;
 mod layout;
@@ -358,6 +359,9 @@ mod app_tests {
         assert_eq!(app.app.active_pane, StudioPane::Workflows);
         assert!(app.app.workflow_debug.is_some());
         assert!(app.layout.bottom_panel_open);
+        let preview_panel = app.bottom_panel_snapshot();
+        assert_eq!(preview_panel.title, "Workspace Preview");
+        assert_eq!(preview_panel.rows.len(), 1);
         assert!(app.status.contains("workspace preview"));
 
         app.workspace_commands
@@ -368,6 +372,9 @@ mod app_tests {
 
         assert!(app.app.last_workflow_execution.is_some());
         assert!(app.layout.bottom_panel_open);
+        let run_panel = app.bottom_panel_snapshot();
+        assert_eq!(run_panel.title, "Workspace Preview");
+        assert_eq!(run_panel.rows.len(), 1);
         assert!(app.status.contains("workspace run"));
     }
 
@@ -387,6 +394,13 @@ mod app_tests {
 
         assert!(app.app.last_batch_report.is_some());
         assert!(app.layout.bottom_panel_open);
+        let panel = app.bottom_panel_snapshot();
+        assert_eq!(panel.title, "Batch Debug");
+        assert_eq!(panel.rows.len(), 2);
+        assert!(panel
+            .rows
+            .iter()
+            .any(|row| row.status == crate::bottom_panel::completed_status()));
         assert!(app.status.contains("batch"));
     }
 

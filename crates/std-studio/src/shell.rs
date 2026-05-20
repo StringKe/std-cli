@@ -163,29 +163,4 @@ impl StudioEguiApp {
             });
         });
     }
-
-    fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.shell.batch_debug.title"),
-                i18n::t("studio.shell.batch_debug.detail"),
-            );
-            if let Some(report) = self.app.last_batch_report.as_ref() {
-                ui.label(egui::RichText::new(format!("batch {:?}", report.status)));
-            } else if let Some(execution) = self.app.last_workflow_execution.as_ref() {
-                ui.label(egui::RichText::new(format!(
-                    "workflow {:?}",
-                    execution.status
-                )));
-            } else if self.status.is_empty() {
-                ui.label(
-                    egui::RichText::new(i18n::t("studio.shell.idle"))
-                        .color(ui::muted_text(ui.ctx())),
-                );
-            } else {
-                ui.label(egui::RichText::new(&self.status).color(ui::strong_text(ui.ctx())));
-            }
-        });
-    }
 }
