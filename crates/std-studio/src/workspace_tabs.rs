@@ -53,10 +53,26 @@ fn render_workspace_cycle_controls(
     ui: &mut egui::Ui,
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
-    if ui::quiet_button(ui, i18n::t("studio.workspace_panes.previous")).clicked() {
+    let previous = ui::quiet_button(ui, i18n::t("studio.workspace_panes.previous"));
+    previous.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            workspace_cycle_a11y_label("Previous"),
+        )
+    });
+    if previous.clicked() {
         push_command(commands, StudioWorkspaceCommand::FocusPrevious);
     }
-    if ui::quiet_button(ui, i18n::t("studio.workspace_panes.next")).clicked() {
+    let next = ui::quiet_button(ui, i18n::t("studio.workspace_panes.next"));
+    next.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            workspace_cycle_a11y_label("Next"),
+        )
+    });
+    if next.clicked() {
         push_command(commands, StudioWorkspaceCommand::FocusNext);
     }
 }
@@ -78,14 +94,43 @@ fn render_workspace_tab(
         .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
         .show(ui, |ui| {
             ui.horizontal(|ui| {
-                if ui::quiet_button(ui, &spec.title).clicked() {
+                let focus = ui::quiet_button(ui, &spec.title);
+                focus.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::Button,
+                        ui.is_enabled(),
+                        workspace_tab_a11y_label(spec),
+                    )
+                });
+                if focus.clicked() {
                     push_command(commands, StudioWorkspaceCommand::Focus(spec.id));
                 }
-                if ui::quiet_button(ui, i18n::t("studio.workspace_panes.close")).clicked() {
+                let close = ui::quiet_button(ui, i18n::t("studio.workspace_panes.close"));
+                close.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::Button,
+                        ui.is_enabled(),
+                        workspace_tab_close_a11y_label(spec),
+                    )
+                });
+                if close.clicked() {
                     push_command(commands, StudioWorkspaceCommand::Close(spec.id));
                 }
             });
         });
+}
+
+pub(crate) fn workspace_tab_a11y_label(spec: &WorkspaceTabSpec) -> String {
+    let state = if spec.focused { "focused" } else { "inactive" };
+    format!("Workspace pane tab, {}, {}", spec.title, state)
+}
+
+pub(crate) fn workspace_tab_close_a11y_label(spec: &WorkspaceTabSpec) -> String {
+    format!("Close workspace pane, {}", spec.title)
+}
+
+pub(crate) fn workspace_cycle_a11y_label(direction: &str) -> String {
+    format!("{direction} workspace pane")
 }
 
 fn push_command(
@@ -144,5 +189,24 @@ mod tests {
             StudioWorkspaceCommand::FocusNext,
             StudioWorkspaceCommand::FocusNext
         );
+    }
+
+    #[test]
+    fn workspace_tab_a11y_labels_include_role_title_and_state() {
+        let spec = WorkspaceTabSpec {
+            id: WorkspacePaneId::new(9),
+            title: "Workflow Builder".to_string(),
+            focused: true,
+        };
+
+        assert_eq!(
+            workspace_tab_a11y_label(&spec),
+            "Workspace pane tab, Workflow Builder, focused"
+        );
+        assert_eq!(
+            workspace_tab_close_a11y_label(&spec),
+            "Close workspace pane, Workflow Builder"
+        );
+        assert_eq!(workspace_cycle_a11y_label("Next"), "Next workspace pane");
     }
 }

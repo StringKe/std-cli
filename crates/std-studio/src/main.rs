@@ -290,6 +290,19 @@ mod app_tests {
     }
 
     #[test]
+    fn workspace_pane_a11y_label_includes_heading_and_kind() {
+        let mut app = StudioEguiApp::default();
+        let settings = app.app.open_settings_pane();
+        let spec = focused_workspace_spec(&app.app).unwrap();
+
+        assert_eq!(spec.id, settings);
+        assert_eq!(
+            crate::workspace_panes::workspace_pane_a11y_label(&spec),
+            "Workspace pane, Settings, settings"
+        );
+    }
+
+    #[test]
     fn workspace_canvas_renders_only_focused_internal_pane() {
         let mut app = StudioEguiApp::default();
         let plugin = app.app.open_plugin_manager_pane();

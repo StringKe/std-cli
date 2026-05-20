@@ -195,6 +195,14 @@ fn render_spec(
     pending_focus: &mut Option<WorkspacePaneId>,
 ) {
     ui::surface_frame(ui.ctx()).show(ui, |ui| {
+        let response = ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::Label,
+                ui.is_enabled(),
+                workspace_pane_a11y_label(spec),
+            )
+        });
         request_workspace_focus(ui, spec.id, pending_focus);
         ui::section_header(ui, &spec.heading, class_label);
         render_workspace_summary(ui, spec);
@@ -205,6 +213,10 @@ fn render_spec(
         ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
     });
+}
+
+pub(crate) fn workspace_pane_a11y_label(spec: &StudioWorkspaceSpec) -> String {
+    format!("Workspace pane, {}, {}", spec.heading, spec.content_key)
 }
 
 pub(crate) fn workspace_pane_focus_id(id: WorkspacePaneId) -> egui::Id {

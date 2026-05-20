@@ -229,6 +229,10 @@ fn studio_ui_uses_workspace_pane_language_not_window_language() {
     assert!(pane_source.contains("studio.workspace_panes"));
     assert!(pane_source.contains("request_workspace_focus"));
     assert!(pane_source.contains("memory.request_focus"));
+    assert!(pane_source.contains("response.widget_info"));
+    assert!(pane_source.contains("workspace_pane_a11y_label"));
+    assert!(tabs_source.contains("workspace_tab_a11y_label"));
+    assert!(tabs_source.contains("workspace_tab_close_a11y_label"));
     assert!(tabs_source.contains("studio.workspace_panes.close"));
 }
 
