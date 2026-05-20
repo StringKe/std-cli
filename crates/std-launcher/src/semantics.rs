@@ -73,7 +73,7 @@ impl LauncherState {
             .view
             .preview
             .as_ref()
-            .map(|preview| format!("Enter {}", preview.title))
+            .map(|preview| format!("Enter {}", preview.primary_command))
             .unwrap_or_else(|| "Enter none".to_string());
         let action_bar_hint = "Actions Mod+K".to_string();
         let mut no_results = Self::new();
