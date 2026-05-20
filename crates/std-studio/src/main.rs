@@ -6,6 +6,7 @@ mod commands;
 mod host_chrome;
 mod layout;
 mod operations;
+mod operations_rows;
 mod preview;
 mod shell;
 mod shell_icons;
