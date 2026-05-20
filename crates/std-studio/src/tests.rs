@@ -46,34 +46,8 @@ fn studio_switches_panes() {
     assert_eq!(StudioPane::all().len(), 9);
 }
 
-#[test]
-fn studio_operations_evidence_reports_current_quality_release_and_install_state() {
-    let evidence = OpsEvidence::load();
-    let lines = evidence.lines();
-
-    assert_eq!(evidence.qa.status, OpsStatus::Pass);
-    assert_eq!(evidence.doctor.status, OpsStatus::Pass);
-    assert!(matches!(
-        evidence.release.status,
-        OpsStatus::Pass | OpsStatus::Missing
-    ));
-    assert!(matches!(
-        evidence.install.status,
-        OpsStatus::Pass | OpsStatus::Missing
-    ));
-    assert_eq!(evidence.runtime.status, OpsStatus::Manual);
-    assert!(lines.iter().any(|line| line.contains("qa=PASS")));
-    assert!(lines.iter().any(|line| line.contains("result=")));
-    assert!(lines.iter().any(|line| line.contains("std doctor")));
-    assert!(lines.iter().any(|line| line.contains("release verify")));
-    assert!(lines.iter().any(|line| line.contains("install verify")));
-    assert!(!evidence.qa.result.is_empty());
-    assert!(evidence.doctor.result.contains("doctor implementation"));
-    assert!(!evidence.release.result.is_empty());
-    assert!(!evidence.install.result.is_empty());
-}
-
 mod analysis;
+mod operations;
 mod plugins;
 mod trace;
 mod workspace_panes;

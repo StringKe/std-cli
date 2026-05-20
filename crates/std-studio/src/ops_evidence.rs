@@ -20,6 +20,8 @@ pub struct OpsGate {
     pub evidence: String,
     pub result: String,
     pub detail: String,
+    pub artifact: String,
+    pub output: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +55,8 @@ impl OpsEvidence {
                     .to_string(),
                 result: quality_result(&root),
                 detail: "rustfmt, clippy, dylint, cargo-deny, cargo-machete".to_string(),
+                artifact: root.join("mise.toml").display().to_string(),
+                output: quality_output(&root),
             },
             doctor: OpsGate {
                 title: "Doctor",
@@ -61,6 +65,11 @@ impl OpsEvidence {
                 evidence: "StdConfig, storage, registry, workspace quality".to_string(),
                 result: doctor_result(&root),
                 detail: "doctor reports quality, release plan, install plan".to_string(),
+                artifact: root
+                    .join("crates/std-cli/src/doctor.rs")
+                    .display()
+                    .to_string(),
+                output: doctor_output(&root),
             },
             release: OpsGate {
                 title: "Release",
@@ -69,6 +78,11 @@ impl OpsEvidence {
                 evidence: release_dir.display().to_string(),
                 result: release_result(&release_dir),
                 detail: "manifest, binaries, app bundles, docs, examples, quality".to_string(),
+                artifact: release_dir
+                    .join("release-manifest.json")
+                    .display()
+                    .to_string(),
+                output: release_output(&release_dir),
             },
             install: OpsGate {
                 title: "Install",
@@ -77,6 +91,8 @@ impl OpsEvidence {
                 evidence: install_prefix.display().to_string(),
                 result: install_result(&install_prefix),
                 detail: "installed binaries, app bundles, storage directories".to_string(),
+                artifact: install_prefix.display().to_string(),
+                output: install_output(&install_prefix),
             },
             runtime: OpsGate {
                 title: "Runtime",
@@ -85,6 +101,8 @@ impl OpsEvidence {
                 evidence: "explicit opt-in desktop smoke".to_string(),
                 result: "manual desktop opt-in required".to_string(),
                 detail: "default tests must not open GUI or external runners".to_string(),
+                artifact: "STD_ALLOW_DESKTOP_AUTOMATION=1".to_string(),
+                output: "SKIP until explicit desktop opt-in".to_string(),
             },
         }
     }
@@ -100,12 +118,14 @@ impl OpsEvidence {
         .into_iter()
         .map(|gate| {
             format!(
-                "{}={} command={} evidence={} result={}",
+                "{}={} command={} evidence={} result={} artifact={} output={}",
                 gate.title.to_ascii_lowercase(),
                 gate.status.label(),
                 gate.command,
                 gate.evidence,
                 gate.result,
+                gate.artifact,
+                gate.output,
             )
         })
         .collect()
@@ -135,7 +155,31 @@ fn quality_result(root: &Path) -> String {
     if report.is_file() {
         return format!("packaged report {}", file_summary(&report));
     }
-    "quality report not packaged yet".to_string()
+    let tools = quality_tools_present(root);
+    format!(
+        "workspace quality configured: {}/{} tools",
+        tools.iter().filter(|(_, present)| *present).count(),
+        tools.len()
+    )
+}
+
+fn quality_output(root: &Path) -> String {
+    quality_tools_present(root)
+        .into_iter()
+        .map(|(name, present)| format!("{name}={}", status_word(present)))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn quality_tools_present(root: &Path) -> Vec<(&'static str, bool)> {
+    [
+        ("rustfmt", root.join("rustfmt.toml").is_file()),
+        ("clippy", root.join("clippy.toml").is_file()),
+        ("dylint", root.join("crates/file_too_long").is_dir()),
+        ("cargo-deny", root.join("deny.toml").is_file()),
+        ("cargo-machete", root.join("mise.toml").is_file()),
+    ]
+    .to_vec()
 }
 
 fn doctor_status(root: &Path) -> OpsStatus {
@@ -151,11 +195,54 @@ fn doctor_status(root: &Path) -> OpsStatus {
 }
 
 fn doctor_result(root: &Path) -> String {
-    if doctor_status(root) == OpsStatus::Pass {
-        "doctor implementation present".to_string()
-    } else {
-        "doctor implementation missing".to_string()
-    }
+    let checks = doctor_checks(root);
+    format!(
+        "doctor source gates {}/{} mapped to std doctor",
+        checks.iter().filter(|(_, present)| *present).count(),
+        checks.len()
+    )
+}
+
+fn doctor_output(root: &Path) -> String {
+    doctor_checks(root)
+        .into_iter()
+        .map(|(name, present)| format!("{name}={}", status_word(present)))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn doctor_checks(root: &Path) -> Vec<(&'static str, bool)> {
+    [
+        (
+            "storage",
+            source_contains(root, "crates/std-cli/src/doctor.rs", "check_storage"),
+        ),
+        (
+            "quality",
+            source_contains(
+                root,
+                "crates/std-cli/src/doctor/workspace.rs",
+                "check_workspace_quality",
+            ),
+        ),
+        (
+            "ui",
+            source_contains(
+                root,
+                "crates/std-cli/src/doctor/ui.rs",
+                "check_ui_completion_evidence",
+            ),
+        ),
+        (
+            "release",
+            source_contains(root, "crates/std-cli/src/doctor.rs", "release_plan"),
+        ),
+        (
+            "install",
+            source_contains(root, "crates/std-cli/src/doctor.rs", "install_plan"),
+        ),
+    ]
+    .to_vec()
 }
 
 fn release_status(dist_dir: &Path) -> OpsStatus {
@@ -178,9 +265,56 @@ fn release_status(dist_dir: &Path) -> OpsStatus {
 fn release_result(dist_dir: &Path) -> String {
     let manifest = dist_dir.join("release-manifest.json");
     if !manifest.is_file() {
-        return "release manifest missing".to_string();
+        return format!("release verify blocked: missing {}", manifest.display());
     }
-    format!("manifest {}", file_summary(&manifest))
+    let checks = release_checks(dist_dir);
+    format!(
+        "release verify evidence {}/{} present",
+        checks.iter().filter(|(_, present)| *present).count(),
+        checks.len()
+    )
+}
+
+fn release_output(dist_dir: &Path) -> String {
+    release_checks(dist_dir)
+        .into_iter()
+        .map(|(name, present)| format!("{name}={}", status_word(present)))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn release_checks(dist_dir: &Path) -> Vec<(&'static str, bool)> {
+    [
+        ("manifest", dist_dir.join("release-manifest.json").is_file()),
+        ("std", dist_dir.join("bin").join("std").is_file()),
+        (
+            "launcher",
+            dist_dir.join("bin").join("std-launcher").is_file(),
+        ),
+        ("studio", dist_dir.join("bin").join("std-studio").is_file()),
+        (
+            "quality",
+            dist_dir
+                .join("quality")
+                .join("quality-report.txt")
+                .is_file(),
+        ),
+        (
+            "launcher_app",
+            dist_dir
+                .join("Applications")
+                .join("std Launcher.app")
+                .is_dir(),
+        ),
+        (
+            "studio_app",
+            dist_dir
+                .join("Applications")
+                .join("std Studio.app")
+                .is_dir(),
+        ),
+    ]
+    .to_vec()
 }
 
 fn install_status(prefix: &Path) -> OpsStatus {
@@ -199,10 +333,57 @@ fn install_status(prefix: &Path) -> OpsStatus {
 }
 
 fn install_result(prefix: &Path) -> String {
-    if install_status(prefix) == OpsStatus::Pass {
-        format!("installed artifacts present in {}", prefix.display())
+    let checks = install_checks(prefix);
+    format!(
+        "install verify evidence {}/{} present in {}",
+        checks.iter().filter(|(_, present)| *present).count(),
+        checks.len(),
+        prefix.display()
+    )
+}
+
+fn install_output(prefix: &Path) -> String {
+    install_checks(prefix)
+        .into_iter()
+        .map(|(name, present)| format!("{name}={}", status_word(present)))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn install_checks(prefix: &Path) -> Vec<(&'static str, bool)> {
+    [
+        ("std", prefix.join("bin").join("std").is_file()),
+        (
+            "launcher",
+            prefix.join("bin").join("std-launcher").is_file(),
+        ),
+        ("studio", prefix.join("bin").join("std-studio").is_file()),
+        (
+            "launcher_app",
+            prefix
+                .join("Applications")
+                .join("std Launcher.app")
+                .is_dir(),
+        ),
+        (
+            "studio_app",
+            prefix.join("Applications").join("std Studio.app").is_dir(),
+        ),
+    ]
+    .to_vec()
+}
+
+fn source_contains(root: &Path, relative: &str, needle: &str) -> bool {
+    std::fs::read_to_string(root.join(relative))
+        .map(|body| body.contains(needle))
+        .unwrap_or(false)
+}
+
+fn status_word(present: bool) -> &'static str {
+    if present {
+        "PASS"
     } else {
-        format!("install artifacts missing in {}", prefix.display())
+        "MISSING"
     }
 }
 

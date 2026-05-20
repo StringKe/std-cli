@@ -98,6 +98,18 @@ impl StudioEguiApp {
                 &gate.result,
                 gate.status.label(),
             );
+            operations_rows::gate_row(
+                ui,
+                i18n::t("studio.operations.artifact"),
+                &gate.artifact,
+                i18n::t("studio.operations.current_workspace"),
+            );
+            operations_rows::gate_row(
+                ui,
+                i18n::t("studio.operations.output"),
+                &gate.output,
+                gate.status.label(),
+            );
             if ui::quiet_button(ui, i18n::t("studio.operations.record_evidence")).clicked() {
                 self.status = format!(
                     "{} evidence {}",
