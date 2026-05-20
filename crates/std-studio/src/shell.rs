@@ -1,5 +1,8 @@
 use crate::{
-    commands::{command_palette_items, quick_open_items, StudioCommandAction, StudioCommandItem},
+    commands::{
+        command_palette_items, quick_open_items, selected_action, StudioCommandAction,
+        StudioCommandItem,
+    },
     shell_parts::{panel_frame, path_label},
     ui, StudioEguiApp,
 };
@@ -8,6 +11,7 @@ use std_studio::StudioPane;
 
 impl StudioEguiApp {
     pub(crate) fn render_shell(&mut self, ctx: &egui::Context) {
+        self.handle_overlay_keyboard(ctx);
         egui::TopBottomPanel::top("studio_app_chrome")
             .exact_height(52.0)
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
@@ -240,6 +244,38 @@ impl StudioEguiApp {
         }
     }
 
+    fn handle_overlay_keyboard(&mut self, ctx: &egui::Context) {
+        let items = if self.layout.command_palette_open {
+            command_palette_items(&self.app)
+        } else if self.layout.quick_open_open {
+            quick_open_items(&self.app)
+        } else {
+            Vec::new()
+        };
+        if items.is_empty() && !self.layout.settings_open {
+            return;
+        }
+
+        if ctx.input(|input| input.key_pressed(egui::Key::Escape)) {
+            self.layout.close_overlays();
+            return;
+        }
+        if !items.is_empty() && ctx.input(|input| input.key_pressed(egui::Key::ArrowDown)) {
+            self.layout.move_overlay_selection(1, items.len());
+        }
+        if !items.is_empty() && ctx.input(|input| input.key_pressed(egui::Key::ArrowUp)) {
+            self.layout.move_overlay_selection(-1, items.len());
+        }
+        if ctx.input(|input| input.key_pressed(egui::Key::Enter)) {
+            if let Some(action) = selected_action(&items, self.layout.overlay_selected) {
+                self.apply_command_action(action);
+            } else if self.layout.settings_open {
+                self.app.switch_pane(StudioPane::Settings);
+                self.layout.close_overlays();
+            }
+        }
+    }
+
     fn render_settings_overlay(&mut self, ctx: &egui::Context) {
         egui::Window::new("Settings")
             .id(egui::Id::new("studio_settings_overlay"))
@@ -284,24 +320,33 @@ impl StudioEguiApp {
             .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, 96.0))
             .show(ctx, |ui| {
                 ui::section_header(ui, title, shortcut);
-                for item in items {
-                    self.render_command_item(ui, item);
+                for (index, item) in items.into_iter().enumerate() {
+                    self.render_command_item(ui, item, index == self.layout.overlay_selected);
                 }
             });
     }
 
-    fn render_command_item(&mut self, ui: &mut egui::Ui, item: StudioCommandItem) {
-        ui.horizontal(|ui| {
-            ui.vertical(|ui| {
-                ui.label(egui::RichText::new(&item.title).color(ui::strong_text(ui.ctx())));
-                ui.label(egui::RichText::new(&item.detail).color(ui::muted_text(ui.ctx())));
+    fn render_command_item(&mut self, ui: &mut egui::Ui, item: StudioCommandItem, selected: bool) {
+        egui::Frame::new()
+            .fill(if selected {
+                ui::selected_bg(ui.ctx())
+            } else {
+                egui::Color32::TRANSPARENT
+            })
+            .inner_margin(egui::Margin::symmetric(8, 4))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.vertical(|ui| {
+                        ui.label(egui::RichText::new(&item.title).color(ui::strong_text(ui.ctx())));
+                        ui.label(egui::RichText::new(&item.detail).color(ui::muted_text(ui.ctx())));
+                    });
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        if ui::quiet_button(ui, &item.shortcut).clicked() {
+                            self.apply_command_action(item.action);
+                        }
+                    });
+                });
             });
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui::quiet_button(ui, &item.shortcut).clicked() {
-                    self.apply_command_action(item.action);
-                }
-            });
-        });
     }
 
     fn apply_command_action(&mut self, action: StudioCommandAction) {

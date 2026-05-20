@@ -68,6 +68,20 @@ pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
     items
 }
 
+pub(crate) fn move_selection(selected: usize, delta: isize, len: usize) -> usize {
+    if len == 0 {
+        return 0;
+    }
+    selected.saturating_add_signed(delta).min(len - 1)
+}
+
+pub(crate) fn selected_action(
+    items: &[StudioCommandItem],
+    selected: usize,
+) -> Option<StudioCommandAction> {
+    items.get(selected).map(|item| item.action)
+}
+
 fn main_pane(kind: &WorkspacePaneKind) -> StudioPane {
     match kind {
         WorkspacePaneKind::Pane(pane) => *pane,
@@ -105,5 +119,26 @@ mod tests {
         assert!(items
             .iter()
             .any(|item| item.title == "Open Analysis Workbench"));
+    }
+
+    #[test]
+    fn command_selection_clamps_to_edges() {
+        assert_eq!(move_selection(0, -1, 3), 0);
+        assert_eq!(move_selection(0, 1, 3), 1);
+        assert_eq!(move_selection(2, 1, 3), 2);
+        assert_eq!(move_selection(2, -1, 3), 1);
+        assert_eq!(move_selection(3, 1, 0), 0);
+    }
+
+    #[test]
+    fn selected_action_returns_matching_command_action() {
+        let app = StudioApp::default();
+        let items = command_palette_items(&app);
+
+        assert_eq!(
+            selected_action(&items, 0),
+            Some(StudioCommandAction::SwitchPane(StudioPane::Dashboard))
+        );
+        assert_eq!(selected_action(&items, usize::MAX), None);
     }
 }

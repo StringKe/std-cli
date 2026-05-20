@@ -8,6 +8,7 @@ pub(crate) struct StudioLayoutState {
     pub settings_open: bool,
     pub command_palette_open: bool,
     pub quick_open_open: bool,
+    pub overlay_selected: usize,
     pub sidebar_width: f32,
     pub inspector_width: f32,
     pub bottom_panel_height: f32,
@@ -22,6 +23,7 @@ impl Default for StudioLayoutState {
             settings_open: false,
             command_palette_open: false,
             quick_open_open: false,
+            overlay_selected: 0,
             sidebar_width: 240.0,
             inspector_width: 320.0,
             bottom_panel_height: 240.0,
@@ -62,22 +64,30 @@ impl StudioLayoutState {
         self.settings_open = true;
         self.command_palette_open = false;
         self.quick_open_open = false;
+        self.overlay_selected = 0;
     }
 
     pub(crate) fn open_command_palette(&mut self) {
         self.command_palette_open = true;
         self.quick_open_open = false;
+        self.overlay_selected = 0;
     }
 
     pub(crate) fn open_quick_open(&mut self) {
         self.quick_open_open = true;
         self.command_palette_open = false;
+        self.overlay_selected = 0;
     }
 
     pub(crate) fn close_overlays(&mut self) {
         self.settings_open = false;
         self.command_palette_open = false;
         self.quick_open_open = false;
+        self.overlay_selected = 0;
+    }
+
+    pub(crate) fn move_overlay_selection(&mut self, delta: isize, len: usize) {
+        self.overlay_selected = crate::commands::move_selection(self.overlay_selected, delta, len);
     }
 
     pub(crate) fn sidebar_width(&self) -> f32 {
@@ -111,6 +121,7 @@ mod tests {
         assert!(!layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert_eq!(layout.overlay_selected, 0);
         assert_eq!(layout.sidebar_width(), 240.0);
         assert_eq!(layout.inspector_width(), 320.0);
         assert_eq!(layout.bottom_panel_height(), 240.0);
@@ -146,12 +157,14 @@ mod tests {
         let mut layout = StudioLayoutState::default();
 
         layout.open_quick_open();
+        layout.overlay_selected = 1;
         assert!(layout.quick_open_open);
         assert!(!layout.command_palette_open);
 
         layout.open_command_palette();
         assert!(layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert_eq!(layout.overlay_selected, 0);
 
         layout.open_settings();
         assert!(layout.settings_open);
@@ -162,5 +175,18 @@ mod tests {
         assert!(!layout.settings_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert_eq!(layout.overlay_selected, 0);
+    }
+
+    #[test]
+    fn studio_layout_moves_overlay_selection_without_wrap() {
+        let mut layout = StudioLayoutState::default();
+
+        layout.move_overlay_selection(-1, 3);
+        assert_eq!(layout.overlay_selected, 0);
+        layout.move_overlay_selection(1, 3);
+        assert_eq!(layout.overlay_selected, 1);
+        layout.move_overlay_selection(9, 3);
+        assert_eq!(layout.overlay_selected, 2);
     }
 }
