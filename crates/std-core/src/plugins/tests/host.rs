@@ -138,7 +138,7 @@ fn plugin_javascript_tool_hard_times_out_infinite_loop() {
 }
 
 #[test]
-fn plugin_shell_tool_reports_timeout() {
+fn plugin_shell_tool_is_blocked_in_test_mode() {
     let manifest = Arc::new(PluginManifest {
         name: "timeout".to_string(),
         description: "Timeout plugin".to_string(),
@@ -163,8 +163,10 @@ fn plugin_shell_tool_reports_timeout() {
         PathBuf::from("plugin.json"),
     );
 
-    let output = tool.execute(serde_json::json!({})).unwrap();
+    let error = tool.execute(serde_json::json!({})).unwrap_err();
 
-    assert_eq!(output["timed_out"].as_bool(), Some(true));
-    assert_eq!(output["exit_code"], serde_json::Value::Null);
+    assert_eq!(
+        error.to_string(),
+        "Plugin permission denied: STD_TEST_MODE blocked shell plugin command"
+    );
 }

@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn plugin_manifest_loads_and_shell_tool_executes() {
+fn plugin_manifest_loads_shell_tool_without_executing_in_test_mode() {
     let temp = tempfile::tempdir().unwrap();
     let plugin_dir = temp.path().join("plugins").join("smoke");
     fs::create_dir_all(&plugin_dir).unwrap();
@@ -27,13 +27,14 @@ fn plugin_manifest_loads_and_shell_tool_executes() {
     .unwrap();
 
     let tools = load_plugin_tools(&temp.path().join("plugins")).unwrap();
-    let output = tools[0].execute(serde_json::json!({})).unwrap();
+    let error = tools[0].execute(serde_json::json!({})).unwrap_err();
 
     assert_eq!(tools.len(), 1);
     assert_eq!(tools[0].registry_entry().action.name, "Plugin Smoke");
-    assert_eq!(output["stdout"].as_str(), Some("plugin-smoke"));
-    assert_eq!(output["timed_out"].as_bool(), Some(false));
-    assert_eq!(output["runtime"].as_str(), Some("shell"));
+    assert_eq!(
+        error.to_string(),
+        "Plugin permission denied: STD_TEST_MODE blocked shell plugin command"
+    );
 }
 
 #[test]

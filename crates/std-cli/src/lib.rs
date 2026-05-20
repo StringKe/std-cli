@@ -208,6 +208,9 @@ where
     I: IntoIterator<Item = T>,
     T: Into<std::ffi::OsString> + Clone,
 {
+    #[cfg(test)]
+    std::env::set_var("STD_TEST_MODE", "1");
+
     let cli = Cli::parse_from(args);
     let config = StdConfig::try_load().map_err(|error| CliError::Config(error.to_string()))?;
     let core = StdCore::with_config(config);

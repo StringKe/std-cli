@@ -141,6 +141,10 @@ impl PluginTool {
         if let Some(script) = &self.action.script {
             entry.metadata.insert("script".to_string(), script.clone());
         }
+        entry.metadata.insert(
+            "plugin_kind".to_string(),
+            self.action.kind.kind_key().to_string(),
+        );
         entry
     }
 
@@ -216,6 +220,16 @@ impl PluginTool {
                     "duration_ms": output.duration_ms,
                 }))
             }
+        }
+    }
+}
+
+impl PluginActionKind {
+    fn kind_key(&self) -> &'static str {
+        match self {
+            Self::Shell => "shell",
+            Self::Javascript => "javascript",
+            Self::Typescript => "typescript",
         }
     }
 }

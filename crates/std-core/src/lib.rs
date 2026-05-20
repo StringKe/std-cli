@@ -175,6 +175,13 @@ fn blocked_runtime_test_command_runner(
 
 #[cfg(not(test))]
 fn runtime_test_mode_enabled() -> bool {
+    std_test_mode_enabled()
+}
+
+pub fn std_test_mode_enabled() -> bool {
+    if cfg!(test) {
+        return true;
+    }
     std::env::var("STD_TEST_MODE")
         .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
         .unwrap_or(false)

@@ -21,6 +21,11 @@ pub(crate) fn run_shell_with_timeout(
     command: &str,
     timeout: Duration,
 ) -> Result<PluginCommandOutput, CoreError> {
+    if crate::std_test_mode_enabled() {
+        return Err(CoreError::PluginPermissionDenied(
+            "STD_TEST_MODE blocked shell plugin command".to_string(),
+        ));
+    }
     let mut process = Command::new("sh");
     process.arg("-c").arg(command);
     run_command_with_timeout(process, None, timeout, "shell")

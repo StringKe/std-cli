@@ -291,18 +291,17 @@ fn core_defines_skills_and_command_templates_as_actions() {
     assert_eq!(skill.name, "Summarize Diff");
     assert_eq!(command.template, "printf skill-command-smoke");
     assert_eq!(skill_preview.action_type, ActionType::Skill);
-    assert_eq!(command_execution.status, ActionExecutionStatus::Completed);
-    assert!(command_execution
-        .output
-        .unwrap()
-        .to_string()
-        .contains("skill-command-smoke"));
+    assert_eq!(
+        command_execution.status,
+        ActionExecutionStatus::NeedsExternalRunner
+    );
+    assert!(command_execution.message.contains("skill-command-smoke"));
     assert_eq!(core.list_skills().unwrap().len(), 1);
     assert_eq!(core.list_commands().unwrap().len(), 1);
 }
 
 #[test]
-fn core_registers_and_executes_plugin_tool() {
+fn core_blocks_shell_plugin_tool_in_test_mode() {
     let temp = tempfile::tempdir().unwrap();
     let config = StdConfig {
         data_dir: temp.path().join("data"),
@@ -334,15 +333,14 @@ fn core_registers_and_executes_plugin_tool() {
     let result = core.search("plugin-smoke", 1).unwrap().remove(0);
     let execution = core.execute_action(result.action.id).unwrap();
 
-    assert_eq!(execution.status, ActionExecutionStatus::Completed);
-    assert_eq!(
-        execution.output.unwrap()["stdout"].as_str(),
-        Some("plugin-smoke")
-    );
+    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert!(execution
+        .message
+        .contains("STD_TEST_MODE blocked shell plugin command"));
 }
 
 #[test]
-fn core_returns_failed_plugin_execution_for_nonzero_exit() {
+fn core_blocks_failing_shell_plugin_before_process_spawn_in_test_mode() {
     let temp = tempfile::tempdir().unwrap();
     let config = StdConfig {
         data_dir: temp.path().join("data"),
@@ -375,6 +373,7 @@ fn core_returns_failed_plugin_execution_for_nonzero_exit() {
     let execution = core.execute_action(result.action.id).unwrap();
 
     assert_eq!(execution.status, ActionExecutionStatus::Failed);
-    assert!(execution.message.contains("plugin-fail"));
-    assert_eq!(execution.output.unwrap()["exit_code"].as_i64(), Some(7));
+    assert!(execution
+        .message
+        .contains("STD_TEST_MODE blocked shell plugin command"));
 }

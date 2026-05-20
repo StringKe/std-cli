@@ -108,6 +108,7 @@ impl Drop for GlobalHotkeyRuntime {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct HotkeySmokeReport {
+    pub status: &'static str,
     pub accelerator: String,
     pub registered: bool,
     pub register_ms: u128,
@@ -117,20 +118,35 @@ pub struct HotkeySmokeReport {
 
 impl HotkeySmokeReport {
     pub fn pass(&self) -> bool {
-        self.registered && self.register_ms <= self.budget_ms && self.error.is_none()
+        self.status == "PASS"
+            && self.registered
+            && self.register_ms <= self.budget_ms
+            && self.error.is_none()
     }
 
     pub fn summary(&self) -> String {
-        let status = if self.pass() { "PASS" } else { "FAIL" };
         let error = self.error.as_deref().unwrap_or("none");
         format!(
-            "launcher_hotkey_smoke {status}\naccelerator={}\nregistered={}\nregister_ms={}\nbudget_hotkey_ms={}\nerror={error}",
-            self.accelerator, self.registered, self.register_ms, self.budget_ms
+            "launcher_hotkey_smoke {}\naccelerator={}\nregistered={}\nregister_ms={}\nbudget_hotkey_ms={}\nerror={error}",
+            self.status, self.accelerator, self.registered, self.register_ms, self.budget_ms
         )
     }
 }
 
 pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
+    if hotkey_smoke_blocked_by_test_mode() {
+        return HotkeySmokeReport {
+            status: "SKIP",
+            accelerator: accelerator.to_string(),
+            registered: false,
+            register_ms: 0,
+            budget_ms: HOTKEY_BUDGET_MS,
+            error: Some(
+                "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in"
+                    .to_string(),
+            ),
+        };
+    }
     let plan = HotkeyRegistrationPlan {
         accelerator: accelerator.to_string(),
         enabled: true,
@@ -142,6 +158,7 @@ pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
             let registered = runtime.is_registered();
             drop(runtime);
             HotkeySmokeReport {
+                status: "PASS",
                 accelerator: accelerator.to_string(),
                 registered,
                 register_ms,
@@ -150,6 +167,7 @@ pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
             }
         }
         Err(error) => HotkeySmokeReport {
+            status: "FAIL",
             accelerator: accelerator.to_string(),
             registered: false,
             register_ms: started_at.elapsed().as_millis(),
@@ -157,6 +175,10 @@ pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
             error: Some(error),
         },
     }
+}
+
+fn hotkey_smoke_blocked_by_test_mode() -> bool {
+    cfg!(test) || std_core::std_test_mode_enabled()
 }
 
 pub(crate) fn normalize_modifier(value: &str) -> Option<String> {

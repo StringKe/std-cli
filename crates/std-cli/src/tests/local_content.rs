@@ -90,7 +90,7 @@ fn skill_and_command_template_commands_round_trip_through_search() {
     assert!(commands.contains("printf command-template-smoke"));
     assert!(command_search.contains("Command: Print Command Smoke"));
     assert!(command_run.contains("command-template-smoke"));
-    assert!(command_run.contains("\"status\": \"Completed\""));
+    assert!(command_run.contains("\"status\": \"NeedsExternalRunner\""));
 }
 
 #[test]

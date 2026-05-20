@@ -65,7 +65,7 @@ impl GuiHotkeySmokeReport {
 pub(crate) fn run_gui_hotkey_smoke(
     config: GuiHotkeySmokeConfig,
 ) -> eframe::Result<GuiHotkeySmokeReport> {
-    if !config.allow_system_events {
+    if !config.allow_system_events || gui_hotkey_smoke_blocked_by_test_mode() {
         return Ok(gui_hotkey_smoke_blocked_report(config));
     }
     let report = Arc::new(Mutex::new(None));
@@ -148,11 +148,21 @@ fn gui_hotkey_smoke_blocked_report(config: GuiHotkeySmokeConfig) -> GuiHotkeySmo
         second_commands: Vec::new(),
         elapsed_ms: 0,
         timeout_ms: config.timeout_ms,
-        error: Some(
-            "desktop automation requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in"
-                .to_string(),
-        ),
+        error: Some(gui_hotkey_smoke_blocked_reason()),
     }
+}
+
+fn gui_hotkey_smoke_blocked_reason() -> String {
+    if gui_hotkey_smoke_blocked_by_test_mode() {
+        "STD_TEST_MODE blocked GUI hotkey smoke; use explicit desktop opt-in outside tests"
+            .to_string()
+    } else {
+        "desktop automation requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in".to_string()
+    }
+}
+
+fn gui_hotkey_smoke_blocked_by_test_mode() -> bool {
+    cfg!(test) || std_core::std_test_mode_enabled()
 }
 
 struct GuiHotkeySmokeApp {

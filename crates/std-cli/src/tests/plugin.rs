@@ -44,7 +44,8 @@ fn plugin_commands_list_search_and_run_manifest_action() {
     assert!(listed.contains("plugin.json"));
     assert!(searched.contains("Plugin Smoke"));
     assert!(output.contains("\"action_name\": \"Plugin Smoke\""));
-    assert!(output.contains("plugin-smoke"));
+    assert!(output.contains("\"status\": \"Failed\""));
+    assert!(output.contains("STD_TEST_MODE blocked shell plugin command"));
 }
 
 #[test]

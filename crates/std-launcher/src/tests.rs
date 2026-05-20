@@ -69,6 +69,20 @@ fn launcher_controller_produces_hotkey_registration_plan() {
 }
 
 #[test]
+fn hotkey_smoke_is_skipped_in_test_mode() {
+    let report = hotkey_smoke("Alt+Space");
+
+    assert_eq!(report.status, "SKIP");
+    assert!(!report.registered);
+    assert!(report
+        .error
+        .as_deref()
+        .unwrap()
+        .contains("STD_TEST_MODE blocked global hotkey registration"));
+    assert!(report.summary().contains("launcher_hotkey_smoke SKIP"));
+}
+
+#[test]
 fn hotkey_runtime_matches_registered_event_id() {
     let plan = HotkeyRegistrationPlan {
         accelerator: "Alt+Space".to_string(),

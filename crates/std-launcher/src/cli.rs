@@ -133,4 +133,24 @@ mod tests {
 
         assert!(!config.allow_system_events);
     }
+
+    #[test]
+    fn gui_hotkey_smoke_skips_when_test_mode_is_active() {
+        let report = run_gui_hotkey_smoke(GuiHotkeySmokeConfig {
+            accelerator: "Alt+Space".to_string(),
+            timeout_ms: 5_000,
+            trigger_delay_ms: 500,
+            allow_system_events: true,
+        })
+        .unwrap();
+
+        assert_eq!(report.status, "SKIP");
+        assert!(!report.registered);
+        assert!(!report.input_sent);
+        assert!(report
+            .error
+            .as_deref()
+            .unwrap()
+            .contains("STD_TEST_MODE blocked GUI hotkey smoke"));
+    }
 }
