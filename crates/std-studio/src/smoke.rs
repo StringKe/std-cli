@@ -1,4 +1,9 @@
-use crate::{default_batch_json, StudioPane};
+use crate::{
+    default_batch_json,
+    layout::StudioLayoutState,
+    viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
+    StudioPane,
+};
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeSmokeReport;
 use std_studio::{StudioApp, WorkspacePaneId};
@@ -12,6 +17,17 @@ pub(crate) struct StudioSmokeReport {
     pane_focus_restored: bool,
     native_child_windows: bool,
     detached_panels: bool,
+    host_window_size: String,
+    min_window_size: String,
+    host_chrome_height: u32,
+    status_bar_height: u32,
+    sidebar_width: u32,
+    collapsed_sidebar_width: u32,
+    inspector_width: u32,
+    inspector_default_open: bool,
+    bottom_panel_height: u32,
+    bottom_panel_default_open: bool,
+    canvas_surface: String,
     workflow_status: String,
     batch_status: String,
     analysis_name: String,
@@ -25,7 +41,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nworkflow_status={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nhistory_count={}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nmemory_count={}\nplugin_status={}\nhistory_count={}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -34,6 +50,17 @@ impl StudioSmokeReport {
             self.pane_focus_restored,
             self.native_child_windows,
             self.detached_panels,
+            self.host_window_size,
+            self.min_window_size,
+            self.host_chrome_height,
+            self.status_bar_height,
+            self.sidebar_width,
+            self.collapsed_sidebar_width,
+            self.inspector_width,
+            self.inspector_default_open,
+            self.bottom_panel_height,
+            self.bottom_panel_default_open,
+            self.canvas_surface,
             self.workflow_status,
             self.batch_status,
             self.analysis_name,
@@ -52,6 +79,17 @@ impl StudioSmokeReport {
             && self.pane_focus_restored
             && !self.native_child_windows
             && !self.detached_panels
+            && self.host_window_size == "1280x800"
+            && self.min_window_size == "1080x640"
+            && self.host_chrome_height == 52
+            && self.status_bar_height == 24
+            && self.sidebar_width == 240
+            && self.collapsed_sidebar_width == 48
+            && self.inspector_width == 320
+            && !self.inspector_default_open
+            && self.bottom_panel_height == 240
+            && !self.bottom_panel_default_open
+            && self.canvas_surface == "bg/surface-0"
             && self.workflow_status == "Completed"
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
@@ -76,6 +114,17 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             pane_focus_restored: false,
             native_child_windows: true,
             detached_panels: true,
+            host_window_size: "FAIL".to_string(),
+            min_window_size: "FAIL".to_string(),
+            host_chrome_height: 0,
+            status_bar_height: 0,
+            sidebar_width: 0,
+            collapsed_sidebar_width: 0,
+            inspector_width: 0,
+            inspector_default_open: true,
+            bottom_panel_height: 0,
+            bottom_panel_default_open: true,
+            canvas_surface: "FAIL".to_string(),
             workflow_status: format!("FAIL {error}"),
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
@@ -102,6 +151,7 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         ..StdConfig::default()
     });
     let mut studio = StudioApp::with_core(core);
+    let layout = StudioLayoutSmoke::from_layout(StudioLayoutState::default());
 
     let workflow_path = studio.create_workflow("Studio Smoke", "Headless Studio smoke")?;
     studio.add_workflow_step(
@@ -163,6 +213,17 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         pane_focus_restored: pane_smoke.focus_restored,
         native_child_windows: studio.workspace_policy.allows_native_child_windows(),
         detached_panels: studio.workspace_policy.allows_detached_panels(),
+        host_window_size: layout.host_window_size,
+        min_window_size: layout.min_window_size,
+        host_chrome_height: layout.host_chrome_height,
+        status_bar_height: layout.status_bar_height,
+        sidebar_width: layout.sidebar_width,
+        collapsed_sidebar_width: layout.collapsed_sidebar_width,
+        inspector_width: layout.inspector_width,
+        inspector_default_open: layout.inspector_default_open,
+        bottom_panel_height: layout.bottom_panel_height,
+        bottom_panel_default_open: layout.bottom_panel_default_open,
+        canvas_surface: layout.canvas_surface,
         workflow_status,
         batch_status,
         analysis_name,
@@ -171,6 +232,46 @@ fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error::Error>> {
         plugin_status,
         history_count,
     })
+}
+
+struct StudioLayoutSmoke {
+    host_window_size: String,
+    min_window_size: String,
+    host_chrome_height: u32,
+    status_bar_height: u32,
+    sidebar_width: u32,
+    collapsed_sidebar_width: u32,
+    inspector_width: u32,
+    inspector_default_open: bool,
+    bottom_panel_height: u32,
+    bottom_panel_default_open: bool,
+    canvas_surface: String,
+}
+
+impl StudioLayoutSmoke {
+    fn from_layout(layout: StudioLayoutState) -> Self {
+        let collapsed = StudioLayoutState {
+            sidebar_open: false,
+            ..layout.clone()
+        };
+        Self {
+            host_window_size: format_window_size(STUDIO_WINDOW_SIZE),
+            min_window_size: format_window_size(STUDIO_MIN_WINDOW_SIZE),
+            host_chrome_height: 52,
+            status_bar_height: 24,
+            sidebar_width: layout.sidebar_width() as u32,
+            collapsed_sidebar_width: collapsed.sidebar_width() as u32,
+            inspector_width: layout.inspector_width() as u32,
+            inspector_default_open: layout.inspector_open,
+            bottom_panel_height: layout.bottom_panel_height() as u32,
+            bottom_panel_default_open: layout.bottom_panel_open,
+            canvas_surface: "bg/surface-0".to_string(),
+        }
+    }
+}
+
+fn format_window_size(size: [f32; 2]) -> String {
+    format!("{}x{}", size[0] as u32, size[1] as u32)
 }
 
 struct WorkspacePaneSmoke {
@@ -233,6 +334,17 @@ mod tests {
         assert!(summary.contains("pane_focus_restored=true"));
         assert!(summary.contains("native_child_windows=false"));
         assert!(summary.contains("detached_panels=false"));
+        assert!(summary.contains("host_window_size=1280x800"));
+        assert!(summary.contains("min_window_size=1080x640"));
+        assert!(summary.contains("host_chrome_height=52"));
+        assert!(summary.contains("status_bar_height=24"));
+        assert!(summary.contains("sidebar_width=240"));
+        assert!(summary.contains("collapsed_sidebar_width=48"));
+        assert!(summary.contains("inspector_width=320"));
+        assert!(summary.contains("inspector_default_open=false"));
+        assert!(summary.contains("bottom_panel_height=240"));
+        assert!(summary.contains("bottom_panel_default_open=false"));
+        assert!(summary.contains("canvas_surface=bg/surface-0"));
     }
 
     #[test]
