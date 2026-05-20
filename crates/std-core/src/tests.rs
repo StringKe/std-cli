@@ -160,6 +160,35 @@ fn core_previews_and_executes_actions_with_feedback() {
 }
 
 #[test]
+fn test_core_blocks_external_application_launches_by_default() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    let mut action = make_test_action("Open 1Password");
+    action.action_type = ActionType::AppLaunch;
+    core.register_action(
+        RegistryEntry::from_action(action, vec!["app".to_string()])
+            .with_metadata("path", "/Applications/1Password.app"),
+    )
+    .unwrap();
+
+    let result = core.search("1Password", 1).unwrap().remove(0);
+    let execution = core
+        .execute_action_with_external_runner(result.action.id, true)
+        .unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert!(execution.message.contains("test command runner blocked"));
+    assert!(execution
+        .output
+        .unwrap()
+        .to_string()
+        .contains("1Password.app"));
+}
+
+#[test]
 fn core_executes_clipboard_action_locally() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

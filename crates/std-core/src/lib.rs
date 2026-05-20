@@ -30,9 +30,11 @@ pub use registry::ActionRegistry;
 pub use storage::LocalStore;
 pub use tools::{EchoTool, StdTool, ToolRegistry};
 
+#[cfg(not(test))]
+use std::process::Command;
 use std::{
     io,
-    process::{Command, Output},
+    process::Output,
     sync::{Arc, RwLock},
 };
 use std_types::{ActionId, StdEvent};
@@ -80,9 +82,7 @@ impl StdCore {
     }
 
     pub fn with_config(config: StdConfig) -> Self {
-        Self::with_config_and_command_runner(config, |program, args| {
-            Command::new(program).args(args).output()
-        })
+        default_core_with_config(config)
     }
 
     pub fn with_config_and_command_runner(
@@ -115,6 +115,45 @@ impl StdCore {
     ) -> Result<Output, io::Error> {
         (self.command_runner)(program, args)
     }
+}
+
+#[cfg(not(test))]
+fn default_core_with_config(config: StdConfig) -> StdCore {
+    StdCore::with_config_and_command_runner(config, |program, args| {
+        Command::new(program).args(args).output()
+    })
+}
+
+#[cfg(test)]
+fn default_core_with_config(config: StdConfig) -> StdCore {
+    StdCore::with_config_and_command_runner(config, guarded_test_command_runner)
+}
+
+#[cfg(test)]
+fn guarded_test_command_runner(program: &str, args: &[String]) -> Result<Output, io::Error> {
+    use std::os::unix::process::ExitStatusExt;
+
+    let command = args
+        .strip_prefix(&["-c".to_string()])
+        .and_then(|rest| rest.first());
+    if program == "sh" && command.is_some_and(|command| command.starts_with("printf ")) {
+        let stdout = command
+            .unwrap()
+            .strip_prefix("printf ")
+            .unwrap_or_default()
+            .as_bytes()
+            .to_vec();
+        return Ok(Output {
+            status: std::process::ExitStatus::from_raw(0),
+            stdout,
+            stderr: Vec::new(),
+        });
+    }
+
+    Err(io::Error::new(
+        io::ErrorKind::PermissionDenied,
+        format!("test command runner blocked external command: {program} {args:?}"),
+    ))
 }
 
 impl Default for StdCore {

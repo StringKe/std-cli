@@ -31,7 +31,7 @@ pub(crate) fn render(
                 ui.allocate_ui_with_layout(
                     egui::vec2(right_width, 24.0),
                     egui::Layout::right_to_left(egui::Align::Center),
-                    |ui| render_status_hints(ui, &ctx, hotkey_status, resident_status),
+                    |ui| render_status_hints(ui, state, &ctx, hotkey_status, resident_status),
                 );
             });
         })
@@ -62,20 +62,43 @@ pub(crate) fn render_feedback(ui: &mut egui::Ui, state: &LauncherState) {
 
 fn render_status_hints(
     ui: &mut egui::Ui,
+    state: &LauncherState,
     ctx: &egui::Context,
     hotkey_status: &str,
     resident_status: &str,
 ) {
-    keycap(ui, &input::launcher_action_panel().label());
-    quiet_label(ui, i18n::t("launcher.action.actions"));
-    keycap(ui, "Enter");
-    quiet_label(ui, i18n::t("launcher.action.run"));
+    match action_bar_hint_mode(state) {
+        ActionBarHintMode::Cancel => {
+            keycap(ui, "Ctrl+C");
+            quiet_label(ui, i18n::t("launcher.action.cancel"));
+        }
+        ActionBarHintMode::RunActions => {
+            keycap(ui, &input::launcher_action_panel().label());
+            quiet_label(ui, i18n::t("launcher.action.actions"));
+            keycap(ui, "Enter");
+            quiet_label(ui, i18n::t("launcher.action.run"));
+        }
+    }
     quiet_label(ui, hotkey_status);
     ui.label(
         egui::RichText::new(resident_status)
             .font(Text::caption())
             .color(Color::fg_secondary(ctx)),
     );
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ActionBarHintMode {
+    RunActions,
+    Cancel,
+}
+
+fn action_bar_hint_mode(state: &LauncherState) -> ActionBarHintMode {
+    if state.view.phase == LauncherPhase::Executing {
+        ActionBarHintMode::Cancel
+    } else {
+        ActionBarHintMode::RunActions
+    }
 }
 
 fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f32) {
@@ -189,5 +212,21 @@ fn feedback_marker(feedback: &LauncherFeedback) -> &'static str {
         ActionExecutionStatus::Completed => "OK",
         ActionExecutionStatus::Failed => "ERR",
         ActionExecutionStatus::NeedsExternalRunner => "WAIT",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn action_bar_hint_switches_to_cancel_while_executing() {
+        let mut state = LauncherState::new();
+
+        assert_eq!(action_bar_hint_mode(&state), ActionBarHintMode::RunActions);
+
+        state.view.preview_executing();
+
+        assert_eq!(action_bar_hint_mode(&state), ActionBarHintMode::Cancel);
     }
 }
