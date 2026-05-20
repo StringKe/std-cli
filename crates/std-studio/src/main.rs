@@ -23,7 +23,7 @@ mod windows;
 mod workspace_tabs;
 
 use layout::StudioLayoutState;
-use preview::{run_studio_preview, studio_preview_from_args};
+use preview::{run_studio_preview, studio_preview_from_args, StudioPreviewSmokeReport};
 use smoke::{smoke_from_args, theme_smoke_from_args};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -165,6 +165,10 @@ fn main() -> eframe::Result<()> {
     let args = std::env::args().collect::<Vec<_>>();
     if let Some(config) = studio_preview_from_args(&args) {
         return run_studio_preview(config);
+    }
+    if args.get(1).map(String::as_str) == Some("--preview-smoke") {
+        println!("{}", StudioPreviewSmokeReport::new().summary());
+        return Ok(());
     }
     if let Some(report) = theme_smoke_from_args(&args) {
         println!("{}", report.summary("studio"));
