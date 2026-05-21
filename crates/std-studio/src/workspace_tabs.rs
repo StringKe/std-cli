@@ -2,9 +2,14 @@ use crate::{ui, workspace_panes::StudioWorkspaceCommand};
 use eframe::egui;
 use std_egui::{
     i18n,
-    tokens::{Color, Space},
+    tokens::{Color, Radius, Space, Text},
 };
 use std_studio::{WorkspacePane, WorkspacePaneId};
+
+const WORKSPACE_TAB_HEIGHT: f32 = 28.0;
+const WORKSPACE_TAB_MIN_WIDTH: f32 = 148.0;
+const WORKSPACE_TAB_MAX_WIDTH: f32 = 220.0;
+const WORKSPACE_TAB_CLOSE_WIDTH: f32 = 24.0;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorkspaceTabSpec {
@@ -82,42 +87,103 @@ fn render_workspace_tab(
     spec: &WorkspaceTabSpec,
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
+    let width = workspace_tab_width(&spec.title);
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(width, WORKSPACE_TAB_HEIGHT),
+        egui::Sense::click(),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            workspace_tab_a11y_label(spec),
+        )
+    });
+    if response.clicked() {
+        push_command(commands, StudioWorkspaceCommand::Focus(spec.id));
+    }
+    paint_workspace_tab(ui, rect, spec, response.hovered());
+    let close_rect = egui::Rect::from_min_max(
+        egui::pos2(rect.right() - WORKSPACE_TAB_CLOSE_WIDTH, rect.top()),
+        rect.right_bottom(),
+    );
+    let close = ui.interact(
+        close_rect,
+        ui.id().with(("tab-close", spec.id.value())),
+        egui::Sense::click(),
+    );
+    close.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            workspace_tab_close_a11y_label(spec),
+        )
+    });
+    if close.clicked() {
+        push_command(commands, StudioWorkspaceCommand::Close(spec.id));
+    }
+    paint_workspace_tab_close(ui, close_rect, close.hovered());
+}
+
+fn workspace_tab_width(title: &str) -> f32 {
+    (title.chars().count() as f32 * 7.0 + 56.0)
+        .clamp(WORKSPACE_TAB_MIN_WIDTH, WORKSPACE_TAB_MAX_WIDTH)
+}
+
+fn paint_workspace_tab(ui: &egui::Ui, rect: egui::Rect, spec: &WorkspaceTabSpec, hovered: bool) {
+    let ctx = ui.ctx();
     let fill = if spec.focused {
-        ui::selected_bg(ui.ctx())
+        ui::selected_bg(ctx)
+    } else if hovered {
+        Color::bg_surface_2(ctx)
     } else {
-        ui::panel_alt(ui.ctx())
+        Color::bg_surface_1(ctx)
     };
-    egui::Frame::new()
-        .fill(fill)
-        .stroke(egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())))
-        .corner_radius(egui::CornerRadius::same(std_egui::tokens::Radius::SM))
-        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
-        .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                let focus = ui::quiet_button(ui, &spec.title);
-                focus.widget_info(|| {
-                    egui::WidgetInfo::labeled(
-                        egui::WidgetType::Button,
-                        ui.is_enabled(),
-                        workspace_tab_a11y_label(spec),
-                    )
-                });
-                if focus.clicked() {
-                    push_command(commands, StudioWorkspaceCommand::Focus(spec.id));
-                }
-                let close = ui::quiet_button(ui, i18n::t("studio.workspace_panes.close"));
-                close.widget_info(|| {
-                    egui::WidgetInfo::labeled(
-                        egui::WidgetType::Button,
-                        ui.is_enabled(),
-                        workspace_tab_close_a11y_label(spec),
-                    )
-                });
-                if close.clicked() {
-                    push_command(commands, StudioWorkspaceCommand::Close(spec.id));
-                }
-            });
-        });
+    ui.painter().rect(
+        rect,
+        egui::CornerRadius::same(Radius::SM),
+        fill,
+        egui::Stroke::new(1.0, Color::stroke_divider(ctx)),
+        egui::StrokeKind::Inside,
+    );
+    let text_rect = rect
+        .shrink2(egui::vec2(Space::XS as f32, 0.0))
+        .with_max_x(rect.right() - WORKSPACE_TAB_CLOSE_WIDTH);
+    ui.painter().text(
+        text_rect.left_center(),
+        egui::Align2::LEFT_CENTER,
+        &spec.title,
+        Text::body(),
+        ui::strong_text(ctx),
+    );
+}
+
+fn paint_workspace_tab_close(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
+    let ctx = ui.ctx();
+    if hovered {
+        ui.painter().rect_filled(
+            rect.shrink(4.0),
+            egui::CornerRadius::same(Radius::SM),
+            Color::bg_surface_2(ctx),
+        );
+    }
+    let center = rect.center();
+    let half = 4.0;
+    let stroke = egui::Stroke::new(1.5, ui::muted_text(ctx));
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x - half, center.y - half),
+            egui::pos2(center.x + half, center.y + half),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(center.x + half, center.y - half),
+            egui::pos2(center.x - half, center.y + half),
+        ],
+        stroke,
+    );
 }
 
 pub(crate) fn workspace_tab_a11y_label(spec: &WorkspaceTabSpec) -> String {
@@ -208,5 +274,14 @@ mod tests {
             "Close workspace pane, Workflow Builder"
         );
         assert_eq!(workspace_cycle_a11y_label("Next"), "Next workspace pane");
+    }
+
+    #[test]
+    fn workspace_tab_width_is_stable_and_bounded() {
+        assert_eq!(workspace_tab_width("Settings"), WORKSPACE_TAB_MIN_WIDTH);
+        assert_eq!(
+            workspace_tab_width("Very Long Workflow Builder Workspace"),
+            WORKSPACE_TAB_MAX_WIDTH
+        );
     }
 }

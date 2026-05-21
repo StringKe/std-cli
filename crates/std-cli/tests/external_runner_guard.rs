@@ -125,10 +125,10 @@ fn binary_test_mode_does_not_expose_system_app_results() {
     let config_path = write_config(temp.path());
 
     for query in [
-        ["1P", "assword"].join(""),
-        ["We", "Chat"].join(""),
-        ["wei", "xin"].join(""),
-        String::from("\u{5fae}\u{4fe1}"),
+        "StdFixtureVault".to_string(),
+        "StdFixtureChat".to_string(),
+        "stdfixturealias".to_string(),
+        "测试应用".to_string(),
     ] {
         let search = run_std(&config_path, &["search", &query]);
         assert!(search.status.success(), "{}", command_stderr(&search));

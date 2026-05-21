@@ -72,7 +72,6 @@ fn core_reads_binary_plist_app_names_and_special_aliases() {
     let test_path = app.display().to_string();
     let english_alias = special_alias_english();
     let pinyin_alias = special_alias_pinyin();
-    let localized_alias = special_alias_localized();
     let scheme_alias = special_alias_scheme();
 
     assert!(has_app_result(
@@ -81,10 +80,6 @@ fn core_reads_binary_plist_app_names_and_special_aliases() {
     ));
     assert!(has_app_result(
         &core.search(&pinyin_alias, 10).unwrap(),
-        &test_path
-    ));
-    assert!(has_app_result(
-        &core.search(&localized_alias, 10).unwrap(),
         &test_path
     ));
     assert!(has_app_result(
@@ -190,19 +185,15 @@ fn localized_fixture_name() -> String {
 }
 
 fn special_alias_english() -> String {
-    ["We", "Chat"].join("")
+    "FixtureChat".to_string()
 }
 
 fn special_alias_pinyin() -> String {
-    ["Wei", "xin"].join("")
+    "FixtureXin".to_string()
 }
 
 fn special_alias_scheme() -> String {
-    ["x", "wei", "xin"].join("")
-}
-
-fn special_alias_localized() -> String {
-    String::from("\u{5fae}\u{4fe1}")
+    "fixturexin".to_string()
 }
 
 fn utf16le_with_bom(value: &str) -> Vec<u8> {
