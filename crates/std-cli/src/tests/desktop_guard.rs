@@ -163,6 +163,20 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
 }
 
 #[test]
+fn screenshot_capture_script_requires_ui_preview_opt_in() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("scripts/capture-window.sh")).unwrap();
+
+    assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
+    assert!(body.contains("capture-window SKIP"));
+    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cg-capture-window.swift");
+}
+
+#[test]
 fn std_core_test_mode_limits_app_discovery_to_local_fixtures() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

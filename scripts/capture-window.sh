@@ -15,6 +15,11 @@ if [ "$(uname -s)" != "Darwin" ]; then
   exit 2
 fi
 
+if [ "${STD_ALLOW_UI_PREVIEW:-}" != "1" ]; then
+  echo "capture-window SKIP reason=STD_ALLOW_UI_PREVIEW=1 required" >&2
+  exit 2
+fi
+
 attempts="${STD_CAPTURE_ATTEMPTS:-30}"
 attempt=1
 while [ "$attempt" -le "$attempts" ]; do

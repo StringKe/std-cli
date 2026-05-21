@@ -77,6 +77,13 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 
 未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 返回 `SKIP`，不创建可见窗口。
 
+截图采集脚本同样必须显式 opt-in，未设置 `STD_ALLOW_UI_PREVIEW=1` 时直接返回 `SKIP`，不调用 macOS `screencapture`：
+
+```bash
+STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-launcher "std-cli Launcher" artifacts/ui/launcher-light-results.png
+STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-studio "std-cli Studio" artifacts/ui/studio-light-dashboard.png
+```
+
 ## 拆分策略
 
 Clippy 的 `too_many_lines` 管函数规模。Dylint 的 `file_too_long` 管 Rust 源文件规模，超过 500 行时质量门禁失败。新功能优先放在已有领域模块，没有合适模块时新增小模块。禁止为了绕过工具做无意义切片，拆分后的模块名必须表达业务边界。

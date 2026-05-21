@@ -176,9 +176,17 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
         "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
-        "preview_carrier=explicit_ui_preview_only,centered_panel_for_screenshot",
+        "preview_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
     ] {
         check_text(&launcher_surface, required)?;
+    }
+    let capture_script = read_required(&root.join("scripts/capture-window.sh"))?;
+    for required in [
+        "STD_ALLOW_UI_PREVIEW",
+        "capture-window SKIP",
+        "cg-capture-window.swift",
+    ] {
+        check_text(&capture_script, required)?;
     }
     for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
         if launcher_metrics.contains(forbidden) {
@@ -240,15 +248,17 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
 
 fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), CliError> {
     let keyboard = read_required(&root.join("crates/std-launcher/src/keyboard.rs"))?;
+    let smoke = read_required(&root.join("crates/std-launcher/src/keyboard_smoke.rs"))?;
+    let evidence = format!("{keyboard}\n{smoke}");
     for required in [
         "if ime_composing",
         "ime_composition_path",
-        "zh-preedit>blocked>commit>enter",
+        "zh-preedit({query_before_preedit})>blocked>commit({commit_query})>enter",
         "ime_commit_trigger_status",
         "user_enter_status",
         "user_enter_deferred",
     ] {
-        check_text(&keyboard, required)?;
+        check_text(&evidence, required)?;
     }
     Ok(())
 }
