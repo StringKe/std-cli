@@ -40,6 +40,7 @@ pub struct LauncherKeyboardReport {
     pub direct_trigger_status: Option<ActionExecutionStatus>,
     pub trigger_status: Option<ActionExecutionStatus>,
     pub user_enter_status: Option<ActionExecutionStatus>,
+    pub user_enter_route: String,
     pub user_enter_deferred: bool,
     pub user_enter_feedback_visible: bool,
     pub user_enter_keeps_launcher_open: bool,
@@ -297,6 +298,7 @@ impl LauncherKeyboardReport {
             && self.direct_trigger_status.is_some()
             && self.trigger_status.is_some()
             && self.user_enter_status == Some(ActionExecutionStatus::NeedsExternalRunner)
+            && self.user_enter_route == "Enter>handle_keyboard_input_by_user>LauncherUser"
             && self.user_enter_deferred
             && self.user_enter_feedback_visible
             && self.user_enter_keeps_launcher_open
@@ -319,7 +321,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -337,6 +339,7 @@ impl LauncherKeyboardReport {
                 .as_ref()
                 .map(|status| format!("{status:?}"))
                 .unwrap_or_else(|| "none".to_string()),
+            self.user_enter_route,
             self.user_enter_deferred,
             self.user_enter_feedback_visible,
             self.user_enter_keeps_launcher_open,

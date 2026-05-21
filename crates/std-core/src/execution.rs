@@ -87,6 +87,11 @@ fn external_runner_allowed(external_mode: ExternalExecutionMode) -> bool {
     matches!(external_mode, ExternalExecutionMode::DesktopAutomation)
 }
 
+#[cfg(test)]
+pub(crate) fn external_runner_allowed_for_mode(external_mode: ExternalExecutionMode) -> bool {
+    external_runner_allowed(external_mode)
+}
+
 fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool {
     user_desktop_open_allowed_for_test_mode(external_mode, crate::std_test_mode_enabled())
 }

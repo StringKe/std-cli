@@ -177,6 +177,32 @@ fn launcher_user_app_open_is_blocked_by_test_mode_before_runner() {
 }
 
 #[test]
+fn launcher_user_mode_allows_only_user_open_routes_outside_test_mode() {
+    assert!(user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::LauncherUser,
+        false
+    ));
+    assert!(user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::DesktopAutomation,
+        false
+    ));
+    assert!(!user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::Disabled,
+        false
+    ));
+    assert!(!user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::LauncherUser,
+        true
+    ));
+    assert!(!crate::execution::external_runner_allowed_for_mode(
+        ExternalExecutionMode::LauncherUser
+    ));
+    assert!(crate::execution::external_runner_allowed_for_mode(
+        ExternalExecutionMode::DesktopAutomation
+    ));
+}
+
+#[test]
 fn test_mode_blocks_desktop_commands_before_custom_runner() {
     let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
     let recorded = Arc::clone(&commands);

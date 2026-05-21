@@ -60,11 +60,16 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
         report.user_enter_status,
         Some(ActionExecutionStatus::NeedsExternalRunner)
     );
+    assert_eq!(
+        report.user_enter_route,
+        "Enter>handle_keyboard_input_by_user>LauncherUser"
+    );
     assert!(report.user_enter_deferred);
     assert!(report.user_enter_feedback_visible);
     assert!(report.user_enter_keeps_launcher_open);
     assert!(summary.contains("direct_trigger_status=Completed"));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
+    assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>LauncherUser"));
     assert!(summary.contains("user_enter_deferred=true"));
     assert!(summary.contains("user_enter_feedback_visible=true"));
     assert!(summary.contains("user_enter_keeps_launcher_open=true"));

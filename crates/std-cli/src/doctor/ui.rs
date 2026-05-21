@@ -310,6 +310,8 @@ fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), Cl
         "zh-preedit({query_before_preedit})>blocked>commit({commit_query})>enter",
         "ime_commit_trigger_status",
         "user_enter_status",
+        "user_enter_route",
+        "Enter>handle_keyboard_input_by_user>LauncherUser",
         "user_enter_deferred",
     ] {
         check_text(&evidence, required)?;

@@ -39,6 +39,7 @@ impl LauncherState {
             direct_trigger_status,
             trigger_status,
             user_enter_status: user_enter.status,
+            user_enter_route: user_enter.route,
             user_enter_deferred: user_enter.deferred,
             user_enter_feedback_visible: user_enter.feedback_visible,
             user_enter_keeps_launcher_open: user_enter.keeps_launcher_open,
@@ -97,6 +98,7 @@ fn navigation_boundary_path(query: &str) -> String {
 
 struct UserEnterEvidence {
     status: Option<ActionExecutionStatus>,
+    route: String,
     deferred: bool,
     feedback_visible: bool,
     keeps_launcher_open: bool,
@@ -190,6 +192,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
         let _ = std::fs::remove_dir_all(&root);
         return UserEnterEvidence {
             status: None,
+            route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
             deferred: false,
             feedback_visible: false,
             keeps_launcher_open: false,
@@ -206,6 +209,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
     let _ = std::fs::remove_dir_all(root);
     UserEnterEvidence {
         status: Some(execution.status),
+        route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
         deferred,
         feedback_visible,
         keeps_launcher_open,
