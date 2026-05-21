@@ -143,7 +143,8 @@ fn preview_evidence_names_capture_window_not_product_viewport() {
     let preview = include_str!("preview.rs");
 
     assert!(surface.contains("capture_window=transparent,opt_in_only"));
-    assert!(surface.contains("preview_viewport=all_states_fill_panel"));
+    assert!(surface.contains("capture_surface=all_states_fill_panel"));
+    assert!(!surface.contains("preview_viewport="));
     assert!(preview.contains("no-product-viewport"));
     assert!(!preview.contains("preview_viewport"));
 }

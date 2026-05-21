@@ -227,7 +227,7 @@ mod tests {
             .contains("capture_window=transparent,opt_in_only"));
         assert!(report
             .summary()
-            .contains("preview_viewport=all_states_fill_panel,no_carrier_background"));
+            .contains("capture_surface=all_states_fill_panel,no_carrier_background"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
