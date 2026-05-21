@@ -1,4 +1,3 @@
-use crate::ui;
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -43,21 +42,45 @@ pub(crate) fn render(ui: &mut egui::Ui, workflow_goal: &mut String) -> WorkflowT
 }
 
 fn render_primary_actions(ui: &mut egui::Ui, response: &mut WorkflowToolbarResponse) {
-    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.flow.plan")).clicked() {
+    if toolbar_button(ui, i18n::t("studio.workflow_builder.flow.plan"), true).clicked() {
         response.actions.push(WorkflowToolbarAction::Plan);
     }
-    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.flow.save")).clicked() {
+    if toolbar_button(ui, i18n::t("studio.workflow_builder.flow.save"), false).clicked() {
         response.actions.push(WorkflowToolbarAction::Save);
     }
-    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.flow.simulate")).clicked() {
+    if toolbar_button(ui, i18n::t("studio.workflow_builder.flow.simulate"), false).clicked() {
         response.actions.push(WorkflowToolbarAction::Simulate);
     }
-    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.toolbar.test")).clicked() {
+    if toolbar_button(ui, i18n::t("studio.workflow_builder.toolbar.test"), true).clicked() {
         response.actions.push(WorkflowToolbarAction::Test);
     }
-    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.flow.trace")).clicked() {
+    if toolbar_button(ui, i18n::t("studio.workflow_builder.flow.trace"), false).clicked() {
         response.actions.push(WorkflowToolbarAction::History);
     }
+}
+
+fn toolbar_button(ui: &mut egui::Ui, label: &str, emphasized: bool) -> egui::Response {
+    let ctx = ui.ctx().clone();
+    let fill = if emphasized {
+        Color::accent_weak(&ctx)
+    } else {
+        Color::bg_surface_1(&ctx)
+    };
+    let stroke = if emphasized {
+        Color::accent_base(&ctx)
+    } else {
+        Color::stroke_divider(&ctx)
+    };
+    ui.add(
+        egui::Button::new(
+            egui::RichText::new(label)
+                .font(Text::caption())
+                .color(Color::fg_primary(&ctx)),
+        )
+        .fill(fill)
+        .stroke(egui::Stroke::new(1.0, stroke))
+        .corner_radius(egui::CornerRadius::same(Radius::sm())),
+    )
 }
 
 fn render_secondary_contract(ui: &mut egui::Ui) {
@@ -81,9 +104,8 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
         });
 }
 
-#[cfg(test)]
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
+    "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
 }
 
 #[cfg(test)]
@@ -94,12 +116,23 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
+            "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
         );
     }
 
     #[test]
     fn workflow_toolbar_response_starts_empty() {
         assert!(WorkflowToolbarResponse::new().actions.is_empty());
+    }
+
+    #[test]
+    fn workflow_toolbar_uses_token_buttons_not_quiet_button_stack() {
+        let source = include_str!("workflow_builder_toolbar.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("fn toolbar_button"));
+        assert!(implementation.contains("Color::accent_weak"));
+        assert!(implementation.contains("Color::bg_surface_1"));
+        assert!(!implementation.contains("quiet_button"));
     }
 }
