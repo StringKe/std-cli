@@ -107,6 +107,7 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 - harness 目标必须由固定 bundle id、pid、window id、window title 四重匹配确认
 - 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - driver 顺序固定为 per-process event tap -> appKitDefined primer -> center primer -> postToPid 定向输入
+- PASS 输出必须证明 `frontmost_preserved=true`，并且 `frontmost_before` 等于 `frontmost_after`
 - previous 和 target 任一 per-process event tap 安装失败时必须 `FAIL`，禁止继续发送 primer、点击或键盘事件
 - event tap 只订阅 raw value 13、19、20 三类 focus message，只拦截 previous app deactivation，target activation 必须放行
 - previous app 永远不能作为输入目标；真实 App 名称不能作为 harness 选择条件

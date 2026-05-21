@@ -100,6 +100,9 @@ impl OperationsSmoke {
             && self.a11y_contract.contains("status=icon+text+result")
             && self
                 .a11y_contract
+                .contains("panel-label=title-status-command-result")
+            && self
+                .a11y_contract
                 .contains("rows=command|step|runbook|evidence|result|artifact|output")
     }
 
@@ -169,7 +172,7 @@ fn operations_visual_contract(evidence: &OpsEvidence) -> String {
 
 fn operations_a11y_contract(_evidence: &OpsEvidence) -> String {
     format!(
-        "{};status=icon+text+result;rows=command|step|runbook|evidence|result|artifact|output",
+        "{};status=icon+text+result;panel-label=title-status-command-result;rows=command|step|runbook|evidence|result|artifact|output",
         operations_rows::operations_gate_a11y_contract()
     )
 }
@@ -223,6 +226,9 @@ mod tests {
             "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
         ));
         assert!(smoke.summary().contains("status=icon+text+result"));
+        assert!(smoke
+            .summary()
+            .contains("panel-label=title-status-command-result"));
         assert!(smoke
             .summary()
             .contains("release-package:std release package"));

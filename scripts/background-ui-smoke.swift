@@ -61,7 +61,7 @@ guard finalFrontmostPid == previousPid else {
     fail("frontmost app changed from \(previousPid) to \(finalFrontmostPid)")
 }
 
-print("background_driver PASS target_pid=\(config.harnessPid) window_id=\(config.windowId) frontmost_before=\(previousPid) frontmost_after=\(finalFrontmostPid)")
+print("background_driver PASS target_pid=\(config.harnessPid) window_id=\(config.windowId) event_route=postToPid_target_pid_only frontmost_preserved=true frontmost_before=\(previousPid) frontmost_after=\(finalFrontmostPid)")
 
 struct WindowInfo {
     let ownerPid: pid_t

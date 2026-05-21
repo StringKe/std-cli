@@ -67,60 +67,69 @@ impl StudioEguiApp {
     }
 
     fn render_evidence_gate(&mut self, ui: &mut egui::Ui, gate: &OpsGate) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(ui, gate.title, gate.status.label());
-            render_gate_status(ui, gate);
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.command"),
-                &gate.command,
-                &gate.detail,
-            );
-            for step in &gate.steps {
+        let response = ui::surface_frame(ui.ctx())
+            .show(ui, |ui| {
+                ui::section_header(ui, gate.title, gate.status.label());
+                render_gate_status(ui, gate);
                 operations_rows::gate_row(
                     ui,
-                    i18n::t("studio.operations.step"),
-                    &step.command,
-                    &step.result,
+                    i18n::t("studio.operations.command"),
+                    &gate.command,
+                    &gate.detail,
                 );
-            }
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.runbook"),
-                &gate.runbook,
-                i18n::t("studio.operations.current_workspace"),
-            );
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.evidence"),
-                &gate.evidence,
-                i18n::t("studio.operations.current_workspace"),
-            );
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.result"),
-                &gate.result,
-                gate.status.label(),
-            );
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.artifact"),
-                &gate.artifact,
-                i18n::t("studio.operations.current_workspace"),
-            );
-            operations_rows::gate_row(
-                ui,
-                i18n::t("studio.operations.output"),
-                &gate.output,
-                gate.status.label(),
-            );
-            if ui::quiet_button(ui, i18n::t("studio.operations.record_evidence")).clicked() {
-                self.status = format!(
-                    "{} evidence {}",
-                    gate.title.to_ascii_lowercase(),
-                    gate.status.label()
+                for step in &gate.steps {
+                    operations_rows::gate_row(
+                        ui,
+                        i18n::t("studio.operations.step"),
+                        &step.command,
+                        &step.result,
+                    );
+                }
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.runbook"),
+                    &gate.runbook,
+                    i18n::t("studio.operations.current_workspace"),
                 );
-            }
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.evidence"),
+                    &gate.evidence,
+                    i18n::t("studio.operations.current_workspace"),
+                );
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.result"),
+                    &gate.result,
+                    gate.status.label(),
+                );
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.artifact"),
+                    &gate.artifact,
+                    i18n::t("studio.operations.current_workspace"),
+                );
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.output"),
+                    &gate.output,
+                    gate.status.label(),
+                );
+                if ui::quiet_button(ui, i18n::t("studio.operations.record_evidence")).clicked() {
+                    self.status = format!(
+                        "{} evidence {}",
+                        gate.title.to_ascii_lowercase(),
+                        gate.status.label()
+                    );
+                }
+            })
+            .response;
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::Label,
+                ui.is_enabled(),
+                gate_panel_a11y_label(gate),
+            )
         });
     }
 
@@ -177,6 +186,16 @@ fn gate_status_a11y_label(gate: &OpsGate) -> String {
         "{} gate status, {}, {}",
         gate.title,
         gate.status.label(),
+        gate.result
+    )
+}
+
+fn gate_panel_a11y_label(gate: &OpsGate) -> String {
+    format!(
+        "{} gate, status {}, command {}, result {}",
+        gate.title,
+        gate.status.label(),
+        gate.command,
         gate.result
     )
 }

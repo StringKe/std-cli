@@ -99,6 +99,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为
 - CGEvent 必须写入 `windowUnderMouse`、`windowThatCanHandle` 和 field 51/58，事件路由必须保持 window id 与 harness 匹配
 - previous app 永远不能作为输入目标；它只允许被安装 event tap，用来丢弃 deactivation focus message
+- PASS 输出必须包含 `frontmost_preserved=true`、`frontmost_before=<pid>` 和 `frontmost_after=<pid>`，且 before 和 after 必须相等
 - 验收只能验证后台事件路由能力，不能借这个 runner 打开 Terminal、1Password、WeChat、系统设置或用户当前工作窗口
 - 如果用户当前 frontmost app 是 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或 System Preferences，runner 必须在安装 event tap 前直接 `FAIL`
 - 不向用户当前 frontmost app、Terminal、1Password、WeChat、weixin、wechat、微信或系统设置发送事件
