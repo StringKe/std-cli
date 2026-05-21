@@ -197,9 +197,37 @@ fn std_core_external_runner_requires_desktop_opt_in() {
         body.contains("allow_external_runner && crate::desktop_automation_allowed()"),
         "external runners must require CLI opt-in and STD_ALLOW_DESKTOP_AUTOMATION"
     );
+    let external_runner_gate = source_section(
+        &body,
+        "fn external_runner_allowed(allow_external_runner: bool) -> bool",
+        "fn user_desktop_open_allowed",
+    );
     assert!(
-        !body.contains("allow_external_runner && !crate::std_test_mode_enabled()"),
+        !external_runner_gate.contains("!crate::std_test_mode_enabled()"),
         "STD_TEST_MODE alone is not enough to guard external runners"
+    );
+}
+
+#[test]
+fn std_core_app_open_allows_launcher_user_enter_outside_test_mode() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
+
+    assert!(
+        body.contains("fn user_desktop_open_allowed(allow_external_runner: bool) -> bool"),
+        "app and file open must have a distinct user-enter permission gate"
+    );
+    assert!(
+        body.contains("allow_external_runner && !crate::std_test_mode_enabled()"),
+        "Launcher user Enter should open apps outside STD_TEST_MODE without shell automation opt-in"
+    );
+    assert!(
+        body.contains("ActionType::Command => execute_command_action"),
+        "shell commands must stay on the external runner gate"
     );
 }
 
