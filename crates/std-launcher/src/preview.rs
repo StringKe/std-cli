@@ -161,7 +161,7 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 }
 
 fn preview_capture_contract() -> &'static str {
-    "capture-window,opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,no-product-viewport"
+    "capture-window,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,no-product-viewport"
 }
 
 fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {
@@ -293,7 +293,7 @@ impl LauncherPreviewScenario {
 
     fn command(&self) -> String {
         format!(
-            "STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview {} {} 8000",
+            "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview {} {} 8000",
             self.theme, self.state
         )
     }

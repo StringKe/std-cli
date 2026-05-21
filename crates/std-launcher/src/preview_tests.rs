@@ -45,7 +45,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert!(report
         .commands
         .iter()
-        .all(|command| command.starts_with("STD_ALLOW_UI_PREVIEW=1 ")));
+        .all(|command| command.starts_with("STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher")));
     assert!(report
         .commands
         .iter()
@@ -142,6 +142,7 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     let summary = report.summary();
 
     assert!(summary.contains("preview_capture_contract=capture-window,opt-in-only"));
+    assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("no-product-viewport"));

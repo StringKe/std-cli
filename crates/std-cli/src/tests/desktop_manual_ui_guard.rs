@@ -41,8 +41,8 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
 
     assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
     assert!(body.contains("STD_TEST_MODE blocks UI preview"));
-    assert!(body.contains("std-launcher -- --ui-preview"));
-    assert!(body.contains("std-studio -- --ui-preview"));
+    assert!(body.contains("cargo run -p std-launcher -- --ui-preview"));
+    assert!(body.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(body.contains("scripts/capture-window.sh"));
     for required in launcher_required_capture_states() {
         assert!(
