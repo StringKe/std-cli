@@ -16,6 +16,14 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.plugins.reload") => Some("Reload"),
         (Locale::ZhCn, "studio.plugins.run") => Some("运行"),
         (Locale::EnUs, "studio.plugins.run") => Some("Run"),
+        (Locale::ZhCn, "studio.plugins.status.title") => Some("Runtime Status"),
+        (Locale::EnUs, "studio.plugins.status.title") => Some("Runtime Status"),
+        (Locale::ZhCn, "studio.plugins.status.detail") => {
+            Some("manifest、preview、runtime、permission、boundary")
+        }
+        (Locale::EnUs, "studio.plugins.status.detail") => {
+            Some("manifest, preview, runtime, permission, boundary")
+        }
         (Locale::ZhCn, "studio.plugins.manifests.title") => Some("Manifests"),
         (Locale::EnUs, "studio.plugins.manifests.title") => Some("Manifests"),
         (Locale::ZhCn, "studio.plugins.manifests.detail") => Some("已发现 plugin.json"),
@@ -58,6 +66,8 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.plugins.search" => Some("Search"),
         "studio.plugins.reload" => Some("Reload"),
         "studio.plugins.run" => Some("Run"),
+        "studio.plugins.status.title" => Some("Runtime Status"),
+        "studio.plugins.status.detail" => Some("manifest, preview, runtime, permission, boundary"),
         "studio.plugins.manifests.title" => Some("Manifests"),
         "studio.plugins.manifests.detail" => Some("discovered plugin.json"),
         "studio.plugins.manifests.empty" => Some("No plugin manifests"),

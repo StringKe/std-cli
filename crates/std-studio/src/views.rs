@@ -5,6 +5,7 @@ mod history_rows;
 mod memory;
 mod memory_rows;
 mod plugin_rows;
+mod plugin_status_bar;
 mod plugins;
 pub(crate) mod row_metrics;
 pub(crate) mod row_paint;

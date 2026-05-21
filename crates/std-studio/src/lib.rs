@@ -9,6 +9,7 @@ mod apps;
 mod ops_evidence;
 mod ops_runbook;
 pub mod plugin_security;
+pub mod plugin_status;
 mod trace;
 mod workflow;
 mod workspace_pane;

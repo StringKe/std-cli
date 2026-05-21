@@ -1,6 +1,9 @@
 use crate::{
     ui,
-    views::plugin_rows::{self, PluginActionRowEvent},
+    views::{
+        plugin_rows::{self, PluginActionRowEvent},
+        plugin_status_bar,
+    },
     StudioEguiApp,
 };
 use eframe::egui;
@@ -17,7 +20,20 @@ impl StudioEguiApp {
         );
         self.render_plugin_toolbar(ui);
         ui.add_space(Space::SM as f32);
+        self.render_plugin_status(ui);
+        ui.add_space(Space::SM as f32);
         self.render_plugin_workspace(ui);
+    }
+
+    fn render_plugin_status(&self, ui: &mut egui::Ui) {
+        let manager = &self.app.plugin_manager;
+        let summary = std_studio::plugin_status::summarize_plugin_status(
+            &manager.check_reports,
+            &manager.plugin_actions,
+            manager.preview.as_ref(),
+            manager.last_execution.as_ref(),
+        );
+        plugin_status_bar::render(ui, &summary);
     }
 
     fn render_plugin_workspace(&mut self, ui: &mut egui::Ui) {
