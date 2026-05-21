@@ -58,3 +58,19 @@ fn studio_plugin_runtime_summary_reports_js_ts_controlled_runtime() {
     assert_eq!(summary.duration, "18 ms");
     assert_eq!(summary.boundary, "deno_core controlled runtime");
 }
+
+#[test]
+fn studio_plugin_toolbar_search_has_textbox_semantics() {
+    let body = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("views")
+            .join("plugins.rs"),
+    )
+    .unwrap();
+
+    assert!(body.contains("WidgetType::TextEdit"));
+    assert!(body.contains("plugin_query_a11y_label"));
+    assert!(body.contains("Plugin search, text box, value"));
+    assert!(body.contains("query.trim().is_empty()"));
+}

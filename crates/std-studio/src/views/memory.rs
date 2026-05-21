@@ -55,11 +55,18 @@ impl StudioEguiApp {
     fn render_memory_toolbar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.add_sized(
+                let query_response = ui.add_sized(
                     [ui.available_width() - 110.0, 28.0],
                     egui::TextEdit::singleline(&mut self.memory_query)
                         .hint_text(i18n::t("studio.memory.search.hint")),
                 );
+                query_response.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::TextEdit,
+                        ui.is_enabled(),
+                        memory_query_a11y_label(&self.memory_query),
+                    )
+                });
                 if ui::quiet_button(ui, i18n::t("studio.memory.search")).clicked() {
                     let query = self.memory_query.clone();
                     let results = self.app.search_memory(&query);
@@ -181,4 +188,13 @@ fn parse_tags(value: &str) -> Vec<String> {
         .filter(|tag| !tag.is_empty())
         .map(ToString::to_string)
         .collect()
+}
+
+fn memory_query_a11y_label(query: &str) -> String {
+    let value = if query.trim().is_empty() {
+        "empty"
+    } else {
+        query.trim()
+    };
+    format!("Memory search, text box, value {value}")
 }

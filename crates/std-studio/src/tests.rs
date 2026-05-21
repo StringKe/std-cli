@@ -47,6 +47,7 @@ fn studio_switches_panes() {
 }
 
 mod analysis;
+mod memory;
 mod operations;
 mod plugins;
 mod trace;

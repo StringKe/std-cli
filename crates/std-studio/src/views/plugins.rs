@@ -72,11 +72,18 @@ impl StudioEguiApp {
     fn render_plugin_toolbar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.add_sized(
+                let query_response = ui.add_sized(
                     [ui.available_width() - 230.0, 28.0],
                     egui::TextEdit::singleline(&mut self.plugin_query)
                         .hint_text(i18n::t("studio.plugins.search.hint")),
                 );
+                query_response.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::TextEdit,
+                        ui.is_enabled(),
+                        plugin_query_a11y_label(&self.plugin_query),
+                    )
+                });
                 if ui::quiet_button(ui, i18n::t("studio.plugins.search")).clicked() {
                     let query = self.plugin_query.clone();
                     let results = self.app.search_plugins(&query);
@@ -253,4 +260,13 @@ fn selected_inspector_model(manager: &std_egui::PluginManagerViewModel) -> Plugi
         &manager.check_reports,
         manager.last_execution.as_ref(),
     )
+}
+
+fn plugin_query_a11y_label(query: &str) -> String {
+    let value = if query.trim().is_empty() {
+        "empty"
+    } else {
+        query.trim()
+    };
+    format!("Plugin search, text box, value {value}")
 }
