@@ -166,10 +166,20 @@ fn preview_capture_contract() -> &'static str {
 
 fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {
     [
+        "light-collapsed",
+        "dark-collapsed",
+        "light-empty",
+        "dark-empty",
         "light-results",
         "dark-results",
         "light-no-results",
         "dark-no-results",
+        "light-searching",
+        "dark-searching",
+        "light-loading",
+        "dark-loading",
+        "light-executing",
+        "dark-executing",
         "light-defer",
         "dark-defer",
         "light-error",
@@ -190,10 +200,20 @@ fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String>
 fn required_capture_states_pass(states: &[String]) -> bool {
     states
         == [
+            "light-collapsed",
+            "dark-collapsed",
+            "light-empty",
+            "dark-empty",
             "light-results",
             "dark-results",
             "light-no-results",
             "dark-no-results",
+            "light-searching",
+            "dark-searching",
+            "light-loading",
+            "dark-loading",
+            "light-executing",
+            "dark-executing",
             "light-defer",
             "dark-defer",
             "light-error",

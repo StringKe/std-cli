@@ -53,10 +53,20 @@ capture_studio() {
   echo "$output"
 }
 
+capture_launcher light collapsed
+capture_launcher dark collapsed
+capture_launcher light empty
+capture_launcher dark empty
 capture_launcher light results
 capture_launcher dark results
 capture_launcher light no-results
 capture_launcher dark no-results
+capture_launcher light searching
+capture_launcher dark searching
+capture_launcher light loading
+capture_launcher dark loading
+capture_launcher light executing
+capture_launcher dark executing
 capture_launcher light defer
 capture_launcher dark defer
 capture_launcher light error

@@ -121,10 +121,20 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
     assert_eq!(
         report.required_capture_states,
         [
+            "light-collapsed",
+            "dark-collapsed",
+            "light-empty",
+            "dark-empty",
             "light-results",
             "dark-results",
             "light-no-results",
             "dark-no-results",
+            "light-searching",
+            "dark-searching",
+            "light-loading",
+            "dark-loading",
+            "light-executing",
+            "dark-executing",
             "light-defer",
             "dark-defer",
             "light-error",
@@ -136,7 +146,7 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
 
     let summary = report.summary();
     assert!(summary.contains(
-        "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error,light-action-panel,dark-action-panel"
+        "required_capture_states=light-collapsed,dark-collapsed,light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-defer,dark-defer,light-error,dark-error,light-action-panel,dark-action-panel"
     ));
 }
 
