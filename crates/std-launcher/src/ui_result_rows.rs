@@ -75,12 +75,19 @@ pub(crate) fn result_accessibility_label(
     model: &LauncherResultRowModel,
     view: &LauncherViewModel,
 ) -> String {
-    std_egui::a11y::AccessibilityContext::from_env().launcher_result_label(
+    let mut label = std_egui::a11y::AccessibilityContext::from_env().launcher_result_label(
         &model.title,
         &model.kind,
         model.position_number(),
         view.results.len(),
-    )
+    );
+    if let Some(shortcut) = model.direct_shortcut.as_deref() {
+        label.push_str(&format!(", shortcut {shortcut}"));
+    }
+    if let Some(primary) = model.primary_shortcut.as_deref() {
+        label.push_str(&format!(", press {primary} to {}", model.action_label));
+    }
+    label
 }
 
 fn paint_result_row(
@@ -229,6 +236,7 @@ pub(crate) fn result_row_keyboard_affordance(
 mod tests {
     use super::*;
     use crate::ui_result_model::group_header_label;
+    use std_types::SearchResult;
 
     #[test]
     fn group_header_label_is_uppercase() {
@@ -256,6 +264,33 @@ mod tests {
             Some(Color::bg_surface_2(&ctx))
         );
         assert_eq!(result_row_background_color(false, false, &ctx), None);
+    }
+
+    #[test]
+    fn result_accessibility_label_includes_shortcuts_and_selected_action() {
+        let result = SearchResult {
+            action: std_types::Action::new(
+                "Rebuild Index",
+                "Refresh local index",
+                "test",
+                std_types::ActionType::Command,
+            ),
+            score: 1.0,
+            matched_fields: vec!["name".to_string()],
+        };
+        let core = std_core::StdCore::default();
+        let mut view = LauncherViewModel::new(&core);
+        view.results = vec![result.clone()];
+        let selected = LauncherResultRowModel::from_result(&result, None, 0, 1, true);
+        let idle = LauncherResultRowModel::from_result(&result, None, 0, 1, false);
+
+        let selected_label = result_accessibility_label(&selected, &view);
+        let idle_label = result_accessibility_label(&idle, &view);
+
+        assert!(selected_label.contains("shortcut"));
+        assert!(selected_label.contains(&format!("press Enter to {}", selected.action_label)));
+        assert!(idle_label.contains("shortcut"));
+        assert!(!idle_label.contains(&format!("press Enter to {}", idle.action_label)));
     }
 
     #[test]
