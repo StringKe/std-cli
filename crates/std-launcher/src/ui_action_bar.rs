@@ -114,10 +114,11 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         return;
     }
     if let Some(preview) = state.view.preview.as_ref() {
+        let (title, command) = action_summary_parts(preview);
         ui.add_sized(
             [max_width * 0.34, ui_metrics::action_summary_label_height()],
             egui::Label::new(
-                egui::RichText::new(&preview.title)
+                egui::RichText::new(title)
                     .font(Text::footnote())
                     .color(Color::fg_primary(&ctx))
                     .strong(),
@@ -127,8 +128,8 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         ui.add_sized(
             [max_width * 0.62, ui_metrics::action_summary_label_height()],
             egui::Label::new(
-                egui::RichText::new(&preview.subtitle)
-                    .font(Text::caption())
+                egui::RichText::new(command)
+                    .font(Text::code())
                     .color(Color::fg_secondary(&ctx)),
             )
             .truncate(),
@@ -146,9 +147,19 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
     );
 }
 
+fn action_summary_parts(preview: &std_types::ActionPreview) -> (&str, &str) {
+    let command = if preview.primary_command.trim().is_empty() {
+        preview.subtitle.as_str()
+    } else {
+        preview.primary_command.as_str()
+    };
+    (preview.title.as_str(), command)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std_types::{ActionId, ActionPreview, ActionType};
 
     #[test]
     fn action_bar_hint_switches_to_cancel_while_executing() {
@@ -178,6 +189,42 @@ mod tests {
         assert_eq!(
             action_bar_visual_contract(),
             "height=36;top-divider=1px;rounded-frame=false;background=panel"
+        );
+    }
+
+    #[test]
+    fn action_bar_summary_uses_primary_command_as_preview_breadcrumb() {
+        let preview = ActionPreview {
+            action_id: ActionId::default(),
+            title: "Rebuild Index".to_string(),
+            subtitle: "Refresh local index".to_string(),
+            action_type: ActionType::Command,
+            primary_command: "std index rebuild .".to_string(),
+            metadata: Default::default(),
+            examples: Vec::new(),
+        };
+
+        assert_eq!(
+            action_summary_parts(&preview),
+            ("Rebuild Index", "std index rebuild .")
+        );
+    }
+
+    #[test]
+    fn action_bar_summary_falls_back_to_subtitle_when_command_is_empty() {
+        let preview = ActionPreview {
+            action_id: ActionId::default(),
+            title: "Memory".to_string(),
+            subtitle: "Pinned workspace memory".to_string(),
+            action_type: ActionType::Skill,
+            primary_command: String::new(),
+            metadata: Default::default(),
+            examples: Vec::new(),
+        };
+
+        assert_eq!(
+            action_summary_parts(&preview),
+            ("Memory", "Pinned workspace memory")
         );
     }
 }

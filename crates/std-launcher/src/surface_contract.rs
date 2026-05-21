@@ -55,7 +55,9 @@ impl LauncherSurfaceContract {
             && self.result_list.contains("selected=accent-weak")
             && self.result_list.contains("shortcut=Enter")
             && self.action_bar.contains("height=36")
+            && self.action_bar.contains("left=title+primary-command")
             && self.action_bar.contains("actions=Mod+K")
+            && self.action_bar.contains("font=code")
             && self.empty_state.contains("recent_or_suggested")
             && self.no_match_state.contains("ask_ai_enter")
             && self.query_prefixes.contains("command_search=rebuild")
@@ -110,7 +112,7 @@ fn result_list_contract(result_count: usize, selected_type: &ActionType) -> Stri
 }
 
 fn action_bar_contract(primary_command: &str) -> String {
-    format!("height=36;left=breadcrumb;right=run+actions;run=Enter;actions=Mod+K;primary={primary_command}")
+    format!("height=36;left=title+primary-command;font=code;right=run+actions;run=Enter;actions=Mod+K;primary={primary_command}")
 }
 
 fn empty_state_contract() -> String {
