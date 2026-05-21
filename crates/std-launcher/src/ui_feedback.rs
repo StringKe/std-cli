@@ -142,7 +142,7 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                 }
                 LauncherFeedbackAction::Retry => {
                     if feedback_button(ui, i18n::t("launcher.feedback.retry"), selected).clicked() {
-                        state.trigger_selected();
+                        state.trigger_selected_by_user();
                     }
                 }
                 LauncherFeedbackAction::OpenStudio => {
@@ -357,5 +357,13 @@ mod tests {
         assert!(source.contains("launcher.feedback.icon.deferred"));
         assert!(source.contains("launcher.feedback.icon.failed"));
         assert!(source.contains("render_status_icon(ui, ctx, feedback);"));
+    }
+
+    #[test]
+    fn retry_click_uses_launcher_user_execution_path() {
+        let source = include_str!("ui_feedback.rs");
+
+        assert!(source.contains("state.trigger_selected_by_user();"));
+        assert!(!source.contains("state.trigger_selected();"));
     }
 }

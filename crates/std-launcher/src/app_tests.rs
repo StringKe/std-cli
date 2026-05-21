@@ -1,7 +1,7 @@
-use crate::{LauncherKey, LauncherState};
+use crate::{LauncherFocusSection, LauncherKey, LauncherState};
 use std::sync::{Arc, Mutex};
 use std_core::{StdConfig, StdCore};
-use std_types::ActionExecutionStatus;
+use std_types::{Action, ActionExecutionStatus, ActionType, RegistryEntry};
 
 #[test]
 fn launcher_state_searches_local_app_bundles_without_launching() {
@@ -238,6 +238,40 @@ fn launcher_user_enter_keeps_runner_blocked_in_tests() {
     assert!(commands.lock().unwrap().is_empty());
 }
 
+#[test]
+fn launcher_feedback_retry_uses_user_enter_path_without_launching_in_tests() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.register_action(fixture_app_action(temp.path()))
+        .unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("StdNeverLaunchFixture");
+    let first = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+    state.focus_section = LauncherFocusSection::Feedback;
+    state.view.selected_feedback_action = 1;
+    let retry = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(first.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(retry.action_name, "Open App: StdNeverLaunchFixture");
+    assert_eq!(retry.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        retry
+            .output
+            .as_ref()
+            .and_then(|output| output.get("deferred"))
+            .and_then(|value| value.as_bool()),
+        Some(true)
+    );
+}
+
 fn write_multilingual_app_bundle(app: &std::path::Path) {
     std::fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     std::fs::write(
@@ -263,6 +297,20 @@ fn write_multilingual_app_bundle(app: &std::path::Path) {
         body,
     )
     .unwrap();
+}
+
+fn fixture_app_action(root: &std::path::Path) -> RegistryEntry {
+    let app = root.join("StdNeverLaunchFixture.app");
+    RegistryEntry::from_action(
+        Action::new(
+            "Open App: StdNeverLaunchFixture",
+            format!("Launch fixture app at {}", app.display()),
+            "When testing Launcher user retry",
+            ActionType::AppLaunch,
+        ),
+        vec!["app".to_string(), "fixture".to_string()],
+    )
+    .with_metadata("path", app.display().to_string())
 }
 
 fn write_wechat_app_bundle(app: &std::path::Path) {

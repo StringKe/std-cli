@@ -225,7 +225,7 @@ impl LauncherState {
     pub fn trigger_feedback_action(&mut self) -> Option<std_types::ActionExecution> {
         match self.view.selected_feedback_action()? {
             LauncherFeedbackAction::Copy => Some(self.complete_feedback_copy()),
-            LauncherFeedbackAction::Retry => self.trigger_selected(),
+            LauncherFeedbackAction::Retry => self.trigger_selected_by_user(),
             LauncherFeedbackAction::OpenStudio => {
                 self.open_studio_execution_history_from_feedback();
                 None
