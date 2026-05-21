@@ -15,6 +15,20 @@ fn launcher_keyboard_smoke_validates_navigation_trigger_escape_and_ime_guard() {
     assert!(summary.contains("launcher_keyboard_smoke PASS"));
 }
 
+#[test]
+fn launcher_ui_keyboard_uses_input_ime_guard_before_actions() {
+    let source = include_str!("ui_keyboard.rs");
+    let guard_index = source.find("input::ime_composing(ctx)").unwrap();
+    let enter_index = source.find("input::enter().pressed(ctx)").unwrap();
+    let action_panel_index = source.find("launcher_action_panel().pressed(ctx)").unwrap();
+    let direct_trigger_index = source.find("pressed_mod_number(ctx, 9)").unwrap();
+
+    assert!(!source.contains("tokens::ime_composing"));
+    assert!(guard_index < enter_index);
+    assert!(guard_index < action_panel_index);
+    assert!(guard_index < direct_trigger_index);
+}
+
 fn assert_empty_suggestions(report: &LauncherKeyboardReport, summary: &str) {
     assert_eq!(
         report.empty_suggestion_keyboard_path,

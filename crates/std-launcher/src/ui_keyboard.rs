@@ -1,5 +1,5 @@
 use eframe::egui;
-use std_egui::{input, tokens};
+use std_egui::input;
 use std_launcher::{LauncherKey, LauncherState};
 use std_types::{ActionExecution, ActionExecutionStatus};
 
@@ -8,7 +8,7 @@ pub(crate) fn handle_search_shortcuts(
     state: &mut LauncherState,
     hide_requested: &mut bool,
 ) {
-    if tokens::ime_composing(ctx) {
+    if input::ime_composing(ctx) {
         return;
     }
     if input::mod_arrow_down().pressed(ctx) {
