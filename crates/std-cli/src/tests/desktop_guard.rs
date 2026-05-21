@@ -354,6 +354,8 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         ".headInsertEventTap",
         "NSEvent.otherEvent",
         "appKitDefined",
+        "NSRunningApplication(processIdentifier: config.harnessPid)",
+        "pid bundle_id outside whitelist",
         "postToPid",
         "mouseEventWindowUnderMousePointer",
         "mouseEventWindowUnderMousePointerThatCanHandleThisEvent",

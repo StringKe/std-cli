@@ -39,6 +39,7 @@ mod workspace_policy_evidence;
 mod workspace_tabs;
 
 use analysis_state::AnalysisUiState;
+use bottom_panel::BottomPanelTab;
 use layout::StudioLayoutState;
 use native_app::{native_app_blocked_by_test_mode, run_studio_native_app};
 use preview::{
@@ -88,6 +89,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) host_maximized: bool,
     pub(crate) theme_profile: Option<ThemeProfile>,
     pub(crate) layout: StudioLayoutState,
+    pub(crate) bottom_panel_tab: BottomPanelTab,
     pub(crate) workspace_commands: WorkspaceCommandQueue,
     pub(crate) pending_workspace_focus: Option<WorkspacePaneId>,
 }
@@ -123,6 +125,7 @@ impl Default for StudioEguiApp {
             host_maximized: false,
             theme_profile: None,
             layout: StudioLayoutState::default(),
+            bottom_panel_tab: BottomPanelTab::BatchDebug,
             workspace_commands: Arc::new(Mutex::new(Vec::new())),
             pending_workspace_focus: None,
         }

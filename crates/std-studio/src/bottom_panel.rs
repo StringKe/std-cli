@@ -4,6 +4,7 @@ use std_egui::{
     i18n,
     tokens::{Color, Radius, Space, Text},
 };
+use std_orchestration::ExecutionStatus;
 
 const BOTTOM_ROW_HEIGHT: f32 = Space::XL as f32 + Space::TWO_XS as f32;
 const STATUS_CHIP_WIDTH: f32 = 120.0;
@@ -38,7 +39,7 @@ pub(crate) struct BottomPanelTabModel {
 }
 
 impl BottomPanelTabModel {
-    pub(crate) fn docs22_default() -> Self {
+    pub(crate) fn for_selected(selected: BottomPanelTab) -> Self {
         Self {
             tabs: vec![
                 BottomPanelTab::BatchDebug,
@@ -46,8 +47,12 @@ impl BottomPanelTabModel {
                 BottomPanelTab::Problems,
                 BottomPanelTab::Performance,
             ],
-            selected: BottomPanelTab::BatchDebug,
+            selected,
         }
+    }
+
+    pub(crate) fn docs22_default() -> Self {
+        Self::for_selected(BottomPanelTab::BatchDebug)
     }
 
     pub(crate) fn labels(&self) -> Vec<&'static str> {
@@ -80,14 +85,17 @@ pub(crate) struct BottomPanelRow {
 impl StudioEguiApp {
     pub(crate) fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            render_bottom_panel_tabs(ui, &BottomPanelTabModel::docs22_default());
+            let tabs = BottomPanelTabModel::for_selected(self.bottom_panel_tab);
+            if let Some(tab) = render_bottom_panel_tabs(ui, &tabs) {
+                self.bottom_panel_tab = tab;
+            }
             ui.add_space(Space::XS as f32);
+            let snapshot = self.bottom_panel_snapshot();
             ui::section_header(
                 ui,
-                i18n::t("studio.shell.batch_debug.title"),
+                &snapshot.title,
                 i18n::t("studio.shell.batch_debug.detail"),
             );
-            let snapshot = self.bottom_panel_snapshot();
             ui.horizontal(|ui| {
                 ui.label(egui::RichText::new(&snapshot.title).color(ui::strong_text(ui.ctx())));
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -108,6 +116,15 @@ impl StudioEguiApp {
     }
 
     pub(crate) fn bottom_panel_snapshot(&self) -> BottomPanelSnapshot {
+        match self.bottom_panel_tab {
+            BottomPanelTab::BatchDebug => self.batch_debug_snapshot(),
+            BottomPanelTab::Logs => self.logs_snapshot(),
+            BottomPanelTab::Problems => self.problems_snapshot(),
+            BottomPanelTab::Performance => self.performance_snapshot(),
+        }
+    }
+
+    fn batch_debug_snapshot(&self) -> BottomPanelSnapshot {
         if let Some(report) = self.app.last_batch_report.as_ref() {
             return BottomPanelSnapshot {
                 title: "Batch Debug".to_string(),
@@ -166,17 +183,98 @@ impl StudioEguiApp {
             rows: Vec::new(),
         }
     }
+
+    fn logs_snapshot(&self) -> BottomPanelSnapshot {
+        BottomPanelSnapshot {
+            title: "Logs".to_string(),
+            status: if self.status.is_empty() {
+                i18n::t("studio.shell.idle").to_string()
+            } else {
+                self.status.clone()
+            },
+            rows: vec![BottomPanelRow {
+                name: "Latest Studio status".to_string(),
+                status: "Info".to_string(),
+                detail: if self.status.is_empty() {
+                    i18n::t("studio.shell.idle").to_string()
+                } else {
+                    self.status.clone()
+                },
+            }],
+        }
+    }
+
+    fn problems_snapshot(&self) -> BottomPanelSnapshot {
+        let mut rows = Vec::new();
+        if let Some(execution) = self.app.last_workflow_execution.as_ref() {
+            rows.extend(
+                execution
+                    .results
+                    .iter()
+                    .filter(|step| step.status != ExecutionStatus::Completed)
+                    .map(|step| BottomPanelRow {
+                        name: step.step_name.clone(),
+                        status: format!("{:?}", step.status),
+                        detail: problem_detail(&step.output),
+                    }),
+            );
+        }
+        BottomPanelSnapshot {
+            title: "Problems".to_string(),
+            status: format!("{} issues", rows.len()),
+            rows,
+        }
+    }
+
+    fn performance_snapshot(&self) -> BottomPanelSnapshot {
+        BottomPanelSnapshot {
+            title: "Performance".to_string(),
+            status: "interactive".to_string(),
+            rows: vec![
+                BottomPanelRow {
+                    name: "Workspace panes".to_string(),
+                    status: self.app.open_workspace_panes().count().to_string(),
+                    detail: "open internal egui panes".to_string(),
+                },
+                BottomPanelRow {
+                    name: "Bottom panel height".to_string(),
+                    status: format!("{}", self.layout.bottom_panel_height() as u32),
+                    detail: "docs/22 default 240".to_string(),
+                },
+            ],
+        }
+    }
 }
 
-fn render_bottom_panel_tabs(ui: &mut egui::Ui, model: &BottomPanelTabModel) {
+fn problem_detail(output: &serde_json::Value) -> String {
+    output
+        .get("error")
+        .or_else(|| output.get("message"))
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or("No error")
+        .to_string()
+}
+
+fn render_bottom_panel_tabs(
+    ui: &mut egui::Ui,
+    model: &BottomPanelTabModel,
+) -> Option<BottomPanelTab> {
+    let mut selected = None;
     ui.horizontal_wrapped(|ui| {
         for tab in &model.tabs {
-            render_bottom_panel_tab(ui, *tab, *tab == model.selected);
+            if render_bottom_panel_tab(ui, *tab, *tab == model.selected).clicked() {
+                selected = Some(*tab);
+            }
         }
     });
+    selected
 }
 
-fn render_bottom_panel_tab(ui: &mut egui::Ui, tab: BottomPanelTab, selected: bool) {
+fn render_bottom_panel_tab(
+    ui: &mut egui::Ui,
+    tab: BottomPanelTab,
+    selected: bool,
+) -> egui::Response {
     let ctx = ui.ctx().clone();
     let fill = if selected {
         Color::accent_weak(&ctx)
@@ -208,6 +306,7 @@ fn render_bottom_panel_tab(ui: &mut egui::Ui, tab: BottomPanelTab, selected: boo
             tab.label(),
         )
     });
+    response.interact(egui::Sense::click())
 }
 
 fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
@@ -299,5 +398,27 @@ mod tests {
             model.contract(),
             "tabs=Batch Debug|Logs|Problems|Performance;selected=Batch Debug;role=bottom-panel-tabs"
         );
+    }
+
+    #[test]
+    fn bottom_panel_snapshots_switch_by_selected_tab() {
+        let mut app = StudioEguiApp {
+            status: "Indexed 4 files".to_string(),
+            bottom_panel_tab: BottomPanelTab::Logs,
+            ..Default::default()
+        };
+
+        assert_eq!(app.bottom_panel_snapshot().title, "Logs");
+
+        app.bottom_panel_tab = BottomPanelTab::Problems;
+        assert_eq!(app.bottom_panel_snapshot().title, "Problems");
+
+        app.bottom_panel_tab = BottomPanelTab::Performance;
+        let performance = app.bottom_panel_snapshot();
+        assert_eq!(performance.title, "Performance");
+        assert!(performance
+            .rows
+            .iter()
+            .any(|row| row.name == "Workspace panes"));
     }
 }

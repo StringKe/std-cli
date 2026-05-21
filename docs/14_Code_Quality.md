@@ -83,6 +83,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - `STD_TEST_MODE` 未启用
 - 目标进程限定为测试命令启动的隔离 harness，不复用用户已打开的真实窗口
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
+- runner 必须用 pid 反查真实 bundle identifier，不能只信任命令行传入的 bundle id 字符串
 - 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - `std ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
 - 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置

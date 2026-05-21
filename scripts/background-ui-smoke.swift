@@ -27,6 +27,10 @@ guard config.bundleId == requiredBundleId else {
 guard config.windowTitle == requiredWindowTitle else {
     fail("window_title outside whitelist")
 }
+guard let app = NSRunningApplication(processIdentifier: config.harnessPid),
+      app.bundleIdentifier == requiredBundleId else {
+    fail("pid bundle_id outside whitelist")
+}
 guard let window = findWindow(config) else {
     fail("harness window not found")
 }
