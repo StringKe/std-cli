@@ -11,6 +11,8 @@ mod layout;
 mod operations;
 mod operations_rows;
 mod preview;
+#[cfg(test)]
+mod preview_tests;
 mod shell;
 mod shell_icons;
 mod shell_navigation;

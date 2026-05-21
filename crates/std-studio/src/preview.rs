@@ -19,10 +19,10 @@ pub(crate) enum StudioPreviewRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewSmokeReport {
-    scenarios: Vec<String>,
-    commands: Vec<String>,
-    states: Vec<String>,
-    capture_contract: &'static str,
+    pub(crate) scenarios: Vec<String>,
+    pub(crate) commands: Vec<String>,
+    pub(crate) states: Vec<String>,
+    pub(crate) capture_contract: &'static str,
 }
 
 impl StudioPreviewSmokeReport {
@@ -81,7 +81,7 @@ impl StudioPreviewApp {
     }
 }
 
-fn preview_data_dir() -> std::path::PathBuf {
+pub(crate) fn preview_data_dir() -> std::path::PathBuf {
     std::env::temp_dir().join(format!(
         "std-cli-studio-ui-preview-{}-{}",
         std::process::id(),
@@ -111,7 +111,7 @@ pub(crate) fn studio_preview_request_from_args(args: &[String]) -> Option<Studio
     studio_preview_config_from_args(args).map(StudioPreviewRequest::Run)
 }
 
-fn studio_preview_config_from_args(args: &[String]) -> Option<StudioPreviewConfig> {
+pub(crate) fn studio_preview_config_from_args(args: &[String]) -> Option<StudioPreviewConfig> {
     let theme = args
         .get(2)
         .map(String::as_str)
@@ -168,11 +168,11 @@ fn preview_capture_contract() -> &'static str {
     "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
 }
 
-fn studio_preview_window_title() -> &'static str {
+pub(crate) fn studio_preview_window_title() -> &'static str {
     "std-cli Studio"
 }
 
-fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {
+pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {
     match scenario {
         "workflow" => seed_workflow_preview(app),
         "analysis" => seed_analysis_preview(app),
@@ -188,7 +188,7 @@ fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {
     }
 }
 
-fn seeded_preview_app(theme: &str, scenario: &str) -> StudioEguiApp {
+pub(crate) fn seeded_preview_app(theme: &str, scenario: &str) -> StudioEguiApp {
     let core = StdCore::with_config(StdConfig {
         data_dir: preview_data_dir(),
         theme: theme.to_string(),
@@ -206,12 +206,18 @@ fn seeded_preview_app(theme: &str, scenario: &str) -> StudioEguiApp {
 fn preview_matrix() -> Vec<String> {
     [
         "dark-dashboard",
-        "light-dashboard",
         "dark-workflow",
-        "light-analysis",
+        "dark-analysis",
         "dark-plugins",
-        "light-operations",
+        "dark-operations",
         "dark-settings",
+        "dark-panes",
+        "light-dashboard",
+        "light-workflow",
+        "light-analysis",
+        "light-plugins",
+        "light-operations",
+        "light-settings",
         "light-panes",
     ]
     .into_iter()
@@ -251,12 +257,16 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
         }
         "operations" => app.app.active_pane == StudioPane::Operations,
         "settings" => app.app.active_pane == StudioPane::Settings,
-        "panes" => app.app.open_workspace_panes().count() >= 3,
+        "panes" => {
+            app.app.open_workspace_panes().count() >= 3
+                && !app.app.workspace_policy.allows_native_child_windows()
+                && !app.app.workspace_policy.allows_detached_panels()
+        }
         _ => false,
     }
 }
 
-fn seed_workflow_preview(app: &mut StudioEguiApp) {
+pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
     app.app.switch_pane(StudioPane::Workflows);
     app.workflow_name = "Preview Release".to_string();
     app.workflow_description = "Preview workflow for Studio UI evidence".to_string();
@@ -340,87 +350,4 @@ fn seed_plugin_preview(app: &mut StudioEguiApp) {
     );
     let _ = app.app.reload_plugins();
     app.status = "plugin preview seeded".to_string();
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::smoke::smoke_from_args;
-
-    #[test]
-    fn ui_preview_args_are_explicit_opt_in() {
-        let args = vec![
-            "std-studio".to_string(),
-            "--ui-preview".to_string(),
-            "light".to_string(),
-            "panes".to_string(),
-            "900".to_string(),
-        ];
-        let config = studio_preview_config_from_args(&args).unwrap();
-
-        assert_eq!(config.theme, "light");
-        assert_eq!(config.scenario, "panes");
-        assert_eq!(config.timeout_ms, 900);
-        assert!(smoke_from_args(args).is_none());
-    }
-
-    #[test]
-    fn ui_preview_uses_product_window_title() {
-        assert_eq!(studio_preview_window_title(), "std-cli Studio");
-    }
-
-    #[test]
-    fn ui_preview_args_are_blocked_without_opt_in() {
-        std::env::remove_var("STD_ALLOW_UI_PREVIEW");
-        let args = vec![
-            "std-studio".to_string(),
-            "--ui-preview".to_string(),
-            "light".to_string(),
-            "panes".to_string(),
-            "900".to_string(),
-        ];
-
-        let Some(StudioPreviewRequest::Blocked(reason)) = studio_preview_request_from_args(&args)
-        else {
-            panic!("expected blocked Studio UI preview request");
-        };
-        assert!(reason.contains("STD_TEST_MODE blocked Studio UI preview"));
-        assert!(blocked_studio_preview_summary(&reason).contains("studio_ui_preview SKIP"));
-    }
-
-    #[test]
-    fn workflow_preview_seeds_builder_runtime_state() {
-        let core = StdCore::with_config(StdConfig {
-            data_dir: preview_data_dir(),
-            ..StdConfig::default()
-        });
-        let mut app = StudioEguiApp {
-            app: std_studio::StudioApp::with_core(core),
-            ..StudioEguiApp::default()
-        };
-
-        seed_workflow_preview(&mut app);
-
-        assert_eq!(app.app.active_pane, StudioPane::Workflows);
-        assert!(app.workflow_selected_path.is_some());
-        assert!(app.app.workflow_debug.is_some());
-        assert!(app.app.last_workflow_execution.is_some());
-        assert_eq!(app.app.open_workspace_panes().count(), 1);
-    }
-
-    #[test]
-    fn preview_smoke_reports_required_studio_screenshot_matrix() {
-        let report = StudioPreviewSmokeReport::new();
-        let summary = report.summary();
-
-        assert!(report.pass(), "{summary}");
-        assert!(summary.contains("studio_preview_smoke PASS"));
-        assert!(summary.contains("dark-workflow"));
-        assert!(summary.contains("light-analysis"));
-        assert!(summary.contains("dark-settings"));
-        assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
-        assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
-        assert!(summary.contains("blocked-in-STD_TEST_MODE"));
-        assert!(summary.contains("no-default-window"));
-    }
 }
