@@ -46,19 +46,25 @@ impl StudioEguiApp {
     fn render_active_workspace(&mut self, ui: &mut egui::Ui) {
         egui::ScrollArea::vertical().show(ui, |ui| {
             ui.add_space(Space::SM as f32);
-            match self.app.active_pane {
-                StudioPane::Dashboard => self.render_dashboard(ui),
-                StudioPane::Workflows => self.render_workflows(ui),
-                StudioPane::Apps => self.render_apps(ui),
-                StudioPane::Memory => self.render_memory(ui),
-                StudioPane::Plugins => self.render_plugins(ui),
-                StudioPane::Analysis => self.render_analysis(ui),
-                StudioPane::History => self.render_history(ui),
-                StudioPane::Operations => self.render_operations(ui),
-                StudioPane::Settings => self.render_settings(ui),
+            if self.render_focused_workspace_pane(ui) {
+                return;
             }
+            self.render_main_workspace_pane(ui);
         });
-        self.render_workspace_panes(ui);
+    }
+
+    fn render_main_workspace_pane(&mut self, ui: &mut egui::Ui) {
+        match self.app.active_pane {
+            StudioPane::Dashboard => self.render_dashboard(ui),
+            StudioPane::Workflows => self.render_workflows(ui),
+            StudioPane::Apps => self.render_apps(ui),
+            StudioPane::Memory => self.render_memory(ui),
+            StudioPane::Plugins => self.render_plugins(ui),
+            StudioPane::Analysis => self.render_analysis(ui),
+            StudioPane::History => self.render_history(ui),
+            StudioPane::Operations => self.render_operations(ui),
+            StudioPane::Settings => self.render_settings(ui),
+        }
     }
 
     fn render_context(&mut self, ui: &mut egui::Ui) {
@@ -212,5 +218,16 @@ mod tests {
         assert!(source.contains("Text::caption()"));
         assert!(source.contains("status_divider(ui)"));
         assert!(!source.contains("ui.separator()"));
+    }
+
+    #[test]
+    fn canvas_promotes_focused_workspace_pane_as_primary_content() {
+        let source = include_str!("shell.rs");
+
+        assert!(source.contains("if self.render_focused_workspace_pane(ui)"));
+        assert!(source.contains("return;"));
+        assert!(source.contains("self.render_main_workspace_pane(ui);"));
+        let old_append_call = ["self.render_", "workspace_panes(ui);"].join("");
+        assert!(!source.contains(&old_append_call));
     }
 }

@@ -80,12 +80,11 @@ pub(crate) fn focused_workspace_spec(app: &std_studio::StudioApp) -> Option<Stud
 }
 
 impl StudioEguiApp {
-    pub(crate) fn render_workspace_panes(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_focused_workspace_pane(&mut self, ui: &mut egui::Ui) -> bool {
         let Some(spec) = focused_workspace_spec(&self.app) else {
-            return;
+            return false;
         };
 
-        ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -106,6 +105,7 @@ impl StudioEguiApp {
                 &mut self.pending_workspace_focus,
             );
         });
+        true
     }
 
     pub(crate) fn consume_workspace_commands(&mut self) {

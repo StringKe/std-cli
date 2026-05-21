@@ -16,6 +16,7 @@ pub(crate) struct StudioLayoutSmoke {
     pub(crate) bottom_panel_height: u32,
     pub(crate) bottom_panel_default_open: bool,
     pub(crate) canvas_surface: String,
+    pub(crate) canvas_content_route: String,
 }
 
 impl StudioLayoutSmoke {
@@ -37,6 +38,7 @@ impl StudioLayoutSmoke {
             bottom_panel_height: layout.bottom_panel_height() as u32,
             bottom_panel_default_open: layout.bottom_panel_open,
             canvas_surface: canvas_motion_evidence(),
+            canvas_content_route: canvas_content_route_evidence(),
         }
     }
 }
@@ -55,4 +57,17 @@ fn canvas_motion_evidence() -> String {
         reduced.focus_ring().as_millis(),
         reduced.modal_enter().as_millis()
     )
+}
+
+fn canvas_content_route_evidence() -> String {
+    let source = include_str!("../shell.rs");
+    let old_append_call = ["self.render_", "workspace_panes(ui);"].join("");
+    if source.contains("if self.render_focused_workspace_pane(ui)")
+        && source.contains("self.render_main_workspace_pane(ui);")
+        && !source.contains(&old_append_call)
+    {
+        "focused-workspace-pane-primary,main-pane-fallback".to_string()
+    } else {
+        "workspace-pane-appended-to-main".to_string()
+    }
 }
