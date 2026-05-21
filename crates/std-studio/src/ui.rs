@@ -104,12 +104,16 @@ pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) -> egui::
 
 pub(crate) fn quiet_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
     let ctx = ui.ctx().clone();
-    ui.add(
+    let response = ui.add(
         egui::Button::new(egui::RichText::new(label).color(strong_text(&ctx)))
             .fill(Color::bg_surface_0(&ctx))
             .stroke(egui::Stroke::new(1.0, Color::stroke_divider(&ctx)))
             .corner_radius(egui::CornerRadius::same(Radius::SM)),
-    )
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), label)
+    });
+    response
 }
 
 pub(crate) fn empty_state(ui: &mut egui::Ui, text: &str) {
@@ -118,4 +122,18 @@ pub(crate) fn empty_state(ui: &mut egui::Ui, text: &str) {
     ui.vertical_centered(|ui| {
         ui.label(egui::RichText::new(text).color(muted_text(&ctx)));
     });
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn quiet_button_registers_button_widget_info_for_all_callers() {
+        let source = include_str!("ui.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("pub(crate) fn quiet_button"));
+        assert!(implementation.contains("response.widget_info"));
+        assert!(implementation.contains("WidgetType::Button"));
+        assert!(implementation.contains("WidgetInfo::labeled"));
+    }
 }
