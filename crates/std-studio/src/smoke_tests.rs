@@ -154,6 +154,13 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
         "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
     ));
     assert!(summary.contains("success>success>success>success"));
+    assert!(summary.contains("builder_visual_contract=builder_visual=single-pane-workbench"));
+    assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
+    assert!(summary.contains("steps=list|selected-row|keyboard-reorder"));
+    assert!(summary.contains("properties=step-name|parameters-json|index|add|update|move|remove"));
+    assert!(summary.contains("debug=dry-run|execution|trace"));
+    assert!(summary.contains("bottom-panel=batch-debug|logs|problems|performance"));
+    assert!(summary.contains("history=execution-history-pane|timeline"));
 }
 
 fn assert_plugin_manager_summary(summary: &str) {

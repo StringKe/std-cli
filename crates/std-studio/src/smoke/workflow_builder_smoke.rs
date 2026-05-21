@@ -22,6 +22,7 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) next_action: String,
     pub(crate) bottom_panel_contract: String,
     pub(crate) debug_panel_contract: String,
+    pub(crate) visual_contract: String,
 }
 
 pub(crate) fn run_workflow_builder_smoke(
@@ -66,6 +67,7 @@ pub(crate) fn run_workflow_builder_smoke(
         studio.workflow_debug.as_ref(),
         studio.last_workflow_execution.as_ref(),
     );
+    let visual_contract = builder_visual_contract();
 
     Ok(WorkflowBuilderSmoke {
         created,
@@ -90,7 +92,21 @@ pub(crate) fn run_workflow_builder_smoke(
         next_action: "complete".to_string(),
         bottom_panel_contract: "batch-debug-open".to_string(),
         debug_panel_contract,
+        visual_contract,
     })
+}
+
+fn builder_visual_contract() -> String {
+    [
+        "builder_visual=single-pane-workbench",
+        "flow=goal-input|plan|save|simulate|test|trace",
+        "steps=list|selected-row|keyboard-reorder",
+        "properties=step-name|parameters-json|index|add|update|move|remove",
+        "debug=dry-run|execution|trace",
+        "bottom-panel=batch-debug|logs|problems|performance",
+        "history=execution-history-pane|timeline",
+    ]
+    .join(";")
 }
 
 fn workflow_step_keyboard_path() -> String {
