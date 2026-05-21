@@ -17,7 +17,7 @@ fn test_sources_do_not_reference_real_app_launch_targets() {
 
     assert!(
         violations.is_empty(),
-        "test sources must use fake app fixtures, not real launch targets: {}",
+        "test sources must use fake app fixtures, not real desktop apps or launch targets: {}",
         violations.join(", ")
     );
 }
@@ -286,6 +286,10 @@ fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
         "[\"1\", \"Password\"]".to_string(),
+        ["We", "Chat"].join(""),
+        ["we", "chat"].join(""),
+        ["wei", "xin"].join(""),
+        "微信".to_string(),
         ["open -a ", "Terminal"].join(""),
         "Terminal\".to_string()".to_string(),
         ["open", " -a "].join(""),

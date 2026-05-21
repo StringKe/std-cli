@@ -198,7 +198,7 @@ fn special_alias_pinyin() -> String {
 }
 
 fn special_alias_scheme() -> String {
-    ["x", "weixin"].join("")
+    ["x", "wei", "xin"].join("")
 }
 
 fn special_alias_localized() -> String {

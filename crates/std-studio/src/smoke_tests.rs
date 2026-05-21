@@ -30,14 +30,30 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("host=single-borderless-egui-viewport"));
     assert!(summary.contains("sequence=open>focus>switch>close>reopen>restore"));
     assert!(summary.contains("state_preserved=true"));
-    assert!(summary.contains("forbidden=native-child-windows:false|detached-panels:false"));
     assert!(summary.contains("focused="));
     assert!(summary.contains("title=Plugin Manager"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
     assert!(summary.contains("reopened_memory="));
     assert!(summary.contains("reopened_internal=true"));
+    assert_workspace_forbidden_policy_summary(summary);
+    assert_workspace_pane_lifecycle_summary(summary);
+}
+
+fn assert_workspace_forbidden_policy_summary(summary: &str) {
+    assert!(summary.contains("forbidden=native-child-windows:false|detached-panels:false"));
     assert!(summary.contains("native_child_windows=false"));
     assert!(summary.contains("detached_panels=false"));
+}
+
+fn assert_workspace_pane_lifecycle_summary(summary: &str) {
+    assert!(summary.contains(
+        "pane_host_policy=single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"
+    ));
+    assert!(
+        summary.contains("pane_management_sequence=open>dedupe>focus>switch>close>reopen>restore")
+    );
+    assert!(summary.contains("pane_focus_switch_path=Settings>Plugin Manager>Plugin Manager"));
+    assert!(summary.contains("pane_close_restore_path=close:"));
 }
 
 fn assert_shell_layout_summary(summary: &str) {

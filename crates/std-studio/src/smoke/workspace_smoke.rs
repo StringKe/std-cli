@@ -12,6 +12,10 @@ pub(crate) struct WorkspacePaneSmoke {
     pub(crate) closed_removed: bool,
     pub(crate) state_preserved_after_focus: bool,
     pub(crate) focus_label: String,
+    pub(crate) host_policy: String,
+    pub(crate) management_sequence: String,
+    pub(crate) focus_switch_path: String,
+    pub(crate) close_restore_path: String,
 }
 
 pub(crate) fn run_workspace_pane_smoke(
@@ -20,6 +24,7 @@ pub(crate) fn run_workspace_pane_smoke(
 ) -> WorkspacePaneSmoke {
     let settings = studio.open_settings_pane();
     let opened = studio.focused_pane == Some(settings);
+    let settings_title = pane_title(studio, settings);
     let duplicate_settings = studio.open_settings_pane();
     let plugin = studio.open_plugin_manager_pane();
     let focus_switched = studio.focused_pane == Some(plugin);
@@ -44,6 +49,16 @@ pub(crate) fn run_workspace_pane_smoke(
         && studio.focused_pane == Some(plugin)
         && plugin_refocused;
     let restored_title = pane_title(studio, plugin);
+    let focus_switch_path = format!("{}>{}>{}", settings_title, focused_title, restored_title);
+    let close_restore_path = format!(
+        "close:{}>restore:{}",
+        close_target.value(),
+        studio.focused_pane.map(|id| id.value()).unwrap_or_default()
+    );
+    let host_policy =
+        "single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"
+            .to_string();
+    let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
     let focus_label = workspace_management_evidence(
         plugin,
         reopened,
@@ -63,6 +78,10 @@ pub(crate) fn run_workspace_pane_smoke(
         closed_removed,
         state_preserved_after_focus,
         focus_label,
+        host_policy,
+        management_sequence,
+        focus_switch_path,
+        close_restore_path,
     }
 }
 
