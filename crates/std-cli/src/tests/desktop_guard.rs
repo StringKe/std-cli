@@ -261,6 +261,33 @@ fn std_core_external_runner_requires_desktop_opt_in() {
 }
 
 #[test]
+fn std_core_test_mode_detection_does_not_spawn_process_inspection() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-core/src/lib.rs")).unwrap();
+    let detector = source_section(
+        &body,
+        "pub fn std_test_mode_enabled() -> bool",
+        "pub fn desktop_automation_allowed() -> bool",
+    );
+
+    for forbidden in [
+        "Command::new(\"/bin/ps\")",
+        "parent_process_chain",
+        "std::process::id()",
+        "-o\", \"ppid=",
+    ] {
+        assert!(
+            !detector.contains(forbidden),
+            "STD_TEST_MODE detection must not inspect or spawn desktop process state: {forbidden}"
+        );
+    }
+}
+
+#[test]
 fn std_core_app_open_allows_launcher_user_enter_outside_test_mode() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

@@ -30,6 +30,7 @@ pub use registry::ActionRegistry;
 pub use storage::LocalStore;
 pub use tools::{EchoTool, StdTool, ToolRegistry};
 
+#[cfg(not(test))]
 use std::process::Command;
 use std::{
     io,
@@ -177,9 +178,7 @@ pub fn std_test_mode_enabled() -> bool {
 fn running_under_cargo_test_context() -> bool {
     static TEST_CONTEXT: OnceLock<bool> = OnceLock::new();
     *TEST_CONTEXT.get_or_init(|| {
-        running_under_cargo_test_binary()
-            || std::env::var("RUST_TEST_THREADS").is_ok()
-            || parent_process_chain_contains_cargo_test()
+        running_under_cargo_test_binary() || std::env::var("RUST_TEST_THREADS").is_ok()
     })
 }
 
@@ -197,44 +196,6 @@ fn running_under_cargo_test_binary() -> bool {
         return false;
     };
     file_name.rsplit_once('-').is_some()
-}
-
-#[cfg(unix)]
-fn parent_process_chain_contains_cargo_test() -> bool {
-    let mut pid = std::process::id().to_string();
-    for _ in 0..8 {
-        let Ok(output) = Command::new("/bin/ps")
-            .args(["-o", "ppid=", "-o", "comm=", "-p", &pid])
-            .output()
-        else {
-            return false;
-        };
-        if !output.status.success() {
-            return false;
-        }
-        let row = String::from_utf8_lossy(&output.stdout);
-        let mut parts = row.split_whitespace();
-        let Some(parent) = parts.next() else {
-            return false;
-        };
-        let command = parts.collect::<Vec<_>>().join(" ");
-        if command.contains("/deps/") && command.rsplit_once('-').is_some() {
-            return true;
-        }
-        if command.ends_with("/cargo") || command.ends_with("cargo") {
-            return true;
-        }
-        if parent == "0" || parent == pid {
-            return false;
-        }
-        pid = parent.to_string();
-    }
-    false
-}
-
-#[cfg(not(unix))]
-fn parent_process_chain_contains_cargo_test() -> bool {
-    false
 }
 
 pub fn desktop_automation_allowed() -> bool {
