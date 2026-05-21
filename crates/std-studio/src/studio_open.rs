@@ -1,4 +1,4 @@
-use crate::{viewport::studio_native_options, StudioEguiApp};
+use crate::{native_app::run_studio_native_app_with, StudioEguiApp};
 use std_studio::StudioPane;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -98,11 +98,7 @@ pub(crate) fn studio_open_blocked_summary(request: StudioOpenRequest, reason: &s
 }
 
 pub(crate) fn run_studio_open_request(request: StudioOpenRequest) -> eframe::Result<()> {
-    eframe::run_native(
-        "std-cli Studio",
-        studio_native_options(),
-        Box::new(move |_cc| Ok(Box::new(app_for_open_request(request)))),
-    )
+    run_studio_native_app_with(app_for_open_request(request))
 }
 
 pub(crate) fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp {

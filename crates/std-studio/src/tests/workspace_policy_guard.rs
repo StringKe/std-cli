@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
 const ALLOWED_VIEWPORT_FILES: &[&str] = &["viewport.rs", "host_chrome.rs"];
-const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["native_app.rs", "studio_open.rs", "preview.rs"];
+const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["native_app.rs", "preview.rs"];
 
 #[test]
 fn studio_main_path_forbids_detached_or_native_child_windows() {

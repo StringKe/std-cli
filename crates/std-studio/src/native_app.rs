@@ -1,10 +1,14 @@
 use crate::{viewport::studio_native_options, StudioEguiApp};
 
 pub(crate) fn run_studio_native_app() -> eframe::Result<()> {
+    run_studio_native_app_with(StudioEguiApp::default())
+}
+
+pub(crate) fn run_studio_native_app_with(app: StudioEguiApp) -> eframe::Result<()> {
     eframe::run_native(
         "std-cli Studio",
         studio_native_options(),
-        Box::new(|_cc| Ok(Box::new(StudioEguiApp::default()))),
+        Box::new(|_cc| Ok(Box::new(app))),
     )
 }
 
