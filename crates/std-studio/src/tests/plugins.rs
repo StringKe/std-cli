@@ -49,7 +49,10 @@ fn studio_plugin_runtime_summary_reports_js_ts_controlled_runtime() {
 
     let summary = runtime_summary(&ActionExecutionStatus::Completed, Some(&js_output));
 
-    assert_eq!(summary.status, "Completed");
+    assert_eq!(
+        summary.status,
+        std_egui::i18n::t("studio.plugins.runtime.completed")
+    );
     assert_eq!(summary.runtime, "deno_core");
     assert_eq!(summary.exit_code, "0");
     assert_eq!(summary.duration, "18 ms");

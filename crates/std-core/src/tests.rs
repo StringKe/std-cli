@@ -41,7 +41,7 @@ fn registry_register_and_search_works() {
 fn registry_search_supports_launcher_fuzzy_abbreviations() {
     let mut reg = ActionRegistry::new();
     reg.register(RegistryEntry {
-        action: make_test_action("Open Terminal"),
+        action: make_test_action("StdFixtureTerminal"),
         tags: vec!["terminal".to_string(), "shell".to_string()],
         metadata: Default::default(),
     })
@@ -53,10 +53,10 @@ fn registry_search_supports_launcher_fuzzy_abbreviations() {
     })
     .unwrap();
 
-    let results = reg.search("op term", 10);
+    let results = reg.search("std term", 10);
     let missed = reg.search("zzzz", 10);
 
-    assert_eq!(results[0].action.name, "Open Terminal");
+    assert_eq!(results[0].action.name, "StdFixtureTerminal");
     assert!(results[0]
         .matched_fields
         .contains(&"name:fuzzy".to_string()));

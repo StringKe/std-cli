@@ -146,7 +146,8 @@ mod tests {
                 && item.action == StudioCommandAction::FocusWorkspace(plugin)
         }));
         assert!(items.iter().any(|item| {
-            item.title == "Settings" && item.action == StudioCommandAction::FocusWorkspace(settings)
+            item.title == std_egui::i18n::t("studio.settings.title")
+                && item.action == StudioCommandAction::FocusWorkspace(settings)
         }));
     }
 

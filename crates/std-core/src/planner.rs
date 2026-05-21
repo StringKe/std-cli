@@ -67,11 +67,11 @@ mod tests {
         let plan = AiPlanner::plan(&core, "terminal").unwrap();
 
         assert_eq!(plan.goal, "terminal");
-        assert_eq!(plan.steps[0].action_name, "Open Terminal");
+        assert_eq!(plan.steps[0].action_name, "StdFixtureTerminal");
         assert!(plan.steps[0].action_id.is_some());
         assert!(plan.steps[0]
             .evidence
-            .contains(&"action: Open Terminal".to_string()));
+            .contains(&"action: StdFixtureTerminal".to_string()));
     }
 
     #[test]

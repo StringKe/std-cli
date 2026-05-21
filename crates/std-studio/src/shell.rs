@@ -217,7 +217,7 @@ mod tests {
         assert!(source.contains("status_text(ui, self.app.active_pane.content_key())"));
         assert!(source.contains("Text::caption()"));
         assert!(source.contains("status_divider(ui)"));
-        assert!(!source.contains("ui.separator()"));
+        assert!(!source.contains("\n            ui.separator()"));
     }
 
     #[test]

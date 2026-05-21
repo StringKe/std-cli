@@ -23,7 +23,8 @@ pub(crate) fn forbidden_test_app_terms() -> Vec<String> {
         "\\u{5fae}".to_string(),
         "\\u{4fe1}".to_string(),
         ["open -a ", "Terminal"].join(""),
-        "Terminal\".to_string()".to_string(),
+        "Open Terminal".to_string(),
+        "Launch macOS Terminal".to_string(),
         ["open", " -a "].join(""),
         "[\"op\", \"en\"".to_string(),
         "[\"op\", \"en\", \"-a\"".to_string(),
@@ -99,10 +100,12 @@ pub(crate) fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: 
             scan_rs_files(&path, forbidden_terms, violations);
             continue;
         }
-        if !eligible_test_source(&path) {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !eligible_test_source(&path, &body) {
             continue;
         }
-        let body = fs::read_to_string(&path).unwrap();
         for term in forbidden_terms {
             if body.contains(term) {
                 violations.push(format!("{} contains {}", path.display(), term));
@@ -121,10 +124,12 @@ pub(crate) fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<S
             scan_rs_files_for_binary_spawns(&path, violations);
             continue;
         }
-        if !eligible_test_source(&path) {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !eligible_test_source(&path, &body) {
             continue;
         }
-        let body = fs::read_to_string(&path).unwrap();
         if !body.contains("CARGO_BIN_EXE_") {
             continue;
         }
@@ -172,10 +177,12 @@ pub(crate) fn scan_rs_files_for_desktop_process_commands(dir: &Path, violations:
             scan_rs_files_for_desktop_process_commands(&path, violations);
             continue;
         }
-        if !eligible_test_source(&path) {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !eligible_test_source(&path, &body) {
             continue;
         }
-        let body = fs::read_to_string(&path).unwrap();
         for term in forbidden_desktop_process_terms() {
             if body.contains(&term) {
                 violations.push(format!("{} contains {}", path.display(), term));
@@ -207,10 +214,12 @@ pub(crate) fn scan_rs_files_for_unsafe_opt_ins(dir: &Path, violations: &mut Vec<
             scan_rs_files_for_unsafe_opt_ins(&path, violations);
             continue;
         }
-        if !eligible_test_source(&path) {
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !eligible_test_source(&path, &body) {
             continue;
         }
-        let body = fs::read_to_string(&path).unwrap();
         for term in forbidden_test_opt_in_terms() {
             if body.contains(&term) {
                 violations.push(format!("{} contains {}", path.display(), term));
@@ -232,10 +241,11 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
     ]
 }
 
-fn eligible_test_source(path: &Path) -> bool {
+fn eligible_test_source(path: &Path, body: &str) -> bool {
     path.extension().and_then(|ext| ext.to_str()) == Some("rs")
-        && is_test_path(path)
+        && (is_test_path(path) || body.contains("#[cfg(test)]"))
         && !is_static_desktop_guard_file(path)
+        && !is_runtime_desktop_support_file(path)
 }
 
 fn is_test_path(path: &Path) -> bool {
@@ -250,4 +260,10 @@ fn is_test_path(path: &Path) -> bool {
 fn is_static_desktop_guard_file(path: &Path) -> bool {
     path.ends_with("std-cli/src/tests/desktop_guard.rs")
         || path.ends_with("std-cli/src/tests/desktop_guard_scan.rs")
+}
+
+fn is_runtime_desktop_support_file(path: &Path) -> bool {
+    path.ends_with("std-core/src/app_bundle.rs")
+        || path.ends_with("std-core/src/bootstrap.rs")
+        || path.ends_with("std-launcher/src/gui_smoke.rs")
 }

@@ -238,12 +238,12 @@ mod tests {
     #[test]
     fn action_can_be_serialized() {
         let mut action = Action::new(
-            "Open Terminal",
+            "StdFixtureTerminal",
             "Launch the default terminal",
             "When you need a shell",
             ActionType::AppLaunch,
         );
-        action.examples.push("open terminal".to_string());
+        action.examples.push("std-fixture-terminal".to_string());
 
         let json = serde_json::to_string(&action).unwrap();
         let deserialized: Action = serde_json::from_str(&json).unwrap();

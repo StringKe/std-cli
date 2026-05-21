@@ -34,7 +34,7 @@ impl LauncherSurfaceContract {
         Self {
             search_bar: search_bar_contract(),
             result_list: result_list_contract(result_count, &selected_type),
-            action_bar: action_bar_contract(&preview.primary_command),
+            action_bar: action_bar_contract(preview),
             empty_state: empty_state_contract(),
             no_match_state: no_match_state_contract(),
             query_prefixes: query_prefix_contract(),
@@ -55,7 +55,8 @@ impl LauncherSurfaceContract {
             && self.result_list.contains("selected=accent-weak")
             && self.result_list.contains("shortcut=Enter")
             && self.action_bar.contains("height=36")
-            && self.action_bar.contains("left=title+primary-command")
+            && self.action_bar.contains("left=breadcrumb+primary-command")
+            && self.action_bar.contains("breadcrumb=Command > Rebuild Index")
             && self.action_bar.contains("actions=Mod+K")
             && self.action_bar.contains("font=code")
             && self.empty_state.contains("recent_or_suggested")
@@ -111,8 +112,12 @@ fn result_list_contract(result_count: usize, selected_type: &ActionType) -> Stri
     )
 }
 
-fn action_bar_contract(primary_command: &str) -> String {
-    format!("height=36;left=title+primary-command;font=code;right=run+actions;run=Enter;actions=Mod+K;primary={primary_command}")
+fn action_bar_contract(preview: &std_types::ActionPreview) -> String {
+    let summary = crate::ActionBarPreviewSummary::from_preview(preview);
+    format!(
+        "height=36;left=breadcrumb+primary-command;font=code;right=run+actions;run=Enter;actions=Mod+K;{}",
+        summary.contract()
+    )
 }
 
 fn empty_state_contract() -> String {
@@ -283,7 +288,9 @@ mod tests {
         assert!(contract
             .summary()
             .contains("error_state_contract=status=Failed"));
-        assert!(contract.summary().contains("title=Needs review"));
-        assert!(contract.summary().contains("title=Unable to run"));
+        assert!(contract.summary().contains("actions=copy,retry"));
+        assert!(contract
+            .summary()
+            .contains("actions=copy,retry,open_studio"));
     }
 }

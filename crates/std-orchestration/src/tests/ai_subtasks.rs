@@ -45,7 +45,7 @@ fn ai_subtask_step_produces_local_plan_and_workflow() {
     );
     assert_eq!(
         execution.results[0].output["plan"]["steps"][0]["action_name"].as_str(),
-        Some("Open Terminal")
+        Some("StdFixtureTerminal")
     );
     assert_eq!(
         execution.results[0].output["workflow"]["steps"][0]["step_type"].as_str(),

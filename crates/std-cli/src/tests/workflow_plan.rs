@@ -6,10 +6,10 @@ fn plan_command_outputs_registered_action_plan() {
     let output = run_cli(["std", "plan", "terminal"]).unwrap();
 
     assert!(output.contains("\"goal\": \"terminal\""));
-    assert!(output.contains("Open Terminal"));
+    assert!(output.contains("StdFixtureTerminal"));
     assert!(output.contains("action_id"));
     assert!(output.contains("\"evidence\""));
-    assert!(output.contains("action: Open Terminal"));
+    assert!(output.contains("action: StdFixtureTerminal"));
 }
 
 #[test]
@@ -18,7 +18,7 @@ fn plan_command_outputs_workflow_draft() {
     let workflow: Workflow = serde_json::from_str(&output).unwrap();
 
     assert_eq!(workflow.name, "terminal");
-    assert_eq!(workflow.steps[0].name, "Open Terminal");
+    assert_eq!(workflow.steps[0].name, "StdFixtureTerminal");
     assert!(workflow.steps[0].action_id.is_some());
 }
 

@@ -63,13 +63,22 @@ impl StdCore {
 }
 
 fn terminal_action() -> RegistryEntry {
+    let (name, description, example) = if crate::std_test_mode_enabled() {
+        (
+            "StdFixtureTerminal",
+            "Fixture terminal action for desktop-safe tests",
+            "std-fixture-terminal",
+        )
+    } else {
+        ("Open Terminal", "Launch macOS Terminal", "open -a Terminal")
+    };
     let mut action = Action::new(
-        "Open Terminal",
-        "Launch macOS Terminal",
+        name,
+        description,
         "When a shell is needed",
         ActionType::AppLaunch,
     );
-    action.examples.push("open -a Terminal".to_string());
+    action.examples.push(example.to_string());
     RegistryEntry::from_action(action, vec!["terminal".to_string(), "app".to_string()])
 }
 

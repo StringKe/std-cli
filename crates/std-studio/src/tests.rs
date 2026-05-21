@@ -61,7 +61,7 @@ fn studio_plans_workflow_from_goal() {
     let preview_status = studio.preview_workflow(&workflow).unwrap().status.clone();
 
     assert_eq!(workflow.name, "terminal");
-    assert_eq!(workflow.steps[0].name, "Open Terminal");
+    assert_eq!(workflow.steps[0].name, "StdFixtureTerminal");
     assert!(workflow.steps[0].action_id.is_some());
     assert_eq!(studio.planned_workflow.as_ref().unwrap().name, "terminal");
     assert_eq!(
@@ -81,7 +81,7 @@ fn studio_saves_planned_workflow() {
 
     assert!(path.ends_with("terminal/workflow.json"));
     assert_eq!(workflow.name, "terminal");
-    assert_eq!(workflow.steps[0].name, "Open Terminal");
+    assert_eq!(workflow.steps[0].name, "StdFixtureTerminal");
     assert!(results
         .iter()
         .any(|result| result.action.name == "Run Workflow: terminal"));

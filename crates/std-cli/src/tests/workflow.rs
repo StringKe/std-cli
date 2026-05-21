@@ -18,7 +18,7 @@ fn preview_and_trigger_commands_use_action_dispatch_feedback() {
 fn trigger_command_defers_external_runner_actions_by_default() {
     let output = run_cli(["std", "trigger", "terminal"]).unwrap();
 
-    assert!(output.contains("\"action_name\": \"Open Terminal\""));
+    assert!(output.contains("\"action_name\": \"StdFixtureTerminal\""));
     assert!(output.contains("\"status\": \"NeedsExternalRunner\""));
     assert!(output.contains("\"deferred\": true"));
 }

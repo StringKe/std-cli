@@ -189,7 +189,7 @@ fn ui_preview_scenarios_seed_visible_launcher_states() {
 
     apply_preview_scenario(&mut state, "action-panel");
     assert!(state.action_panel.open);
-    assert_eq!(state.action_panel.action_name, "Open Terminal");
+    assert_eq!(state.action_panel.action_name, "StdFixtureTerminal");
 
     apply_preview_scenario(&mut state, "error");
     assert_eq!(

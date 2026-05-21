@@ -156,7 +156,7 @@ mod tests {
     fn feedback(status: ActionExecutionStatus, message: &str) -> LauncherFeedback {
         LauncherFeedback::from_execution(&ActionExecution {
             action_id: ActionId::default(),
-            action_name: "Open Terminal".to_string(),
+            action_name: "StdFixtureTerminal".to_string(),
             status,
             message: message.to_string(),
             output: None,
@@ -193,7 +193,7 @@ mod tests {
             intent.target,
             std_launcher::StudioLaunchTarget::ExecutionHistory
         );
-        assert_eq!(intent.source_action, "Open Terminal");
+        assert_eq!(intent.source_action, "StdFixtureTerminal");
         assert_eq!(state.studio_intent, Some(intent));
     }
 

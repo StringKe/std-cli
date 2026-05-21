@@ -301,7 +301,7 @@ mod tests {
         model.update_query(&core, "terminal");
         let execution = model.trigger_selected(&core).unwrap();
 
-        assert_eq!(execution.action_name, "Open Terminal");
+        assert_eq!(execution.action_name, "StdFixtureTerminal");
         assert_eq!(
             execution.status,
             std_types::ActionExecutionStatus::NeedsExternalRunner

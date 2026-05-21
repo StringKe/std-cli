@@ -142,9 +142,7 @@ fn launcher_state_previews_and_triggers_selected_action() {
     );
     assert_eq!(feedback.status, ActionExecutionStatus::Completed);
     assert!(!feedback.deferred);
-    assert!(feedback
-        .summary()
-        .contains(std_egui::i18n::t("launcher.feedback.completed")));
+    assert!(feedback.summary().contains("Completed"));
     assert_eq!(
         state.view.telemetry.last_result_count,
         state.view.results.len()

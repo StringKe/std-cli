@@ -222,7 +222,7 @@ mod tests {
         let event = StdEvent::new(
             std_types::StdEventType::RegistryChanged,
             "test",
-            serde_json::json!({"name": "Open Terminal"}),
+            serde_json::json!({"name": "StdFixtureTerminal"}),
         );
 
         store.append_event(&event).unwrap();

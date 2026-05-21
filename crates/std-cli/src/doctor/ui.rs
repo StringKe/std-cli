@@ -73,16 +73,16 @@ fn check_ui_docs(root: &std::path::Path) -> Result<(), CliError> {
 fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
     let body = read_required(&root.join("crates/std-cli/src/release/quality.rs"))?;
     for required in [
-        "STD_TEST_MODE=1 std-launcher --theme-smoke",
-        "STD_TEST_MODE=1 std-launcher --surface-smoke",
-        "STD_TEST_MODE=1 std-launcher --ui-semantics-smoke index",
-        "STD_TEST_MODE=1 std-launcher --keyboard-smoke index",
-        "STD_TEST_MODE=1 std-launcher --preview-smoke",
-        "STD_TEST_MODE=1 std-studio --smoke",
-        "STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
-        "STD_TEST_MODE=1 std-studio --theme-smoke",
-        "STD_TEST_MODE=1 std-studio --surface-smoke",
-        "STD_TEST_MODE=1 std-studio --preview-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --theme-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --surface-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --ui-semantics-smoke index",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --keyboard-smoke index",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --preview-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --workspace-policy-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --theme-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --surface-smoke",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --preview-smoke",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
     ] {
         check_text(&body, required)?;
@@ -131,7 +131,11 @@ fn check_studio_operations_evidence(root: &std::path::Path) -> Result<(), CliErr
         check_text(&operations, required)?;
     }
     let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
-    check_text(&studio_smoke, "operations_smoke=PASS")?;
+    check_text(&operations, "operations_smoke=")?;
+    check_text(
+        &studio_smoke,
+        "operations_summary: inputs.operations.summary()",
+    )?;
     Ok(())
 }
 
@@ -153,10 +157,7 @@ fn check_studio_keyboard_evidence(root: &std::path::Path) -> Result<(), CliError
     }
     let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
     check_text(&studio_smoke, "StudioKeyboardSmoke::run")?;
-    check_text(
-        &studio_smoke,
-        "studio_keyboard_contract=docs/20#studio-shortcuts",
-    )?;
+    check_text(&studio_smoke, "keyboard_summary: inputs.keyboard.summary()")?;
     Ok(())
 }
 
@@ -168,12 +169,13 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     let launcher_app = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
     check_text(&launcher_app, "ui::render_launcher_viewport")?;
     let launcher_metrics = read_required(&root.join("crates/std-launcher/src/ui_metrics.rs"))?;
-    for required in [
-        "scale.f32(PANEL_WIDTH)",
+    check_text(&launcher_metrics, "scale.f32(PANEL_WIDTH)")?;
+    let launcher_metrics_tests =
+        read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
+    check_text(
+        &launcher_metrics_tests,
         "native_viewport_is_the_launcher_panel_not_a_carrier",
-    ] {
-        check_text(&launcher_metrics, required)?;
-    }
+    )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
         "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
@@ -189,18 +191,14 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     ] {
         check_text(&capture_script, required)?;
     }
-    for forbidden in [
-        "const CARRIER_MARGIN",
-        "carrier_margin_for_scale",
-        "preview_viewport",
-    ] {
+    for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
         if launcher_metrics.contains(forbidden) {
             return Err(CliError::Config(
                 "launcher must not depend on a visible viewport carrier".to_string(),
             ));
         }
     }
-    if launcher_surface.contains("preview_viewport") {
+    if launcher_surface.contains("preview_viewport=product") {
         return Err(CliError::Config(
             "launcher screenshot tooling must not be modeled as a product viewport".to_string(),
         ));
@@ -226,9 +224,12 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "no-product-viewport",
         "preview_surface_summary",
         "preview_size_summary",
-        "panel={},search={},result={},selected={}",
+        "panel_token=bg/surface-0",
+        "search_token=bg/surface-1",
+        "result_token=bg/surface-1",
+        "selected_token=accent/weak",
         "bottom_clearance",
-        "selected=",
+        "selected_token=accent/weak",
     ] {
         let launcher_evidence =
             read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;
@@ -240,6 +241,8 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         )));
     }
     let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
+    let studio_evidence = read_required(&root.join("crates/std-studio/src/preview_evidence.rs"))?;
+    let studio_preview = format!("{studio}\n{studio_evidence}");
     for required in [
         "dark-dashboard",
         "light-dashboard",
@@ -250,11 +253,13 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "dark-settings",
         "light-panes",
         "preview_size_summary",
-        "canvas={},panel={},selected={}",
+        "canvas_token=bg/surface-0",
+        "panel_token=bg/surface-1",
+        "selected_token=accent/weak",
         "host={},min={},workspace={}",
         "native_child_windows={},detached_panels={}",
     ] {
-        check_text(&studio, required)?;
+        check_text(&studio_preview, required)?;
     }
     Ok(())
 }

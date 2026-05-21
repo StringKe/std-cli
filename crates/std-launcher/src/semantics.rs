@@ -434,9 +434,9 @@ impl LauncherUiSemanticsReport {
 fn deferred_execution() -> ActionExecution {
     ActionExecution {
         action_id: ActionId::default(),
-        action_name: "Open Terminal".to_string(),
+        action_name: "StdFixtureTerminal".to_string(),
         status: ActionExecutionStatus::NeedsExternalRunner,
-        message: "open -a Terminal".to_string(),
+        message: "std-fixture-terminal".to_string(),
         output: Some(serde_json::json!({
             "deferred": true,
             "reason": "external runner action requires explicit user trigger",

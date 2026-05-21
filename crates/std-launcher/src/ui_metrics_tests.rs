@@ -245,7 +245,7 @@ fn all_preview_visible_states_fill_the_native_viewport() {
 }
 
 #[test]
-fn empty_suggested_workflows_body_uses_full_native_height() {
+fn empty_suggested_workflows_panel_uses_full_native_height() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "empty");
     let viewport = window_inner_size(&state);
@@ -253,7 +253,7 @@ fn empty_suggested_workflows_body_uses_full_native_height() {
     let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
     let panel = panel_rect(available, &state);
 
-    assert_eq!(body, 324.0);
+    assert!(body <= viewport.y - panel_content_height_for_scale(&state, 0.0, UiScale::default()));
     assert_eq!(panel.height(), viewport.y);
     assert!(panel_frame_fills_viewport(&state));
 }

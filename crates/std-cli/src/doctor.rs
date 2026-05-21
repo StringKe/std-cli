@@ -31,9 +31,9 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
     if actions.is_empty() {
         return Err(CliError::Doctor("registry has no actions".to_string()));
     }
-    if core.search("Open Terminal", 1)?.is_empty() {
+    if core.search("terminal", 1)?.is_empty() {
         return Err(CliError::Doctor(
-            "registry missing Open Terminal action".to_string(),
+            "registry missing terminal action".to_string(),
         ));
     }
 
