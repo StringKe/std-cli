@@ -79,7 +79,9 @@ fn std_core_app_open_allows_launcher_user_enter_outside_test_mode() {
         "Launcher user Enter should use a distinct app/file open mode"
     );
     assert!(
-        body.contains(") && !crate::std_test_mode_enabled()"),
+        body.contains("user_desktop_open_allowed_for_test_mode")
+            && body.contains("crate::std_test_mode_enabled()")
+            && body.contains(") && !test_mode"),
         "Launcher user Enter must stay blocked in STD_TEST_MODE"
     );
     assert!(
@@ -133,7 +135,7 @@ fn binary_entrypoints_sanitize_desktop_opt_ins_before_dispatch() {
 }
 
 #[test]
-fn std_core_uses_build_env_as_runtime_test_mode_guard() {
+fn std_core_does_not_use_build_env_as_runtime_test_mode_guard() {
     let root = workspace_root();
     let body = fs::read_to_string(root.join("crates/std-core/src/lib.rs")).unwrap();
     let detector = source_section(
@@ -142,21 +144,21 @@ fn std_core_uses_build_env_as_runtime_test_mode_guard() {
         "fn running_under_cargo_test_context() -> bool",
     );
 
-    for required in [
+    for forbidden in [
         "compiled_for_safe_tests()",
         "option_env!(\"STD_TEST_MODE\")",
-        "option_env!(\"STD_ALLOW_DESKTOP_AUTOMATION\") == Some(\"0\")",
-        "option_env!(\"STD_ALLOW_UI_PREVIEW\") == Some(\"0\")",
+        "option_env!(\"STD_ALLOW_DESKTOP_AUTOMATION\")",
+        "option_env!(\"STD_ALLOW_UI_PREVIEW\")",
     ] {
         assert!(
-            detector.contains(required),
-            "STD_TEST_MODE must honor build.rs safe env in spawned test binaries: {required}"
+            !detector.contains(forbidden),
+            "compiled safe env must not force normal runtime binaries into test mode: {forbidden}"
         );
     }
     assert_order(
-        &detector,
-        "compiled_for_safe_tests()",
+        detector,
         "running_under_cargo_test_context()",
+        "STD_TEST_MODE",
     );
 }
 

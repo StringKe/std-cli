@@ -88,10 +88,17 @@ fn external_runner_allowed(external_mode: ExternalExecutionMode) -> bool {
 }
 
 fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool {
+    user_desktop_open_allowed_for_test_mode(external_mode, crate::std_test_mode_enabled())
+}
+
+pub(crate) fn user_desktop_open_allowed_for_test_mode(
+    external_mode: ExternalExecutionMode,
+    test_mode: bool,
+) -> bool {
     matches!(
         external_mode,
         ExternalExecutionMode::DesktopAutomation | ExternalExecutionMode::LauncherUser
-    ) && !crate::std_test_mode_enabled()
+    ) && !test_mode
 }
 
 fn execute_echo(

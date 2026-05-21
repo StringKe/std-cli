@@ -1,4 +1,5 @@
 use super::*;
+use crate::execution::{user_desktop_open_allowed_for_test_mode, ExternalExecutionMode};
 use std::sync::{Arc, Mutex};
 use std_types::{ActionExecutionStatus, ActionType, RegistryEntry};
 
@@ -173,6 +174,26 @@ fn launcher_user_app_open_is_blocked_by_test_mode_before_runner() {
         format!("open {}", blocked_real_app_path())
     );
     assert!(commands.lock().unwrap().is_empty());
+}
+
+#[test]
+fn launcher_user_gate_allows_app_open_outside_test_mode() {
+    assert!(user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::LauncherUser,
+        false
+    ));
+    assert!(user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::DesktopAutomation,
+        false
+    ));
+    assert!(!user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::Disabled,
+        false
+    ));
+    assert!(!user_desktop_open_allowed_for_test_mode(
+        ExternalExecutionMode::LauncherUser,
+        true
+    ));
 }
 
 fn fake_open_app_command() -> String {
