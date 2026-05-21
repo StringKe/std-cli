@@ -155,6 +155,13 @@ fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
         egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
         egui::Sense::click(),
     );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            ask_ai_a11y_label(label),
+        )
+    });
     let fill = if response.hovered() {
         Color::bg_surface_2(&ctx)
     } else {
@@ -176,6 +183,10 @@ fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
         });
     });
     response
+}
+
+fn ask_ai_a11y_label(label: &str) -> String {
+    format!("{label}, fallback action, press Enter")
 }
 
 #[cfg(test)]
@@ -237,5 +248,20 @@ mod tests {
         assert!(labels.contains("=>? "));
         assert!(labels.contains("=>> studio"));
         assert!(!labels.contains("UNKNOWN_I18N_KEY"));
+    }
+
+    #[test]
+    fn ask_ai_fallback_exposes_button_semantics_and_enter_hint() {
+        let source = include_str!("ui_empty.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("fn ask_ai_row"));
+        assert!(production_source.contains("response.widget_info"));
+        assert!(production_source.contains("WidgetType::Button"));
+        assert!(production_source.contains("ask_ai_a11y_label(label)"));
+        assert_eq!(
+            ask_ai_a11y_label("Ask AI about \"missing\""),
+            "Ask AI about \"missing\", fallback action, press Enter"
+        );
     }
 }
