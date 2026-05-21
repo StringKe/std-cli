@@ -24,6 +24,14 @@ fn ui_preview_uses_product_window_title() {
 }
 
 #[test]
+fn ui_preview_closes_with_viewport_command_not_process_exit() {
+    let source = include_str!("preview.rs");
+
+    assert!(!source.contains("process::exit"));
+    assert!(source.contains("ViewportCommand::Close"));
+}
+
+#[test]
 fn ui_preview_args_are_blocked_without_opt_in() {
     std::env::remove_var("STD_ALLOW_UI_PREVIEW");
     let args = vec![
@@ -108,4 +116,5 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
+    assert!(summary.contains("normal-viewport-close"));
 }

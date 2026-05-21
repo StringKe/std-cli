@@ -102,7 +102,8 @@ pub(crate) fn preview_data_dir() -> std::path::PathBuf {
 impl eframe::App for StudioPreviewApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         if self.started_at.elapsed() >= std::time::Duration::from_millis(self.timeout_ms) {
-            std::process::exit(0);
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            return;
         }
         ctx.request_repaint_after(std::time::Duration::from_millis(50));
         self.app.update(ctx, frame);
@@ -175,7 +176,7 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
 }
 
 fn preview_capture_contract() -> &'static str {
-    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
+    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,normal-viewport-close"
 }
 
 pub(crate) fn studio_preview_window_title() -> &'static str {
