@@ -1,5 +1,5 @@
 use crate::preview::apply_preview_scenario;
-use std_egui::{LauncherPhase, LauncherResultMode};
+use std_egui::{input, LauncherPhase, LauncherResultMode};
 use std_launcher::{suggested_workflow_rows, LauncherState};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -7,6 +7,7 @@ pub(crate) struct LauncherAffordanceSummary {
     pub suggested: usize,
     pub ask_ai: bool,
     pub feedback_actions: String,
+    pub feedback_action_shortcuts: String,
     pub action_panel_actions: String,
 }
 
@@ -18,6 +19,7 @@ impl LauncherAffordanceSummary {
             suggested: suggested_count(&state),
             ask_ai: ask_ai_available(&state),
             feedback_actions: feedback_actions(&state),
+            feedback_action_shortcuts: feedback_action_shortcuts(&state),
             action_panel_actions: action_panel_actions(&state),
         }
     }
@@ -26,8 +28,14 @@ impl LauncherAffordanceSummary {
         match scenario {
             "empty" => self.suggested >= 3,
             "no-results" => self.ask_ai,
-            "defer" => self.feedback_actions == "Copy,Retry",
-            "error" => self.feedback_actions == "Copy,Retry,OpenStudio",
+            "defer" => {
+                self.feedback_actions == "Copy,Retry"
+                    && self.feedback_action_shortcuts == "Copy:Enter,Retry:Enter"
+            }
+            "error" => {
+                self.feedback_actions == "Copy,Retry,OpenStudio"
+                    && self.feedback_action_shortcuts == "Copy:Enter,Retry:Enter,OpenStudio:Enter"
+            }
             "action-panel" => {
                 self.action_panel_actions == "Review first,Defer,Open in Studio,Copy command"
             }
@@ -37,8 +45,12 @@ impl LauncherAffordanceSummary {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "suggested={},ask_ai={},feedback_actions={},action_panel_actions={}",
-            self.suggested, self.ask_ai, self.feedback_actions, self.action_panel_actions
+            "suggested={},ask_ai={},feedback_actions={},feedback_action_shortcuts={},action_panel_actions={}",
+            self.suggested,
+            self.ask_ai,
+            self.feedback_actions,
+            self.feedback_action_shortcuts,
+            self.action_panel_actions
         )
     }
 }
@@ -77,6 +89,22 @@ fn feedback_actions(state: &LauncherState) -> String {
         .unwrap_or_else(|| "none".to_string())
 }
 
+fn feedback_action_shortcuts(state: &LauncherState) -> String {
+    state
+        .view
+        .feedback
+        .as_ref()
+        .map(|feedback| {
+            feedback
+                .actions()
+                .into_iter()
+                .map(|action| format!("{action:?}:{}", input::enter().label()))
+                .collect::<Vec<_>>()
+                .join(",")
+        })
+        .unwrap_or_else(|| "none".to_string())
+}
+
 fn action_panel_actions(state: &LauncherState) -> String {
     if !state.action_panel.open {
         return "none".to_string();
@@ -106,7 +134,12 @@ mod tests {
         assert_eq!(empty.suggested, 3);
         assert!(no_results.ask_ai);
         assert_eq!(defer.feedback_actions, "Copy,Retry");
+        assert_eq!(defer.feedback_action_shortcuts, "Copy:Enter,Retry:Enter");
         assert_eq!(error.feedback_actions, "Copy,Retry,OpenStudio");
+        assert_eq!(
+            error.feedback_action_shortcuts,
+            "Copy:Enter,Retry:Enter,OpenStudio:Enter"
+        );
         assert_eq!(
             action_panel.action_panel_actions,
             "Review first,Defer,Open in Studio,Copy command"
@@ -128,6 +161,10 @@ mod tests {
         assert_eq!(
             LauncherAffordanceSummary::for_scenario("defer").feedback_actions,
             "Copy,Retry"
+        );
+        assert_eq!(
+            LauncherAffordanceSummary::for_scenario("defer").feedback_action_shortcuts,
+            "Copy:Enter,Retry:Enter"
         );
     }
 }

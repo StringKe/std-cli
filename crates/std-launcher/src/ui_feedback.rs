@@ -1,7 +1,7 @@
-use crate::{ui_metrics, ui_parts::quiet_button};
+use crate::{ui_metrics, ui_parts::keycap};
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Radius, Space, Text},
     LauncherFeedback, LauncherFeedbackAction,
 };
@@ -90,16 +90,42 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
 }
 
 fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
+    let ctx = ui.ctx().clone();
+    let fill = if selected {
+        Color::accent_weak(&ctx)
+    } else {
+        Color::bg_surface_0(&ctx)
+    };
+    let stroke = if selected {
+        Color::accent_base(&ctx)
+    } else {
+        Color::stroke_divider(&ctx)
+    };
+    let frame = egui::Frame::new()
+        .fill(fill)
+        .stroke(egui::Stroke::new(1.0, stroke))
+        .corner_radius(egui::CornerRadius::same(Radius::sm()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()));
+
+    let response = frame
+        .show(ui, |ui| {
+            ui.horizontal(|ui| {
+                ui.label(
+                    egui::RichText::new(label)
+                        .font(Text::caption())
+                        .color(Color::fg_primary(&ctx)),
+                );
+                if selected {
+                    keycap(ui, &input::enter().label());
+                }
+            });
+        })
+        .response
+        .interact(egui::Sense::click());
     if selected {
-        let ctx = ui.ctx().clone();
-        return ui.add(
-            egui::Button::new(egui::RichText::new(label).color(Color::fg_primary(&ctx)))
-                .fill(Color::accent_weak(&ctx))
-                .stroke(egui::Stroke::new(1.0, Color::accent_base(&ctx)))
-                .corner_radius(egui::CornerRadius::same(Radius::sm())),
-        );
+        return response.on_hover_text(input::enter().label());
     }
-    quiet_button(ui, label)
+    response
 }
 
 fn feedback_kind(feedback: &LauncherFeedback) -> FeedbackKind {
@@ -235,5 +261,13 @@ mod tests {
         assert!(render_contents.contains("render_actions(ui, state, feedback);"));
         assert!(source.contains("ui.horizontal_wrapped"));
         assert!(!render_contents.contains("right_to_left"));
+    }
+
+    #[test]
+    fn selected_feedback_action_shows_enter_keycap() {
+        let source = include_str!("ui_feedback.rs");
+
+        assert!(source.contains("keycap(ui, &input::enter().label())"));
+        assert!(source.contains("return response.on_hover_text(input::enter().label())"));
     }
 }

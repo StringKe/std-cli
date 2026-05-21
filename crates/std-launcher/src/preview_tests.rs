@@ -111,6 +111,8 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("ask_ai=true"));
     assert!(summary.contains("feedback_actions=Copy,Retry"));
     assert!(summary.contains("feedback_actions=Copy,Retry,OpenStudio"));
+    assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
+    assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
     assert!(summary.contains("action_panel_actions=Review first,Defer,Open in Studio,Copy command"));
 }
 
