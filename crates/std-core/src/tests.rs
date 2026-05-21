@@ -228,6 +228,11 @@ fn desktop_automation_is_disabled_in_unit_tests() {
 }
 
 #[test]
+fn cargo_test_binary_is_forced_into_std_test_mode() {
+    assert!(std_test_mode_enabled());
+}
+
+#[test]
 fn test_core_blocks_external_application_launches_by_default() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

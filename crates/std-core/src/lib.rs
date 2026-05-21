@@ -163,9 +163,28 @@ pub fn std_test_mode_enabled() -> bool {
     if cfg!(test) {
         return true;
     }
+    if running_under_cargo_test_binary() {
+        return true;
+    }
     std::env::var("STD_TEST_MODE")
         .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
         .unwrap_or(false)
+}
+
+fn running_under_cargo_test_binary() -> bool {
+    let Ok(exe) = std::env::current_exe() else {
+        return false;
+    };
+    let Some(parent) = exe.parent().and_then(|path| path.file_name()) else {
+        return false;
+    };
+    if parent != "deps" {
+        return false;
+    }
+    let Some(file_name) = exe.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    file_name.rsplit_once('-').is_some()
 }
 
 pub fn desktop_automation_allowed() -> bool {
