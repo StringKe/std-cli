@@ -65,6 +65,7 @@ pub(crate) struct SettingsContract {
     pub(crate) hotkey_reset: &'static str,
     pub(crate) theme_modes: Vec<&'static str>,
     pub(crate) theme_control: &'static str,
+    pub(crate) ai_control: &'static str,
 }
 
 pub(crate) fn settings_contract() -> SettingsContract {
@@ -79,6 +80,7 @@ pub(crate) fn settings_contract() -> SettingsContract {
         hotkey_reset: "reset-to-default",
         theme_modes: vec!["system", "dark", "light"],
         theme_control: "segmented-control",
+        ai_control: "token-toggle-row",
     }
 }
 
@@ -108,5 +110,6 @@ mod tests {
         assert_eq!(contract.hotkey_reset, "reset-to-default");
         assert_eq!(contract.theme_modes, vec!["system", "dark", "light"]);
         assert_eq!(contract.theme_control, "segmented-control");
+        assert_eq!(contract.ai_control, "token-toggle-row");
     }
 }

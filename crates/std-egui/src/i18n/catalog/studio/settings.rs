@@ -70,8 +70,16 @@ fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.hotkey.row") => Some("Shortcut"),
         (Locale::ZhCn, "studio.settings.ai.enable") => Some("启用 AI planner"),
         (Locale::EnUs, "studio.settings.ai.enable") => Some("Enable AI planner"),
+        (Locale::ZhCn, "studio.settings.ai.detail") => Some("保存后同步 Planner 与 Studio 状态栏"),
+        (Locale::EnUs, "studio.settings.ai.detail") => {
+            Some("Saves planner state and Studio status bar")
+        }
         (Locale::ZhCn, "studio.settings.ai.save") => Some("保存 AI"),
         (Locale::EnUs, "studio.settings.ai.save") => Some("Save AI"),
+        (Locale::ZhCn, "studio.settings.toggle.on") => Some("开启"),
+        (Locale::EnUs, "studio.settings.toggle.on") => Some("On"),
+        (Locale::ZhCn, "studio.settings.toggle.off") => Some("关闭"),
+        (Locale::EnUs, "studio.settings.toggle.off") => Some("Off"),
         (Locale::ZhCn, "studio.settings.theme.label") => Some("主题"),
         (Locale::EnUs, "studio.settings.theme.label") => Some("Theme"),
         (Locale::ZhCn, "studio.settings.theme.save") => Some("保存主题"),
@@ -165,7 +173,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.hotkey.reset" => Some("Reset"),
         "studio.settings.hotkey.row" => Some("Shortcut"),
         "studio.settings.ai.enable" => Some("Enable AI planner"),
+        "studio.settings.ai.detail" => Some("Saves planner state and Studio status bar"),
         "studio.settings.ai.save" => Some("Save AI"),
+        "studio.settings.toggle.on" => Some("On"),
+        "studio.settings.toggle.off" => Some("Off"),
         "studio.settings.theme.label" => Some("Theme"),
         "studio.settings.theme.save" => Some("Save Theme"),
         "studio.settings.theme.system" => Some("System"),

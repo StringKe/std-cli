@@ -13,6 +13,7 @@ pub(crate) mod row_paint;
 mod settings;
 pub(crate) mod settings_model;
 mod settings_rows;
+mod settings_toggle;
 mod workflow_builder;
 mod workflow_builder_actions;
 pub(crate) mod workflow_builder_ai;

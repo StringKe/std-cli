@@ -341,6 +341,19 @@ fn settings_theme_control_uses_tokens_and_saves_theme_modes() {
     assert!(rows.contains("Color::accent_base"));
 }
 
+#[test]
+fn settings_ai_provider_uses_token_toggle_row() {
+    let settings = include_str!("views/settings.rs");
+    let toggle = include_str!("views/settings_toggle.rs");
+
+    assert!(settings.contains("settings_toggle::toggle_row"));
+    assert!(settings.contains("self.save_setting(\"enable_ai\""));
+    assert!(!settings.contains("ui.checkbox("));
+    assert!(toggle.contains("paint_toggle"));
+    assert!(toggle.contains("ToggleRowEvent::Toggle"));
+    assert!(toggle.contains("WidgetType::Checkbox"));
+}
+
 fn test_app() -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     let temp = tempfile::tempdir().unwrap();

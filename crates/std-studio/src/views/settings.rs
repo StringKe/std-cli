@@ -3,6 +3,7 @@ use crate::{
     views::{
         settings_model::SettingsCategory,
         settings_rows::{self, SettingsCategoryEvent},
+        settings_toggle::{self, ToggleRowEvent},
     },
     StudioEguiApp,
 };
@@ -140,11 +141,13 @@ impl StudioEguiApp {
     fn render_ai_settings(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             self.render_category_header(ui, SettingsCategory::AiProvider);
-            ui.checkbox(
-                &mut self.settings_enable_ai,
+            if let ToggleRowEvent::Toggle(enabled) = settings_toggle::toggle_row(
+                ui,
                 i18n::t("studio.settings.ai.enable"),
-            );
-            if ui::quiet_button(ui, i18n::t("studio.settings.ai.save")).clicked() {
+                i18n::t("studio.settings.ai.detail"),
+                self.settings_enable_ai,
+            ) {
+                self.settings_enable_ai = enabled;
                 self.save_setting("enable_ai", self.settings_enable_ai.to_string());
             }
         });

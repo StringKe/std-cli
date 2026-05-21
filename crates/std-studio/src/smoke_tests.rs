@@ -59,6 +59,7 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("hotkey_reset=reset-to-default"));
     assert!(summary.contains("theme_modes=system|dark|light"));
     assert!(summary.contains("theme_control=segmented-control"));
+    assert!(summary.contains("ai_control=token-toggle-row"));
 }
 
 fn assert_studio_open_intent_summary(summary: &str) {
