@@ -18,6 +18,7 @@ pub struct OpsEvidence {
 pub struct OpsGate {
     pub title: &'static str,
     pub command: String,
+    pub steps: Vec<crate::ops_steps::OpsStep>,
     pub runbook: String,
     pub status: OpsStatus,
     pub evidence: String,
@@ -53,6 +54,7 @@ impl OpsEvidence {
             qa: OpsGate {
                 title: "QA",
                 command: "mise run quality".to_string(),
+                steps: crate::ops_steps::quality_steps(),
                 runbook: ops_runbook::quality_runbook(),
                 status: quality_status(&root),
                 evidence: "mise.toml, .github/workflows/quality.yml, crates/file_too_long"
@@ -65,6 +67,7 @@ impl OpsEvidence {
             doctor: OpsGate {
                 title: "Doctor",
                 command: "std doctor".to_string(),
+                steps: Vec::new(),
                 runbook: ops_runbook::doctor_runbook(),
                 status: doctor_status(&root),
                 evidence: "StdConfig, storage, registry, workspace quality".to_string(),
@@ -79,6 +82,7 @@ impl OpsEvidence {
             release: OpsGate {
                 title: "Release",
                 command: format!("std release verify --dist {}", release_dir.display()),
+                steps: crate::ops_steps::release_steps(&release_dir),
                 runbook: ops_runbook::release_runbook(&release_dir),
                 status: release_status(&release_dir),
                 evidence: release_dir.display().to_string(),
@@ -93,6 +97,7 @@ impl OpsEvidence {
             install: OpsGate {
                 title: "Install",
                 command: format!("std install verify --prefix {}", install_prefix.display()),
+                steps: crate::ops_steps::install_steps(&install_prefix, &release_dir),
                 runbook: ops_runbook::install_runbook(&install_prefix, &release_dir),
                 status: install_status(&install_prefix),
                 evidence: install_prefix.display().to_string(),
@@ -104,6 +109,7 @@ impl OpsEvidence {
             runtime: OpsGate {
                 title: "Runtime",
                 command: "std-launcher --gui-hotkey-smoke Alt+Space 5000".to_string(),
+                steps: Vec::new(),
                 runbook: ops_runbook::runtime_runbook(),
                 status: OpsStatus::Manual,
                 evidence: "explicit opt-in desktop smoke".to_string(),

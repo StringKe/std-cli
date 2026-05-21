@@ -8,6 +8,7 @@ mod analysis_workbench;
 mod apps;
 mod ops_evidence;
 mod ops_runbook;
+mod ops_steps;
 mod planned_workflow;
 pub mod plugin_security;
 pub mod plugin_status;
@@ -21,6 +22,7 @@ pub use analysis_workbench::{
     AnalysisSearchHit, AnalysisTab, AnalysisWorkbenchTab, AnalysisWorkbenchViewModel,
 };
 pub use ops_evidence::{OpsEvidence, OpsGate, OpsStatus};
+pub use ops_steps::OpsStep;
 use std_core::{StdConfig, StdCore};
 use std_egui::{MemoryBrowserViewModel, PluginManagerViewModel, StudioDashboardViewModel};
 use std_index::{

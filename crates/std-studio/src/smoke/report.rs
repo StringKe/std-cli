@@ -259,6 +259,12 @@ impl StudioSmokeReport {
             && self
                 .operations_summary
                 .contains("operations_install_command=std install verify")
+            && self
+                .operations_summary
+                .contains("release-package:std release package")
+            && self
+                .operations_summary
+                .contains("install-run:std install run")
     }
 
     fn open_intent_contract_pass(&self) -> bool {

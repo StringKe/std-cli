@@ -13,6 +13,7 @@ pub(crate) struct OperationsSmoke {
     pub(crate) install_command: String,
     pub(crate) install_result: String,
     pub(crate) install_output: String,
+    pub(crate) step_summary: String,
 }
 
 impl OperationsSmoke {
@@ -31,6 +32,16 @@ impl OperationsSmoke {
             install_command: evidence.install.command,
             install_result: evidence.install.result,
             install_output: evidence.install.output,
+            step_summary: [
+                evidence.qa.steps,
+                evidence.release.steps,
+                evidence.install.steps,
+            ]
+            .concat()
+            .into_iter()
+            .map(|step| step.summary())
+            .collect::<Vec<_>>()
+            .join("|"),
         }
     }
 
@@ -47,11 +58,16 @@ impl OperationsSmoke {
             && self.install_command.contains("std install verify --prefix")
             && self.install_result.contains("install verify")
             && self.install_output.contains("launcher=")
+            && self.step_summary.contains("release-build:")
+            && self.step_summary.contains("release-package:")
+            && self.step_summary.contains("release-verify:")
+            && self.step_summary.contains("install-run:")
+            && self.step_summary.contains("install-verify:")
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_step_summary={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -65,6 +81,7 @@ impl OperationsSmoke {
             self.install_command,
             self.install_result,
             self.install_output,
+            self.step_summary,
         )
     }
 }
@@ -90,5 +107,10 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("operations_install_command=std install verify"));
+        assert!(smoke.summary().contains("operations_step_summary="));
+        assert!(smoke
+            .summary()
+            .contains("release-package:std release package"));
+        assert!(smoke.summary().contains("install-run:std install run"));
     }
 }

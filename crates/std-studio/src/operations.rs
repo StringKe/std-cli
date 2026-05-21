@@ -88,6 +88,14 @@ impl StudioEguiApp {
                 &gate.command,
                 &gate.detail,
             );
+            for step in &gate.steps {
+                operations_rows::gate_row(
+                    ui,
+                    i18n::t("studio.operations.step"),
+                    &step.command,
+                    &step.result,
+                );
+            }
             operations_rows::gate_row(
                 ui,
                 i18n::t("studio.operations.runbook"),
