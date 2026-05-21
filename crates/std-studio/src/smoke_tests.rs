@@ -85,6 +85,7 @@ fn assert_shell_layout_summary(summary: &str) {
     assert!(
         summary.contains("canvas_content_route=focused-workspace-pane-primary,main-pane-fallback")
     );
+    assert!(summary.contains("status_bar_right=analysis-progress,ai-provider,version"));
     assert!(summary.contains("standard_launcher_enter_ms=320"));
     assert!(summary.contains("reduced_launcher_enter_ms=0"));
     assert!(summary.contains("reduced_focus_ring_ms=0"));

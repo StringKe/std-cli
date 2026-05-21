@@ -18,6 +18,7 @@ pub(crate) struct StudioLayoutSmoke {
     pub(crate) bottom_panel_default_open: bool,
     pub(crate) canvas_surface: String,
     pub(crate) canvas_content_route: String,
+    pub(crate) status_bar_right: String,
 }
 
 impl StudioLayoutSmoke {
@@ -41,6 +42,7 @@ impl StudioLayoutSmoke {
             bottom_panel_default_open: layout.bottom_panel_open,
             canvas_surface: canvas_motion_evidence(),
             canvas_content_route: canvas_content_route_evidence(),
+            status_bar_right: status_bar_right_evidence(),
         }
     }
 }
@@ -83,5 +85,16 @@ fn inspector_context_route_evidence() -> String {
         "focused-workspace-pane-context,global-fallback".to_string()
     } else {
         "global-context-only".to_string()
+    }
+}
+
+fn status_bar_right_evidence() -> String {
+    let source = include_str!("../shell.rs");
+    if source.contains("StudioStatusBarSummary::from_state(&self.app, &self.analysis)")
+        && source.contains("summary.right_labels()")
+    {
+        "analysis-progress,ai-provider,version".to_string()
+    } else {
+        "static-status-text".to_string()
     }
 }

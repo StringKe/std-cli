@@ -26,6 +26,7 @@ mod shell_parts;
 mod smoke;
 #[cfg(test)]
 mod smoke_tests;
+mod status_bar;
 mod studio_open;
 #[cfg(test)]
 mod studio_open_tests;

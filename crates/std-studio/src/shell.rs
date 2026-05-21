@@ -1,6 +1,7 @@
 use crate::{
     layout::{HOST_CHROME_HEIGHT, STATUS_BAR_HEIGHT, STATUS_DIVIDER_HEIGHT, STATUS_DIVIDER_WIDTH},
     shell_parts::{panel_frame, path_label},
+    status_bar::StudioStatusBarSummary,
     ui,
     workspace_panes::{focused_workspace_spec, StudioWorkspaceSpec},
     StudioEguiApp,
@@ -180,7 +181,13 @@ impl StudioEguiApp {
                 ),
             );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                status_text(ui, i18n::t("studio.shell.external_deferred"));
+                let summary = StudioStatusBarSummary::from_state(&self.app, &self.analysis);
+                for (index, label) in summary.right_labels().into_iter().enumerate() {
+                    if index > 0 {
+                        status_divider(ui);
+                    }
+                    status_text(ui, label);
+                }
             });
         });
     }
