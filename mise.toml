@@ -56,6 +56,11 @@ description = "Manual opt-in: run background UI smoke against the isolated harne
 env = { STD_TEST_MODE = "0", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "1" }
 run = "cargo run -p std-cli -- ui background-smoke --harness-pid ${HARNESS_PID:?set HARNESS_PID} --window-id ${WINDOW_ID:?set WINDOW_ID} --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness\""
 
+[tasks.ui-background-acceptance]
+description = "Manual opt-in: launch isolated harness and run background UI smoke"
+env = { STD_TEST_MODE = "0", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "1" }
+run = "cargo build -p std-launcher && scripts/background-ui-acceptance.sh"
+
 [tasks.quality]
 description = "Run the complete quality gate"
 depends = [

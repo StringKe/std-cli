@@ -77,7 +77,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 
 未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 返回 `SKIP`，不创建可见窗口。
 
-后台 UI 自动化验收可以使用 macOS AX / CGEvent / postToPid 方案，但只能作为人工 UI 验收 runner。推荐模型是先装 per-process event tap，再发送 appKitDefined primer 和 center primer，然后只向目标 PID 投递点击或键盘事件。该方案只用于隔离测试窗口，禁止把用户已经打开的真实 App 当成验收目标。该 runner 必须同时满足：
+后台 UI 自动化验收使用 macOS AX / CGEvent / postToPid 方案，但只能作为人工 UI 验收 runner。标准入口是 `mise run ui-background-acceptance`，该入口会启动隔离 harness、读取固定 pid/window id、再运行 smoke，避免手工把真实 App 当目标。执行模型是先装 per-process event tap，再发送 appKitDefined primer 和 center primer，然后只向目标 PID 投递点击或键盘事件。该方案只用于隔离测试窗口，禁止把用户已经打开的真实 App 当成验收目标。该 runner 必须同时满足：
 
 - `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1`
 - `STD_TEST_MODE` 未启用
@@ -85,6 +85,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
 - runner 必须用 pid 反查真实 bundle identifier，不能只信任命令行传入的 bundle id 字符串
 - target identity 必须是固定 bundle id、pid、window id、window title 四重匹配，缺任一项直接 `SKIP` 或 `FAIL`
+- 启动完整验收使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh` 或 `mise run ui-background-acceptance`
 - 启动 harness 使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh`，该脚本只创建 `dev.std-cli.background-ui-harness` 测试 app，并用 `open -g` 避免抢占前台
 - 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - `cargo run -p std-cli -- ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
@@ -105,9 +106,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 完整人工验收流程：
 
 ```bash
-cargo build -p std-launcher
-STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh
-STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"
+STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance
 ```
 
 该路径不能进入 `mise run quality`、release smoke gate、默认质量门禁或默认测试。它只用于后续真实截图、键盘焦点、窗口或面板管理验收。

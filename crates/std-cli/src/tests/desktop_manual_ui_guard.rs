@@ -71,6 +71,7 @@ fn release_quality_keeps_manual_background_ui_out_of_default_gate() {
     assert!(!quality_commands.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
     assert!(!smoke_commands.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
     assert!(body.contains("background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
+    assert!(body.contains("scripts/background-ui-acceptance.sh"));
     assert!(body.contains("cargo run -p std-cli -- ui background-smoke --harness-pid <pid>"));
     assert!(!body.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke"));
     assert!(body.contains("dev.std-cli.background-ui-harness"));
@@ -87,9 +88,11 @@ fn mise_quality_keeps_background_ui_manual_only() {
         "[tasks.ui-background-smoke]",
     );
     let smoke = source_section(&body, "[tasks.ui-background-smoke]", "[tasks.quality]");
+    let acceptance = source_section(&body, "[tasks.ui-background-acceptance]", "[tasks.quality]");
 
     assert!(!quality.contains("ui-background-harness"));
     assert!(!quality.contains("ui-background-smoke"));
+    assert!(!quality.contains("ui-background-acceptance"));
     assert!(!quality.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
     assert!(harness.contains("Manual opt-in"));
     assert!(harness.contains("STD_TEST_MODE = \"0\""));
@@ -100,6 +103,10 @@ fn mise_quality_keeps_background_ui_manual_only() {
     assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
     assert!(smoke.contains("--bundle-id dev.std-cli.background-ui-harness"));
     assert!(smoke.contains("--window-title \\\"std-cli Background UI Harness\\\""));
+    assert!(acceptance.contains("Manual opt-in"));
+    assert!(acceptance.contains("STD_TEST_MODE = \"0\""));
+    assert!(acceptance.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(acceptance.contains("scripts/background-ui-acceptance.sh"));
 }
 
 fn workspace_root() -> &'static Path {
@@ -156,6 +163,7 @@ fn assert_background_runner_contract(root: &Path) {
 
 fn assert_background_harness_contract(root: &Path) {
     let harness = fs::read_to_string(root.join("scripts/background-ui-harness.sh")).unwrap();
+    let acceptance = fs::read_to_string(root.join("scripts/background-ui-acceptance.sh")).unwrap();
     for required in [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -169,6 +177,19 @@ fn assert_background_harness_contract(root: &Path) {
         assert!(
             harness.contains(required),
             "background harness must stay isolated and background-launched: {required}"
+        );
+    }
+    for required in [
+        "STD_TEST_MODE blocks background UI automation",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
+        "scripts/background-ui-harness.sh",
+        "bundle_id outside whitelist",
+        "window_title outside whitelist",
+        "cargo run -p std-cli -- ui background-smoke",
+    ] {
+        assert!(
+            acceptance.contains(required),
+            "background acceptance must preserve isolated harness workflow: {required}"
         );
     }
 }
@@ -212,7 +233,7 @@ fn background_cli_contract_terms() -> [&'static str; 34] {
     ]
 }
 
-fn background_doc_contract_terms() -> [&'static str; 23] {
+fn background_doc_contract_terms() -> [&'static str; 24] {
     [
         "per-process event tap",
         "浮动光标不是输入机制",
@@ -230,6 +251,7 @@ fn background_doc_contract_terms() -> [&'static str; 23] {
         "previous app 永远不能作为输入目标",
         "window title 白名单",
         "scripts/background-ui-harness.sh",
+        "scripts/background-ui-acceptance.sh",
         "cargo run -p std-cli -- ui background-smoke",
         "open -g",
         "dev.std-cli.background-ui-harness",
