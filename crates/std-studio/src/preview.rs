@@ -241,14 +241,17 @@ fn preview_state_summary(scenario: &str) -> String {
         return format!("{scenario}=FAIL");
     };
     let app = seeded_preview_app(theme, name);
-    let valid = matches!(theme, "dark" | "light") && preview_state_passes(&app, name);
+    let surface = preview_surface_summary(theme);
+    let valid = matches!(theme, "dark" | "light")
+        && preview_state_passes(&app, name)
+        && preview_surface_passes(&surface, theme);
     format!(
         "{scenario}={}:pane={:?},workspace={},status={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
         app.status,
-        preview_surface_summary(theme)
+        surface.summary()
     )
 }
 
@@ -314,15 +317,50 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
     }
 }
 
-fn preview_surface_summary(theme: &str) -> String {
+fn preview_surface_summary(theme: &str) -> PreviewSurfaceSummary {
     let ctx = egui::Context::default();
     apply_theme(&ctx, ThemeMode::resolve(theme));
-    format!(
-        "canvas={},panel={},selected={}",
-        color_hex(Color::bg_surface_0(&ctx)),
-        color_hex(Color::bg_surface_1(&ctx)),
-        color_hex_alpha(Color::accent_weak(&ctx))
-    )
+    PreviewSurfaceSummary {
+        canvas: color_hex(Color::bg_surface_0(&ctx)),
+        panel: color_hex(Color::bg_surface_1(&ctx)),
+        inspector: color_hex(Color::bg_surface_1(&ctx)),
+        selected: color_hex_alpha(Color::accent_weak(&ctx)),
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewSurfaceSummary {
+    canvas: String,
+    panel: String,
+    inspector: String,
+    selected: String,
+}
+
+impl PreviewSurfaceSummary {
+    fn summary(&self) -> String {
+        format!(
+            "canvas_token=bg/surface-0:{},panel_token=bg/surface-1:{},inspector_token=bg/surface-1:{},selected_token=accent/weak:{}",
+            self.canvas, self.panel, self.inspector, self.selected
+        )
+    }
+}
+
+fn preview_surface_passes(surface: &PreviewSurfaceSummary, theme: &str) -> bool {
+    match theme {
+        "dark" => {
+            surface.canvas == "#1C1E22"
+                && surface.panel == "#24272C"
+                && surface.inspector == "#24272C"
+                && surface.selected == "#4E9CFF@46"
+        }
+        "light" => {
+            surface.canvas == "#FAFBFD"
+                && surface.panel == "#F2F5F8"
+                && surface.inspector == "#F2F5F8"
+                && surface.selected == "#0A6BFF@31"
+        }
+        _ => false,
+    }
 }
 
 fn format_window_size(size: [f32; 2]) -> String {

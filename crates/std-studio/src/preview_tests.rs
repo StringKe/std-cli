@@ -102,10 +102,14 @@ fn assert_preview_summary_has_scenarios(summary: &str) {
 }
 
 fn assert_preview_summary_has_surfaces(summary: &str) {
-    assert!(summary.contains("canvas=#1C1E22,panel=#24272C"));
-    assert!(summary.contains("canvas=#FAFBFD,panel=#F2F5F8"));
-    assert!(summary.contains("selected=#4E9CFF@46"));
-    assert!(summary.contains("selected=#0A6BFF@31"));
+    assert!(summary.contains("canvas_token=bg/surface-0:#1C1E22"));
+    assert!(summary.contains("canvas_token=bg/surface-0:#FAFBFD"));
+    assert!(summary.contains("panel_token=bg/surface-1:#24272C"));
+    assert!(summary.contains("panel_token=bg/surface-1:#F2F5F8"));
+    assert!(summary.contains("inspector_token=bg/surface-1:#24272C"));
+    assert!(summary.contains("inspector_token=bg/surface-1:#F2F5F8"));
+    assert!(summary.contains("selected_token=accent/weak:#4E9CFF@46"));
+    assert!(summary.contains("selected_token=accent/weak:#0A6BFF@31"));
 }
 
 fn assert_preview_summary_has_viewport_policy(summary: &str) {
