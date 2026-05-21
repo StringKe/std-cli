@@ -1,4 +1,5 @@
 use crate::LauncherState;
+use std_core::{StdConfig, StdCore};
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -30,6 +31,8 @@ pub struct LauncherKeyboardReport {
     pub selected_after_up: usize,
     pub direct_trigger_status: Option<ActionExecutionStatus>,
     pub trigger_status: Option<ActionExecutionStatus>,
+    pub user_enter_status: Option<ActionExecutionStatus>,
+    pub user_enter_deferred: bool,
     pub closed_after_escape: bool,
     pub ime_selection_unchanged: bool,
     pub ime_action_panel_selection_unchanged: bool,
@@ -197,6 +200,7 @@ impl LauncherState {
         let trigger_status = state
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
+        let (user_enter_status, user_enter_deferred) = user_enter_defer_evidence();
         state.handle_keyboard_input(LauncherKey::Escape, false);
         state.handle_keyboard_input(LauncherKey::Escape, false);
         LauncherKeyboardReport {
@@ -205,6 +209,8 @@ impl LauncherState {
             selected_after_up,
             direct_trigger_status,
             trigger_status,
+            user_enter_status,
+            user_enter_deferred,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged,
             ime_action_panel_selection_unchanged,
@@ -245,6 +251,8 @@ impl LauncherKeyboardReport {
             && self.selected_after_up == self.selected_before
             && self.direct_trigger_status.is_some()
             && self.trigger_status.is_some()
+            && self.user_enter_status == Some(ActionExecutionStatus::NeedsExternalRunner)
+            && self.user_enter_deferred
             && self.closed_after_escape
             && self.ime_selection_unchanged
             && self.ime_action_panel_selection_unchanged
@@ -261,7 +269,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -274,6 +282,11 @@ impl LauncherKeyboardReport {
                 .as_ref()
                 .map(|status| format!("{status:?}"))
                 .unwrap_or_else(|| "none".to_string()),
+            self.user_enter_status
+                .as_ref()
+                .map(|status| format!("{status:?}"))
+                .unwrap_or_else(|| "none".to_string()),
+            self.user_enter_deferred,
             self.closed_after_escape,
             self.ime_selection_unchanged,
             self.ime_action_panel_selection_unchanged,
@@ -291,4 +304,45 @@ impl LauncherKeyboardReport {
             self.token_delete_query
         )
     }
+}
+
+fn user_enter_defer_evidence() -> (Option<ActionExecutionStatus>, bool) {
+    let root = std::env::temp_dir().join(format!(
+        "std-launcher-keyboard-smoke-{}",
+        std::process::id()
+    ));
+    let config = StdConfig {
+        data_dir: root.join("data"),
+        ..StdConfig::default()
+    };
+    write_keyboard_smoke_app(&config);
+    let core = StdCore::with_config(config);
+    let mut state = LauncherState::with_core(core);
+    state.controller.show();
+    state.update_query("Keyboard Smoke App");
+    let Some(execution) = state.handle_keyboard_input_by_user(LauncherKey::Enter, false) else {
+        let _ = std::fs::remove_dir_all(&root);
+        return (None, false);
+    };
+    let deferred = execution
+        .output
+        .as_ref()
+        .and_then(|output| output.get("deferred"))
+        .and_then(|value| value.as_bool())
+        .unwrap_or(false);
+    let _ = std::fs::remove_dir_all(root);
+    (Some(execution.status), deferred)
+}
+
+fn write_keyboard_smoke_app(config: &StdConfig) {
+    let app = config.apps_dir().join("KeyboardSmokeApp.app");
+    let contents = app.join("Contents");
+    let _ = std::fs::create_dir_all(&contents);
+    let _ = std::fs::write(
+        contents.join("Info.plist"),
+        r#"<plist><dict>
+<key>CFBundleDisplayName</key><string>Keyboard Smoke App</string>
+<key>CFBundleName</key><string>KeyboardSmokeApp</string>
+</dict></plist>"#,
+    );
 }
