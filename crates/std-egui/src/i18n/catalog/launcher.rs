@@ -18,8 +18,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         }
         (Locale::ZhCn, "launcher.empty.ready.title") => Some("准备搜索"),
         (Locale::EnUs, "launcher.empty.ready.title") => Some("Ready to search"),
-        (Locale::ZhCn, "launcher.empty.ready.detail") => Some("输入关键词，或按 ? 询问"),
-        (Locale::EnUs, "launcher.empty.ready.detail") => Some("Type a keyword, or press ? to ask"),
+        (Locale::ZhCn, "launcher.empty.ready.detail") => {
+            Some("按 / 查看命令，按 ? 询问，按下方向键查看最近使用")
+        }
+        (Locale::EnUs, "launcher.empty.ready.detail") => {
+            Some("Press / for commands, ? to ask, Down for recent")
+        }
         (Locale::ZhCn, "launcher.empty.ask_ai") => Some("询问 AI 关于"),
         (Locale::EnUs, "launcher.empty.ask_ai") => Some("Ask AI about"),
         (Locale::ZhCn, "launcher.action.actions") => Some("操作"),
@@ -102,7 +106,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.empty.no_matches.title" => Some("No matches"),
         "launcher.empty.no_matches.detail" => Some("Try a different keyword or press ? to ask"),
         "launcher.empty.ready.title" => Some("Ready to search"),
-        "launcher.empty.ready.detail" => Some("Type a keyword, or press ? to ask"),
+        "launcher.empty.ready.detail" => Some("Press / for commands, ? to ask, Down for recent"),
         "launcher.empty.ask_ai" => Some("Ask AI about"),
         "launcher.action.actions" => Some("Actions"),
         "launcher.action.run" => Some("Run"),

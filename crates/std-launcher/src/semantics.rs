@@ -13,6 +13,11 @@ pub struct LauncherUiSemanticsReport {
     pub result_count: usize,
     pub result_phase: String,
     pub result_mode: String,
+    pub empty_phase: String,
+    pub empty_mode: String,
+    pub empty_result_count: usize,
+    pub empty_title: String,
+    pub empty_detail: String,
     pub selected_label: String,
     pub selected_position: String,
     pub selected_keycap: String,
@@ -48,6 +53,7 @@ impl LauncherState {
         let mut state = Self::new();
         state.controller.show();
         state.update_query(query);
+        let empty = empty_query_semantics();
         let result = result_semantics(&state);
         let no_results = no_result_semantics();
         let loading = loading_semantics();
@@ -62,6 +68,11 @@ impl LauncherState {
             result_count: state.view.results.len(),
             result_phase: format!("{:?}", state.view.phase),
             result_mode: format!("{:?}", state.view.result_mode),
+            empty_phase: empty.phase,
+            empty_mode: empty.mode,
+            empty_result_count: empty.result_count,
+            empty_title: empty.title,
+            empty_detail: empty.detail,
             selected_label: result.selected_label,
             selected_position: result.selected_position,
             selected_keycap: result.selected_keycap,
@@ -100,6 +111,14 @@ struct ResultSemantics {
     selected_keycap: String,
     selected_action_hint: String,
     action_bar_hint: String,
+}
+
+struct EmptyQuerySemantics {
+    phase: String,
+    mode: String,
+    result_count: usize,
+    title: String,
+    detail: String,
 }
 
 struct NoResultSemantics {
@@ -171,6 +190,23 @@ fn result_semantics(state: &LauncherState) -> ResultSemantics {
         selected_keycap,
         selected_action_hint,
         action_bar_hint: "Actions Mod+K".to_string(),
+    }
+}
+
+fn empty_query_semantics() -> EmptyQuerySemantics {
+    let empty = LauncherState::new();
+    let has_suggestions = !empty.view.results.is_empty();
+    EmptyQuerySemantics {
+        phase: format!("{:?}", empty.view.phase),
+        mode: format!("{:?}", empty.view.result_mode),
+        result_count: empty.view.results.len(),
+        title: if has_suggestions {
+            i18n::translate(Locale::EnUs, "launcher.results.suggested_workflows.title")
+        } else {
+            i18n::translate(Locale::EnUs, "launcher.empty.ready.title")
+        }
+        .to_string(),
+        detail: i18n::translate(Locale::EnUs, "launcher.empty.ready.detail").to_string(),
     }
 }
 
@@ -275,6 +311,11 @@ impl LauncherUiSemanticsReport {
             && self.result_count > 0
             && self.result_phase == "WithResults"
             && self.result_mode == "Matches"
+            && self.empty_phase == "Empty"
+            && self.empty_mode == "SuggestedWorkflows"
+            && self.empty_result_count > 0
+            && self.empty_title == "Suggested Workflows"
+            && self.empty_detail.contains("Press / for commands")
             && self.selected_label.contains("press Enter")
             && self.selected_position.contains(" of ")
             && self.selected_keycap == "Mod+1"
@@ -312,12 +353,17 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
             self.result_phase,
             self.result_mode,
+            self.empty_phase,
+            self.empty_mode,
+            self.empty_result_count,
+            self.empty_title,
+            self.empty_detail,
             self.selected_label,
             self.selected_position,
             self.selected_keycap,
