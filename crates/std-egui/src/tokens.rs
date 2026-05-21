@@ -1,4 +1,5 @@
 mod color;
+mod contrast;
 mod geometry;
 mod palette;
 mod style;
