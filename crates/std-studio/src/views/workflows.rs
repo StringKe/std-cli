@@ -61,10 +61,17 @@ impl StudioEguiApp {
                 i18n::t("studio.workflows.create.title"),
                 i18n::t("studio.workflows.create.detail"),
             );
-            ui.label(i18n::t("studio.workflows.name"));
-            ui.text_edit_singleline(&mut self.workflow_name);
-            ui.label(i18n::t("studio.workflows.description"));
-            ui.text_edit_multiline(&mut self.workflow_description);
+            workflow_text_input(
+                ui,
+                i18n::t("studio.workflows.name"),
+                &mut self.workflow_name,
+            );
+            workflow_multiline_input(
+                ui,
+                i18n::t("studio.workflows.description"),
+                &mut self.workflow_description,
+                72.0,
+            );
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.workflows.create")).clicked() {
                     self.create_workflow_from_form();
@@ -195,9 +202,11 @@ impl StudioEguiApp {
     }
 
     fn render_batch_debug(&mut self, ui: &mut egui::Ui) {
-        ui.add_sized(
-            [ui.available_width(), 110.0],
-            egui::TextEdit::multiline(&mut self.batch_json),
+        workflow_multiline_input(
+            ui,
+            i18n::t("studio.workflows.batch.title"),
+            &mut self.batch_json,
+            110.0,
         );
         if ui::quiet_button(ui, i18n::t("studio.workflows.run_batch")).clicked() {
             let body = self.batch_json.clone();
@@ -262,5 +271,76 @@ fn action_status_fill(
         std_types::ActionExecutionStatus::Completed => ui::ok_bg(ctx),
         std_types::ActionExecutionStatus::Failed => ui::warn_bg(ctx),
         std_types::ActionExecutionStatus::NeedsExternalRunner => ui::warn_bg(ctx),
+    }
+}
+
+fn workflow_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
+    ui.label(label);
+    let response = ui.add_sized(
+        [ui.available_width(), 28.0],
+        egui::TextEdit::singleline(value),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            workflow_input_a11y_label(label, value),
+        )
+    });
+}
+
+fn workflow_multiline_input(ui: &mut egui::Ui, label: &str, value: &mut String, height: f32) {
+    ui.label(label);
+    let response = ui.add_sized(
+        [ui.available_width(), height],
+        egui::TextEdit::multiline(value),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            workflow_input_a11y_label(label, value),
+        )
+    });
+}
+
+fn workflow_input_a11y_label(label: &str, value: &str) -> String {
+    let value = if value.trim().is_empty() {
+        "empty"
+    } else {
+        value.trim()
+    };
+    format!("{label}, text box, value {value}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn workflow_inputs_use_text_edit_widget_info() {
+        let source = include_str!("workflows.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("workflow_text_input"));
+        assert!(implementation.contains("workflow_multiline_input"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("workflow_input_a11y_label"));
+        assert!(implementation.contains("TextEdit::singleline"));
+        assert!(implementation.contains("TextEdit::multiline"));
+        assert!(!implementation.contains("ui.text_edit_singleline"));
+        assert!(!implementation.contains("ui.text_edit_multiline"));
+    }
+
+    #[test]
+    fn workflow_input_a11y_label_exposes_value() {
+        assert_eq!(
+            workflow_input_a11y_label("Workflow name", "Daily run"),
+            "Workflow name, text box, value Daily run"
+        );
+        assert_eq!(
+            workflow_input_a11y_label("Batch", " "),
+            "Batch, text box, value empty"
+        );
     }
 }
