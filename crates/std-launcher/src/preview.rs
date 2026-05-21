@@ -3,7 +3,7 @@ use crate::ui;
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
-use std_egui::tokens::ThemeMode;
+use std_egui::tokens::{apply_theme, Color, ThemeMode};
 use std_launcher::LauncherState;
 use std_types::{ActionExecution, ActionExecutionStatus};
 
@@ -308,8 +308,10 @@ fn preview_state_summary(scenario: &LauncherPreviewScenario) -> String {
     apply_preview_scenario(&mut state, scenario.state);
     let valid =
         matches!(scenario.theme, "dark" | "light") && preview_state_passes(&state, scenario.state);
+    let theme = ThemeMode::resolve(scenario.theme);
+    let surface = preview_surface_summary(theme);
     format!(
-        "{}={}:phase={:?},results={},feedback={}",
+        "{}={}:phase={:?},results={},feedback={},{}",
         scenario.label(),
         if valid { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -319,7 +321,8 @@ fn preview_state_summary(scenario: &LauncherPreviewScenario) -> String {
             .feedback
             .as_ref()
             .map(|feedback| feedback.title.as_str())
-            .unwrap_or("none")
+            .unwrap_or("none"),
+        surface
     )
 }
 
@@ -365,4 +368,30 @@ fn select_external_runner_result(state: &mut LauncherState) {
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
+}
+
+fn preview_surface_summary(theme: ThemeMode) -> String {
+    let ctx = egui::Context::default();
+    apply_theme(&ctx, theme);
+    format!(
+        "panel={},search={},result={},selected={}",
+        color_hex(Color::bg_surface_0(&ctx)),
+        color_hex(Color::bg_surface_1(&ctx)),
+        color_hex(Color::bg_surface_1(&ctx)),
+        color_hex_alpha(Color::accent_weak(&ctx))
+    )
+}
+
+fn color_hex(color: egui::Color32) -> String {
+    format!("#{:02X}{:02X}{:02X}", color.r(), color.g(), color.b())
+}
+
+fn color_hex_alpha(color: egui::Color32) -> String {
+    format!(
+        "#{:02X}{:02X}{:02X}@{}",
+        color.r(),
+        color.g(),
+        color.b(),
+        color.a()
+    )
 }

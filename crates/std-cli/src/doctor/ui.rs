@@ -203,6 +203,9 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
+        "preview_surface_summary",
+        "panel={},search={},result={},selected={}",
+        "selected=",
     ] {
         check_text(&launcher, required)?;
     }

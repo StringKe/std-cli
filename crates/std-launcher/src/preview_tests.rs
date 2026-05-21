@@ -59,6 +59,22 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert!(report
         .states
         .iter()
+        .any(|state| state.contains("panel=#FAFBFD,search=#F2F5F8")));
+    assert!(report
+        .states
+        .iter()
+        .any(|state| state.contains("panel=#1C1E22,search=#24272C")));
+    assert!(report
+        .states
+        .iter()
+        .any(|state| state.contains("selected=#0A6BFF@31")));
+    assert!(report
+        .states
+        .iter()
+        .any(|state| state.contains("selected=#4E9CFF@46")));
+    assert!(report
+        .states
+        .iter()
         .any(|state| state.starts_with("dark-searching=PASS")));
     assert!(report
         .states
