@@ -1,3 +1,4 @@
+mod dylint;
 mod report;
 mod ui;
 mod ui_capture;

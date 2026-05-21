@@ -204,7 +204,7 @@ impl Color {
             EffectiveTheme::Dark => 42,
             EffectiveTheme::Light => 28,
         };
-        Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
+        palette::color_with_alpha(color, alpha)
     }
 }
 
@@ -268,11 +268,11 @@ mod tests {
 
         assert_eq!(
             Color::fg_secondary_for(EffectiveTheme::Dark, &high_contrast),
-            Color32::from_rgb(220, 223, 227)
+            palette::DARK_FG_SECONDARY_HC
         );
         assert_eq!(
             Color::fg_secondary_for(EffectiveTheme::Light, &high_contrast),
-            Color32::from_rgb(42, 45, 50)
+            palette::LIGHT_FG_SECONDARY_HC
         );
         assert_ne!(
             Color::accent_weak_for(EffectiveTheme::Dark, &standard),

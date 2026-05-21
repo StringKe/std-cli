@@ -1,4 +1,4 @@
-use super::ui_tokens::check_ui_token_usage;
+use super::{dylint::check_dylint_lint, ui_tokens::check_ui_token_usage};
 use crate::CliError;
 use std::{
     fs,
@@ -141,25 +141,6 @@ fn check_rust_quality_configs(root: &Path) -> Result<(), CliError> {
         check_text(&deny, required)?;
     }
     Ok(())
-}
-
-fn check_dylint_lint(root: &Path) -> Result<(), CliError> {
-    check_text(
-        &read_required(&root.join("crates/file_too_long/src/lib.rs"))?,
-        "const MAX_SOURCE_FILE_LINES: usize = 500;",
-    )?;
-    check_text(
-        &read_required(&root.join("crates/file_too_long/Cargo.toml"))?,
-        "dylint_linting = \"5.0.0\"",
-    )?;
-    check_text(
-        &read_required(&root.join("crates/file_too_long/rust-toolchain"))?,
-        "channel = \"nightly-2025-09-18\"",
-    )?;
-    check_text(
-        &read_required(&root.join("crates/file_too_long/.cargo/config.toml"))?,
-        "dylint-link",
-    )
 }
 
 fn check_surface_crates(root: &Path) -> Result<(), CliError> {

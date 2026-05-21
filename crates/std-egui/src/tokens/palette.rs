@@ -33,3 +33,7 @@ pub(crate) const DARK_STATUS_WARNING: Color32 = Color32::from_rgb(245, 182, 67);
 pub(crate) const LIGHT_STATUS_WARNING: Color32 = Color32::from_rgb(178, 117, 0);
 pub(crate) const DARK_STATUS_DANGER: Color32 = Color32::from_rgb(255, 106, 106);
 pub(crate) const LIGHT_STATUS_DANGER: Color32 = Color32::from_rgb(200, 49, 43);
+
+pub(crate) fn color_with_alpha(color: Color32, alpha: u8) -> Color32 {
+    Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
+}
