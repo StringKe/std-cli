@@ -1,7 +1,7 @@
 use crate::{
     ui_empty::{self, EmptyAction},
     ui_metrics,
-    ui_parts::{draw_focus_ring, keycap, quiet_label, surface_frame},
+    ui_parts::{draw_focus_ring, keycap, surface_frame},
     ui_result_model::{
         group_count as model_group_count, group_header_label, list_items, LauncherResultListItem,
         LauncherResultRowModel,
@@ -142,10 +142,7 @@ fn render_progress(ui: &mut egui::Ui, label: &str) {
 fn render_loading_progress_bar(ui: &mut egui::Ui, ctx: &egui::Context) {
     let available_width = ui.available_width();
     let (rect, _response) = ui.allocate_exact_size(
-        egui::vec2(
-            available_width,
-            ui_metrics::loading_progress_rect(available_width, egui::Pos2::ZERO).height(),
-        ),
+        ui_metrics::loading_progress_size(available_width),
         egui::Sense::hover(),
     );
     let progress_rect = ui_metrics::loading_progress_rect(available_width, rect.min);
@@ -171,7 +168,7 @@ fn result_row(ui: &mut egui::Ui, model: &LauncherResultRowModel) -> egui::Respon
         .inner_margin(egui::Margin::symmetric(Space::sm(), Space::two_xs()))
         .show(ui, |ui| {
             let response = ui.allocate_response(
-                egui::vec2(ui.available_width(), ui_metrics::result_row_height()),
+                ui_metrics::result_row_size(ui.available_width()),
                 egui::Sense::click(),
             );
             response.widget_info(|| {
@@ -186,45 +183,112 @@ fn result_row(ui: &mut egui::Ui, model: &LauncherResultRowModel) -> egui::Respon
                     ),
                 )
             });
-            let rect = response.rect.shrink2(egui::vec2(Space::xs() as f32, 0.0));
-            ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-                ui.horizontal(|ui| {
-                    render_kind_badge(ui, &ctx, &model.kind);
-                    ui.label(result_title_text(&model.title, selected, &ctx));
-                    ui.label(
-                        egui::RichText::new(&model.kind)
-                            .font(Text::footnote())
-                            .color(Color::fg_secondary(&ctx)),
-                    );
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if let Some(shortcut) = model.shortcut.as_deref() {
-                            keycap(ui, shortcut);
-                        }
-                        if let Some(hint) = model.action_hint.as_deref() {
-                            quiet_label(ui, hint);
-                        }
-                    });
-                });
-            });
+            let rect = response.rect.shrink2(ui_metrics::result_row_shrink());
+            paint_result_row(ui, rect, model, selected, &ctx);
             response
         })
         .inner
 }
 
-fn result_title_text(title: &str, selected: bool, ctx: &egui::Context) -> egui::RichText {
-    let text = egui::RichText::new(title)
-        .font(Text::body())
-        .color(Color::fg_primary(ctx));
-    if selected {
-        text.strong()
+fn paint_result_row(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    model: &LauncherResultRowModel,
+    selected: bool,
+    ctx: &egui::Context,
+) {
+    let layout = ui_metrics::result_row_layout(rect);
+    paint_result_icon(ui, &layout, model, selected, ctx);
+    paint_result_text(ui, &layout, model, selected, ctx);
+    paint_result_right(ui, &layout, model);
+}
+
+fn paint_result_icon(
+    ui: &mut egui::Ui,
+    layout: &crate::ui_metrics_results::LauncherResultRowLayout,
+    model: &LauncherResultRowModel,
+    selected: bool,
+    ctx: &egui::Context,
+) {
+    let fill = if selected {
+        Color::accent_weak(ctx)
     } else {
-        text
-    }
+        Color::bg_surface_2(ctx)
+    };
+    ui.painter().rect_filled(
+        layout.icon_rect,
+        egui::CornerRadius::same(Radius::sm()),
+        fill,
+    );
+    ui.painter().text(
+        layout.icon_rect.center() + ui_metrics::result_icon_text_offset_y(),
+        egui::Align2::CENTER_CENTER,
+        &model.icon_label,
+        Text::caption(),
+        Color::fg_secondary(ctx),
+    );
+}
+
+fn paint_result_text(
+    ui: &mut egui::Ui,
+    layout: &crate::ui_metrics_results::LauncherResultRowLayout,
+    model: &LauncherResultRowModel,
+    selected: bool,
+    ctx: &egui::Context,
+) {
+    let painter = ui.painter().with_clip_rect(layout.text_clip);
+    painter.text(
+        layout.title_pos,
+        egui::Align2::LEFT_CENTER,
+        &model.title,
+        Text::body(),
+        Color::fg_primary(ctx),
+    );
+    painter.text(
+        layout.subtitle_pos,
+        egui::Align2::LEFT_CENTER,
+        &model.subtitle,
+        Text::footnote(),
+        if selected {
+            Color::fg_secondary(ctx)
+        } else {
+            Color::fg_tertiary(ctx)
+        },
+    );
 }
 
 #[cfg(test)]
-fn result_title_is_strong(selected: bool) -> bool {
-    selected
+fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (&str, &str) {
+    (
+        model.shortcut.as_deref().unwrap_or("none"),
+        model.action_label.as_str(),
+    )
+}
+
+fn paint_result_right(
+    ui: &mut egui::Ui,
+    layout: &crate::ui_metrics_results::LauncherResultRowLayout,
+    model: &LauncherResultRowModel,
+) {
+    ui.scope_builder(egui::UiBuilder::new().max_rect(layout.right_rect), |ui| {
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            if let Some(shortcut) = model.shortcut.as_deref() {
+                keycap(ui, shortcut);
+            }
+            if model.action_hint.is_some() {
+                action_hint_label(ui, &model.action_label);
+            }
+        });
+    });
+}
+
+fn action_hint_label(ui: &mut egui::Ui, label: &str) {
+    let ctx = ui.ctx().clone();
+    ui.label(
+        egui::RichText::new(label)
+            .font(Text::caption())
+            .color(Color::fg_secondary(&ctx)),
+    );
 }
 
 fn group_header(ui: &mut egui::Ui, group: &str) {
@@ -242,9 +306,10 @@ fn group_header(ui: &mut egui::Ui, group: &str) {
 
 fn render_group_divider(ui: &mut egui::Ui, ctx: &egui::Context) {
     let available_width = ui.available_width();
-    let height = ui_metrics::group_divider_rect(available_width, egui::Pos2::ZERO).height();
-    let (rect, _response) =
-        ui.allocate_exact_size(egui::vec2(available_width, height), egui::Sense::hover());
+    let (rect, _response) = ui.allocate_exact_size(
+        ui_metrics::group_divider_size(available_width),
+        egui::Sense::hover(),
+    );
     let divider_rect = ui_metrics::group_divider_rect(available_width, rect.min);
     ui.painter().rect_filled(
         divider_rect,
@@ -269,28 +334,28 @@ fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
     ui.add_space(Space::two_xs() as f32);
 }
 
-fn render_kind_badge(ui: &mut egui::Ui, ctx: &egui::Context, kind: &str) {
-    egui::Frame::new()
-        .fill(Color::bg_surface_2(ctx))
-        .corner_radius(egui::CornerRadius::same(Radius::sm()))
-        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
-        .show(ui, |ui| {
-            ui.label(
-                egui::RichText::new(kind)
-                    .font(Text::caption())
-                    .color(Color::fg_secondary(ctx)),
-            );
-        });
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn result_title_weight_matches_selection_state() {
-        assert!(result_title_is_strong(true));
-        assert!(!result_title_is_strong(false));
+    fn selected_result_row_exposes_enter_and_action_hint() {
+        let result = std_types::SearchResult {
+            action: std_types::Action::new(
+                "Rebuild Index",
+                "Refresh local index",
+                "test",
+                std_types::ActionType::Command,
+            ),
+            score: 1.0,
+            matched_fields: vec!["name".to_string()],
+        };
+        let row = LauncherResultRowModel::from_result(&result, None, 0, 1, true);
+
+        assert_eq!(
+            result_row_keyboard_affordance(&row),
+            ("Enter", i18n::t("launcher.action.run"))
+        );
     }
 
     #[test]

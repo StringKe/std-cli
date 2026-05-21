@@ -54,8 +54,16 @@ fn panel_rect_for_available(
     )
 }
 
-pub(crate) fn result_row_height() -> f32 {
-    scale().f32(RESULT_ROW_HEIGHT)
+pub(crate) fn result_row_size(available_width: f32) -> egui::Vec2 {
+    crate::ui_metrics_results::result_row_size(scale(), available_width)
+}
+
+pub(crate) fn result_row_shrink() -> egui::Vec2 {
+    crate::ui_metrics_results::result_row_shrink(scale())
+}
+
+pub(crate) fn result_icon_text_offset_y() -> egui::Vec2 {
+    crate::ui_metrics_results::result_icon_text_offset_y(scale())
 }
 
 pub(crate) fn result_list_slot_height() -> f32 {
@@ -66,8 +74,22 @@ pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) 
     crate::ui_metrics_results::loading_progress_rect(scale(), available_width, top_left)
 }
 
+pub(crate) fn loading_progress_size(available_width: f32) -> egui::Vec2 {
+    crate::ui_metrics_results::loading_progress_size(scale(), available_width)
+}
+
 pub(crate) fn group_divider_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
     crate::ui_metrics_results::group_divider_rect(scale(), available_width, top_left)
+}
+
+pub(crate) fn group_divider_size(available_width: f32) -> egui::Vec2 {
+    crate::ui_metrics_results::group_divider_size(scale(), available_width)
+}
+
+pub(crate) fn result_row_layout(
+    rect: egui::Rect,
+) -> crate::ui_metrics_results::LauncherResultRowLayout {
+    crate::ui_metrics_results::result_row_layout(scale(), rect)
 }
 
 pub(crate) fn ask_ai_row_height() -> f32 {
@@ -305,6 +327,17 @@ mod tests {
         assert_eq!(
             crate::ui_metrics_results::group_header_metrics_for_scale(UiScale::new(1.5), 600.0),
             (600.0, 1.5)
+        );
+    }
+
+    #[test]
+    fn result_row_layout_reserves_icon_text_and_right_hint_regions() {
+        assert_eq!(
+            crate::ui_metrics_results::result_row_layout_metrics_for_scale(
+                UiScale::new(1.5),
+                720.0
+            ),
+            (30.0, 384.0, 270.0)
         );
     }
 

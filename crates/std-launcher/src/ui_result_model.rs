@@ -10,11 +10,14 @@ pub(crate) enum LauncherResultListItem {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LauncherResultRowModel {
     pub(crate) title: String,
+    pub(crate) subtitle: String,
     pub(crate) kind: String,
+    pub(crate) icon_label: String,
     pub(crate) group: String,
     pub(crate) position: String,
     pub(crate) shortcut: Option<String>,
     pub(crate) action_hint: Option<String>,
+    pub(crate) action_label: String,
     pub(crate) result_index: usize,
 }
 
@@ -35,11 +38,14 @@ impl LauncherResultRowModel {
         };
         Self {
             title: result.action.name.clone(),
+            subtitle: result_subtitle(result, preview),
             kind: action_kind(&result.action.action_type).to_string(),
+            icon_label: action_icon_label(&result.action.action_type).to_string(),
             group: action_group(result),
             position: format!("{} of {total}", index + 1),
             shortcut,
             action_hint: selected.then(|| selected_action_hint(preview, &result.action.name)),
+            action_label: selected_action_label(preview),
             result_index: index,
         }
     }
@@ -103,6 +109,22 @@ fn selected_action_hint(preview: Option<&ActionPreview>, fallback: &str) -> Stri
     format!("{} {command}", i18n::t("launcher.action.run"))
 }
 
+fn selected_action_label(preview: Option<&ActionPreview>) -> String {
+    preview
+        .map(|preview| preview.primary_command.as_str())
+        .filter(|command| !command.trim().is_empty())
+        .unwrap_or(i18n::t("launcher.action.run"))
+        .to_string()
+}
+
+fn result_subtitle(result: &SearchResult, preview: Option<&ActionPreview>) -> String {
+    preview
+        .map(|preview| preview.subtitle.as_str())
+        .filter(|subtitle| !subtitle.trim().is_empty())
+        .unwrap_or(result.action.description.as_str())
+        .to_string()
+}
+
 pub(crate) fn action_group(result: &SearchResult) -> String {
     match &result.action.action_type {
         ActionType::AppLaunch => i18n::t("launcher.results.group.app_file").to_string(),
@@ -126,6 +148,18 @@ pub(crate) fn action_kind(action_type: &ActionType) -> &str {
         ActionType::Clipboard => i18n::t("launcher.results.kind.clipboard"),
         ActionType::Custom(kind) if kind == "file" => i18n::t("launcher.results.kind.file"),
         ActionType::Custom(_) => i18n::t("launcher.results.kind.custom"),
+    }
+}
+
+pub(crate) fn action_icon_label(action_type: &ActionType) -> &str {
+    match action_type {
+        ActionType::AppLaunch => "APP",
+        ActionType::Workflow => "WF",
+        ActionType::Command => "CMD",
+        ActionType::Skill => "SK",
+        ActionType::Clipboard => "CLP",
+        ActionType::Custom(kind) if kind == "file" => "FIL",
+        ActionType::Custom(_) => "ACT",
     }
 }
 
@@ -170,8 +204,11 @@ mod tests {
         let row = LauncherResultRowModel::from_result(&result, Some(&preview), 0, 3, true);
 
         assert_eq!(row.title, "Rebuild Index");
+        assert_eq!(row.subtitle, "Refresh index");
         assert_eq!(row.group, i18n::t("launcher.results.group.action_workflow"));
+        assert_eq!(row.icon_label, "CMD");
         assert_eq!(row.shortcut.as_deref(), Some("Enter"));
+        assert_eq!(row.action_label, "std index rebuild .");
         assert_eq!(
             row.action_hint,
             Some(format!(
@@ -194,6 +231,7 @@ mod tests {
         assert!(third_row.action_hint.is_none());
         assert!(tenth_row.shortcut.is_none());
         assert_eq!(tenth_row.group, i18n::t("launcher.results.group.app_file"));
+        assert_eq!(tenth_row.icon_label, "FIL");
     }
 
     fn test_result(name: &str, action_type: ActionType, score: f32) -> SearchResult {
