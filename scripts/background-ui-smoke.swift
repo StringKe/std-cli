@@ -38,9 +38,13 @@ guard window.ownerPid == config.harnessPid else {
     fail("window pid mismatch")
 }
 
-let previousPid = frontmostPid()
+let previousApp = frontmostAppInfo()
+let previousPid = previousApp.pid
 guard previousPid != config.harnessPid else {
     fail("harness is frontmost; refusing to target active user window")
+}
+guard !isForbiddenFrontmostApp(previousApp) else {
+    fail("frontmost app is forbidden for event tap: \(previousApp.bundleId)")
 }
 var session = BackgroundActivationSession(previousPid: previousPid, targetPid: config.harnessPid)
 guard session.start() else {
@@ -225,6 +229,32 @@ func findWindow(_ config: Config) -> WindowInfo? {
 
 func frontmostPid() -> pid_t {
     NSWorkspace.shared.frontmostApplication?.processIdentifier ?? 0
+}
+
+struct RunningAppInfo {
+    let pid: pid_t
+    let bundleId: String
+    let name: String
+}
+
+func frontmostAppInfo() -> RunningAppInfo {
+    guard let app = NSWorkspace.shared.frontmostApplication else {
+        return RunningAppInfo(pid: 0, bundleId: "UNKNOWN", name: "UNKNOWN")
+    }
+    return RunningAppInfo(
+        pid: app.processIdentifier,
+        bundleId: app.bundleIdentifier ?? "UNKNOWN",
+        name: app.localizedName ?? "UNKNOWN"
+    )
+}
+
+func isForbiddenFrontmostApp(_ app: RunningAppInfo) -> Bool {
+    let bundleId = app.bundleId.lowercased()
+    let name = app.name.lowercased()
+    let forbiddenBundleFragments = ["com.1password", "com.agilebits.onepassword", "com.apple.terminal", "com.googlecode.iterm2", "com.tencent.xinwechat", "com.tencent.wechat", "com.apple.systempreferences", "com.apple.systemsettings"]
+    let forbiddenNames = ["1password", "terminal", "iterm", "iterm2", "wechat", "weixin", "微信", "system settings", "system preferences"]
+    return forbiddenBundleFragments.contains { bundleId.contains($0) }
+        || forbiddenNames.contains { name.contains($0) }
 }
 
 func parseConfig() -> Config {

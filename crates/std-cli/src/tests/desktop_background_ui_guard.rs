@@ -157,8 +157,8 @@ fn assert_background_harness_contract(root: &Path) {
     }
 }
 
-fn background_cli_contract_terms() -> [&'static str; 34] {
-    [
+fn background_cli_contract_terms() -> &'static [&'static str] {
+    &[
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "isolated_background_ui_harness_only",
@@ -184,6 +184,7 @@ fn background_cli_contract_terms() -> [&'static str; 34] {
         "event_tap_then_appkit_defined_primer_then_center_primer",
         "event_route=postToPid_target_pid_only",
         "frontmost_policy=previous_app_never_targeted",
+        "frontmost_sensitive_app_policy=fail_before_event_tap",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
@@ -196,8 +197,8 @@ fn background_cli_contract_terms() -> [&'static str; 34] {
     ]
 }
 
-fn background_doc_contract_terms() -> [&'static str; 24] {
-    [
+fn background_doc_contract_terms() -> &'static [&'static str] {
+    &[
         "per-process event tap",
         "浮动光标不是输入机制",
         "先安装 previous 和 target",
@@ -218,6 +219,7 @@ fn background_doc_contract_terms() -> [&'static str; 24] {
         "cargo run -p std-cli -- ui background-smoke",
         "open -g",
         "dev.std-cli.background-ui-harness",
+        "安装 event tap 前直接 `FAIL`",
         "真实 App 名称",
         "用户当前 frontmost app",
         "默认质量门禁",
@@ -225,8 +227,8 @@ fn background_doc_contract_terms() -> [&'static str; 24] {
     ]
 }
 
-fn background_runner_contract_terms() -> [&'static str; 26] {
-    [
+fn background_runner_contract_terms() -> &'static [&'static str] {
+    &[
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "CGEvent.tapCreateForPid",
@@ -236,7 +238,12 @@ fn background_runner_contract_terms() -> [&'static str; 26] {
         "focusEventMask()",
         "NSRunningApplication(processIdentifier: config.harnessPid)",
         "pid bundle_id outside whitelist",
-        "let previousPid = frontmostPid()",
+        "let previousApp = frontmostAppInfo()",
+        "guard !isForbiddenFrontmostApp(previousApp)",
+        "frontmost app is forbidden for event tap",
+        "com.googlecode.iterm2",
+        "com.1password",
+        "com.tencent.xinwechat",
         "let finalFrontmostPid = frontmostPid()",
         "finalFrontmostPid == previousPid",
         "frontmost app changed from",
