@@ -12,6 +12,7 @@ mod native_app;
 mod operations;
 mod operations_rows;
 mod preview;
+mod preview_evidence;
 #[cfg(test)]
 mod preview_tests;
 mod shell;

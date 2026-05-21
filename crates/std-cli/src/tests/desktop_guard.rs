@@ -3,7 +3,8 @@ use std::{fs, path::Path};
 use super::desktop_guard_scan::{
     assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, scan_rs_files,
     scan_rs_files_for_binary_spawns, scan_rs_files_for_unsafe_opt_ins, source_section,
-    task_has_std_test_mode, task_inherits_workspace_test_mode,
+    task_blocks_desktop_opt_ins, task_has_std_test_mode, task_inherits_workspace_test_mode,
+    workspace_blocks_desktop_opt_ins,
 };
 
 #[test]
@@ -99,6 +100,10 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         body.contains("[env]\nSTD_TEST_MODE = \"1\""),
         "mise workspace env must force STD_TEST_MODE=1"
     );
+    assert!(
+        workspace_blocks_desktop_opt_ins(&body),
+        "mise workspace env must force desktop opt-ins off"
+    );
     for task in [
         "clippy",
         "dylint",
@@ -117,13 +122,17 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
             task_has_std_test_mode(&body, task) || task_inherits_workspace_test_mode(&body, task),
             "mise task {task} must set STD_TEST_MODE=1"
         );
+        assert!(
+            task_blocks_desktop_opt_ins(&body, task) || workspace_blocks_desktop_opt_ins(&body),
+            "mise task {task} must force desktop opt-ins off"
+        );
     }
     assert!(
-        !body.contains("STD_ALLOW_DESKTOP_AUTOMATION"),
+        !body.contains("STD_ALLOW_DESKTOP_AUTOMATION = \"1\""),
         "mise default tasks must not opt into desktop automation"
     );
     assert!(
-        !body.contains("STD_ALLOW_UI_PREVIEW"),
+        !body.contains("STD_ALLOW_UI_PREVIEW = \"1\""),
         "mise default tasks must not opt into UI preview"
     );
 }

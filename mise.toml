@@ -3,6 +3,8 @@ rust = "stable"
 
 [env]
 STD_TEST_MODE = "1"
+STD_ALLOW_DESKTOP_AUTOMATION = "0"
+STD_ALLOW_UI_PREVIEW = "0"
 
 [tasks.fmt]
 description = "Check workspace formatting"
@@ -10,37 +12,37 @@ run = "cargo fmt --all --check"
 
 [tasks.clippy]
 description = "Run Clippy for all workspace targets"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo clippy --workspace --all-targets -- -D warnings"
 
 [tasks.dylint]
 description = "Run local Dylint workspace lints"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "DYLINT_RUSTFLAGS=\"-D warnings\" cargo dylint --workspace --all -- --all-targets"
 
 [tasks.dylint-test]
 description = "Run local Dylint lint tests"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml"
 
 [tasks.file-limits]
 description = "Enforce Rust source and config file length gates"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib"
 
 [tasks.test]
 description = "Run workspace tests"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo test --workspace -- --test-threads=1"
 
 [tasks.deny]
 description = "Run cargo-deny dependency checks"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo deny check"
 
 [tasks.machete]
 description = "Run cargo-machete unused dependency checks"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo machete"
 
 [tasks.quality]
@@ -58,25 +60,25 @@ depends = [
 
 [tasks.release-build]
 description = "Build release binaries"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo build --release --workspace"
 
 [tasks.release-package]
 description = "Package release artifacts"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo run -p std-cli -- release package --version 1.0.0 --from target/release --dist dist/1.0.0-current"
 
 [tasks.release-verify]
 description = "Verify release artifacts"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo run -p std-cli -- release verify --dist dist/1.0.0-current"
 
 [tasks.install-run]
 description = "Install packaged binaries into the local install-check prefix"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo run -p std-cli -- install run --prefix .std-cli/install-check --from dist/1.0.0-current/bin"
 
 [tasks.install-verify]
 description = "Verify installed binaries and app bundles"
-env = { STD_TEST_MODE = "1" }
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0" }
 run = "cargo run -p std-cli -- install verify --prefix .std-cli/install-check"

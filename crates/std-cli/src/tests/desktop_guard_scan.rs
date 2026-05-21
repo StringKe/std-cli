@@ -47,13 +47,27 @@ pub(crate) fn forbidden_test_mode_clear_terms() -> Vec<String> {
 }
 
 pub(crate) fn task_has_std_test_mode(body: &str, task: &str) -> bool {
+    task_has_env(body, task, "STD_TEST_MODE", "1")
+}
+
+pub(crate) fn task_blocks_desktop_opt_ins(body: &str, task: &str) -> bool {
+    task_has_env(body, task, "STD_ALLOW_DESKTOP_AUTOMATION", "0")
+        && task_has_env(body, task, "STD_ALLOW_UI_PREVIEW", "0")
+}
+
+pub(crate) fn workspace_blocks_desktop_opt_ins(body: &str) -> bool {
+    body.contains("STD_ALLOW_DESKTOP_AUTOMATION = \"0\"")
+        && body.contains("STD_ALLOW_UI_PREVIEW = \"0\"")
+}
+
+fn task_has_env(body: &str, task: &str, key: &str, value: &str) -> bool {
     let header = format!("[tasks.{task}]");
     let Some(start) = body.find(&header) else {
         return false;
     };
     let rest = &body[start + header.len()..];
     let end = rest.find("\n[tasks.").unwrap_or(rest.len());
-    rest[..end].contains("env = { STD_TEST_MODE = \"1\" }")
+    rest[..end].contains(&format!("{key} = \"{value}\""))
 }
 
 pub(crate) fn task_inherits_workspace_test_mode(body: &str, task: &str) -> bool {

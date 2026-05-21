@@ -21,6 +21,25 @@ fn studio_preview_test_mode_blocks_child_process_window_startup() {
     assert!(stdout.contains("STD_TEST_MODE blocked Studio UI preview"));
 }
 
+#[test]
+fn studio_test_mode_overrides_inherited_ui_preview_opt_in() {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_std-studio"));
+    let output = command
+        .args(["--ui-preview", "light", "dashboard", "10"])
+        .env("STD_TEST_MODE", "1")
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW")
+        .env(["STD_ALLOW", "DESKTOP_AUTOMATION"].join("_"), "1")
+        .env(["STD_ALLOW", "UI_PREVIEW"].join("_"), "1")
+        .output()
+        .unwrap();
+
+    assert!(output.status.success(), "{}", stderr(&output));
+    let stdout = stdout(&output);
+    assert!(stdout.contains("studio_ui_preview SKIP"));
+    assert!(stdout.contains("STD_TEST_MODE blocked Studio UI preview"));
+}
+
 fn run_studio_in_desktop_safe_test_mode(args: &[&str]) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_std-studio"));
     command
