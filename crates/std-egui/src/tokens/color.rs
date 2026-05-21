@@ -214,7 +214,15 @@ fn themed(
     color: fn(EffectiveTheme, &AccessibilityContext) -> Color32,
 ) -> Color32 {
     let a11y = AccessibilityContext::from_env();
-    color(effective_theme(ctx, ThemeMode::System), &a11y)
+    color(effective_theme_from_context(ctx), &a11y)
+}
+
+fn effective_theme_from_context(ctx: &egui::Context) -> EffectiveTheme {
+    if ctx.style().visuals.dark_mode {
+        EffectiveTheme::Dark
+    } else {
+        EffectiveTheme::Light
+    }
 }
 
 fn color_for(theme: EffectiveTheme, dark: Color32, light: Color32) -> Color32 {
@@ -276,5 +284,18 @@ mod tests {
         assert!(palette::DARK_SURFACE_1.r() > palette::DARK_SURFACE_0.r());
         assert!(palette::DARK_SURFACE_2.r() > palette::DARK_SURFACE_1.r());
         assert!(palette::DARK_SURFACE_3.r() > palette::DARK_SURFACE_2.r());
+    }
+
+    #[test]
+    fn token_helpers_follow_the_applied_context_theme() {
+        let ctx = egui::Context::default();
+
+        crate::tokens::apply_theme(&ctx, ThemeMode::Light);
+        assert_eq!(Color::bg_surface_0(&ctx), palette::LIGHT_SURFACE_0);
+        assert_eq!(Color::accent_base(&ctx), palette::LIGHT_ACCENT_BASE);
+
+        crate::tokens::apply_theme(&ctx, ThemeMode::Dark);
+        assert_eq!(Color::bg_surface_0(&ctx), palette::DARK_SURFACE_0);
+        assert_eq!(Color::accent_base(&ctx), palette::DARK_ACCENT_BASE);
     }
 }
