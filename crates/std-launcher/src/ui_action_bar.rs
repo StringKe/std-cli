@@ -52,6 +52,8 @@ fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) {
         ActionBarHintMode::Cancel => {
             keycap(ui, &input::launcher_cancel().label());
             quiet_label(ui, i18n::t("launcher.action.cancel"));
+            keycap(ui, &input::enter().label());
+            quiet_label(ui, i18n::t("launcher.action.background"));
         }
         ActionBarHintMode::RunActions => {
             keycap(ui, &input::launcher_action_panel().label());
@@ -83,6 +85,8 @@ fn action_bar_visible_hint_labels(state: &LauncherState) -> Vec<String> {
             vec![
                 i18n::t("launcher.action.cancel").to_string(),
                 input::launcher_cancel().label(),
+                i18n::t("launcher.action.background").to_string(),
+                input::enter().label(),
             ]
         }
         ActionBarHintMode::RunActions => vec![
@@ -161,6 +165,15 @@ mod tests {
         state.view.preview_executing();
 
         assert_eq!(action_bar_hint_mode(&state), ActionBarHintMode::Cancel);
+        assert_eq!(
+            action_bar_visible_hint_labels(&state),
+            vec![
+                i18n::t("launcher.action.cancel").to_string(),
+                input::launcher_cancel().label(),
+                i18n::t("launcher.action.background").to_string(),
+                input::enter().label(),
+            ]
+        );
     }
 
     #[test]

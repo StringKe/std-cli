@@ -263,8 +263,13 @@ fn assert_loading_and_execution_semantics(report: &LauncherUiSemanticsReport, su
         report.executing_cancel_shortcut,
         format!("Cancel {}", std_egui::input::launcher_cancel().label())
     );
+    assert_eq!(
+        report.executing_background_shortcut,
+        format!("Move to background {}", std_egui::input::enter().label())
+    );
     assert!(summary.contains("loading_progress=2px Searching indeterminate"));
     assert!(summary.contains("executing_input_enabled=false"));
+    assert!(summary.contains("executing_background_shortcut=Move to background Enter"));
 }
 
 fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) {

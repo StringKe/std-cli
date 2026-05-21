@@ -14,6 +14,7 @@ mod layout_contract;
 mod query_mode;
 mod reports;
 mod semantics;
+mod semantics_executing;
 mod studio_intent;
 mod suggested;
 mod surface_contract;

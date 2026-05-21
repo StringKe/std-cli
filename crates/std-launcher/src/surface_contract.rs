@@ -200,9 +200,10 @@ fn executing_state_contract() -> String {
     state.update_query("rebuild index");
     state.view.preview_executing();
     format!(
-        "phase={:?};input_locked=true;cancel={};progress=action-bar",
+        "phase={:?};input_locked=true;cancel={};background={};progress=action-bar",
         state.view.phase,
-        input::launcher_cancel().label()
+        input::launcher_cancel().label(),
+        input::enter().label()
     )
 }
 

@@ -1,3 +1,4 @@
+use crate::semantics_executing::executing_semantics;
 use crate::{keyboard::LauncherKey, LauncherState};
 use std_egui::{
     a11y::AccessibilityContext,
@@ -38,6 +39,7 @@ pub struct LauncherUiSemanticsReport {
     pub executing_search_text: String,
     pub executing_input_enabled: bool,
     pub executing_cancel_shortcut: String,
+    pub executing_background_shortcut: String,
     pub defer_feedback_label: String,
     pub defer_actions: String,
     pub failed_feedback_label: String,
@@ -92,12 +94,9 @@ impl LauncherState {
             loading_progress: loading.progress,
             loading_spinner_after_ms: 200,
             executing_search_text: executing.search_text,
-            executing_input_enabled: false,
-            executing_cancel_shortcut: format!(
-                "{} {}",
-                i18n::translate(Locale::EnUs, "launcher.action.cancel"),
-                input::launcher_cancel().label()
-            ),
+            executing_input_enabled: executing.input_enabled,
+            executing_cancel_shortcut: executing.cancel_shortcut,
+            executing_background_shortcut: executing.background_shortcut,
             defer_feedback_label: feedback.defer_label,
             defer_actions: "Copy,Retry".to_string(),
             failed_feedback_label: feedback.failed_label,
@@ -140,10 +139,6 @@ struct NoResultSemantics {
 struct LoadingSemantics {
     label: String,
     progress: String,
-}
-
-struct ExecutingSemantics {
-    search_text: String,
 }
 
 struct FeedbackSemantics {
@@ -262,25 +257,6 @@ fn loading_semantics() -> LoadingSemantics {
     }
 }
 
-fn executing_semantics(query: &str) -> ExecutingSemantics {
-    let mut executing_state = LauncherState::new();
-    executing_state.update_query(query);
-    executing_state.view.preview_executing();
-    let executing_title = executing_state
-        .view
-        .preview
-        .as_ref()
-        .map(|preview| preview.title.clone())
-        .unwrap_or_else(|| "selected action".to_string());
-    ExecutingSemantics {
-        search_text: format!(
-            "{} {}",
-            i18n::translate(Locale::EnUs, "launcher.search.running"),
-            executing_title
-        ),
-    }
-}
-
 fn feedback_semantics() -> FeedbackSemantics {
     let defer_feedback = LauncherFeedback::from_execution(&deferred_execution());
     let failed_feedback = LauncherFeedback::from_execution(&failed_execution());
@@ -395,6 +371,12 @@ impl LauncherUiSemanticsReport {
                     i18n::translate(Locale::EnUs, "launcher.action.cancel"),
                     input::launcher_cancel().label()
                 )
+            && self.executing_background_shortcut
+                == format!(
+                    "{} {}",
+                    i18n::translate(Locale::EnUs, "launcher.action.background"),
+                    input::enter().label()
+                )
             && self
                 .defer_feedback_label
                 .contains(std_egui::i18n::t("launcher.feedback.deferred"))
@@ -416,7 +398,7 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -446,6 +428,7 @@ impl LauncherUiSemanticsReport {
             self.executing_search_text,
             self.executing_input_enabled,
             self.executing_cancel_shortcut,
+            self.executing_background_shortcut,
             self.defer_feedback_label,
             self.defer_actions,
             self.failed_feedback_label,
