@@ -102,7 +102,13 @@ fn render_primary_actions(
 }
 
 fn toolbar_button(ui: &mut egui::Ui, label: &str, emphasized: bool) -> egui::Response {
-    toolbar_button_text(ui, label, None, emphasized)
+    toolbar_button_text(
+        ui,
+        label,
+        None,
+        emphasized,
+        toolbar_button_a11y_label(label, None),
+    )
 }
 
 fn toolbar_button_with_shortcut(
@@ -111,7 +117,13 @@ fn toolbar_button_with_shortcut(
     shortcut: &str,
     emphasized: bool,
 ) -> egui::Response {
-    toolbar_button_text(ui, label, Some(shortcut), emphasized)
+    toolbar_button_text(
+        ui,
+        label,
+        Some(shortcut),
+        emphasized,
+        toolbar_button_a11y_label(label, Some(shortcut)),
+    )
 }
 
 fn toolbar_button_text(
@@ -119,6 +131,7 @@ fn toolbar_button_text(
     label: &str,
     shortcut: Option<&str>,
     emphasized: bool,
+    a11y_label: String,
 ) -> egui::Response {
     let ctx = ui.ctx().clone();
     let fill = if emphasized {
@@ -134,7 +147,7 @@ fn toolbar_button_text(
     let text = shortcut
         .map(|shortcut| format!("{label}  {shortcut}"))
         .unwrap_or_else(|| label.to_string());
-    ui.add(
+    let response = ui.add(
         egui::Button::new(
             egui::RichText::new(text)
                 .font(Text::caption())
@@ -143,7 +156,15 @@ fn toolbar_button_text(
         .fill(fill)
         .stroke(egui::Stroke::new(1.0, stroke))
         .corner_radius(egui::CornerRadius::same(Radius::sm())),
-    )
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            a11y_label.clone(),
+        )
+    });
+    response
 }
 
 fn render_secondary_contract(ui: &mut egui::Ui) {
@@ -168,7 +189,14 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
 }
 
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=button-label-shortcut-purpose;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+}
+
+fn toolbar_button_a11y_label(label: &str, shortcut: Option<&str>) -> String {
+    match shortcut {
+        Some(shortcut) => format!("{label}, toolbar button, shortcut {shortcut}"),
+        None => format!("{label}, toolbar button"),
+    }
 }
 
 #[cfg(test)]
@@ -179,7 +207,7 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=button-label-shortcut-purpose;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
         );
     }
 
@@ -199,6 +227,20 @@ mod tests {
         assert!(implementation.contains("input::studio_workflow_simulate().label()"));
         assert!(implementation.contains("Color::accent_weak"));
         assert!(implementation.contains("Color::bg_surface_1"));
+        assert!(implementation.contains("WidgetType::Button"));
+        assert!(implementation.contains("toolbar_button_a11y_label"));
         assert!(!implementation.contains("quiet_button"));
+    }
+
+    #[test]
+    fn toolbar_button_a11y_labels_include_shortcut_when_available() {
+        assert_eq!(
+            toolbar_button_a11y_label("Save", Some("Mod+S")),
+            "Save, toolbar button, shortcut Mod+S"
+        );
+        assert_eq!(
+            toolbar_button_a11y_label("Plan", None),
+            "Plan, toolbar button"
+        );
     }
 }

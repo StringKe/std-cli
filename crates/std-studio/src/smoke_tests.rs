@@ -127,10 +127,11 @@ fn assert_workflow_builder_lifecycle_summary(summary: &str) {
 }
 
 fn assert_workflow_builder_controls_summary(summary: &str) {
-    assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom"));
+    assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom"));
     assert!(summary.contains("control=token-toolbar-buttons"));
     assert!(summary.contains("primary=plan|test"));
     assert!(summary.contains("shortcuts=save|simulate|test|history"));
+    assert!(summary.contains("a11y=button-label-shortcut-purpose"));
     assert!(summary.contains("builder_properties_contract=properties=token-field-rows"));
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("primary=add|update"));

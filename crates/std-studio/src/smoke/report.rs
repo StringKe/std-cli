@@ -252,6 +252,9 @@ impl StudioSmokeReport {
                 .builder_toolbar_contract
                 .contains("shortcuts=save|simulate|test|history")
             && self
+                .builder_toolbar_contract
+                .contains("a11y=button-label-shortcut-purpose")
+            && self
                 .builder_properties_contract
                 .contains("properties=token-field-rows")
             && self
