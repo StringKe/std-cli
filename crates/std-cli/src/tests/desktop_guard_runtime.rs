@@ -190,6 +190,33 @@ fn background_ui_smoke_documents_safe_background_event_route() {
 }
 
 #[test]
+fn mise_background_ui_tasks_are_manual_harness_only() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("mise.toml")).unwrap();
+    let quality = source_section(&body, "[tasks.quality]", "[tasks.release-build]");
+    let harness = source_section(
+        &body,
+        "[tasks.ui-background-harness]",
+        "[tasks.ui-background-smoke]",
+    );
+    let smoke = source_section(&body, "[tasks.ui-background-smoke]", "[tasks.quality]");
+
+    assert!(harness.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(harness.contains("STD_TEST_MODE = \"0\""));
+    assert!(harness.contains("scripts/background-ui-harness.sh"));
+    assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(smoke.contains("${HARNESS_PID:?set HARNESS_PID}"));
+    assert!(smoke.contains("${WINDOW_ID:?set WINDOW_ID}"));
+    assert!(smoke.contains("dev.std-cli.background-ui-harness"));
+    assert!(smoke.contains("std-cli Background UI Harness"));
+    assert!(!smoke.contains("<pid>"));
+    assert!(!smoke.contains("<window-id>"));
+    assert!(!quality.contains("ui-background-harness"));
+    assert!(!quality.contains("ui-background-smoke"));
+    assert!(!quality.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+}
+
+#[test]
 fn std_core_does_not_use_build_env_as_runtime_test_mode_guard() {
     let root = workspace_root();
     let body = fs::read_to_string(root.join("crates/std-core/src/lib.rs")).unwrap();
