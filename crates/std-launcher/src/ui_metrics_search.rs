@@ -3,6 +3,7 @@ use std_egui::tokens::UiScale;
 
 const SEARCH_BAR_MIN_HEIGHT: f32 = 40.0;
 const SEARCH_INPUT_WIDTH_RESERVE: f32 = 72.0;
+const SEARCH_IME_CHIP_WIDTH: f32 = 112.0;
 const SEARCH_INPUT_HEIGHT: f32 = 36.0;
 const SEARCH_ICON_WIDTH: f32 = 24.0;
 const SEARCH_ICON_HEIGHT: f32 = 28.0;
@@ -23,8 +24,17 @@ pub(crate) fn search_input_width(scale: UiScale, available_width: f32) -> f32 {
     (available_width - scale.f32(SEARCH_INPUT_WIDTH_RESERVE)).max(scale.f32(160.0))
 }
 
+pub(crate) fn search_input_width_with_ime(scale: UiScale, available_width: f32) -> f32 {
+    (available_width - scale.f32(SEARCH_INPUT_WIDTH_RESERVE + SEARCH_IME_CHIP_WIDTH))
+        .max(scale.f32(160.0))
+}
+
 pub(crate) fn search_input_height(scale: UiScale) -> f32 {
     scale.f32(SEARCH_INPUT_HEIGHT)
+}
+
+pub(crate) fn search_ime_chip_width(scale: UiScale) -> f32 {
+    scale.f32(SEARCH_IME_CHIP_WIDTH)
 }
 
 pub(crate) fn search_icon_size(scale: UiScale) -> egui::Vec2 {
@@ -74,10 +84,11 @@ pub(crate) struct SearchIconGeometry {
 pub(crate) fn search_metrics_for_scale(
     scale: UiScale,
     available_width: f32,
-) -> (f32, f32, f32, f32, f32) {
+) -> (f32, f32, f32, f32, f32, f32) {
     (
         search_bar_min_height(scale),
         search_input_width(scale, available_width),
+        search_input_width_with_ime(scale, available_width),
         search_input_height(scale),
         focus_ring_expand(scale),
         voice_input_height(scale),

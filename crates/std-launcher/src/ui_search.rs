@@ -2,7 +2,7 @@ use crate::{ui_keyboard, ui_metrics, ui_parts::draw_focus_ring};
 use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
-    i18n,
+    i18n, input,
     tokens::{Color, Radius, Space, Text},
     LauncherPhase,
 };
@@ -36,15 +36,14 @@ fn render_search_bar_contents(
 ) {
     let ctx = ui.ctx().clone();
     let executing = state.view.phase == LauncherPhase::Executing;
+    let ime_composing = input::ime_composing(&ctx);
     let mut query_text = search_bar_text(state);
     ui.set_min_height(ui_metrics::search_bar_min_height());
     ui.horizontal(|ui| {
         render_search_indicator(ui, &ctx, search_indicator_for_phase(state.view.phase));
+        let input_width = search_input_width(ui.available_width(), ime_composing);
         let response = ui.add_sized(
-            [
-                ui_metrics::search_input_width(ui.available_width()),
-                ui_metrics::search_input_height(),
-            ],
+            [input_width, ui_metrics::search_input_height()],
             egui::TextEdit::singleline(&mut query_text)
                 .hint_text(search_placeholder(state))
                 .font(Text::headline())
@@ -71,12 +70,47 @@ fn render_search_bar_contents(
         if !executing && response.changed() {
             state.update_query(query_text);
         }
+        if ime_composing {
+            render_ime_composing_chip(ui, &ctx);
+        }
         render_mode_tag(ui, state);
     });
 
     if !executing {
         ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
     }
+}
+
+fn search_input_width(available_width: f32, ime_composing: bool) -> f32 {
+    if ime_composing {
+        ui_metrics::search_input_width_with_ime(available_width)
+    } else {
+        ui_metrics::search_input_width(available_width)
+    }
+}
+
+fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let response = egui::Frame::new()
+        .fill(Color::accent_weak(ctx))
+        .stroke(egui::Stroke::new(1.0, Color::accent_base(ctx)))
+        .corner_radius(egui::CornerRadius::same(Radius::sm()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
+        .show(ui, |ui| {
+            ui.set_width(ui_metrics::search_ime_chip_width());
+            ui.label(
+                egui::RichText::new(i18n::t("launcher.search.ime_composing"))
+                    .font(Text::caption())
+                    .color(Color::fg_primary(ctx)),
+            );
+        })
+        .response;
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            i18n::t("launcher.search.ime_composing"),
+        )
+    });
 }
 
 fn search_bar_text(state: &LauncherState) -> String {
@@ -299,6 +333,10 @@ mod tests {
         assert_eq!(
             search_ime_visible_state_contract(),
             "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+        );
+        assert!(
+            search_input_width(420.0, true) < search_input_width(420.0, false),
+            "IME state chip must reserve stable width in the search row"
         );
     }
 

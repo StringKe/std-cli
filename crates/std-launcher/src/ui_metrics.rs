@@ -149,8 +149,16 @@ pub(crate) fn search_input_width(available_width: f32) -> f32 {
     crate::ui_metrics_search::search_input_width(scale(), available_width)
 }
 
+pub(crate) fn search_input_width_with_ime(available_width: f32) -> f32 {
+    crate::ui_metrics_search::search_input_width_with_ime(scale(), available_width)
+}
+
 pub(crate) fn search_input_height() -> f32 {
     crate::ui_metrics_search::search_input_height(scale())
+}
+
+pub(crate) fn search_ime_chip_width() -> f32 {
+    crate::ui_metrics_search::search_ime_chip_width(scale())
 }
 
 pub(crate) fn search_icon_size() -> egui::Vec2 {

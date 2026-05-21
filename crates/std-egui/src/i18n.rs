@@ -55,6 +55,14 @@ mod tests {
             "正在搜索"
         );
         assert_eq!(
+            translate(Locale::EnUs, "launcher.search.ime_composing"),
+            "IME composing"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.search.ime_composing"),
+            "输入法组合中"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "launcher.feedback.failed"),
             "Unable to run"
         );
