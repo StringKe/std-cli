@@ -41,12 +41,15 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
         egui::vec2(width, ui_metrics::feedback_text_height()),
         egui::Layout::top_down(egui::Align::Min),
         |ui| {
-            ui.label(
-                egui::RichText::new(feedback_title(feedback))
-                    .font(Text::body())
-                    .color(Color::fg_primary(ctx))
-                    .strong(),
-            );
+            ui.horizontal(|ui| {
+                render_status_icon(ui, ctx, feedback);
+                ui.label(
+                    egui::RichText::new(feedback_title(feedback))
+                        .font(Text::body())
+                        .color(Color::fg_primary(ctx))
+                        .strong(),
+                );
+            });
             ui.add_sized(
                 [width, ui_metrics::feedback_detail_height()],
                 egui::Label::new(
@@ -58,6 +61,71 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
             );
         },
     );
+}
+
+fn render_status_icon(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
+    let (rect, response) = ui.allocate_exact_size(
+        egui::vec2(Space::md() as f32, Space::md() as f32),
+        egui::Sense::hover(),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Other,
+            ui.is_enabled(),
+            feedback_icon_label(feedback),
+        )
+    });
+    let stroke = egui::Stroke::new(1.5, feedback_stroke(ctx, feedback));
+    let center = rect.center();
+    match feedback_kind(feedback) {
+        FeedbackKind::Completed => {
+            ui.painter().line_segment(
+                [
+                    egui::pos2(center.x - 4.0, center.y),
+                    egui::pos2(center.x, center.y + 4.0),
+                ],
+                stroke,
+            );
+            ui.painter().line_segment(
+                [
+                    egui::pos2(center.x, center.y + 4.0),
+                    egui::pos2(center.x + 8.0, center.y - 4.0),
+                ],
+                stroke,
+            );
+        }
+        FeedbackKind::Failed => {
+            ui.painter()
+                .circle_stroke(center, Space::xs() as f32, stroke);
+            ui.painter().line_segment(
+                [
+                    egui::pos2(center.x - 4.0, center.y - 4.0),
+                    egui::pos2(center.x + 4.0, center.y + 4.0),
+                ],
+                stroke,
+            );
+            ui.painter().line_segment(
+                [
+                    egui::pos2(center.x + 4.0, center.y - 4.0),
+                    egui::pos2(center.x - 4.0, center.y + 4.0),
+                ],
+                stroke,
+            );
+        }
+        FeedbackKind::Deferred => {
+            ui.painter()
+                .circle_stroke(center, Space::xs() as f32, stroke);
+            ui.painter().line_segment(
+                [
+                    egui::pos2(center.x, center.y - 4.0),
+                    egui::pos2(center.x, center.y),
+                ],
+                stroke,
+            );
+            ui.painter()
+                .circle_filled(egui::pos2(center.x, center.y + 4.0), 1.5, stroke.color);
+        }
+    }
 }
 
 fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
@@ -141,6 +209,14 @@ fn feedback_title(feedback: &LauncherFeedback) -> String {
         FeedbackKind::Completed => feedback.title.clone(),
         FeedbackKind::Failed => format!("{}: {}", feedback.title, feedback.action_name),
         FeedbackKind::Deferred => format!("{}: {}", feedback.title, feedback.action_name),
+    }
+}
+
+fn feedback_icon_label(feedback: &LauncherFeedback) -> &'static str {
+    match feedback_kind(feedback) {
+        FeedbackKind::Completed => i18n::t("launcher.feedback.icon.completed"),
+        FeedbackKind::Failed => i18n::t("launcher.feedback.icon.failed"),
+        FeedbackKind::Deferred => i18n::t("launcher.feedback.icon.deferred"),
     }
 }
 
@@ -269,5 +345,17 @@ mod tests {
 
         assert!(source.contains("keycap(ui, &input::enter().label())"));
         assert!(source.contains("return response.on_hover_text(input::enter().label())"));
+    }
+
+    #[test]
+    fn feedback_status_uses_icon_and_text_not_color_only() {
+        let source = include_str!("ui_feedback.rs");
+
+        assert!(source.contains("fn render_status_icon"));
+        assert!(source.contains("feedback_icon_label"));
+        assert!(source.contains("launcher.feedback.icon.completed"));
+        assert!(source.contains("launcher.feedback.icon.deferred"));
+        assert!(source.contains("launcher.feedback.icon.failed"));
+        assert!(source.contains("render_status_icon(ui, ctx, feedback);"));
     }
 }

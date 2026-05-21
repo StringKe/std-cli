@@ -233,6 +233,9 @@ mod tests {
         assert!(report.pass(), "{}", report.summary());
         assert!(report.summary().contains("launcher_surface_smoke PASS"));
         assert!(report.summary().contains("panel_opaque=true"));
+        assert!(report
+            .summary()
+            .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report.summary().contains("native_viewport=transparent"));
         assert!(report
             .summary()
@@ -298,6 +301,8 @@ mod tests {
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",
             "feedback:status-danger-weak",
+            "status_icon=deferred",
+            "status_icon=failed",
             "popover:bg/surface-1+elev/2",
         ] {
             assert!(summary.contains(expected), "{expected}");

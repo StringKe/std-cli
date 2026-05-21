@@ -20,6 +20,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.feedback.deferred") => Some("Needs review"),
         (Locale::ZhCn, "launcher.feedback.failed") => Some("无法执行"),
         (Locale::EnUs, "launcher.feedback.failed") => Some("Unable to run"),
+        (Locale::ZhCn, "launcher.feedback.icon.completed") => Some("完成状态"),
+        (Locale::EnUs, "launcher.feedback.icon.completed") => Some("Completed status"),
+        (Locale::ZhCn, "launcher.feedback.icon.deferred") => Some("确认状态"),
+        (Locale::EnUs, "launcher.feedback.icon.deferred") => Some("Review status"),
+        (Locale::ZhCn, "launcher.feedback.icon.failed") => Some("错误状态"),
+        (Locale::EnUs, "launcher.feedback.icon.failed") => Some("Error status"),
         _ => None,
     }
 }
@@ -35,6 +41,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.feedback.completed" => Some("Completed"),
         "launcher.feedback.deferred" => Some("Needs review"),
         "launcher.feedback.failed" => Some("Unable to run"),
+        "launcher.feedback.icon.completed" => Some("Completed status"),
+        "launcher.feedback.icon.deferred" => Some("Review status"),
+        "launcher.feedback.icon.failed" => Some("Error status"),
         _ => None,
     }
 }

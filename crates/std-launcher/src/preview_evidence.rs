@@ -18,9 +18,10 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     let passes = valid
         && preview_surface_passes(&surface, scenario.theme)
         && affordance.passes(scenario.state)
-        && state_surface.passes(scenario.state);
+        && state_surface.passes(scenario.state)
+        && feedback_status_icon_passes(scenario.state);
     format!(
-        "{}={}:phase={:?},results={},feedback={},{},{},{}",
+        "{}={}:phase={:?},results={},feedback={},{},{},{},{}",
         scenario.label(),
         if passes { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -33,6 +34,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .unwrap_or("none"),
         affordance.summary(),
         state_surface.summary(),
+        feedback_status_icon_summary(scenario.state),
         surface.summary()
     )
 }
@@ -279,6 +281,23 @@ fn state_surface_contract_matches(state_name: &str, surface: &PreviewStateSurfac
         "no-results" => surface.body == "empty-state-token-surface",
         "loading" | "searching" => surface.body == "loading-progress-token-surface",
         _ => surface.body == "results-token-surface",
+    }
+}
+
+fn feedback_status_icon_summary(state_name: &str) -> &'static str {
+    match state_name {
+        "defer" => "status_icon=deferred",
+        "error" => "status_icon=failed",
+        "executing" => "status_icon=not-rendered",
+        _ => "status_icon=not-rendered",
+    }
+}
+
+fn feedback_status_icon_passes(state_name: &str) -> bool {
+    match state_name {
+        "defer" => feedback_status_icon_summary(state_name) == "status_icon=deferred",
+        "error" => feedback_status_icon_summary(state_name) == "status_icon=failed",
+        _ => true,
     }
 }
 

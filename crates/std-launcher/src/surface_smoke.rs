@@ -28,6 +28,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub no_match_state: String,
     pub defer_feedback: String,
     pub error_feedback: String,
+    pub feedback_icon_contract: String,
     pub standard_launcher_enter_ms: u128,
     pub reduced_launcher_enter_ms: u128,
     pub reduced_launcher_exit_ms: u128,
@@ -64,6 +65,7 @@ impl LauncherSurfaceSmokeReport {
             no_match_state: "no_matches=icon,title,detail,ask_ai_enter".to_string(),
             defer_feedback: feedback_state(deferred_execution()),
             error_feedback: feedback_state(failed_execution()),
+            feedback_icon_contract: feedback_icon_contract(),
             standard_launcher_enter_ms: standard_motion.launcher_enter().as_millis(),
             reduced_launcher_enter_ms: reduced_motion.launcher_enter().as_millis(),
             reduced_launcher_exit_ms: reduced_motion.launcher_exit().as_millis(),
@@ -111,6 +113,7 @@ impl LauncherSurfaceSmokeReport {
                     "{}:Plugin Crash",
                     std_egui::i18n::t("launcher.feedback.failed")
                 )
+            && self.feedback_icon_contract == "status_icons=completed|deferred|failed"
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
             && self.reduced_launcher_exit_ms == 0
@@ -121,7 +124,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -143,6 +146,7 @@ impl LauncherSurfaceSmokeReport {
             self.no_match_state,
             self.defer_feedback,
             self.error_feedback,
+            self.feedback_icon_contract,
             self.standard_launcher_enter_ms,
             self.reduced_launcher_enter_ms,
             self.reduced_launcher_exit_ms,
@@ -217,6 +221,10 @@ fn layer(name: &str, token: &str, ctx: &egui::Context) -> String {
 fn feedback_state(execution: ActionExecution) -> String {
     let feedback = LauncherFeedback::from_execution(&execution);
     format!("{}:{}", feedback.title, feedback.action_name)
+}
+
+fn feedback_icon_contract() -> String {
+    "status_icons=completed|deferred|failed".to_string()
 }
 
 fn deferred_execution() -> ActionExecution {
