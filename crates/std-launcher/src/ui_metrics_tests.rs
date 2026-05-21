@@ -243,3 +243,17 @@ fn all_preview_visible_states_fill_the_native_viewport() {
         assert!(panel_frame_fills_viewport(&state), "{scenario}");
     }
 }
+
+#[test]
+fn empty_suggested_workflows_body_uses_full_native_height() {
+    let mut state = LauncherState::new();
+    crate::preview::apply_preview_scenario(&mut state, "empty");
+    let viewport = window_inner_size(&state);
+    let body = body_height_for_scale(&state, viewport.y, UiScale::default());
+    let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
+    let panel = panel_rect(available, &state);
+
+    assert_eq!(body, 324.0);
+    assert_eq!(panel.height(), viewport.y);
+    assert!(panel_frame_fills_viewport(&state));
+}

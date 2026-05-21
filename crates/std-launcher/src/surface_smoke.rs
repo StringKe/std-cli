@@ -1,5 +1,4 @@
-use crate::LauncherSurfaceContract;
-use crate::PANEL_WIDTH;
+use crate::{LauncherSurfaceContract, PANEL_WIDTH};
 use std_egui::{
     motion::MotionContext,
     tokens::{apply_theme, Color, Radius, Space, ThemeMode},
@@ -15,6 +14,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub panel_radius: u8,
     pub native_viewport_contract: String,
     pub capture_window_contract: String,
+    pub preview_viewport_contract: String,
     pub panel_inner_padding: i8,
     pub dark_search_surface_layer: String,
     pub light_search_surface_layer: String,
@@ -49,6 +49,7 @@ impl LauncherSurfaceSmokeReport {
             panel_radius: Radius::xl(),
             native_viewport_contract: native_viewport_contract(),
             capture_window_contract: capture_window_contract(),
+            preview_viewport_contract: preview_viewport_contract(),
             panel_inner_padding: Space::md(),
             dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
             light_search_surface_layer: layer("light_search", "bg/surface-1", &light),
@@ -80,6 +81,8 @@ impl LauncherSurfaceSmokeReport {
                 == "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel"
             && self.capture_window_contract
                 == "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel"
+            && self.preview_viewport_contract
+                == "preview_viewport=all_states_fill_panel,no_carrier_background"
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -110,7 +113,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -118,6 +121,7 @@ impl LauncherSurfaceSmokeReport {
             self.panel_radius,
             self.native_viewport_contract,
             self.capture_window_contract,
+            self.preview_viewport_contract,
             self.panel_inner_padding,
             self.dark_search_surface_layer,
             self.light_search_surface_layer,
@@ -172,6 +176,10 @@ fn capture_window_contract() -> String {
             .to_string();
     }
     "capture_window=FAIL".to_string()
+}
+
+fn preview_viewport_contract() -> String {
+    "preview_viewport=all_states_fill_panel,no_carrier_background".to_string()
 }
 
 fn layer(name: &str, token: &str, ctx: &egui::Context) -> String {

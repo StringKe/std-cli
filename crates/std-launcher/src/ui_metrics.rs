@@ -35,7 +35,7 @@ pub(crate) fn panel_inner_padding_for_state(state: &LauncherState) -> f32 {
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
     let panel_width = panel_width_for_available(available.width(), margin);
-    let body_height = body_height(state, DEFAULT_VIEWPORT_HEIGHT);
+    let body_height = body_height(state, available.height());
     let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
     panel_rect_for_available(available, panel_width, panel_height, margin, false)
 }
@@ -266,7 +266,15 @@ fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiS
     }
     let visible_height = result_list_visible_height(state, scale);
     let desired = visible_height + scale.f32(Space::SM as f32);
-    desired.clamp(scale.f32(128.0), viewport_height * 0.6)
+    desired.clamp(
+        scale.f32(128.0),
+        body_height_available(state, viewport_height, scale),
+    )
+}
+
+fn body_height_available(state: &LauncherState, viewport_height: f32, scale: UiScale) -> f32 {
+    let chrome = panel_content_height_for_scale(state, 0.0, scale);
+    (viewport_height - chrome).max(scale.f32(128.0))
 }
 
 #[cfg(test)]
