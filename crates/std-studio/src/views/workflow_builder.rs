@@ -70,6 +70,9 @@ impl StudioEguiApp {
                 workflow_builder_toolbar::WorkflowToolbarAction::Test => {
                     self.run_active_workflow();
                 }
+                workflow_builder_toolbar::WorkflowToolbarAction::History => {
+                    self.open_workflow_history();
+                }
             }
         }
     }
@@ -210,6 +213,12 @@ impl StudioEguiApp {
         } else {
             self.run_planned_workflow();
         }
+    }
+
+    pub(crate) fn open_workflow_history(&mut self) {
+        self.app.open_execution_history_pane();
+        self.layout.open_bottom_panel();
+        self.status = "workflow history opened".to_string();
     }
 
     pub(crate) fn plan_workflow_from_goal(&mut self) {

@@ -11,6 +11,7 @@ pub(crate) enum WorkflowToolbarAction {
     Save,
     Simulate,
     Test,
+    History,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,10 +55,12 @@ fn render_primary_actions(ui: &mut egui::Ui, response: &mut WorkflowToolbarRespo
     if ui::quiet_button(ui, i18n::t("studio.workflow_builder.toolbar.test")).clicked() {
         response.actions.push(WorkflowToolbarAction::Test);
     }
+    if ui::quiet_button(ui, i18n::t("studio.workflow_builder.flow.trace")).clicked() {
+        response.actions.push(WorkflowToolbarAction::History);
+    }
 }
 
 fn render_secondary_contract(ui: &mut egui::Ui) {
-    toolbar_badge(ui, i18n::t("studio.workflow_builder.flow.trace"));
     toolbar_badge(ui, i18n::t("studio.workflow_builder.ai.title"));
     toolbar_badge(ui, i18n::t("studio.workflow_builder.toolbar.zoom"));
 }
@@ -80,7 +83,7 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
 
 #[cfg(test)]
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>history>ai>zoom;test-opens-bottom-panel;simulate=dry-run"
+    "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
 }
 
 #[cfg(test)]
@@ -91,7 +94,7 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>history>ai>zoom;test-opens-bottom-panel;simulate=dry-run"
+            "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
         );
     }
 

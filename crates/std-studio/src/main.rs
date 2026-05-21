@@ -404,6 +404,18 @@ mod app_tests {
     }
 
     #[test]
+    fn workflow_history_action_opens_history_pane_and_bottom_panel() {
+        let mut app = StudioEguiApp::default();
+
+        app.open_workflow_history();
+
+        assert!(app.layout.bottom_panel_open);
+        assert!(app.status.contains("workflow history opened"));
+        let focused = focused_workspace_spec(&app.app).unwrap();
+        assert_eq!(focused.content_key, "history");
+    }
+
+    #[test]
     fn batch_run_opens_bottom_panel_with_report_state() {
         let mut app = StudioEguiApp::default();
         let temp = tempfile::tempdir().unwrap();
