@@ -405,11 +405,22 @@ fn is_command_result(result: &SearchResult) -> bool {
 
 fn sort_launcher_results(results: &mut [SearchResult]) {
     results.sort_by(|left, right| {
-        group_rank(&left.action.action_type)
-            .cmp(&group_rank(&right.action.action_type))
+        score_band(left.score)
+            .cmp(&score_band(right.score))
+            .then_with(|| {
+                group_rank(&left.action.action_type).cmp(&group_rank(&right.action.action_type))
+            })
             .then_with(|| right.score.total_cmp(&left.score))
             .then_with(|| left.action.name.cmp(&right.action.name))
     });
+}
+
+fn score_band(score: f32) -> u8 {
+    if score >= 8.0 {
+        0
+    } else {
+        1
+    }
 }
 
 fn group_rank(action_type: &ActionType) -> u8 {

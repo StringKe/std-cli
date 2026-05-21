@@ -65,6 +65,32 @@ fn registry_search_supports_launcher_fuzzy_abbreviations() {
 }
 
 #[test]
+fn registry_exact_tag_alias_beats_unrelated_name_fuzzy_match() {
+    let mut reg = ActionRegistry::new();
+    reg.register(RegistryEntry {
+        action: make_test_action("Rebuild Index"),
+        tags: vec!["index".to_string()],
+        metadata: Default::default(),
+    })
+    .unwrap();
+    reg.register(RegistryEntry {
+        action: make_test_action("Open App: WeChat"),
+        tags: vec![
+            "app".to_string(),
+            "wechat".to_string(),
+            "weixin".to_string(),
+        ],
+        metadata: Default::default(),
+    })
+    .unwrap();
+
+    let results = reg.search("weixin", 10);
+
+    assert_eq!(results[0].action.name, "Open App: WeChat");
+    assert!(results[0].matched_fields.contains(&"tags".to_string()));
+}
+
+#[test]
 fn duplicate_action_is_rejected() {
     let mut reg = ActionRegistry::new();
     let action = make_test_action("Duplicate");

@@ -142,7 +142,7 @@ fn score_tags(tags: &[String], query: &str, matched_fields: &mut Vec<String>) ->
         let tag = tag.to_lowercase();
         if tag.contains(query) {
             matched_fields.push("tags".to_string());
-            return 3.0;
+            return 8.0;
         }
         if let Some(fuzzy) = fuzzy_score(&tag, query) {
             matched_fields.push("tags:fuzzy".to_string());

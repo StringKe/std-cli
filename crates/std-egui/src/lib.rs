@@ -156,6 +156,31 @@ mod tests {
     }
 
     #[test]
+    fn launcher_exact_alias_results_beat_lower_relevance_group_order() {
+        let core = test_core();
+        core.register_action(std_types::RegistryEntry::from_action(
+            std_types::Action::new(
+                "Open App: WeChat",
+                "Launch macOS app at /Applications/WeChat.app",
+                "When opening this local macOS application",
+                ActionType::AppLaunch,
+            ),
+            vec![
+                "app".to_string(),
+                "wechat".to_string(),
+                "weixin".to_string(),
+            ],
+        ))
+        .unwrap();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "weixin");
+
+        assert_eq!(model.preview.as_ref().unwrap().title, "Open App: WeChat");
+        assert_eq!(model.results[0].matched_fields, vec!["tags".to_string()]);
+    }
+
+    #[test]
     fn launcher_query_is_normalized_and_deletes_previous_token() {
         let core = test_core();
         let mut model = LauncherViewModel::new(&core);
