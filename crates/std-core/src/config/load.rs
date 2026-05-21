@@ -26,28 +26,35 @@ impl StdConfig {
 
     pub fn try_load_from(start_dir: Option<&Path>) -> Result<Self, ConfigError> {
         let mut figment = Figment::from(Serialized::defaults(Self::default()));
+        let explicit_config = env::var_os("STDCLI_CONFIG").map(PathBuf::from);
 
-        figment = merge_config_file(figment, &home_config_path(".std-cli/config.toml"));
-        figment = merge_config_file(figment, &home_config_path(".std-cli/config.yaml"));
-        figment = merge_config_file(figment, &home_config_path(".config/std-cli/config.toml"));
-        figment = merge_config_file(figment, &home_config_path(".config/std-cli/config.yaml"));
+        if let Some(path) = explicit_config.as_ref() {
+            figment = merge_config_file(figment, path);
+        } else if !runtime_test_config_isolated() {
+            figment = merge_config_file(figment, &home_config_path(".std-cli/config.toml"));
+            figment = merge_config_file(figment, &home_config_path(".std-cli/config.yaml"));
+            figment = merge_config_file(figment, &home_config_path(".config/std-cli/config.toml"));
+            figment = merge_config_file(figment, &home_config_path(".config/std-cli/config.yaml"));
 
-        if let Some(dir) = start_dir {
-            for path in project_config_candidates(dir) {
-                figment = merge_config_file(figment, &path);
+            if let Some(dir) = start_dir {
+                for path in project_config_candidates(dir) {
+                    figment = merge_config_file(figment, &path);
+                }
             }
-        }
-
-        if let Some(path) = env::var_os("STDCLI_CONFIG").map(PathBuf::from) {
-            figment = merge_config_file(figment, &path);
         }
 
         let mut config: StdConfig = figment
             .extract()
             .map_err(|error| ConfigError::new(format!("config parse failed: {error}")))?;
-        apply_env_overrides(&mut config)?;
+        if !runtime_test_config_isolated() || explicit_config.is_some() {
+            apply_env_overrides(&mut config)?;
+        }
         Ok(config)
     }
+}
+
+fn runtime_test_config_isolated() -> bool {
+    !cfg!(test) && crate::std_test_mode_enabled()
 }
 
 fn merge_config_file(figment: Figment, path: &Path) -> Figment {

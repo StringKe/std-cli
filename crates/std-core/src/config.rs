@@ -343,4 +343,29 @@ mod tests {
             .to_string()
             .contains("enable_ai must be true or false: yes"));
     }
+
+    #[test]
+    fn runtime_test_mode_still_allows_explicit_fixture_config() {
+        let _guard = env_lock();
+        let temp = tempfile::tempdir().unwrap();
+        let config_path = temp.path().join("std-cli.yaml");
+        let fixture_data = temp.path().join("fixture-data");
+        fs::write(
+            &config_path,
+            format!(
+                "launcher_hotkey: Cmd+K\ndata_dir: {}\ntheme: dark\n",
+                fixture_data.display()
+            ),
+        )
+        .unwrap();
+        env::set_var("STDCLI_CONFIG", &config_path);
+
+        let config = StdConfig::try_load_from(Some(temp.path())).unwrap();
+
+        env::remove_var("STDCLI_CONFIG");
+
+        assert_eq!(config.launcher_hotkey, "Cmd+K");
+        assert_eq!(config.data_dir, fixture_data);
+        assert_eq!(config.theme, "dark");
+    }
 }
