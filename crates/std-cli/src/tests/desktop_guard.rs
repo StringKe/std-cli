@@ -1,11 +1,63 @@
 use std::{fs, path::Path};
 
+use crate::run_cli;
+
 use super::desktop_guard_scan::{
     assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, scan_rs_files,
     scan_rs_files_for_binary_spawns, scan_rs_files_for_desktop_process_commands,
     scan_rs_files_for_unsafe_opt_ins, source_section, task_blocks_desktop_opt_ins,
     task_has_std_test_mode, task_inherits_workspace_test_mode, workspace_blocks_desktop_opt_ins,
 };
+
+#[test]
+fn run_cli_clears_polluted_desktop_opt_ins_before_dispatch() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = temp.path().join("std-cli.json");
+    fs::write(
+        &config_path,
+        serde_json::json!({
+            "data_dir": temp.path().join("data"),
+        })
+        .to_string(),
+    )
+    .unwrap();
+
+    std::env::set_var("STDCLI_CONFIG", &config_path);
+    std::env::set_var("STD_ALLOW_DESKTOP_AUTOMATION", "1");
+    std::env::set_var("STD_ALLOW_UI_PREVIEW", "1");
+
+    let define = run_cli([
+        "std",
+        "command",
+        "define",
+        "Polluted Opt In Guard",
+        "External runner guard",
+        "printf polluted-opt-in-guard",
+    ])
+    .unwrap();
+    assert!(define.contains("\"name\": \"Polluted Opt In Guard\""));
+
+    let output = run_cli([
+        "std",
+        "trigger",
+        "Polluted Opt In Guard",
+        "--allow-external",
+    ])
+    .unwrap();
+
+    assert_eq!(
+        std::env::var("STD_ALLOW_DESKTOP_AUTOMATION"),
+        Err(std::env::VarError::NotPresent)
+    );
+    assert_eq!(
+        std::env::var("STD_ALLOW_UI_PREVIEW"),
+        Err(std::env::VarError::NotPresent)
+    );
+    assert!(output.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(output.contains("printf polluted-opt-in-guard"));
+    assert!(!output.contains("\"status\": \"Completed\""));
+    std::env::remove_var("STDCLI_CONFIG");
+}
 
 #[test]
 fn test_sources_do_not_reference_real_app_launch_targets() {

@@ -11,7 +11,7 @@ impl StudioEguiApp {
             i18n::t("studio.history.title"),
             i18n::t("studio.history.detail"),
         );
-        history_rows::filter_bar(ui);
+        history_rows::filter_bar(ui, &mut self.history_filter);
         ui.add_space(Space::XS as f32);
         self.render_history_workspace(ui);
     }
@@ -48,14 +48,15 @@ impl StudioEguiApp {
                 i18n::t("studio.history.traces.detail"),
             );
             match self.app.recent_workflow_traces(20) {
-                Ok(traces) if traces.is_empty() => {
+                Ok(traces) if filtered_traces(&traces, &self.history_filter).is_empty() => {
                     ui::empty_state(ui, i18n::t("studio.history.traces.empty"))
                 }
                 Ok(traces) => {
+                    let filtered = filtered_traces(&traces, &self.history_filter);
                     egui::ScrollArea::vertical()
                         .max_height(620.0)
                         .show(ui, |ui| {
-                            for trace in traces {
+                            for trace in filtered {
                                 history_rows::trace_row(ui, &trace);
                             }
                         });
@@ -91,5 +92,52 @@ impl StudioEguiApp {
 
 #[cfg(test)]
 pub(crate) fn history_layout_contract() -> &'static str {
-    "history=filter-bar>traces+events;filters=time,status,workflow;trace-columns=time,workflow,status,duration,source"
+    "history=filter-bar>traces+events;filters=time,status-input,workflow-input;trace-columns=time,workflow,status,duration,source"
+}
+
+fn filtered_traces(
+    traces: &[std_orchestration::WorkflowExecutionTrace],
+    filter: &str,
+) -> Vec<std_orchestration::WorkflowExecutionTrace> {
+    let filter = filter.trim().to_lowercase();
+    if filter.is_empty() {
+        return traces.to_vec();
+    }
+    traces
+        .iter()
+        .filter(|trace| {
+            trace
+                .execution
+                .workflow_name
+                .to_lowercase()
+                .contains(&filter)
+                || format!("{:?}", trace.execution.status)
+                    .to_lowercase()
+                    .contains(&filter)
+        })
+        .cloned()
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn history_filter_matches_workflow_name_or_status() {
+        let temp = tempfile::tempdir().unwrap();
+        let core = std_core::StdCore::with_config(std_core::StdConfig {
+            data_dir: temp.path().join("data"),
+            ..std_core::StdConfig::default()
+        });
+        let mut studio = std_studio::StudioApp::with_core(core);
+        studio.plan_workflow("terminal").unwrap();
+        let path = studio.save_planned_workflow().unwrap();
+        studio.run_workflow_path(&path).unwrap();
+        let traces = studio.recent_workflow_traces(10).unwrap();
+
+        assert_eq!(filtered_traces(&traces, "terminal").len(), 1);
+        assert_eq!(filtered_traces(&traces, "completed").len(), 1);
+        assert!(filtered_traces(&traces, "missing").is_empty());
+    }
 }

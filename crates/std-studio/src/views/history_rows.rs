@@ -10,12 +10,14 @@ use std_egui::tokens::{Color, Space, Text};
 use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecutionStatus, StdEvent};
 
-pub(crate) fn filter_bar(ui: &mut egui::Ui) {
+pub(crate) fn filter_bar(ui: &mut egui::Ui, filter: &mut String) {
     ui::surface_frame(ui.ctx()).show(ui, |ui| {
         ui.horizontal_wrapped(|ui| {
             filter_chip(ui, "Time range");
-            filter_chip(ui, "Status");
-            filter_chip(ui, "Workflow");
+            ui.add_sized(
+                [140.0, 26.0],
+                egui::TextEdit::singleline(filter).hint_text("Status or workflow"),
+            );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.label(
                     egui::RichText::new("time / workflow / status / duration / source")
@@ -205,8 +207,8 @@ mod tests {
         let source = include_str!("history_rows.rs");
 
         assert!(source.contains("Time range"));
-        assert!(source.contains("Status"));
-        assert!(source.contains("Workflow"));
+        assert!(source.contains("TextEdit::singleline"));
+        assert!(source.contains("Status or workflow"));
         assert!(source.contains("duration"));
         assert!(crate::views::history::history_layout_contract().contains("filter-bar"));
     }
