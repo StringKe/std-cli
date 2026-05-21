@@ -5,6 +5,7 @@ mod history_rows;
 pub(crate) mod history_timeline;
 mod memory;
 mod memory_rows;
+pub(crate) mod plugin_inspector_model;
 mod plugin_list_model;
 mod plugin_rows;
 mod plugin_status_bar;

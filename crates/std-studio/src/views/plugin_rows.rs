@@ -1,6 +1,7 @@
 use crate::{
     ui,
     views::{
+        plugin_inspector_model::PluginInspectorModel,
         plugin_list_model::PluginListRowModel,
         row_metrics,
         row_paint::{self, RowSurface},
@@ -124,6 +125,19 @@ pub(crate) fn security_summary_panel(ui: &mut egui::Ui, reports: &[std_core::Plu
     runtime_row(ui, "actions", &summary.actions);
     runtime_row(ui, "fs", &summary.fs_scopes);
     runtime_row(ui, "network", &summary.network_hosts);
+}
+
+pub(crate) fn inspector_context_panel(ui: &mut egui::Ui, model: &PluginInspectorModel) {
+    status_row(
+        ui,
+        "Inspector",
+        "SELECTED",
+        &model.description,
+        ui::selected_bg(ui.ctx()),
+    );
+    runtime_row(ui, "permissions", &model.permissions.join(","));
+    runtime_row(ui, "commands", &model.commands.join(","));
+    runtime_row(ui, "audit log", &model.audit_log);
 }
 
 pub(crate) fn preview_panel(ui: &mut egui::Ui, preview: &ActionPreview) {

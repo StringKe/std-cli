@@ -43,8 +43,14 @@ std.emit(output);"#,
     studio.search_plugins("studio-ts-smoke");
     let ts_status = run_selected_status(studio);
     let ts_runtime = selected_runtime(studio);
-    let visual_contract =
-        plugin_visual_contract(studio, &js_runtime, &ts_runtime, all_action_count);
+    let selected_inspector = selected_inspector_contract(studio);
+    let visual_contract = plugin_visual_contract(
+        studio,
+        &js_runtime,
+        &ts_runtime,
+        all_action_count,
+        &selected_inspector,
+    );
     let permissions = studio
         .plugin_manager
         .check_reports
@@ -97,6 +103,7 @@ fn plugin_visual_contract(
     js_runtime: &str,
     ts_runtime: &str,
     command_count: usize,
+    selected_inspector: &str,
 ) -> String {
     let manager = &studio.plugin_manager;
     let status = manager
@@ -123,15 +130,26 @@ fn plugin_visual_contract(
         "missing"
     };
     format!(
-        "list=name|version|status|source|enable;status={};source={};inspector=description|permissions|commands|audit-log;permissions={};commands={};audit_log={};runtime=js:{}|ts:{}",
+        "list=name|version|status|source|enable;status={};source={};inspector=description|permissions|commands|audit-log;selected_inspector={};permissions={};commands={};audit_log={};runtime=js:{}|ts:{}",
         status,
         source,
+        selected_inspector,
         permission_count,
         command_count,
         audit_log,
         js_runtime,
         ts_runtime
     )
+}
+
+fn selected_inspector_contract(studio: &StudioApp) -> String {
+    let manager = &studio.plugin_manager;
+    crate::views::plugin_inspector_model::PluginInspectorModel::from_selection(
+        manager.plugin_actions.get(manager.selected),
+        &manager.check_reports,
+        manager.last_execution.as_ref(),
+    )
+    .contract()
 }
 
 fn smoke_plugin_manifest() -> String {

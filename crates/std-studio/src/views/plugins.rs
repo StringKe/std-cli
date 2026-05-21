@@ -1,6 +1,7 @@
 use crate::{
     ui,
     views::{
+        plugin_inspector_model::PluginInspectorModel,
         plugin_rows::{self, PluginActionRowEvent},
         plugin_status_bar,
     },
@@ -149,12 +150,14 @@ impl StudioEguiApp {
     }
 
     fn render_plugin_inspector(&mut self, ui: &mut egui::Ui) {
+        let model = selected_inspector_model(&self.app.plugin_manager);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
                 i18n::t("studio.plugins.security.title"),
                 i18n::t("studio.plugins.security.detail"),
             );
+            plugin_rows::inspector_context_panel(ui, &model);
             plugin_rows::security_summary_panel(ui, &self.app.plugin_manager.check_reports);
         });
         ui.add_space(Space::SM as f32);
@@ -242,4 +245,12 @@ impl StudioEguiApp {
             None => self.status = "no plugin selected".to_string(),
         }
     }
+}
+
+fn selected_inspector_model(manager: &std_egui::PluginManagerViewModel) -> PluginInspectorModel {
+    PluginInspectorModel::from_selection(
+        manager.plugin_actions.get(manager.selected),
+        &manager.check_reports,
+        manager.last_execution.as_ref(),
+    )
 }
