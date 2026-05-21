@@ -29,12 +29,14 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
     assert!(studio.focus_workspace_pane(plugin));
     assert_eq!(studio.focused_pane, Some(plugin));
     assert!(studio.close_workspace_pane(memory));
-    assert_eq!(studio.workspace_panes.len(), 7);
+    assert_eq!(studio.workspace_panes.len(), 8);
+    assert_eq!(studio.open_workspace_panes().count(), 7);
     assert!(!studio.close_workspace_pane(memory));
     assert!(studio.focus_workspace_pane(analysis));
     assert!(studio.focus_workspace_pane(apps));
     assert!(studio.close_workspace_pane(apps));
     assert_eq!(studio.focused_pane, Some(analysis));
+    assert_eq!(studio.open_workspace_panes().count(), 6);
 }
 
 #[test]
@@ -90,6 +92,36 @@ fn studio_cycles_workspace_pane_focus_without_losing_state() {
     assert!(studio.close_workspace_pane(analysis));
     assert_eq!(studio.focus_next_workspace_pane(), None);
     assert_eq!(studio.focused_pane, None);
+}
+
+#[test]
+fn closed_workspace_panes_restore_identity_and_state() {
+    let mut studio = test_studio();
+    let workflow_path = studio
+        .create_workflow("Restored Workflow", "Close and reopen")
+        .unwrap();
+    let workflow = studio.open_workflow_builder(workflow_path.clone());
+    let analysis = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli"));
+
+    assert!(studio.close_workspace_pane(workflow));
+    assert_eq!(studio.open_workspace_panes().count(), 1);
+    assert_eq!(studio.focused_pane, Some(analysis));
+
+    let restored = studio.open_workflow_builder(workflow_path.clone());
+    let pane = studio
+        .workspace_panes
+        .iter()
+        .find(|pane| pane.id == restored)
+        .unwrap();
+
+    assert_eq!(restored, workflow);
+    assert!(pane.open);
+    assert_eq!(pane.focus_serial, 3);
+    assert_eq!(studio.focused_pane, Some(workflow));
+    assert!(studio
+        .workspace_pane_content(&pane.kind)
+        .lines
+        .contains(&format!("path={}", workflow_path.display())));
 }
 
 #[test]

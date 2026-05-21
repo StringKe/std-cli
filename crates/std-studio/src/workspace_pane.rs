@@ -184,7 +184,10 @@ impl StudioApp {
         let Some(index) = self.workspace_panes.iter().position(|pane| pane.id == id) else {
             return false;
         };
-        self.workspace_panes.remove(index);
+        if !self.workspace_panes[index].open {
+            return false;
+        }
+        self.workspace_panes[index].open = false;
         if self.focused_pane == Some(id) {
             self.focused_pane = self
                 .workspace_panes

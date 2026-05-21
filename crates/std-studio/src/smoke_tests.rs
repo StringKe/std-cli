@@ -34,7 +34,7 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("title=Plugin Manager"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
     assert!(summary.contains("reopened_memory="));
-    assert!(summary.contains("reopened_internal=true"));
+    assert!(summary.contains("reopened_restored=true"));
     assert_workspace_forbidden_policy_summary(summary);
     assert_workspace_pane_lifecycle_summary(summary);
     assert_studio_open_intent_summary(summary);

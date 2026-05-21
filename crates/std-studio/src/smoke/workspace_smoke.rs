@@ -51,7 +51,7 @@ pub(crate) fn run_workspace_pane_smoke(
         .open_workspace_panes()
         .any(|pane| pane.id == close_target);
     let reopened = studio.open_memory_browser_pane();
-    let reopened_is_internal = reopened != close_target
+    let reopened_restored = reopened == close_target
         && pane_title(studio, reopened) == "Memory Browser"
         && pane_lines(studio, reopened)
             .iter()
@@ -84,7 +84,7 @@ pub(crate) fn run_workspace_pane_smoke(
         plugin,
         reopened,
         &restored_title,
-        reopened_is_internal,
+        reopened_restored,
         state_preserved_after_focus,
     );
     WorkspacePaneSmoke {
@@ -114,11 +114,11 @@ fn workspace_management_evidence(
     focused: WorkspacePaneId,
     reopened: WorkspacePaneId,
     restored_title: &str,
-    reopened_is_internal: bool,
+    reopened_restored: bool,
     state_preserved_after_focus: bool,
 ) -> String {
     format!(
-        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_internal={reopened_is_internal}",
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_restored={reopened_restored}",
         focused.value(),
         reopened.value()
     )
