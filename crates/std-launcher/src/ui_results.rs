@@ -29,11 +29,7 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
         ui_result_rows::section_header(
             ui,
             section_title(&state.view),
-            &format!(
-                "{} {}",
-                state.view.results.len(),
-                i18n::t("launcher.results.matches_suffix")
-            ),
+            &section_detail(&state.view),
         );
         hide_requested = render_results(ui, state, max_height);
     });
@@ -48,6 +44,30 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
         );
     }
     hide_requested
+}
+
+fn section_detail(view: &std_egui::LauncherViewModel) -> String {
+    match view.phase {
+        std_egui::LauncherPhase::Searching
+        | std_egui::LauncherPhase::Executing
+        | std_egui::LauncherPhase::Feedback => String::new(),
+        _ => match view.result_mode {
+            LauncherResultMode::SuggestedWorkflows => {
+                i18n::t("launcher.results.suggested_workflows.detail").to_string()
+            }
+            LauncherResultMode::NoMatches => {
+                i18n::t("launcher.results.no_matches.detail").to_string()
+            }
+            LauncherResultMode::NaturalLanguage => {
+                i18n::t("launcher.results.nl.detail").to_string()
+            }
+            LauncherResultMode::Matches => format!(
+                "{} {}",
+                view.results.len(),
+                i18n::t("launcher.results.matches_suffix")
+            ),
+        },
+    }
 }
 
 fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
@@ -251,6 +271,28 @@ mod tests {
             result_row_keyboard_affordance(&row).2,
             i18n::t("launcher.action.run")
         );
+    }
+
+    #[test]
+    fn section_detail_removes_match_count_noise_from_non_match_states() {
+        let core = std_core::StdCore::default();
+        core.seed_builtin_actions().unwrap();
+        let mut view = std_egui::LauncherViewModel::new(&core);
+
+        view.update_query(&core, "");
+        assert_eq!(
+            section_detail(&view),
+            i18n::t("launcher.results.suggested_workflows.detail")
+        );
+        view.update_query(&core, "no-such-launcher-result");
+        assert_eq!(
+            section_detail(&view),
+            i18n::t("launcher.results.no_matches.detail")
+        );
+        view.preview_searching("slow query");
+        assert_eq!(section_detail(&view), "");
+        view.update_query(&core, "index");
+        assert!(section_detail(&view).contains(i18n::t("launcher.results.matches_suffix")));
     }
 
     #[test]

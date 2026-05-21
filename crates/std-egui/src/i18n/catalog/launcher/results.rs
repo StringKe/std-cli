@@ -28,8 +28,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.results.feedback.title") => Some("Result"),
         (Locale::ZhCn, "launcher.results.nl.title") => Some("Ask"),
         (Locale::EnUs, "launcher.results.nl.title") => Some("Ask"),
+        (Locale::ZhCn, "launcher.results.nl.detail") => Some("Enter 询问，Down 搜索 actions"),
+        (Locale::EnUs, "launcher.results.nl.detail") => Some("Enter to ask, Down for actions"),
         (Locale::ZhCn, "launcher.results.suggested_workflows.title") => Some("Suggested Workflows"),
         (Locale::EnUs, "launcher.results.suggested_workflows.title") => Some("Suggested Workflows"),
+        (Locale::ZhCn, "launcher.results.suggested_workflows.detail") => {
+            Some("Down 选择，Enter 应用")
+        }
+        (Locale::EnUs, "launcher.results.suggested_workflows.detail") => {
+            Some("Down to select, Enter to apply")
+        }
+        (Locale::ZhCn, "launcher.results.no_matches.detail") => Some("? 询问"),
+        (Locale::EnUs, "launcher.results.no_matches.detail") => Some("? to ask"),
         (Locale::ZhCn, "launcher.empty.suggestion.rebuild.title") => Some("重建 Index"),
         (Locale::EnUs, "launcher.empty.suggestion.rebuild.title") => Some("Rebuild Index"),
         (Locale::ZhCn, "launcher.empty.suggestion.rebuild.detail") => Some("刷新本地项目搜索数据"),
@@ -104,7 +114,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.results.executing.title" => Some("Executing"),
         "launcher.results.feedback.title" => Some("Result"),
         "launcher.results.nl.title" => Some("Ask"),
+        "launcher.results.nl.detail" => Some("Enter to ask, Down for actions"),
         "launcher.results.suggested_workflows.title" => Some("Suggested Workflows"),
+        "launcher.results.suggested_workflows.detail" => Some("Down to select, Enter to apply"),
+        "launcher.results.no_matches.detail" => Some("? to ask"),
         "launcher.empty.suggestion.rebuild.title" => Some("Rebuild Index"),
         "launcher.empty.suggestion.rebuild.detail" => Some("Refresh local project search data"),
         "launcher.empty.suggestion.ask.title" => Some("Ask Project"),
