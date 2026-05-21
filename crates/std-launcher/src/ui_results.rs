@@ -100,6 +100,9 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                 {
                     state.update_query(query);
                 }
+                if let Some(EmptyAction::SetQuery(query)) = ui_empty::take_empty_query_action(ui) {
+                    state.update_query(query);
+                }
                 return;
             }
             if start == 0 {

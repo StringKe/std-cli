@@ -59,6 +59,14 @@ mod tests {
             "Action / Workflow"
         );
         assert_eq!(
+            translate(Locale::ZhCn, "launcher.empty.suggestion.rebuild.title"),
+            "重建 Index"
+        );
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.empty.suggestion.studio.detail"),
+            "Continue in the full workspace"
+        );
+        assert_eq!(
             translate(Locale::ZhCn, "launcher.action.filter.hint"),
             "Filter actions"
         );

@@ -1,159 +1,17 @@
+mod feedback;
+mod results;
+mod search;
+
 use crate::i18n::Locale;
 
 pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
-    match (locale, key) {
-        (Locale::ZhCn, "launcher.search.placeholder") => Some("搜索 Workflow、应用、剪切板..."),
-        (Locale::EnUs, "launcher.search.placeholder") => {
-            Some("Search Workflows, apps, clipboard...")
-        }
-        (Locale::ZhCn, "launcher.search.running") => Some("正在执行："),
-        (Locale::EnUs, "launcher.search.running") => Some("Running:"),
-        (Locale::ZhCn, "launcher.search.icon") => Some("搜索"),
-        (Locale::EnUs, "launcher.search.icon") => Some("Search"),
-        (Locale::ZhCn, "launcher.empty.no_matches.title") => Some("没有匹配项"),
-        (Locale::EnUs, "launcher.empty.no_matches.title") => Some("No matches"),
-        (Locale::ZhCn, "launcher.empty.no_matches.detail") => Some("换个关键词，或按 ? 询问"),
-        (Locale::EnUs, "launcher.empty.no_matches.detail") => {
-            Some("Try a different keyword or press ? to ask")
-        }
-        (Locale::ZhCn, "launcher.empty.ready.title") => Some("准备搜索"),
-        (Locale::EnUs, "launcher.empty.ready.title") => Some("Ready to search"),
-        (Locale::ZhCn, "launcher.empty.ready.detail") => {
-            Some("按 / 查看命令，按 ? 询问，按下方向键查看最近使用")
-        }
-        (Locale::EnUs, "launcher.empty.ready.detail") => {
-            Some("Press / for commands, ? to ask, Down for recent")
-        }
-        (Locale::ZhCn, "launcher.empty.ask_ai") => Some("询问 AI 关于"),
-        (Locale::EnUs, "launcher.empty.ask_ai") => Some("Ask AI about"),
-        (Locale::ZhCn, "launcher.action.actions") => Some("操作"),
-        (Locale::EnUs, "launcher.action.actions") => Some("Actions"),
-        (Locale::ZhCn, "launcher.action.run") => Some("运行"),
-        (Locale::EnUs, "launcher.action.run") => Some("Run"),
-        (Locale::ZhCn, "launcher.action.cancel") => Some("取消"),
-        (Locale::EnUs, "launcher.action.cancel") => Some("Cancel"),
-        (Locale::ZhCn, "launcher.action.executing") => Some("正在执行选中操作"),
-        (Locale::EnUs, "launcher.action.executing") => Some("Executing selected action"),
-        (Locale::ZhCn, "launcher.action.command_hint") => Some("按 / 查看命令"),
-        (Locale::EnUs, "launcher.action.command_hint") => Some("Press / for commands"),
-        (Locale::ZhCn, "launcher.voice.label") => Some("语音"),
-        (Locale::EnUs, "launcher.voice.label") => Some("Voice"),
-        (Locale::ZhCn, "launcher.voice.placeholder") => Some("语音转写"),
-        (Locale::EnUs, "launcher.voice.placeholder") => Some("voice transcript"),
-        (Locale::ZhCn, "launcher.voice.apply") => Some("应用"),
-        (Locale::EnUs, "launcher.voice.apply") => Some("Apply"),
-        (Locale::ZhCn, "launcher.results.searching") => Some("正在搜索 registry 和本地 index"),
-        (Locale::EnUs, "launcher.results.searching") => Some("Searching registry and local index"),
-        (Locale::ZhCn, "launcher.results.searching.title") => Some("Searching"),
-        (Locale::EnUs, "launcher.results.searching.title") => Some("Searching"),
-        (Locale::ZhCn, "launcher.results.executing.title") => Some("Executing"),
-        (Locale::EnUs, "launcher.results.executing.title") => Some("Executing"),
-        (Locale::ZhCn, "launcher.results.feedback.title") => Some("Result"),
-        (Locale::EnUs, "launcher.results.feedback.title") => Some("Result"),
-        (Locale::ZhCn, "launcher.results.nl.title") => Some("Ask"),
-        (Locale::EnUs, "launcher.results.nl.title") => Some("Ask"),
-        (Locale::ZhCn, "launcher.results.suggested_workflows.title") => Some("Suggested Workflows"),
-        (Locale::EnUs, "launcher.results.suggested_workflows.title") => Some("Suggested Workflows"),
-        (Locale::ZhCn, "launcher.results.title") => Some("Results"),
-        (Locale::EnUs, "launcher.results.title") => Some("Results"),
-        (Locale::ZhCn, "launcher.results.matches_suffix") => Some("matches"),
-        (Locale::EnUs, "launcher.results.matches_suffix") => Some("matches"),
-        (Locale::ZhCn, "launcher.results.overflow_hint") => Some("200+ matches, refine your query"),
-        (Locale::EnUs, "launcher.results.overflow_hint") => Some("200+ matches, refine your query"),
-        (Locale::ZhCn, "launcher.results.group.app_file") => Some("App / File"),
-        (Locale::EnUs, "launcher.results.group.app_file") => Some("App / File"),
-        (Locale::ZhCn, "launcher.results.group.action_workflow") => Some("Action / Workflow"),
-        (Locale::EnUs, "launcher.results.group.action_workflow") => Some("Action / Workflow"),
-        (Locale::ZhCn, "launcher.results.group.memory_skill") => Some("Memory / Skill"),
-        (Locale::EnUs, "launcher.results.group.memory_skill") => Some("Memory / Skill"),
-        (Locale::ZhCn, "launcher.results.group.clipboard") => Some("Clipboard"),
-        (Locale::EnUs, "launcher.results.group.clipboard") => Some("Clipboard"),
-        (Locale::ZhCn, "launcher.results.group.other") => Some("Other"),
-        (Locale::EnUs, "launcher.results.group.other") => Some("Other"),
-        (Locale::ZhCn, "launcher.results.kind.app") => Some("App"),
-        (Locale::EnUs, "launcher.results.kind.app") => Some("App"),
-        (Locale::ZhCn, "launcher.results.kind.workflow") => Some("Workflow"),
-        (Locale::EnUs, "launcher.results.kind.workflow") => Some("Workflow"),
-        (Locale::ZhCn, "launcher.results.kind.command") => Some("Command"),
-        (Locale::EnUs, "launcher.results.kind.command") => Some("Command"),
-        (Locale::ZhCn, "launcher.results.kind.skill") => Some("Skill"),
-        (Locale::EnUs, "launcher.results.kind.skill") => Some("Skill"),
-        (Locale::ZhCn, "launcher.results.kind.clipboard") => Some("Clipboard"),
-        (Locale::EnUs, "launcher.results.kind.clipboard") => Some("Clipboard"),
-        (Locale::ZhCn, "launcher.results.kind.file") => Some("File"),
-        (Locale::EnUs, "launcher.results.kind.file") => Some("File"),
-        (Locale::ZhCn, "launcher.results.kind.custom") => Some("Custom"),
-        (Locale::EnUs, "launcher.results.kind.custom") => Some("Custom"),
-        (Locale::ZhCn, "launcher.action.filter.hint") => Some("Filter actions"),
-        (Locale::EnUs, "launcher.action.filter.hint") => Some("Filter actions"),
-        (Locale::ZhCn, "launcher.action.filter.a11y") => Some("Action Panel filter"),
-        (Locale::EnUs, "launcher.action.filter.a11y") => Some("Action Panel filter"),
-        (Locale::ZhCn, "launcher.action.no_matches") => Some("No matching actions"),
-        (Locale::EnUs, "launcher.action.no_matches") => Some("No matching actions"),
-        (Locale::ZhCn, "launcher.feedback.copy") => Some("复制"),
-        (Locale::EnUs, "launcher.feedback.copy") => Some("Copy"),
-        (Locale::ZhCn, "launcher.feedback.retry") => Some("重试"),
-        (Locale::EnUs, "launcher.feedback.retry") => Some("Retry"),
-        (Locale::ZhCn, "launcher.feedback.open_studio") => Some("打开 Studio"),
-        (Locale::EnUs, "launcher.feedback.open_studio") => Some("Open Studio"),
-        (Locale::ZhCn, "launcher.feedback.completed") => Some("已完成"),
-        (Locale::EnUs, "launcher.feedback.completed") => Some("Completed"),
-        (Locale::ZhCn, "launcher.feedback.deferred") => Some("需要确认"),
-        (Locale::EnUs, "launcher.feedback.deferred") => Some("Needs review"),
-        (Locale::ZhCn, "launcher.feedback.failed") => Some("无法执行"),
-        (Locale::EnUs, "launcher.feedback.failed") => Some("Unable to run"),
-        _ => None,
-    }
+    search::translate(locale, key)
+        .or_else(|| results::translate(locale, key))
+        .or_else(|| feedback::translate(locale, key))
 }
 
 pub(super) fn fallback(key: &str) -> Option<&'static str> {
-    match key {
-        "launcher.search.placeholder" => Some("Search Workflows, apps, clipboard..."),
-        "launcher.search.running" => Some("Running:"),
-        "launcher.search.icon" => Some("Search"),
-        "launcher.empty.no_matches.title" => Some("No matches"),
-        "launcher.empty.no_matches.detail" => Some("Try a different keyword or press ? to ask"),
-        "launcher.empty.ready.title" => Some("Ready to search"),
-        "launcher.empty.ready.detail" => Some("Press / for commands, ? to ask, Down for recent"),
-        "launcher.empty.ask_ai" => Some("Ask AI about"),
-        "launcher.action.actions" => Some("Actions"),
-        "launcher.action.run" => Some("Run"),
-        "launcher.action.cancel" => Some("Cancel"),
-        "launcher.action.executing" => Some("Executing selected action"),
-        "launcher.action.command_hint" => Some("Press / for commands"),
-        "launcher.voice.label" => Some("Voice"),
-        "launcher.voice.placeholder" => Some("voice transcript"),
-        "launcher.voice.apply" => Some("Apply"),
-        "launcher.results.searching" => Some("Searching registry and local index"),
-        "launcher.results.searching.title" => Some("Searching"),
-        "launcher.results.executing.title" => Some("Executing"),
-        "launcher.results.feedback.title" => Some("Result"),
-        "launcher.results.nl.title" => Some("Ask"),
-        "launcher.results.suggested_workflows.title" => Some("Suggested Workflows"),
-        "launcher.results.title" => Some("Results"),
-        "launcher.results.matches_suffix" => Some("matches"),
-        "launcher.results.overflow_hint" => Some("200+ matches, refine your query"),
-        "launcher.results.group.app_file" => Some("App / File"),
-        "launcher.results.group.action_workflow" => Some("Action / Workflow"),
-        "launcher.results.group.memory_skill" => Some("Memory / Skill"),
-        "launcher.results.group.clipboard" => Some("Clipboard"),
-        "launcher.results.group.other" => Some("Other"),
-        "launcher.results.kind.app" => Some("App"),
-        "launcher.results.kind.workflow" => Some("Workflow"),
-        "launcher.results.kind.command" => Some("Command"),
-        "launcher.results.kind.skill" => Some("Skill"),
-        "launcher.results.kind.clipboard" => Some("Clipboard"),
-        "launcher.results.kind.file" => Some("File"),
-        "launcher.results.kind.custom" => Some("Custom"),
-        "launcher.action.filter.hint" => Some("Filter actions"),
-        "launcher.action.filter.a11y" => Some("Action Panel filter"),
-        "launcher.action.no_matches" => Some("No matching actions"),
-        "launcher.feedback.copy" => Some("Copy"),
-        "launcher.feedback.retry" => Some("Retry"),
-        "launcher.feedback.open_studio" => Some("Open Studio"),
-        "launcher.feedback.completed" => Some("Completed"),
-        "launcher.feedback.deferred" => Some("Needs review"),
-        "launcher.feedback.failed" => Some("Unable to run"),
-        _ => None,
-    }
+    search::fallback(key)
+        .or_else(|| results::fallback(key))
+        .or_else(|| feedback::fallback(key))
 }

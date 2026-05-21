@@ -7,6 +7,7 @@ use std_egui::{
 
 pub(crate) enum EmptyAction {
     AskAi(String),
+    SetQuery(String),
 }
 
 pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyAction> {
@@ -36,7 +37,9 @@ fn render_empty_query(ui: &mut egui::Ui) {
     );
     ui.add_space(Space::xs() as f32);
     for item in suggested_workflow_rows() {
-        suggested_row(ui, item);
+        if suggested_row(ui, item).clicked() {
+            ui.data_mut(|data| data.insert_temp(empty_action_id(), item.query.to_string()));
+        }
         ui.add_space(Space::two_xs() as f32);
     }
     ui.add_space(Space::xs() as f32);
@@ -49,64 +52,88 @@ fn render_empty_query(ui: &mut egui::Ui) {
     });
 }
 
+#[derive(Clone, Copy)]
 struct SuggestedWorkflowRow {
-    title: &'static str,
-    detail: &'static str,
+    title_key: &'static str,
+    detail_key: &'static str,
     shortcut: &'static str,
+    query: &'static str,
 }
 
 fn suggested_workflow_rows() -> [SuggestedWorkflowRow; 3] {
     [
         SuggestedWorkflowRow {
-            title: "Rebuild Index",
-            detail: "Refresh local project search data",
+            title_key: "launcher.empty.suggestion.rebuild.title",
+            detail_key: "launcher.empty.suggestion.rebuild.detail",
             shortcut: "/",
+            query: "/rebuild index",
         },
         SuggestedWorkflowRow {
-            title: "Ask Project",
-            detail: "Start a natural language analysis query",
+            title_key: "launcher.empty.suggestion.ask.title",
+            detail_key: "launcher.empty.suggestion.ask.detail",
             shortcut: "?",
+            query: "? ",
         },
         SuggestedWorkflowRow {
-            title: "Open Studio",
-            detail: "Continue in the full workspace",
+            title_key: "launcher.empty.suggestion.studio.title",
+            detail_key: "launcher.empty.suggestion.studio.detail",
             shortcut: ">",
+            query: "> studio",
         },
     ]
 }
 
-fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow) {
+fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow) -> egui::Response {
     let ctx = ui.ctx().clone();
     let response = ui.allocate_response(
         egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
-        egui::Sense::hover(),
+        egui::Sense::click(),
     );
-    ui.painter().rect_filled(
-        response.rect,
-        egui::CornerRadius::same(Radius::md()),
-        Color::bg_surface_1(&ctx),
-    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            i18n::t(item.title_key),
+        )
+    });
+    let fill = if response.hovered() {
+        Color::bg_surface_2(&ctx)
+    } else {
+        Color::bg_surface_1(&ctx)
+    };
+    ui.painter()
+        .rect_filled(response.rect, egui::CornerRadius::same(Radius::md()), fill);
     let rect = response.rect.shrink2(egui::vec2(Space::sm() as f32, 0.0));
     ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
         ui.horizontal(|ui| {
             keycap(ui, item.shortcut);
             ui.label(
-                egui::RichText::new(item.title)
+                egui::RichText::new(i18n::t(item.title_key))
                     .font(Text::body())
                     .color(Color::fg_primary(&ctx))
                     .strong(),
             );
             ui.label(
-                egui::RichText::new(item.detail)
+                egui::RichText::new(i18n::t(item.detail_key))
                     .font(Text::footnote())
                     .color(Color::fg_secondary(&ctx)),
             );
         });
     });
+    response
 }
 
 fn empty_query_hint() -> &'static str {
     i18n::t("launcher.empty.ready.detail")
+}
+
+pub(crate) fn take_empty_query_action(ui: &mut egui::Ui) -> Option<EmptyAction> {
+    ui.data_mut(|data| data.remove_temp::<String>(empty_action_id()))
+        .map(EmptyAction::SetQuery)
+}
+
+fn empty_action_id() -> egui::Id {
+    egui::Id::new("launcher_empty_query_action")
 }
 
 fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
@@ -210,8 +237,29 @@ mod tests {
         let rows = suggested_workflow_rows();
 
         assert_eq!(rows.len(), 3);
-        assert_eq!(rows[0].title, "Rebuild Index");
+        assert_eq!(
+            i18n::t(rows[0].title_key),
+            i18n::t("launcher.empty.suggestion.rebuild.title")
+        );
+        assert_eq!(rows[0].query, "/rebuild index");
+        assert_eq!(rows[1].query, "? ");
+        assert_eq!(rows[2].query, "> studio");
         assert!(empty_query_hint().contains('/'));
         assert!(empty_query_hint().contains('?'));
+    }
+
+    #[test]
+    fn empty_suggestions_are_localized_clickable_query_intents() {
+        let rows = suggested_workflow_rows();
+        let labels = rows
+            .iter()
+            .map(|row| format!("{}=>{}", i18n::t(row.title_key), row.query))
+            .collect::<Vec<_>>()
+            .join("|");
+
+        assert!(labels.contains("=>/rebuild index"));
+        assert!(labels.contains("=>? "));
+        assert!(labels.contains("=>> studio"));
+        assert!(!labels.contains("UNKNOWN_I18N_KEY"));
     }
 }

@@ -85,6 +85,45 @@ fn binary_test_mode_blocks_dangerous_command_text() {
 }
 
 #[test]
+fn binary_test_mode_blocks_macos_activation_command_text() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+    let commands = [
+        ["op", "en -a StdFixtureVault"].concat(),
+        [
+            "/usr/bin/osa",
+            "script -e 'tell app \"StdFixtureVault\" to activate'",
+        ]
+        .concat(),
+    ];
+
+    for command_text in commands {
+        let define = run_std(
+            &config_path,
+            &[
+                "command",
+                "define",
+                &command_text,
+                "macOS activation runner guard",
+                &command_text,
+            ],
+        );
+        assert!(define.status.success(), "{}", command_stderr(&define));
+
+        let trigger = run_std(
+            &config_path,
+            &["trigger", &command_text, "--allow-external"],
+        );
+        assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+        let stdout = command_stdout(&trigger);
+        assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+        assert!(stdout.contains("StdFixtureVault"));
+        assert!(!stdout.contains("\"status\": \"Completed\""));
+    }
+}
+
+#[test]
 fn binary_test_mode_blocks_registered_app_launch() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
