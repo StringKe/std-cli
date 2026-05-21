@@ -207,6 +207,8 @@ fn mise_background_ui_tasks_are_manual_harness_only() {
     assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
     assert!(smoke.contains("${HARNESS_PID:?set HARNESS_PID}"));
     assert!(smoke.contains("${WINDOW_ID:?set WINDOW_ID}"));
+    assert!(smoke.contains("cargo run -p std-cli -- ui background-smoke"));
+    assert!(!smoke.contains("run = \"std ui background-smoke"));
     assert!(smoke.contains("dev.std-cli.background-ui-harness"));
     assert!(smoke.contains("std-cli Background UI Harness"));
     assert!(!smoke.contains("<pid>"));
