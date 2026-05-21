@@ -171,37 +171,53 @@ fn result_row(ui: &mut egui::Ui, model: &LauncherResultRowModel) -> egui::Respon
     let ctx = ui.ctx().clone();
     let a11y = AccessibilityContext::from_env();
     let selected = model.action_hint.is_some();
-    let fill = if selected {
-        Color::accent_weak(&ctx)
+    let response = ui.allocate_response(
+        ui_metrics::result_row_size(ui.available_width()),
+        egui::Sense::click(),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::SelectableLabel,
+            ui.is_enabled(),
+            a11y.launcher_result_label(
+                &model.title,
+                &model.kind,
+                model.position_number(),
+                model.position_total(),
+            ),
+        )
+    });
+    paint_result_row_background(ui, response.rect, selected, response.hovered(), &ctx);
+    let rect = response.rect.shrink2(ui_metrics::result_row_shrink());
+    paint_result_row(ui, rect, model, selected, &ctx);
+    response
+}
+
+fn paint_result_row_background(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    selected: bool,
+    hovered: bool,
+    ctx: &egui::Context,
+) {
+    if let Some(fill) = result_row_background_color(selected, hovered, ctx) {
+        ui.painter()
+            .rect_filled(rect, egui::CornerRadius::same(Radius::md()), fill);
+    }
+}
+
+fn result_row_background_color(
+    selected: bool,
+    hovered: bool,
+    ctx: &egui::Context,
+) -> Option<egui::Color32> {
+    if selected {
+        Some(Color::accent_weak(ctx))
+    } else if hovered {
+        Some(Color::bg_surface_2(ctx))
     } else {
-        egui::Color32::TRANSPARENT
-    };
-    egui::Frame::new()
-        .fill(fill)
-        .corner_radius(egui::CornerRadius::same(Radius::md()))
-        .inner_margin(egui::Margin::symmetric(Space::sm(), Space::two_xs()))
-        .show(ui, |ui| {
-            let response = ui.allocate_response(
-                ui_metrics::result_row_size(ui.available_width()),
-                egui::Sense::click(),
-            );
-            response.widget_info(|| {
-                egui::WidgetInfo::labeled(
-                    egui::WidgetType::SelectableLabel,
-                    ui.is_enabled(),
-                    a11y.launcher_result_label(
-                        &model.title,
-                        &model.kind,
-                        model.position_number(),
-                        model.position_total(),
-                    ),
-                )
-            });
-            let rect = response.rect.shrink2(ui_metrics::result_row_shrink());
-            paint_result_row(ui, rect, model, selected, &ctx);
-            response
-        })
-        .inner
+        None
+    }
 }
 
 fn paint_result_row(
@@ -405,5 +421,20 @@ mod tests {
 
         assert_eq!(state.focus_section, LauncherFocusSection::Results);
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
+    }
+
+    #[test]
+    fn result_row_background_uses_selected_hover_and_idle_layers() {
+        let ctx = egui::Context::default();
+
+        assert_eq!(
+            result_row_background_color(true, true, &ctx),
+            Some(Color::accent_weak(&ctx))
+        );
+        assert_eq!(
+            result_row_background_color(false, true, &ctx),
+            Some(Color::bg_surface_2(&ctx))
+        );
+        assert_eq!(result_row_background_color(false, false, &ctx), None);
     }
 }
