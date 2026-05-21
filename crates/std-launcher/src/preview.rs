@@ -216,7 +216,7 @@ pub(crate) fn preview_window_inner_size(config: &LauncherPreviewConfig) -> egui:
 }
 
 #[cfg(test)]
-pub(crate) fn preview_viewport_contract(config: &LauncherPreviewConfig) -> String {
+pub(crate) fn preview_capture_window_contract(config: &LauncherPreviewConfig) -> String {
     std_launcher::transparent_visible_panel_contract(preview_window_inner_size(config))
 }
 

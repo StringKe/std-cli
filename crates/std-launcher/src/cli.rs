@@ -236,13 +236,13 @@ mod tests {
         assert!(report
             .summary()
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
-        assert!(report.summary().contains("native_viewport=transparent"));
+        assert!(report.summary().contains("native_host_window=transparent"));
         assert!(report
             .summary()
             .contains("capture_window=transparent,opt_in_only"));
-        assert!(report
-            .summary()
-            .contains("capture_surface=panel_only_on_transparent_viewport,no_carrier_background"));
+        assert!(report.summary().contains(
+            "capture_surface=panel_only_on_transparent_capture_window,no_carrier_background"
+        ));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));

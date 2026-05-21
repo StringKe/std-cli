@@ -148,7 +148,7 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
 }
 
 #[test]
-fn preview_smoke_sizes_prove_transparent_viewport_with_panel_only_surface() {
+fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
@@ -158,7 +158,7 @@ fn preview_smoke_sizes_prove_transparent_viewport_with_panel_only_surface() {
     assert!(report.summary().contains("light-empty=PASS"));
     assert!(report
         .summary()
-        .contains("panel_frame=transparent_viewport_panel_only"));
+        .contains("panel_frame=transparent_capture_window_panel_only"));
     assert!(report
         .summary()
         .contains("search_surface=panel_as_search_surface"));
@@ -168,7 +168,7 @@ fn preview_smoke_sizes_prove_transparent_viewport_with_panel_only_surface() {
 }
 
 #[test]
-fn ui_preview_uses_transparent_visible_chrome() {
+fn ui_preview_uses_transparent_capture_window() {
     let config = LauncherPreviewConfig {
         theme_mode: ThemeMode::Light,
         scenario: "empty".to_string(),
@@ -182,7 +182,7 @@ fn ui_preview_uses_transparent_visible_chrome() {
     assert!(description.contains("decorations: Some(false)"));
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
-        preview_viewport_contract(&config),
+        preview_capture_window_contract(&config),
         "transparent=true,decorations=false,visible=true,size=720x460"
     );
 }
@@ -193,10 +193,11 @@ fn preview_evidence_names_capture_window_not_product_viewport() {
     let preview = include_str!("preview.rs");
 
     assert!(surface.contains("capture_window=transparent,opt_in_only"));
-    assert!(surface.contains("capture_surface=panel_only_on_transparent_viewport"));
+    assert!(surface.contains("capture_surface=panel_only_on_transparent_capture_window"));
     assert!(!surface.contains("preview_viewport="));
     assert!(preview.contains("no-product-viewport"));
     assert!(!preview.contains("preview_viewport"));
+    assert!(!preview.contains("preview_viewport_contract"));
 }
 
 #[test]

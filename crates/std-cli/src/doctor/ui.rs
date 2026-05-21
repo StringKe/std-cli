@@ -185,13 +185,13 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(
         &launcher_metrics_tests,
-        "transparent_viewport_has_no_carrier_background",
+        "transparent_capture_window_has_no_carrier_background",
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
+        "native_host_window=transparent,no_carrier,width_matches_panel,height_matches_panel",
         "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel",
-        "capture_surface=panel_only_on_transparent_viewport,no_carrier_background",
+        "capture_surface=panel_only_on_transparent_capture_window,no_carrier_background",
     ] {
         check_text(&launcher_surface, required)?;
     }

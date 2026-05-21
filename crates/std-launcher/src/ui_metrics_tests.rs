@@ -121,7 +121,7 @@ fn panel_rect_stays_inside_tightly_sized_native_window() {
 }
 
 #[test]
-fn panel_rect_matches_native_viewport_height() {
+fn panel_rect_matches_native_host_window_height() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
@@ -144,7 +144,7 @@ fn panel_rect_centers_inside_wide_available_region() {
 }
 
 #[test]
-fn collapsed_panel_rect_matches_native_viewport() {
+fn collapsed_panel_rect_matches_native_host_window() {
     let mut state = LauncherState::new();
     state.view.results.clear();
     state.view.preview = None;
@@ -169,7 +169,7 @@ fn panel_rect_clamps_when_viewport_is_short() {
 }
 
 #[test]
-fn transparent_viewport_has_no_carrier_background() {
+fn transparent_capture_window_has_no_carrier_background() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
@@ -199,7 +199,7 @@ fn collapsed_launcher_uses_docs_search_bar_height_without_outer_padding() {
 }
 
 #[test]
-fn native_viewport_height_includes_panel_inner_padding() {
+fn native_host_window_height_includes_panel_inner_padding() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
@@ -226,7 +226,7 @@ fn body_height_counts_virtual_group_header_slots() {
 }
 
 #[test]
-fn all_preview_visible_states_keep_transparent_viewport_panel_only() {
+fn all_preview_visible_states_keep_transparent_capture_window_panel_only() {
     for scenario in [
         "empty",
         "results",
