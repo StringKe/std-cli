@@ -1,5 +1,11 @@
 use std::{fs, path::Path};
 
+use super::desktop_guard_scan::{
+    assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, restore_env,
+    scan_rs_files, scan_rs_files_for_binary_spawns, scan_rs_files_for_unsafe_opt_ins,
+    source_section, task_has_std_test_mode, task_inherits_workspace_test_mode,
+};
+
 #[test]
 fn test_sources_do_not_reference_real_app_launch_targets() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -31,11 +37,7 @@ fn test_sources_do_not_inherit_desktop_automation_opt_ins() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files(
-        &root.join("crates"),
-        &forbidden_test_opt_in_terms(),
-        &mut violations,
-    );
+    scan_rs_files_for_unsafe_opt_ins(&root.join("crates"), &mut violations);
 
     assert!(
         violations.is_empty(),
@@ -339,152 +341,22 @@ fn std_test_mode_overrides_inherited_desktop_opt_ins() {
     restore_env("STD_ALLOW_UI_PREVIEW", previous_preview);
 }
 
-fn assert_order(body: &str, first: &str, second: &str) {
-    let first_index = body.find(first).unwrap();
-    let second_index = body.find(second).unwrap();
-    assert!(
-        first_index < second_index,
-        "{first} must appear before {second}"
-    );
-}
-
-fn restore_env(key: &str, value: Option<String>) {
-    match value {
-        Some(value) => std::env::set_var(key, value),
-        None => std::env::remove_var(key),
+#[test]
+fn binary_entrypoints_sanitize_desktop_opt_ins_before_dispatch() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    for relative in [
+        "crates/std-cli/src/lib.rs",
+        "crates/std-launcher/src/main.rs",
+        "crates/std-studio/src/main.rs",
+    ] {
+        let body = fs::read_to_string(root.join(relative)).unwrap();
+        assert!(
+            body.contains("std_core::sanitize_desktop_opt_ins_for_test_mode();"),
+            "{relative} must clear desktop opt-ins when STD_TEST_MODE=1"
+        );
     }
-}
-
-fn forbidden_test_app_terms() -> Vec<String> {
-    vec![
-        ["1", "Password"].join(""),
-        "[\"1\", \"Password\"]".to_string(),
-        ["We", "Chat"].join(""),
-        ["we", "chat"].join(""),
-        ["wei", "xin"].join(""),
-        "微信".to_string(),
-        ["open -a ", "Terminal"].join(""),
-        "Terminal\".to_string()".to_string(),
-        ["open", " -a "].join(""),
-        "[\"op\", \"en\"".to_string(),
-        "[\"op\", \"en\", \"-a\"".to_string(),
-        ["/usr/bin/", "open", " -a "].join(""),
-        ["osa", "script"].join(""),
-        "[\"osa\", \"script\"]".to_string(),
-        ["System", " Events"].join(""),
-        ["tell ", "application"].join(""),
-        ["/Applications/", "1", "Password.app"].join(""),
-        ["tell application \"", "1", "Password\""].join(""),
-        "/Applications/".to_string(),
-        "/System/Applications".to_string(),
-    ]
-}
-
-fn forbidden_test_opt_in_terms() -> Vec<String> {
-    vec![
-        ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
-        ".env(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
-        "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
-        "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
-    ]
-}
-
-fn forbidden_test_mode_clear_terms() -> Vec<String> {
-    vec![
-        ".env_remove(\"STD_TEST_MODE\")".to_string(),
-        "remove_var(\"STD_TEST_MODE\")".to_string(),
-    ]
-}
-
-fn task_has_std_test_mode(body: &str, task: &str) -> bool {
-    let header = format!("[tasks.{task}]");
-    let Some(start) = body.find(&header) else {
-        return false;
-    };
-    let rest = &body[start + header.len()..];
-    let end = rest.find("\n[tasks.").unwrap_or(rest.len());
-    rest[..end].contains("env = { STD_TEST_MODE = \"1\" }")
-}
-
-fn task_inherits_workspace_test_mode(body: &str, task: &str) -> bool {
-    body.contains("[env]\nSTD_TEST_MODE = \"1\"") && body.contains(&format!("[tasks.{task}]"))
-}
-
-fn source_section<'a>(body: &'a str, start: &str, end: &str) -> &'a str {
-    let start_index = body.find(start).unwrap();
-    let end_index = body[start_index..]
-        .find(end)
-        .map(|offset| start_index + offset)
-        .unwrap_or(body.len());
-    &body[start_index..end_index]
-}
-
-fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<String>) {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return;
-    };
-    for entry in entries.filter_map(Result::ok) {
-        let path = entry.path();
-        if path.is_dir() {
-            scan_rs_files(&path, forbidden_terms, violations);
-            continue;
-        }
-        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
-            || !is_test_path(&path)
-            || is_static_desktop_guard_file(&path)
-        {
-            continue;
-        }
-        let body = fs::read_to_string(&path).unwrap();
-        for term in forbidden_terms {
-            if body.contains(term) {
-                violations.push(format!("{} contains {}", path.display(), term));
-            }
-        }
-    }
-}
-
-fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<String>) {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return;
-    };
-    for entry in entries.filter_map(Result::ok) {
-        let path = entry.path();
-        if path.is_dir() {
-            scan_rs_files_for_binary_spawns(&path, violations);
-            continue;
-        }
-        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
-            || !is_test_path(&path)
-            || is_static_desktop_guard_file(&path)
-        {
-            continue;
-        }
-        let body = fs::read_to_string(&path).unwrap();
-        if !body.contains("CARGO_BIN_EXE_") {
-            continue;
-        }
-        for required in [
-            ".env(\"STD_TEST_MODE\", \"1\")",
-            ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")",
-            ".env_remove(\"STD_ALLOW_UI_PREVIEW\")",
-        ] {
-            if !body.contains(required) {
-                violations.push(format!("{} missing {}", path.display(), required));
-            }
-        }
-    }
-}
-
-fn is_test_path(path: &Path) -> bool {
-    path.components().any(|part| part.as_os_str() == "tests")
-        || path
-            .file_name()
-            .and_then(|name| name.to_str())
-            .map(|name| name.ends_with("_tests.rs") || name == "tests.rs")
-            .unwrap_or(false)
-}
-
-fn is_static_desktop_guard_file(path: &Path) -> bool {
-    path.ends_with("std-cli/src/tests/desktop_guard.rs")
 }

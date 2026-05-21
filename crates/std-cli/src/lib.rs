@@ -210,6 +210,7 @@ where
 {
     #[cfg(test)]
     std::env::set_var("STD_TEST_MODE", "1");
+    std_core::sanitize_desktop_opt_ins_for_test_mode();
 
     let cli = Cli::parse_from(args);
     let config = StdConfig::try_load().map_err(|error| CliError::Config(error.to_string()))?;

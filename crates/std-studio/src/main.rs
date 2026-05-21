@@ -190,6 +190,7 @@ fn default_batch_json() -> String {
 }
 
 fn main() -> eframe::Result<()> {
+    std_core::sanitize_desktop_opt_ins_for_test_mode();
     let args = std::env::args().collect::<Vec<_>>();
     if let Some(request) = studio_preview_request_from_args(&args) {
         match request {

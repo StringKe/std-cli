@@ -78,8 +78,8 @@ fn run_std_in_desktop_safe_test_mode(config_path: &Path, args: &[&str]) -> std::
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW");
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
+        .env("STD_ALLOW_UI_PREVIEW", "1");
     command.output().unwrap()
 }
 

@@ -200,6 +200,13 @@ pub fn desktop_automation_allowed() -> bool {
         .unwrap_or(false)
 }
 
+pub fn sanitize_desktop_opt_ins_for_test_mode() {
+    if std_test_mode_enabled() {
+        std::env::remove_var("STD_ALLOW_DESKTOP_AUTOMATION");
+        std::env::remove_var("STD_ALLOW_UI_PREVIEW");
+    }
+}
+
 impl Default for StdCore {
     fn default() -> Self {
         Self::new()
