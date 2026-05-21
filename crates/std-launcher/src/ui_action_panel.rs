@@ -108,6 +108,9 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
         }
         ui.add_space(Space::two_xs() as f32);
     }
+    if input::ime_composing(ui.ctx()) {
+        return;
+    }
     if input::arrow_down().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
     }
@@ -167,5 +170,18 @@ mod tests {
         state.open_action_panel();
 
         assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+    }
+
+    #[test]
+    fn action_panel_arrow_shortcuts_respect_ime_guard() {
+        let source = include_str!("ui_action_panel.rs");
+        let guard_index = source.find("input::ime_composing(ui.ctx())").unwrap();
+        let arrow_down_index = source
+            .find("input::arrow_down().pressed(ui.ctx())")
+            .unwrap();
+        let arrow_up_index = source.find("input::arrow_up().pressed(ui.ctx())").unwrap();
+
+        assert!(guard_index < arrow_down_index);
+        assert!(guard_index < arrow_up_index);
     }
 }
