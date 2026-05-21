@@ -44,4 +44,31 @@ impl StudioWorkspacePolicy {
             ) => "single egui host viewport, internal workspace panes",
         }
     }
+
+    pub fn strict_report(self) -> String {
+        format!(
+            "host={};pane_system={};native_child_windows={};detached_panels={};docs={}",
+            self.host_window.label(),
+            self.pane_system.label(),
+            self.native_child_windows,
+            self.detached_panels,
+            Self::DOC_REFERENCE
+        )
+    }
+}
+
+impl HostWindowPolicy {
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::SingleBorderlessEguiViewport => "single-borderless-egui-viewport",
+        }
+    }
+}
+
+impl PaneSystemPolicy {
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::InternalEguiWorkspacePanes => "internal-egui-workspace-panes",
+        }
+    }
 }

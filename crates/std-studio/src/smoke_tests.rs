@@ -48,7 +48,7 @@ fn assert_workspace_forbidden_policy_summary(summary: &str) {
 
 fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains(
-        "pane_host_policy=single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"
+        "pane_host_policy=host=single-borderless-egui-viewport;pane_system=internal-egui-workspace-panes;native_child_windows=false;detached_panels=false;docs=docs/22 + docs/24"
     ));
     assert!(
         summary.contains("pane_management_sequence=open>dedupe>focus>switch>close>reopen>restore")

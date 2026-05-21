@@ -124,8 +124,12 @@ impl StudioSmokeReport {
             && self
                 .pane_host_policy
                 .contains("single-borderless-egui-viewport")
-            && self.pane_host_policy.contains("native-child-windows=false")
-            && self.pane_host_policy.contains("detached-panels=false")
+            && self
+                .pane_host_policy
+                .contains("pane_system=internal-egui-workspace-panes")
+            && self.pane_host_policy.contains("native_child_windows=false")
+            && self.pane_host_policy.contains("detached_panels=false")
+            && self.pane_host_policy.contains("docs=docs/22 + docs/24")
             && self.pane_management_sequence == "open>dedupe>focus>switch>close>reopen>restore"
             && self.pane_focus_switch_path == "settings>plugins>plugins"
             && self.pane_close_restore_path.starts_with("close:")

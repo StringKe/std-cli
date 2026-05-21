@@ -78,9 +78,7 @@ pub(crate) fn run_workspace_pane_smoke(
         settings_contract.hotkey_source,
         settings_contract.hotkey_reset
     );
-    let host_policy =
-        "single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"
-            .to_string();
+    let host_policy = studio.app_workspace_policy_report();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
     let focus_label = workspace_management_evidence(
         plugin,

@@ -1,4 +1,4 @@
-use std_studio::{HostWindowPolicy, PaneSystemPolicy, StudioApp, StudioWorkspacePolicy};
+use std_studio::{StudioApp, StudioWorkspacePolicy};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorkspacePolicySmoke {
@@ -17,8 +17,8 @@ impl WorkspacePolicySmoke {
 
     fn from_policy(policy: StudioWorkspacePolicy) -> Self {
         Self {
-            host_window: host_window_label(policy.host_window),
-            pane_system: pane_system_label(policy.pane_system),
+            host_window: policy.host_window.label(),
+            pane_system: policy.pane_system.label(),
             native_child_windows: policy.allows_native_child_windows(),
             detached_panels: policy.allows_detached_panels(),
             doc_reference: StudioWorkspacePolicy::DOC_REFERENCE,
@@ -52,18 +52,6 @@ impl WorkspacePolicySmoke {
 impl Default for WorkspacePolicySmoke {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-fn host_window_label(policy: HostWindowPolicy) -> &'static str {
-    match policy {
-        HostWindowPolicy::SingleBorderlessEguiViewport => "single-borderless-egui-viewport",
-    }
-}
-
-fn pane_system_label(policy: PaneSystemPolicy) -> &'static str {
-    match policy {
-        PaneSystemPolicy::InternalEguiWorkspacePanes => "internal-egui-workspace-panes",
     }
 }
 

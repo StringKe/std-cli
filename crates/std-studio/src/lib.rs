@@ -177,6 +177,10 @@ impl StudioApp {
         self.plugin_manager = PluginManagerViewModel::load(&self.core);
     }
 
+    pub fn app_workspace_policy_report(&self) -> String {
+        self.workspace_policy.strict_report()
+    }
+
     pub fn switch_pane(&mut self, pane: StudioPane) {
         self.active_pane = pane;
     }

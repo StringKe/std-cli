@@ -15,6 +15,7 @@ fn studio_main_path_forbids_detached_or_native_child_windows() {
     let mut violations = Vec::new();
 
     scan_rs_files(&src_dir, &mut violations);
+    scan_allowed_viewport_files(&src_dir, &mut violations);
 
     assert!(
         violations.is_empty(),
@@ -94,6 +95,26 @@ fn scan_rs_files_for_settings_overlay(dir: &Path, violations: &mut Vec<String>) 
     }
 }
 
+fn scan_allowed_viewport_files(src_dir: &Path, violations: &mut Vec<String>) {
+    for file in ALLOWED_VIEWPORT_FILES {
+        let path = src_dir.join(file);
+        let Ok(body) = fs::read_to_string(&path) else {
+            violations.push(format!("{} missing allowed viewport file", path.display()));
+            continue;
+        };
+        for pattern in forbidden_studio_window_patterns() {
+            if !allowed_viewport_pattern(file, &pattern) && body.contains(&pattern) {
+                violations.push(format!("{} contains {}", path.display(), pattern));
+            }
+        }
+        for pattern in required_viewport_patterns(file) {
+            if !body.contains(pattern) {
+                violations.push(format!("{} missing {}", path.display(), pattern));
+            }
+        }
+    }
+}
+
 fn forbidden_studio_window_patterns() -> Vec<String> {
     vec![
         ["egui::", "Window", "::new"].join(""),
@@ -102,6 +123,42 @@ fn forbidden_studio_window_patterns() -> Vec<String> {
         ["Viewport", "Command::"].join(""),
         ["send_", "viewport_cmd"].join(""),
     ]
+}
+
+fn allowed_viewport_pattern(file: &str, pattern: &str) -> bool {
+    matches!(
+        (file, pattern),
+        ("viewport.rs", "ViewportBuilder::default")
+            | ("host_chrome.rs", "ViewportCommand::")
+            | ("host_chrome.rs", "send_viewport_cmd")
+            | ("preview.rs", "ViewportCommand::")
+            | ("preview.rs", "send_viewport_cmd")
+            | ("preview_tests.rs", "ViewportCommand::")
+    )
+}
+
+fn required_viewport_patterns(file: &str) -> &'static [&'static str] {
+    match file {
+        "viewport.rs" => &[
+            "StudioWorkspacePolicy::studio_v1()",
+            "HostWindowPolicy::SingleBorderlessEguiViewport",
+            "with_decorations(false)",
+        ],
+        "host_chrome.rs" => &[
+            "ViewportCommand::StartDrag",
+            "ViewportCommand::Close",
+            "ViewportCommand::Minimized(true)",
+            "ViewportCommand::Maximized",
+            "open_current_pane_from_host_chrome",
+        ],
+        "preview.rs" => &[
+            "STD_ALLOW_UI_PREVIEW",
+            "ViewportCommand::Close",
+            "studio_native_options()",
+        ],
+        "preview_tests.rs" => &["ViewportCommand::Close"],
+        _ => &[],
+    }
 }
 
 fn viewport_file_allowed(path: &Path) -> bool {
