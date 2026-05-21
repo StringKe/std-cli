@@ -98,7 +98,7 @@ pub(crate) fn render_launcher_panel(
                 return;
             }
             ui.add_space(Space::xs() as f32);
-            render_body(ui, state, body_height);
+            hide_requested |= render_body(ui, state, body_height);
             ui.add_space(Space::xs() as f32);
             let action_bar_rect = ui_action_bar::render(ui, state, hotkey_status, resident_status);
             render_voice(ui, state, voice_transcript);
@@ -210,8 +210,8 @@ fn render_mode_tag(ui: &mut egui::Ui, state: &LauncherState) {
         });
 }
 
-fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
-    ui_results::render(ui, state, max_height);
+fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
+    ui_results::render(ui, state, max_height)
 }
 
 fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {

@@ -1,6 +1,6 @@
 use crate::{
     ui_empty::{self, EmptyAction},
-    ui_metrics,
+    ui_keyboard, ui_metrics,
     ui_parts::{draw_focus_ring, keycap, surface_frame},
     ui_result_model::{
         group_count as model_group_count, group_header_label, list_items, LauncherResultListItem,
@@ -23,7 +23,8 @@ pub(crate) fn group_count(results: &[SearchResult]) -> usize {
     model_group_count(results)
 }
 
-pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
+pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
+    let mut hide_requested = false;
     let response = surface_frame(ui.ctx()).show(ui, |ui| {
         section_header(
             ui,
@@ -34,7 +35,7 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
                 i18n::t("launcher.results.matches_suffix")
             ),
         );
-        render_results(ui, state, max_height);
+        hide_requested = render_results(ui, state, max_height);
     });
     if state.focus_section == LauncherFocusSection::Results {
         let a11y = AccessibilityContext::from_env();
@@ -46,6 +47,7 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
             a11y.focus_ring_width(),
         );
     }
+    hide_requested
 }
 
 fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
@@ -64,12 +66,12 @@ fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
     }
 }
 
-fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
+fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
     if state.view.result_mode == LauncherResultMode::NaturalLanguage {
         if let Some(suggestion) = state.view.nl_suggestion.as_ref() {
             ui_result_nl::render(ui, suggestion);
         }
-        return;
+        return false;
     }
     let mut clicked = None;
     let mut double_clicked = None;
@@ -119,11 +121,19 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         );
 
     if let Some(index) = double_clicked {
-        state.trigger_result_by_user(index);
+        return trigger_result_from_row(state, index);
     } else if let Some(index) = clicked {
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
+    false
+}
+
+fn trigger_result_from_row(state: &mut LauncherState, index: usize) -> bool {
+    state
+        .trigger_result_by_user(index)
+        .map(|execution| ui_keyboard::execution_hides_launcher(&execution))
+        .unwrap_or(false)
 }
 
 fn render_overflow_hint(ui: &mut egui::Ui, view: &std_egui::LauncherViewModel) {
@@ -391,7 +401,8 @@ mod tests {
         let source = include_str!("ui_results.rs");
 
         assert!(source.contains("response.double_clicked()"));
-        assert!(source.contains("state.trigger_result_by_user(index)"));
+        assert!(source.contains("trigger_result_from_row(state, index)"));
+        assert!(source.contains("ui_keyboard::execution_hides_launcher(&execution)"));
         assert!(source.contains("else if response.clicked()"));
     }
 

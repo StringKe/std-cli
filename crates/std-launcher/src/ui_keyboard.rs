@@ -46,6 +46,35 @@ fn handle_user_execution(state: &mut LauncherState, key: LauncherKey, hide_reque
     }
 }
 
-fn execution_hides_launcher(execution: &ActionExecution) -> bool {
+pub(crate) fn execution_hides_launcher(execution: &ActionExecution) -> bool {
     execution.status == ActionExecutionStatus::Completed
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn launcher_hides_only_after_completed_execution() {
+        assert!(execution_hides_launcher(&execution(
+            ActionExecutionStatus::Completed
+        )));
+        assert!(!execution_hides_launcher(&execution(
+            ActionExecutionStatus::NeedsExternalRunner
+        )));
+        assert!(!execution_hides_launcher(&execution(
+            ActionExecutionStatus::Failed
+        )));
+    }
+
+    fn execution(status: ActionExecutionStatus) -> ActionExecution {
+        ActionExecution {
+            action_id: Default::default(),
+            action_name: "Fixture".to_string(),
+            status,
+            message: "fixture".to_string(),
+            output: None,
+            created_at: chrono::Utc::now(),
+        }
+    }
 }
