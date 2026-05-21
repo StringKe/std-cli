@@ -221,6 +221,10 @@ mod tests {
         assert!(report.pass(), "{}", report.summary());
         assert!(report.summary().contains("launcher_surface_smoke PASS"));
         assert!(report.summary().contains("panel_opaque=true"));
+        assert!(report.summary().contains("native_viewport=transparent"));
+        assert!(report
+            .summary()
+            .contains("preview_carrier=explicit_ui_preview_only"));
     }
 
     #[test]

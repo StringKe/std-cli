@@ -126,6 +126,13 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     ] {
         check_text(&launcher_metrics, required)?;
     }
+    let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
+    for required in [
+        "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
+        "preview_carrier=explicit_ui_preview_only,centered_panel_for_screenshot",
+    ] {
+        check_text(&launcher_surface, required)?;
+    }
     for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
         if launcher_metrics.contains(forbidden) {
             return Err(CliError::Config(
