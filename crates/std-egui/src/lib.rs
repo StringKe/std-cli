@@ -5,6 +5,7 @@ mod dashboard;
 pub mod i18n;
 pub mod input;
 mod launcher;
+mod launcher_feedback;
 mod memory;
 pub mod motion;
 mod plugin;
@@ -12,9 +13,9 @@ pub mod tokens;
 
 pub use dashboard::StudioDashboardViewModel;
 pub use launcher::{
-    LauncherFeedback, LauncherNlSuggestion, LauncherPhase, LauncherResultMode, LauncherTelemetry,
-    LauncherViewModel,
+    LauncherNlSuggestion, LauncherPhase, LauncherResultMode, LauncherTelemetry, LauncherViewModel,
 };
+pub use launcher_feedback::{LauncherFeedback, LauncherFeedbackAction};
 pub use memory::MemoryBrowserViewModel;
 pub use plugin::PluginManagerViewModel;
 
@@ -33,7 +34,7 @@ pub fn summarize_json(value: &serde_json::Value) -> String {
 mod tests {
     use super::*;
     use std_core::{StdConfig, StdCore};
-    use std_types::ActionType;
+    use std_types::{ActionExecutionStatus, ActionType};
 
     fn test_core() -> StdCore {
         let temp = tempfile::tempdir().unwrap();
@@ -217,6 +218,29 @@ mod tests {
 
         model.jump_selection(&core, true);
         assert_eq!(model.selected_nl_action(), Some("Ask AI"));
+    }
+
+    #[test]
+    fn launcher_feedback_actions_are_keyboard_selectable() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "index");
+        model.trigger_selected(&core).unwrap();
+
+        assert_eq!(
+            model.feedback.as_ref().unwrap().status,
+            ActionExecutionStatus::Completed
+        );
+        assert_eq!(
+            model.selected_feedback_action(),
+            Some(LauncherFeedbackAction::Copy)
+        );
+        model.move_feedback_action(1);
+        assert_eq!(
+            model.selected_feedback_action(),
+            Some(LauncherFeedbackAction::Copy)
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use crate::LauncherState;
 use std_core::{StdConfig, StdCore};
-use std_egui::LauncherResultMode;
+use std_egui::{LauncherFeedbackAction, LauncherResultMode};
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,6 +23,7 @@ pub enum LauncherFocusSection {
     Search,
     Results,
     ActionPanel,
+    Feedback,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -88,6 +89,23 @@ impl LauncherState {
             return None;
         }
         match key {
+            LauncherKey::ArrowDown if self.focus_section == LauncherFocusSection::Feedback => {
+                self.view.move_feedback_action(1);
+                None
+            }
+            LauncherKey::ArrowUp if self.focus_section == LauncherFocusSection::Feedback => {
+                self.view.move_feedback_action(-1);
+                None
+            }
+            LauncherKey::JumpToFirst if self.focus_section == LauncherFocusSection::Feedback => {
+                self.view.selected_feedback_action = 0;
+                None
+            }
+            LauncherKey::JumpToLast if self.focus_section == LauncherFocusSection::Feedback => {
+                let last = self.view.feedback_actions().len().saturating_sub(1);
+                self.view.selected_feedback_action = last;
+                None
+            }
             LauncherKey::ArrowDown if self.action_panel.open => {
                 self.move_action_panel_selection(1);
                 None
@@ -128,6 +146,9 @@ impl LauncherState {
                 self.focus_previous_section();
                 None
             }
+            LauncherKey::Enter if self.focus_section == LauncherFocusSection::Feedback => {
+                self.trigger_feedback_action()
+            }
             LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),
             LauncherKey::Enter if self.view.result_mode == LauncherResultMode::NaturalLanguage => {
                 self.trigger_selected()
@@ -156,6 +177,10 @@ impl LauncherState {
                 self.focus_section = LauncherFocusSection::Results;
                 None
             }
+            LauncherKey::Escape if self.focus_section == LauncherFocusSection::Feedback => {
+                self.focus_section = LauncherFocusSection::Search;
+                None
+            }
             LauncherKey::Escape if !self.view.query.is_empty() => {
                 self.update_query("");
                 None
@@ -165,6 +190,38 @@ impl LauncherState {
                 None
             }
         }
+    }
+
+    pub fn trigger_feedback_action(&mut self) -> Option<std_types::ActionExecution> {
+        match self.view.selected_feedback_action()? {
+            LauncherFeedbackAction::Copy => Some(self.complete_feedback_copy()),
+            LauncherFeedbackAction::Retry => self.trigger_selected(),
+            LauncherFeedbackAction::OpenStudio => {
+                self.open_studio_execution_history_from_feedback();
+                None
+            }
+        }
+    }
+
+    fn complete_feedback_copy(&mut self) -> std_types::ActionExecution {
+        let feedback_summary = self
+            .view
+            .feedback
+            .as_ref()
+            .map(std_egui::LauncherFeedback::summary)
+            .unwrap_or_else(|| "Launcher feedback".to_string());
+        let execution = std_types::ActionExecution {
+            action_id: Default::default(),
+            action_name: "Copy Feedback".to_string(),
+            status: ActionExecutionStatus::Completed,
+            message: feedback_summary.clone(),
+            output: Some(serde_json::json!({ "copied": feedback_summary })),
+            created_at: chrono::Utc::now(),
+        };
+        self.view.last_execution = Some(execution.clone());
+        self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.selected_feedback_action = 0;
+        execution
     }
 
     pub fn keyboard_smoke(query: &str) -> LauncherKeyboardReport {
@@ -254,20 +311,34 @@ impl LauncherState {
     }
 
     fn focus_next_section(&mut self) {
-        self.focus_section = match (self.focus_section, self.action_panel.open) {
-            (LauncherFocusSection::Search, _) => LauncherFocusSection::Results,
-            (LauncherFocusSection::Results, true) => LauncherFocusSection::ActionPanel,
-            (LauncherFocusSection::Results, false) => LauncherFocusSection::Search,
-            (LauncherFocusSection::ActionPanel, _) => LauncherFocusSection::Search,
+        self.focus_section = match (
+            self.focus_section,
+            self.action_panel.open,
+            self.view.feedback.is_some(),
+        ) {
+            (LauncherFocusSection::Search, _, _) => LauncherFocusSection::Results,
+            (LauncherFocusSection::Results, true, _) => LauncherFocusSection::ActionPanel,
+            (LauncherFocusSection::Results, false, true) => LauncherFocusSection::Feedback,
+            (LauncherFocusSection::Results, false, false) => LauncherFocusSection::Search,
+            (LauncherFocusSection::ActionPanel, _, true) => LauncherFocusSection::Feedback,
+            (LauncherFocusSection::ActionPanel, _, false) => LauncherFocusSection::Search,
+            (LauncherFocusSection::Feedback, _, _) => LauncherFocusSection::Search,
         };
     }
 
     fn focus_previous_section(&mut self) {
-        self.focus_section = match (self.focus_section, self.action_panel.open) {
-            (LauncherFocusSection::Search, true) => LauncherFocusSection::ActionPanel,
-            (LauncherFocusSection::Search, false) => LauncherFocusSection::Results,
-            (LauncherFocusSection::Results, _) => LauncherFocusSection::Search,
-            (LauncherFocusSection::ActionPanel, _) => LauncherFocusSection::Results,
+        self.focus_section = match (
+            self.focus_section,
+            self.action_panel.open,
+            self.view.feedback.is_some(),
+        ) {
+            (LauncherFocusSection::Search, _, true) => LauncherFocusSection::Feedback,
+            (LauncherFocusSection::Search, true, false) => LauncherFocusSection::ActionPanel,
+            (LauncherFocusSection::Search, false, false) => LauncherFocusSection::Results,
+            (LauncherFocusSection::Results, _, _) => LauncherFocusSection::Search,
+            (LauncherFocusSection::ActionPanel, _, _) => LauncherFocusSection::Results,
+            (LauncherFocusSection::Feedback, true, _) => LauncherFocusSection::ActionPanel,
+            (LauncherFocusSection::Feedback, false, _) => LauncherFocusSection::Results,
         };
     }
 }

@@ -3,7 +3,7 @@ use eframe::egui;
 use std_egui::{
     i18n,
     tokens::{Color, Radius, Space, Text},
-    LauncherFeedback,
+    LauncherFeedback, LauncherFeedbackAction,
 };
 use std_launcher::{LauncherPerformanceReport, LauncherState};
 use std_types::ActionExecutionStatus;
@@ -13,13 +13,6 @@ enum FeedbackKind {
     Completed,
     Failed,
     Deferred,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum FeedbackAction {
-    Copy,
-    Retry,
-    OpenStudio,
 }
 
 pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) {
@@ -72,25 +65,42 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
 }
 
 fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
-    for action in feedback_actions(feedback).into_iter().rev() {
+    let actions = feedback.actions();
+    for (index, action) in actions.into_iter().enumerate().rev() {
+        let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
+            && state.view.selected_feedback_action == index;
         match action {
-            FeedbackAction::Copy => {
-                if quiet_button(ui, i18n::t("launcher.feedback.copy")).clicked() {
+            LauncherFeedbackAction::Copy => {
+                if feedback_button(ui, i18n::t("launcher.feedback.copy"), selected).clicked() {
                     ui.ctx().copy_text(feedback.summary());
                 }
             }
-            FeedbackAction::Retry => {
-                if quiet_button(ui, i18n::t("launcher.feedback.retry")).clicked() {
+            LauncherFeedbackAction::Retry => {
+                if feedback_button(ui, i18n::t("launcher.feedback.retry"), selected).clicked() {
                     state.trigger_selected();
                 }
             }
-            FeedbackAction::OpenStudio => {
-                if quiet_button(ui, i18n::t("launcher.feedback.open_studio")).clicked() {
+            LauncherFeedbackAction::OpenStudio => {
+                if feedback_button(ui, i18n::t("launcher.feedback.open_studio"), selected).clicked()
+                {
                     state.open_studio_execution_history_from_feedback();
                 }
             }
         }
     }
+}
+
+fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
+    if selected {
+        let ctx = ui.ctx().clone();
+        return ui.add(
+            egui::Button::new(egui::RichText::new(label).color(Color::fg_primary(&ctx)))
+                .fill(Color::accent_weak(&ctx))
+                .stroke(egui::Stroke::new(1.0, Color::accent_base(&ctx)))
+                .corner_radius(egui::CornerRadius::same(Radius::sm())),
+        );
+    }
+    quiet_button(ui, label)
 }
 
 fn render_performance(ui: &mut egui::Ui, report: &LauncherPerformanceReport) {
@@ -111,18 +121,6 @@ fn feedback_kind(feedback: &LauncherFeedback) -> FeedbackKind {
         ActionExecutionStatus::Completed => FeedbackKind::Completed,
         ActionExecutionStatus::Failed => FeedbackKind::Failed,
         ActionExecutionStatus::NeedsExternalRunner => FeedbackKind::Deferred,
-    }
-}
-
-fn feedback_actions(feedback: &LauncherFeedback) -> Vec<FeedbackAction> {
-    match feedback_kind(feedback) {
-        FeedbackKind::Completed => vec![FeedbackAction::Copy],
-        FeedbackKind::Deferred => vec![FeedbackAction::Copy, FeedbackAction::Retry],
-        FeedbackKind::Failed => vec![
-            FeedbackAction::Copy,
-            FeedbackAction::Retry,
-            FeedbackAction::OpenStudio,
-        ],
     }
 }
 
@@ -186,11 +184,11 @@ mod tests {
 
         assert_eq!(feedback_kind(&feedback), FeedbackKind::Failed);
         assert_eq!(
-            feedback_actions(&feedback),
+            feedback.actions(),
             vec![
-                FeedbackAction::Copy,
-                FeedbackAction::Retry,
-                FeedbackAction::OpenStudio
+                LauncherFeedbackAction::Copy,
+                LauncherFeedbackAction::Retry,
+                LauncherFeedbackAction::OpenStudio
             ]
         );
     }
@@ -222,8 +220,8 @@ mod tests {
 
         assert_eq!(feedback_kind(&feedback), FeedbackKind::Deferred);
         assert_eq!(
-            feedback_actions(&feedback),
-            vec![FeedbackAction::Copy, FeedbackAction::Retry]
+            feedback.actions(),
+            vec![LauncherFeedbackAction::Copy, LauncherFeedbackAction::Retry]
         );
     }
 

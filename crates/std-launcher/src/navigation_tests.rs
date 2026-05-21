@@ -1,4 +1,6 @@
 use crate::{LauncherFocusSection, LauncherKey, LauncherState};
+use std_egui::{LauncherFeedback, LauncherFeedbackAction};
+use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 
 #[test]
 fn mod_arrow_keys_jump_to_result_edges() {
@@ -93,6 +95,62 @@ fn tab_keys_include_action_panel_when_it_is_open() {
 
     state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
     assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+}
+
+#[test]
+fn tab_keys_include_feedback_actions_when_feedback_is_visible() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    state.view.feedback = Some(feedback(ActionExecutionStatus::Failed));
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+    state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+
+    assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
+    assert_eq!(
+        state.view.selected_feedback_action(),
+        Some(LauncherFeedbackAction::Copy)
+    );
+}
+
+#[test]
+fn feedback_actions_are_keyboard_reachable() {
+    let mut state = LauncherState::new();
+    state.view.feedback = Some(feedback(ActionExecutionStatus::Failed));
+    state.focus_section = LauncherFocusSection::Feedback;
+
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    assert_eq!(
+        state.view.selected_feedback_action(),
+        Some(LauncherFeedbackAction::Retry)
+    );
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    assert_eq!(
+        state.view.selected_feedback_action(),
+        Some(LauncherFeedbackAction::OpenStudio)
+    );
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    assert!(execution.is_none());
+    assert_eq!(
+        state
+            .studio_intent
+            .as_ref()
+            .map(|intent| intent.command.as_str()),
+        Some("std-studio --open history")
+    );
+}
+
+fn feedback(status: ActionExecutionStatus) -> LauncherFeedback {
+    LauncherFeedback::from_execution(&ActionExecution {
+        action_id: ActionId::default(),
+        action_name: "Fixture Feedback".to_string(),
+        status,
+        message: "fixture feedback".to_string(),
+        output: None,
+        created_at: chrono::Utc::now(),
+    })
 }
 
 #[test]

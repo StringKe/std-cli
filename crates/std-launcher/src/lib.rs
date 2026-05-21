@@ -247,6 +247,7 @@ impl LauncherState {
         self.view.last_triggered = Some(result.action.name);
         self.view.last_execution = Some(execution.clone());
         self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.selected_feedback_action = 0;
         self.view.phase = std_egui::LauncherPhase::Feedback;
         Some(execution)
     }
@@ -273,6 +274,7 @@ impl LauncherState {
         self.view.last_triggered = Some(execution.action_name.clone());
         self.view.last_execution = Some(execution.clone());
         self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.selected_feedback_action = 0;
         self.view.phase = std_egui::LauncherPhase::Feedback;
         Some(execution)
     }
@@ -297,6 +299,7 @@ impl LauncherState {
         };
         self.view.last_execution = Some(execution.clone());
         self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.selected_feedback_action = 0;
         execution
     }
 

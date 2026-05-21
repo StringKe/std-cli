@@ -1,6 +1,7 @@
+use crate::launcher_feedback::{LauncherFeedback, LauncherFeedbackAction};
 use std::time::Instant;
 use std_core::StdCore;
-use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType, SearchResult};
+use std_types::{ActionExecution, ActionPreview, ActionType, SearchResult};
 
 const EMPTY_QUERY_LIMIT: usize = 10;
 const RESULT_DISPLAY_LIMIT: usize = 200;
@@ -45,17 +46,9 @@ pub struct LauncherViewModel {
     pub preview: Option<ActionPreview>,
     pub last_execution: Option<ActionExecution>,
     pub feedback: Option<LauncherFeedback>,
+    pub selected_feedback_action: usize,
     pub last_triggered: Option<String>,
     pub telemetry: LauncherTelemetry,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LauncherFeedback {
-    pub action_name: String,
-    pub status: ActionExecutionStatus,
-    pub title: String,
-    pub detail: String,
-    pub deferred: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -65,28 +58,6 @@ pub struct LauncherNlSuggestion {
     pub confidence: u8,
     pub actions: Vec<String>,
     pub selected_action: usize,
-}
-
-impl LauncherFeedback {
-    pub fn from_execution(execution: &ActionExecution) -> Self {
-        let deferred = execution.status == ActionExecutionStatus::NeedsExternalRunner;
-        Self {
-            action_name: execution.action_name.clone(),
-            status: execution.status.clone(),
-            title: feedback_title(&execution.status),
-            detail: feedback_detail(execution),
-            deferred,
-        }
-    }
-
-    pub fn summary(&self) -> String {
-        format!(
-            "{} {:?} {}",
-            self.action_name,
-            self.status,
-            self.detail.trim()
-        )
-    }
 }
 
 impl LauncherViewModel {
@@ -106,6 +77,7 @@ impl LauncherViewModel {
             preview: None,
             last_execution: None,
             feedback: None,
+            selected_feedback_action: 0,
             last_triggered: None,
             telemetry: LauncherTelemetry {
                 last_search_ms: elapsed_ms,
@@ -125,6 +97,8 @@ impl LauncherViewModel {
         let ask_mode = query.ask_mode();
         self.query = query.display_query;
         let started_at = Instant::now();
+        self.feedback = None;
+        self.selected_feedback_action = 0;
         if ask_mode {
             self.preview_nl_suggestion(query.search_query, started_at);
             return;
@@ -222,6 +196,19 @@ impl LauncherViewModel {
             .map(String::as_str)
     }
 
+    pub fn feedback_actions(&self) -> Vec<LauncherFeedbackAction> {
+        self.feedback
+            .as_ref()
+            .map(LauncherFeedback::actions)
+            .unwrap_or_default()
+    }
+
+    pub fn selected_feedback_action(&self) -> Option<LauncherFeedbackAction> {
+        self.feedback_actions()
+            .get(self.selected_feedback_action)
+            .copied()
+    }
+
     pub fn refresh_preview(&mut self, core: &StdCore) -> Option<ActionPreview> {
         let action_id = self.selected_result()?.action.id;
         let started_at = Instant::now();
@@ -261,6 +248,18 @@ impl LauncherViewModel {
 
     pub fn result_overflowed(&self) -> bool {
         self.telemetry.last_overflowed
+    }
+
+    pub fn move_feedback_action(&mut self, delta: isize) {
+        let actions = self.feedback_actions();
+        if actions.is_empty() {
+            self.selected_feedback_action = 0;
+            return;
+        }
+        self.selected_feedback_action = self
+            .selected_feedback_action
+            .saturating_add_signed(delta)
+            .min(actions.len() - 1);
     }
 
     fn move_nl_action(&mut self, delta: isize) {
@@ -422,22 +421,4 @@ fn group_rank(action_type: &ActionType) -> u8 {
         ActionType::Skill => 3,
         ActionType::Custom(_) => 4,
     }
-}
-
-fn feedback_title(status: &ActionExecutionStatus) -> String {
-    match status {
-        ActionExecutionStatus::Completed => "Completed".to_string(),
-        ActionExecutionStatus::Failed => "Failed".to_string(),
-        ActionExecutionStatus::NeedsExternalRunner => "Needs external runner".to_string(),
-    }
-}
-
-fn feedback_detail(execution: &ActionExecution) -> String {
-    execution
-        .output
-        .as_ref()
-        .and_then(|output| output.get("reason"))
-        .and_then(|reason| reason.as_str())
-        .map(ToString::to_string)
-        .unwrap_or_else(|| execution.message.clone())
 }

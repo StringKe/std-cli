@@ -41,6 +41,7 @@ pub struct LauncherUiSemanticsReport {
     pub defer_actions: String,
     pub failed_feedback_label: String,
     pub error_actions: String,
+    pub feedback_keyboard_path: String,
     pub error_open_studio_target: String,
     pub error_open_studio_command: String,
     pub reduce_motion: bool,
@@ -96,6 +97,7 @@ impl LauncherState {
             defer_actions: "Copy,Retry".to_string(),
             failed_feedback_label: feedback.failed_label,
             error_actions: "Copy,Retry,Open Studio".to_string(),
+            feedback_keyboard_path: feedback.keyboard_path,
             error_open_studio_target: feedback.open_studio_target,
             error_open_studio_command: feedback.open_studio_command,
             reduce_motion: motion.is_reduced(),
@@ -144,6 +146,7 @@ struct FeedbackSemantics {
     failed_label: String,
     open_studio_target: String,
     open_studio_command: String,
+    keyboard_path: String,
 }
 
 struct ActionPanelSemantics {
@@ -275,11 +278,35 @@ fn feedback_semantics() -> FeedbackSemantics {
     let mut failed_state = LauncherState::new();
     failed_state.view.feedback = Some(failed_feedback.clone());
     let studio_intent = failed_state.open_studio_execution_history_from_feedback();
+    let mut keyboard_state = LauncherState::new();
+    keyboard_state.view.feedback = Some(failed_feedback.clone());
+    keyboard_state.focus_section = crate::LauncherFocusSection::Feedback;
+    keyboard_state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let retry = keyboard_state
+        .view
+        .selected_feedback_action()
+        .map(|action| format!("{action:?}"))
+        .unwrap_or_else(|| "none".to_string());
+    keyboard_state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let open_studio = keyboard_state
+        .view
+        .selected_feedback_action()
+        .map(|action| format!("{action:?}"))
+        .unwrap_or_else(|| "none".to_string());
+    let _ = keyboard_state.handle_keyboard_input(LauncherKey::Enter, false);
     FeedbackSemantics {
         defer_label: feedback_label(&defer_feedback),
         failed_label: feedback_label(&failed_feedback),
         open_studio_target: format!("{:?}", studio_intent.target),
         open_studio_command: studio_intent.command,
+        keyboard_path: format!(
+            "Feedback>ArrowDown:{retry}>ArrowDown:{open_studio}>Enter:{}",
+            keyboard_state
+                .studio_intent
+                .as_ref()
+                .map(|intent| intent.command.as_str())
+                .unwrap_or("none")
+        ),
     }
 }
 
@@ -346,6 +373,9 @@ impl LauncherUiSemanticsReport {
             && self.defer_actions == "Copy,Retry"
             && self.failed_feedback_label.contains("Failed")
             && self.error_actions == "Copy,Retry,Open Studio"
+            && self
+                .feedback_keyboard_path
+                .contains("ArrowDown:Retry>ArrowDown:OpenStudio>Enter:std-studio --open history")
             && self.error_open_studio_target == "ExecutionHistory"
             && self.error_open_studio_command == "std-studio --open history"
             && (!self.reduce_motion || self.launcher_enter_ms == 0)
@@ -353,7 +383,7 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -387,6 +417,7 @@ impl LauncherUiSemanticsReport {
             self.defer_actions,
             self.failed_feedback_label,
             self.error_actions,
+            self.feedback_keyboard_path,
             self.error_open_studio_target,
             self.error_open_studio_command,
             self.reduce_motion,
