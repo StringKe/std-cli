@@ -1,6 +1,7 @@
 use super::*;
 
 mod config;
+mod desktop_background_ui_guard;
 mod desktop_guard;
 mod desktop_guard_runtime;
 mod desktop_guard_scan;

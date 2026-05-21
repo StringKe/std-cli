@@ -87,7 +87,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --preview-smoke",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
         "lines.push(format!(\"background_ui_acceptance={command}\"))",
-        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke",
         "--harness-pid <pid>",
         "--window-id <window-id>",
@@ -185,13 +185,13 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(
         &launcher_metrics_tests,
-        "transparent_capture_window_has_no_carrier_background",
+        "panel_rect_matches_native_host_window_height",
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=transparent,no_carrier,width_matches_panel,height_matches_panel",
-        "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel",
-        "capture_surface=panel_only_on_transparent_capture_window,no_carrier_background",
+        "native_host_window=panel_surface,no_carrier_background",
+        "capture_window=panel_surface,opt_in_only,no_carrier_background",
+        "capture_surface=native_panel_surface,no_carrier_background,no_shadow_clip",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -232,8 +232,8 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
-        "capture-window,opt-in-only",
-        "no-product-viewport",
+        "native-panel-surface,opt-in-only",
+        "no-default-window",
         "preview_surface_summary",
         "preview_size_summary",
         "panel_token=bg/surface-0",
