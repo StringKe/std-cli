@@ -84,6 +84,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - 目标进程限定为测试命令启动的隔离 harness，不复用用户已打开的真实窗口
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
 - runner 必须用 pid 反查真实 bundle identifier，不能只信任命令行传入的 bundle id 字符串
+- target identity 必须是固定 bundle id、pid、window id、window title 四重匹配，缺任一项直接 `SKIP` 或 `FAIL`
 - 启动 harness 使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh`，该脚本只创建 `dev.std-cli.background-ui-harness` 测试 app，并用 `open -g` 避免抢占前台
 - 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - `std ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
@@ -94,6 +95,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - activation start 使用 `appKitDefined` subtype 1 `applicationActivated`，结束使用 subtype 2 `applicationDeactivated`
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为
 - CGEvent 必须写入 `windowUnderMouse`、`windowThatCanHandle` 和 field 51/58，事件路由必须保持 window id 与 harness 匹配
+- previous app 永远不能作为输入目标；它只允许被安装 event tap，用来丢弃 deactivation focus message
 - 不向用户当前 frontmost app、Terminal、1Password、WeChat 或系统设置发送事件
 - 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件，harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
@@ -108,7 +110,7 @@ STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh
 STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"
 ```
 
-该路径不能进入 `mise run quality`、release smoke gate 或默认测试。它只用于后续真实截图、键盘焦点、窗口或面板管理验收。
+该路径不能进入 `mise run quality`、release smoke gate、默认质量门禁或默认测试。它只用于后续真实截图、键盘焦点、窗口或面板管理验收。
 
 截图采集脚本同样必须显式 opt-in，未设置 `STD_ALLOW_UI_PREVIEW=1` 时直接返回 `SKIP`，不调用 macOS `screencapture`：
 

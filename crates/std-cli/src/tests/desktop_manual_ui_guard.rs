@@ -100,7 +100,7 @@ fn assert_background_harness_contract(root: &Path) {
     }
 }
 
-fn background_cli_contract_terms() -> [&'static str; 28] {
+fn background_cli_contract_terms() -> [&'static str; 33] {
     [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -121,19 +121,24 @@ fn background_cli_contract_terms() -> [&'static str; 28] {
         "window-center-primer",
         "postToPid-target-pid-input",
         "cursor_visual=floating_cursor_not_required_for_event_delivery",
+        "harness_origin=spawned_by_scripts_background_ui_harness_only",
+        "target_identity=fixed_bundle_pid_window_title_quadruple",
         "tap_order=install_previous_and_target_taps_before_primer",
         "event_tap_then_appkit_defined_primer_then_center_primer",
         "event_route=postToPid_target_pid_only",
+        "frontmost_policy=previous_app_never_targeted",
+        "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
         "focus_messages=raw_13_19_20",
         "window_addressing=windowUnderMouse_windowThatCanHandle_fields_51_58",
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
         "fallback=never_frontmost_desktop_click",
+        "manual_only=excluded_from_default_quality_and_release_smoke",
     ]
 }
 
-fn background_doc_contract_terms() -> [&'static str; 17] {
+fn background_doc_contract_terms() -> [&'static str; 21] {
     [
         "per-process event tap",
         "浮动光标不是输入机制",
@@ -147,15 +152,19 @@ fn background_doc_contract_terms() -> [&'static str; 17] {
         "windowThatCanHandle",
         "field 51/58",
         "隔离 harness",
+        "四重匹配",
+        "previous app 永远不能作为输入目标",
         "window title 白名单",
         "scripts/background-ui-harness.sh",
         "open -g",
         "dev.std-cli.background-ui-harness",
+        "真实 App 名称",
         "用户当前 frontmost app",
+        "默认质量门禁",
     ]
 }
 
-fn background_runner_contract_terms() -> [&'static str; 15] {
+fn background_runner_contract_terms() -> [&'static str; 19] {
     [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -165,6 +174,10 @@ fn background_runner_contract_terms() -> [&'static str; 15] {
         "appKitDefined",
         "NSRunningApplication(processIdentifier: config.harnessPid)",
         "pid bundle_id outside whitelist",
+        "previousPid != config.harnessPid",
+        "harness is frontmost; refusing to target active user window",
+        "ownerPid == config.harnessPid",
+        "number == config.windowId",
         "postToPid",
         "mouseEventWindowUnderMousePointer",
         "mouseEventWindowUnderMousePointerThatCanHandleThisEvent",

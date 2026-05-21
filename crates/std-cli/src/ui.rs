@@ -108,9 +108,13 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         format!("window_title={}", opt_str(config.window_title.as_deref())),
         format!("driver_sequence={}", BACKGROUND_DRIVER.join(",")),
         "cursor_visual=floating_cursor_not_required_for_event_delivery".to_string(),
+        "harness_origin=spawned_by_scripts_background_ui_harness_only".to_string(),
+        "target_identity=fixed_bundle_pid_window_title_quadruple".to_string(),
         "tap_order=install_previous_and_target_taps_before_primer".to_string(),
         "activation=event_tap_then_appkit_defined_primer_then_center_primer".to_string(),
         "event_route=postToPid_target_pid_only".to_string(),
+        "frontmost_policy=previous_app_never_targeted".to_string(),
+        "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch".to_string(),
         "focus_guard=drop_previous_app_deactivation".to_string(),
         "focus_policy=allow_target_activation_only".to_string(),
         "focus_messages=raw_13_19_20".to_string(),
@@ -122,6 +126,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click"
             .to_string(),
         "fallback=never_frontmost_desktop_click".to_string(),
+        "manual_only=excluded_from_default_quality_and_release_smoke".to_string(),
     ]
     .join("\n")
 }
