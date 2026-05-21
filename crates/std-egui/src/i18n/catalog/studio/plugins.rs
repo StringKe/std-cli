@@ -52,6 +52,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.plugins.checks.detail") => Some("permissions and scopes"),
         (Locale::ZhCn, "studio.plugins.checks.empty") => Some("没有 manifest check report"),
         (Locale::EnUs, "studio.plugins.checks.empty") => Some("No manifest check reports"),
+        (Locale::ZhCn, "studio.plugins.security.title") => Some("Security Boundary"),
+        (Locale::EnUs, "studio.plugins.security.title") => Some("Security Boundary"),
+        (Locale::ZhCn, "studio.plugins.security.detail") => Some("权限、文件、网络、action"),
+        (Locale::EnUs, "studio.plugins.security.detail") => {
+            Some("permission, file, network, action")
+        }
         (Locale::ZhCn, "studio.plugins.preview.title") => Some("Preview"),
         (Locale::EnUs, "studio.plugins.preview.title") => Some("Preview"),
         (Locale::ZhCn, "studio.plugins.preview.detail") => Some("已选择 action"),
@@ -92,6 +98,8 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.plugins.checks.title" => Some("Checks"),
         "studio.plugins.checks.detail" => Some("permissions and scopes"),
         "studio.plugins.checks.empty" => Some("No manifest check reports"),
+        "studio.plugins.security.title" => Some("Security Boundary"),
+        "studio.plugins.security.detail" => Some("permission, file, network, action"),
         "studio.plugins.preview.title" => Some("Preview"),
         "studio.plugins.preview.detail" => Some("selected action"),
         "studio.plugins.preview.empty" => Some("No action selected"),

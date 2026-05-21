@@ -148,6 +148,15 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
+                i18n::t("studio.plugins.security.title"),
+                i18n::t("studio.plugins.security.detail"),
+            );
+            plugin_rows::security_summary_panel(ui, &self.app.plugin_manager.check_reports);
+        });
+        ui.add_space(Space::SM as f32);
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            ui::section_header(
+                ui,
                 i18n::t("studio.plugins.checks.title"),
                 i18n::t("studio.plugins.checks.detail"),
             );
