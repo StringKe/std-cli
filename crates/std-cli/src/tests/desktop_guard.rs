@@ -164,8 +164,10 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         !body.contains("STD_ALLOW_UI_PREVIEW = \"1\""),
         "mise default tasks must not opt into UI preview"
     );
+    let manual = source_section(&body, "[tasks.ui-background-harness]", "[tasks.quality]");
+    let default = body.replace(manual, "");
     assert!(
-        !body.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""),
+        !default.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""),
         "mise default tasks must not opt into background UI automation"
     );
 }

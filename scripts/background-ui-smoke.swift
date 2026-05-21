@@ -38,7 +38,7 @@ guard window.ownerPid == config.harnessPid else {
     fail("window pid mismatch")
 }
 
-let previousPid = NSWorkspace.shared.frontmostApplication?.processIdentifier ?? 0
+let previousPid = frontmostPid()
 guard previousPid != config.harnessPid else {
     fail("harness is frontmost; refusing to target active user window")
 }
@@ -52,7 +52,12 @@ postKeySmoke(to: config.harnessPid, windowId: config.windowId)
 sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 2)
 session.stop()
 
-print("background_driver PASS target_pid=\(config.harnessPid) window_id=\(config.windowId)")
+let finalFrontmostPid = frontmostPid()
+guard finalFrontmostPid == previousPid else {
+    fail("frontmost app changed from \(previousPid) to \(finalFrontmostPid)")
+}
+
+print("background_driver PASS target_pid=\(config.harnessPid) window_id=\(config.windowId) frontmost_before=\(previousPid) frontmost_after=\(finalFrontmostPid)")
 
 struct WindowInfo {
     let ownerPid: pid_t
@@ -216,6 +221,10 @@ func findWindow(_ config: Config) -> WindowInfo? {
         return WindowInfo(ownerPid: ownerPid, bounds: bounds, title: title)
     }
     return nil
+}
+
+func frontmostPid() -> pid_t {
+    NSWorkspace.shared.frontmostApplication?.processIdentifier ?? 0
 }
 
 func parseConfig() -> Config {

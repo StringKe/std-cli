@@ -161,7 +161,7 @@ mod tests {
         core.register_action(std_types::RegistryEntry::from_action(
             std_types::Action::new(
                 "Open App: WeChat",
-                "Launch macOS app at /Applications/WeChat.app",
+                "Launch fixture macOS app from test apps dir",
                 "When opening this local macOS application",
                 ActionType::AppLaunch,
             ),

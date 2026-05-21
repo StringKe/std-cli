@@ -5,7 +5,7 @@ use super::desktop_guard_scan::source_section;
 #[test]
 fn background_ui_smoke_contract_requires_isolated_harness() {
     let root = workspace_root();
-    let cli_ui = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+    let cli_ui = fs::read_to_string(root.join("crates/std-cli/src/ui/background.rs")).unwrap();
     let quality_doc = fs::read_to_string(root.join("docs/14_Code_Quality.md")).unwrap();
 
     for required in background_cli_contract_terms() {
@@ -225,7 +225,7 @@ fn background_doc_contract_terms() -> [&'static str; 24] {
     ]
 }
 
-fn background_runner_contract_terms() -> [&'static str; 20] {
+fn background_runner_contract_terms() -> [&'static str; 26] {
     [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -236,6 +236,12 @@ fn background_runner_contract_terms() -> [&'static str; 20] {
         "focusEventMask()",
         "NSRunningApplication(processIdentifier: config.harnessPid)",
         "pid bundle_id outside whitelist",
+        "let previousPid = frontmostPid()",
+        "let finalFrontmostPid = frontmostPid()",
+        "finalFrontmostPid == previousPid",
+        "frontmost app changed from",
+        "frontmost_before=",
+        "frontmost_after=",
         "previousPid != config.harnessPid",
         "harness is frontmost; refusing to target active user window",
         "ownerPid == config.harnessPid",

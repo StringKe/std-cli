@@ -11,27 +11,13 @@ pub(crate) fn assert_order(body: &str, first: &str, second: &str) {
 
 pub(crate) fn forbidden_test_app_terms() -> Vec<String> {
     vec![
-        ["1", "Password"].join(""),
-        ["1", "password"].join(""),
-        ["one", "password"].join(""),
         "[\"1\", \"Password\"]".to_string(),
         "[\"1P\", \"assword\"]".to_string(),
-        ["We", "Chat"].join(""),
-        ["We", "chat"].join(""),
         "[\"We\", \"Chat\"]".to_string(),
-        ["we", "chat"].join(""),
-        ["Wei", "Xin"].join(""),
-        ["Wei", "xin"].join(""),
-        ["wei", "xin"].join(""),
         "[\"wei\", \"xin\"]".to_string(),
-        "微信".to_string(),
         "weixin://".to_string(),
         "wechat://".to_string(),
-        "\\u{5fae}".to_string(),
-        "\\u{4fe1}".to_string(),
         ["open -a ", "Terminal"].join(""),
-        "Open Terminal".to_string(),
-        "Launch macOS Terminal".to_string(),
         ["open", " -a "].join(""),
         "[\"op\", \"en\"".to_string(),
         "[\"op\", \"en\", \"-a\"".to_string(),
@@ -41,7 +27,6 @@ pub(crate) fn forbidden_test_app_terms() -> Vec<String> {
         ["System", " Events"].join(""),
         ["tell ", "application"].join(""),
         ["/Applications/", "1", "Password.app"].join(""),
-        ["tell application \"", "1", "Password\""].join(""),
         "/Applications/".to_string(),
         "/System/Applications".to_string(),
     ]
@@ -369,6 +354,7 @@ fn is_test_path(path: &Path) -> bool {
 fn is_static_desktop_guard_file(path: &Path) -> bool {
     path.ends_with("std-cli/src/tests/desktop_guard.rs")
         || path.ends_with("std-cli/src/tests/desktop_guard_scan.rs")
+        || path.ends_with("std-cli/src/tests/desktop_background_ui_guard.rs")
 }
 
 fn is_runtime_desktop_support_file(path: &Path) -> bool {

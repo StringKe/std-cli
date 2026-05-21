@@ -330,7 +330,7 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     check_text(&core, "cfg!(test) || std_test_mode_enabled()")?;
     check_text(&core, "STD_ALLOW_DESKTOP_AUTOMATION")?;
     check_text(&core, "STD_ALLOW_BACKGROUND_UI_AUTOMATION")?;
-    let cli_ui = read_required(&root.join("crates/std-cli/src/ui.rs"))?;
+    let cli_ui = read_required(&root.join("crates/std-cli/src/ui/background.rs"))?;
     check_text(&cli_ui, "STD_TEST_MODE blocks background UI automation")?;
     check_text(&cli_ui, "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required")?;
     check_text(&cli_ui, "isolated_background_ui_harness_only")?;

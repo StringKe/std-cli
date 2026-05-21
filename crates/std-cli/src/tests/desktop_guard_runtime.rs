@@ -142,7 +142,7 @@ fn binary_entrypoints_sanitize_desktop_opt_ins_before_dispatch() {
 #[test]
 fn background_ui_smoke_accepts_only_isolated_harness_identity() {
     let root = workspace_root();
-    let body = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+    let body = fs::read_to_string(root.join("crates/std-cli/src/ui/background.rs")).unwrap();
 
     for required in [
         "const HARNESS_BUNDLE_ID: &str = \"dev.std-cli.background-ui-harness\";",
@@ -169,7 +169,7 @@ fn background_ui_smoke_accepts_only_isolated_harness_identity() {
 #[test]
 fn background_ui_smoke_documents_safe_background_event_route() {
     let root = workspace_root();
-    let body = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+    let body = fs::read_to_string(root.join("crates/std-cli/src/ui/background.rs")).unwrap();
 
     for required in [
         "per-process-event-tap",
