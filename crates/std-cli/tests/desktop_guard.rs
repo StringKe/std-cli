@@ -79,8 +79,8 @@ fn std_binary_test_mode_ignores_ambient_user_data_dir() {
         .env("STD_TEST_MODE", "1")
         .env("STDCLI_DATA_DIR", &ambient_data)
         .env_remove("STDCLI_CONFIG")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW")
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "0")
+        .env("STD_ALLOW_UI_PREVIEW", "0")
         .output()
         .unwrap();
 
@@ -109,8 +109,8 @@ fn run_std_in_desktop_safe_test_mode(config_path: &Path, args: &[&str]) -> std::
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW");
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "0")
+        .env("STD_ALLOW_UI_PREVIEW", "0");
     command.output().unwrap()
 }
 

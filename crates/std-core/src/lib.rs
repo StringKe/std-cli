@@ -8,6 +8,7 @@ mod apps;
 mod bootstrap;
 pub mod config;
 mod content;
+mod desktop_safety;
 mod discovery;
 mod events;
 mod execution;
@@ -118,6 +119,9 @@ impl StdCore {
         program: &str,
         args: &[String],
     ) -> Result<Output, io::Error> {
+        if let Some(reason) = desktop_safety::blocked_desktop_command_reason(program, args) {
+            return Err(io::Error::new(io::ErrorKind::PermissionDenied, reason));
+        }
         (self.command_runner)(program, args)
     }
 }

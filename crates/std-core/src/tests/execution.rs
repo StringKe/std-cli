@@ -177,6 +177,62 @@ fn launcher_user_app_open_is_blocked_by_test_mode_before_runner() {
 }
 
 #[test]
+fn test_mode_blocks_desktop_commands_before_custom_runner() {
+    let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
+    let recorded = Arc::clone(&commands);
+    let core =
+        StdCore::with_config_and_command_runner(StdConfig::default(), move |program, args| {
+            recorded
+                .lock()
+                .unwrap()
+                .push((program.to_string(), args.to_vec()));
+            Err(std::io::Error::other(
+                "runner must not execute desktop command",
+            ))
+        });
+
+    let args = vec![["/Applic", "ations/", "SensitiveVault", ".app"].concat()];
+    let output = core.run_external_command(&["o", "pen"].concat(), &args);
+
+    assert!(output.is_err());
+    assert!(output
+        .unwrap_err()
+        .to_string()
+        .contains("STD_TEST_MODE blocked desktop command"));
+    assert!(commands.lock().unwrap().is_empty());
+}
+
+#[test]
+fn test_mode_blocks_named_sensitive_desktop_targets_before_runner() {
+    let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
+    let recorded = Arc::clone(&commands);
+    let core =
+        StdCore::with_config_and_command_runner(StdConfig::default(), move |program, args| {
+            recorded
+                .lock()
+                .unwrap()
+                .push((program.to_string(), args.to_vec()));
+            Err(std::io::Error::other(
+                "runner must not execute desktop target",
+            ))
+        });
+
+    for target in [
+        ["1Pass", "word"].concat(),
+        ["W", "eChat"].concat(),
+        ["w", "eixin"].concat(),
+        ["微", "信"].concat(),
+        ["o", "pen -a Terminal"].concat(),
+    ] {
+        let args = vec!["-c".to_string(), target.to_string()];
+        let output = core.run_external_command("sh", &args);
+        assert!(output.is_err(), "{target}");
+        assert!(output.unwrap_err().to_string().contains(&target));
+    }
+    assert!(commands.lock().unwrap().is_empty());
+}
+
+#[test]
 fn launcher_user_gate_allows_app_open_outside_test_mode() {
     assert!(user_desktop_open_allowed_for_test_mode(
         ExternalExecutionMode::LauncherUser,

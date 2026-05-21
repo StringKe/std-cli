@@ -186,8 +186,8 @@ fn scan_binary_spawn_blocks(path: &Path, body: &str, violations: &mut Vec<String
         let block = &body[start..end];
         for required in [
             ".env(\"STD_TEST_MODE\", \"1\")",
-            ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")",
-            ".env_remove(\"STD_ALLOW_UI_PREVIEW\")",
+            ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"0\")",
+            ".env(\"STD_ALLOW_UI_PREVIEW\", \"0\")",
         ] {
             if !block.contains(required) {
                 violations.push(format!(
@@ -316,12 +316,12 @@ pub(crate) fn scan_rs_files_for_unsafe_opt_ins(dir: &Path, violations: &mut Vec<
 
 fn forbidden_test_opt_in_terms() -> Vec<String> {
     vec![
-        ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
-        ".env(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+        ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
+        ".env(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
         ".env([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         ".env([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
-        "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
-        "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+        "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
+        "set_var(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
         "set_var([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         "set_var([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
     ]

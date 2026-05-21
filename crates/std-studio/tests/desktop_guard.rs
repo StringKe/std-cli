@@ -26,8 +26,8 @@ fn run_studio_in_desktop_safe_test_mode(args: &[&str]) -> std::process::Output {
     command
         .args(args)
         .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW");
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "0")
+        .env("STD_ALLOW_UI_PREVIEW", "0");
     command.output().unwrap()
 }
 

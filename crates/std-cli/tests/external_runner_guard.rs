@@ -302,8 +302,8 @@ fn run_std(config_path: &Path, args: &[&str]) -> std::process::Output {
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW");
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "0")
+        .env("STD_ALLOW_UI_PREVIEW", "0");
     command.output().unwrap()
 }
 
