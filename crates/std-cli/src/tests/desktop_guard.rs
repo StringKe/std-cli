@@ -93,9 +93,24 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         .unwrap();
     let body = fs::read_to_string(root.join("mise.toml")).unwrap();
 
-    for task in ["clippy", "dylint", "dylint-test", "file-limits", "test"] {
+    assert!(
+        body.contains("[env]\nSTD_TEST_MODE = \"1\""),
+        "mise workspace env must force STD_TEST_MODE=1"
+    );
+    for task in [
+        "clippy",
+        "dylint",
+        "dylint-test",
+        "file-limits",
+        "test",
+        "deny",
+        "machete",
+        "release-build",
+        "release-package",
+        "release-verify",
+    ] {
         assert!(
-            task_has_std_test_mode(&body, task),
+            task_has_std_test_mode(&body, task) || task_inherits_workspace_test_mode(&body, task),
             "mise task {task} must set STD_TEST_MODE=1"
         );
     }
@@ -389,6 +404,10 @@ fn task_has_std_test_mode(body: &str, task: &str) -> bool {
     let rest = &body[start + header.len()..];
     let end = rest.find("\n[tasks.").unwrap_or(rest.len());
     rest[..end].contains("env = { STD_TEST_MODE = \"1\" }")
+}
+
+fn task_inherits_workspace_test_mode(body: &str, task: &str) -> bool {
+    body.contains("[env]\nSTD_TEST_MODE = \"1\"") && body.contains(&format!("[tasks.{task}]"))
 }
 
 fn source_section<'a>(body: &'a str, start: &str, end: &str) -> &'a str {

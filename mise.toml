@@ -1,6 +1,9 @@
 [tools]
 rust = "stable"
 
+[env]
+STD_TEST_MODE = "1"
+
 [tasks.fmt]
 description = "Check workspace formatting"
 run = "cargo fmt --all --check"
@@ -32,10 +35,12 @@ run = "cargo test --workspace -- --test-threads=1"
 
 [tasks.deny]
 description = "Run cargo-deny dependency checks"
+env = { STD_TEST_MODE = "1" }
 run = "cargo deny check"
 
 [tasks.machete]
 description = "Run cargo-machete unused dependency checks"
+env = { STD_TEST_MODE = "1" }
 run = "cargo machete"
 
 [tasks.quality]
@@ -53,12 +58,15 @@ depends = [
 
 [tasks.release-build]
 description = "Build release binaries"
+env = { STD_TEST_MODE = "1" }
 run = "cargo build --release --workspace"
 
 [tasks.release-package]
 description = "Package release artifacts"
+env = { STD_TEST_MODE = "1" }
 run = "cargo run -p std-cli -- release package --version 1.0.0 --from target/release --dist dist/1.0.0-current"
 
 [tasks.release-verify]
 description = "Verify release artifacts"
+env = { STD_TEST_MODE = "1" }
 run = "cargo run -p std-cli -- release verify --dist dist/1.0.0-current"
