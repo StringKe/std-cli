@@ -153,9 +153,6 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                     state.update_query(query_text);
                 }
                 render_mode_tag(ui, state);
-                if quiet_button(ui, "Esc").clicked() {
-                    *hide_requested = true;
-                }
             });
         });
 
@@ -196,6 +193,9 @@ fn search_placeholder(state: &LauncherState) -> &'static str {
 fn render_mode_tag(ui: &mut egui::Ui, state: &LauncherState) {
     let ctx = ui.ctx().clone();
     let mode = LauncherQueryMode::from_query(&state.view.query);
+    if mode == LauncherQueryMode::All {
+        return;
+    }
     egui::Frame::new()
         .fill(Color::bg_surface_2(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
@@ -296,17 +296,11 @@ mod tests {
     fn launcher_search_mode_tag_tracks_query_prefix() {
         let mut state = LauncherState::new();
 
-        assert_eq!(
-            LauncherQueryMode::from_query(&state.view.query).tag_label(),
-            "All"
-        );
+        assert_eq!(search_mode_tag_label(&state), None);
 
         state.update_query("? rebuild");
 
-        assert_eq!(
-            LauncherQueryMode::from_query(&state.view.query).tag_label(),
-            "Ask"
-        );
+        assert_eq!(search_mode_tag_label(&state), Some("Ask"));
     }
 
     #[test]
@@ -315,5 +309,10 @@ mod tests {
 
         assert_eq!(frame.fill, egui::Color32::TRANSPARENT);
         assert_eq!(frame.stroke, egui::Stroke::NONE);
+    }
+
+    fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
+        let mode = LauncherQueryMode::from_query(&state.view.query);
+        (mode != LauncherQueryMode::All).then_some(mode.tag_label())
     }
 }
