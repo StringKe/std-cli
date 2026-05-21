@@ -103,7 +103,7 @@ fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
             .as_ref()
             .map(|feedback| feedback.status == ActionExecutionStatus::Failed)
             .unwrap_or(false),
-        "searching" => state.view.phase == std_egui::LauncherPhase::Searching,
+        "loading" | "searching" => state.view.phase == std_egui::LauncherPhase::Searching,
         "executing" => state.view.phase == std_egui::LauncherPhase::Executing,
         "action-panel" => state.action_panel.open,
         _ => false,

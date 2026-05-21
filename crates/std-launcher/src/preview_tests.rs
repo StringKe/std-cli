@@ -42,7 +42,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
-    assert_eq!(report.scenarios.len(), 16);
+    assert_eq!(report.scenarios.len(), 18);
     assert!(report
         .commands
         .iter()
@@ -88,6 +88,14 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .states
         .iter()
         .any(|state| state.starts_with("dark-searching=PASS")));
+    assert!(report
+        .states
+        .iter()
+        .any(|state| state.starts_with("light-loading=PASS")));
+    assert!(report
+        .states
+        .iter()
+        .any(|state| state.starts_with("dark-loading=PASS")));
     assert!(report
         .states
         .iter()
@@ -182,6 +190,9 @@ fn ui_preview_scenarios_seed_visible_launcher_states() {
     assert_eq!(state.view.phase, std_egui::LauncherPhase::NoMatches);
 
     apply_preview_scenario(&mut state, "searching");
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
+
+    apply_preview_scenario(&mut state, "loading");
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
 
     apply_preview_scenario(&mut state, "executing");

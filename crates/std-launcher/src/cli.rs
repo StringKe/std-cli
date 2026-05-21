@@ -259,6 +259,8 @@ mod tests {
         assert!(report.summary().contains("dark-results"));
         assert!(report.summary().contains("light-no-results"));
         assert!(report.summary().contains("dark-searching"));
+        assert!(report.summary().contains("light-loading"));
+        assert!(report.summary().contains("dark-loading"));
         assert!(report.summary().contains("light-executing"));
         assert!(report.summary().contains("light-defer"));
         assert!(report.summary().contains("dark-defer"));

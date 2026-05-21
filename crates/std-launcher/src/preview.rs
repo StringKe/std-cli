@@ -199,7 +199,7 @@ pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) 
         "none" | "no-results" => {
             state.update_query("zzzz-no-launcher-match");
         }
-        "searching" => {
+        "loading" | "searching" => {
             state.view.preview_searching("slow query");
         }
         "executing" => {
@@ -288,6 +288,14 @@ fn preview_matrix() -> Vec<LauncherPreviewScenario> {
         LauncherPreviewScenario {
             theme: "dark",
             state: "searching",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "loading",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "loading",
         },
         LauncherPreviewScenario {
             theme: "light",
