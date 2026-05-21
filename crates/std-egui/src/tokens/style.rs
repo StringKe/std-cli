@@ -58,6 +58,8 @@ pub struct ThemeSmokeReport {
     pub light_accent_weak_alpha: u8,
     pub dark_mode_applied: bool,
     pub light_mode_applied: bool,
+    pub high_contrast_dark_accent_weak_alpha: u8,
+    pub high_contrast_light_accent_weak_alpha: u8,
     pub high_contrast_focus_ring_width: u32,
     pub min_text_contrast_x100: u16,
     pub min_accent_nontext_contrast_x100: u16,
@@ -72,7 +74,13 @@ impl ThemeSmokeReport {
         let dark = ctx.style().visuals.clone();
         apply_theme(&ctx, ThemeMode::Light);
         let light = ctx.style().visuals.clone();
-        let a11y = AccessibilityContext {
+        let standard_a11y = AccessibilityContext {
+            reduce_motion: false,
+            reduce_transparency: false,
+            high_contrast: false,
+            bold_text: false,
+        };
+        let high_contrast_a11y = AccessibilityContext {
             reduce_motion: false,
             reduce_transparency: false,
             high_contrast: true,
@@ -89,13 +97,25 @@ impl ThemeSmokeReport {
             light_surface_3: light.widgets.hovered.bg_fill,
             dark_selection: dark.selection.bg_fill,
             light_selection: light.selection.bg_fill,
-            dark_accent: Color::accent_base_for(EffectiveTheme::Dark, &a11y),
-            light_accent: Color::accent_base_for(EffectiveTheme::Light, &a11y),
-            dark_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Dark, &a11y).a(),
-            light_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Light, &a11y).a(),
+            dark_accent: Color::accent_base_for(EffectiveTheme::Dark, &standard_a11y),
+            light_accent: Color::accent_base_for(EffectiveTheme::Light, &standard_a11y),
+            dark_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Dark, &standard_a11y)
+                .a(),
+            light_accent_weak_alpha: Color::accent_weak_for(EffectiveTheme::Light, &standard_a11y)
+                .a(),
             dark_mode_applied: dark.dark_mode,
             light_mode_applied: !light.dark_mode,
-            high_contrast_focus_ring_width: a11y.focus_ring_width() as u32,
+            high_contrast_dark_accent_weak_alpha: Color::accent_weak_for(
+                EffectiveTheme::Dark,
+                &high_contrast_a11y,
+            )
+            .a(),
+            high_contrast_light_accent_weak_alpha: Color::accent_weak_for(
+                EffectiveTheme::Light,
+                &high_contrast_a11y,
+            )
+            .a(),
+            high_contrast_focus_ring_width: high_contrast_a11y.focus_ring_width() as u32,
             min_text_contrast_x100: contrast_x100(super::contrast::min_text_contrast_ratio()),
             min_accent_nontext_contrast_x100: contrast_x100(
                 super::contrast::min_accent_nontext_contrast_ratio(),
@@ -114,10 +134,12 @@ impl ThemeSmokeReport {
             && layered_light_surfaces(self)
             && self.dark_selection != self.light_selection
             && self.dark_accent != self.light_accent
-            && self.dark_accent_weak_alpha == 82
-            && self.light_accent_weak_alpha == 56
+            && self.dark_accent_weak_alpha == 46
+            && self.light_accent_weak_alpha == 31
             && self.dark_surface_0.r() >= 24
             && self.light_surface_0 != egui::Color32::WHITE
+            && self.high_contrast_dark_accent_weak_alpha == 82
+            && self.high_contrast_light_accent_weak_alpha == 56
             && self.high_contrast_focus_ring_width == 3
             && self.min_text_contrast_x100 >= 450
             && self.min_accent_nontext_contrast_x100 >= 300
@@ -127,7 +149,7 @@ impl ThemeSmokeReport {
 
     pub fn summary(&self, surface: &str) -> String {
         format!(
-            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_focus_ring_width={}\nmin_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}",
+            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_dark_accent_weak_alpha={}\nhigh_contrast_light_accent_weak_alpha={}\nhigh_contrast_focus_ring_width={}\nmin_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}",
             if self.pass() { "PASS" } else { "FAIL" },
             color_hex(self.dark_surface_0),
             color_hex(self.dark_surface_1),
@@ -145,6 +167,8 @@ impl ThemeSmokeReport {
             self.light_accent_weak_alpha,
             self.dark_mode_applied,
             self.light_mode_applied,
+            self.high_contrast_dark_accent_weak_alpha,
+            self.high_contrast_light_accent_weak_alpha,
             self.high_contrast_focus_ring_width,
             self.min_text_contrast_x100,
             self.min_accent_nontext_contrast_x100,
@@ -309,8 +333,10 @@ mod tests {
         assert_eq!(color_hex(report.dark_surface_0), "#1C1E22");
         assert_eq!(color_hex(report.light_surface_0), "#FAFBFD");
         assert_eq!(report.high_contrast_focus_ring_width, 3);
-        assert_eq!(report.dark_accent_weak_alpha, 82);
-        assert_eq!(report.light_accent_weak_alpha, 56);
+        assert_eq!(report.dark_accent_weak_alpha, 46);
+        assert_eq!(report.light_accent_weak_alpha, 31);
+        assert_eq!(report.high_contrast_dark_accent_weak_alpha, 82);
+        assert_eq!(report.high_contrast_light_accent_weak_alpha, 56);
         assert!(report.min_text_contrast_x100 >= 450);
         assert!(report.min_accent_nontext_contrast_x100 >= 300);
         assert_eq!(report.standard_launcher_enter_ms, 320);
