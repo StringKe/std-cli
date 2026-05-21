@@ -57,8 +57,11 @@ impl StudioEguiApp {
                 i18n::t("studio.apps.register.title"),
                 i18n::t("studio.apps.register.detail"),
             );
-            ui.label(i18n::t("studio.apps.bundle_path"));
-            ui.text_edit_singleline(&mut self.app_bundle_path);
+            app_text_input(
+                ui,
+                i18n::t("studio.apps.bundle_path"),
+                &mut self.app_bundle_path,
+            );
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.apps.register")).clicked() {
                     self.register_app_bundle();
@@ -78,7 +81,7 @@ impl StudioEguiApp {
                 i18n::t("studio.apps.search.title"),
                 i18n::t("studio.apps.search.detail"),
             );
-            ui.text_edit_singleline(&mut self.app_query);
+            app_text_input(ui, i18n::t("studio.apps.search.title"), &mut self.app_query);
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.apps.search")).clicked() {
                     self.search_apps_status();
@@ -187,4 +190,57 @@ fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>) -> Option<S
             }
         });
     selected_name
+}
+
+fn app_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
+    ui.label(label);
+    let response = ui.add_sized(
+        [ui.available_width(), 28.0],
+        egui::TextEdit::singleline(value),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            app_input_a11y_label(label, value),
+        )
+    });
+}
+
+fn app_input_a11y_label(label: &str, value: &str) -> String {
+    let value = if value.trim().is_empty() {
+        "empty"
+    } else {
+        value.trim()
+    };
+    format!("{label}, text box, value {value}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn app_inputs_use_text_edit_widget_info() {
+        let source = include_str!("app_view.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("app_text_input"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("app_input_a11y_label"));
+        assert!(implementation.contains("TextEdit::singleline"));
+        assert!(!implementation.contains("ui.text_edit_singleline"));
+    }
+
+    #[test]
+    fn app_input_a11y_label_exposes_value() {
+        assert_eq!(
+            app_input_a11y_label("Bundle path", "/tmp/StdFixture.app"),
+            "Bundle path, text box, value /tmp/StdFixture.app"
+        );
+        assert_eq!(
+            app_input_a11y_label("Search apps", " "),
+            "Search apps, text box, value empty"
+        );
+    }
 }
