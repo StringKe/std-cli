@@ -14,14 +14,10 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
     if !state.action_panel.open {
         return;
     }
-    let width = ui_metrics::action_panel_width(anchor_rect.width());
-    let pos = egui::pos2(
-        anchor_rect.right() - width,
-        anchor_rect.top() - action_panel_height(state),
-    );
+    let rect = ui_metrics::action_panel_rect(anchor_rect, state.action_panel.items.len());
     egui::Area::new("launcher_action_panel".into())
         .order(egui::Order::Foreground)
-        .fixed_pos(pos)
+        .fixed_pos(rect.min)
         .show(ctx, |ui| {
             egui::Frame::new()
                 .fill(Color::bg_surface_1(ctx))
@@ -30,7 +26,7 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
                 .shadow(Elevation::level_2(ctx))
                 .inner_margin(egui::Margin::same(Space::sm()))
                 .show(ui, |ui| {
-                    ui.set_width(width);
+                    ui.set_width(rect.width());
                     header(ui, state);
                     ui.add_space(Space::xs() as f32);
                     search(ui, state);
@@ -38,10 +34,6 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
                     actions(ui, state);
                 });
         });
-}
-
-fn action_panel_height(state: &LauncherState) -> f32 {
-    ui_metrics::action_panel_height(state.action_panel.items.len())
 }
 
 fn header(ui: &mut egui::Ui, state: &LauncherState) {

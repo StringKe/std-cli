@@ -129,12 +129,14 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
             "dark-defer",
             "light-error",
             "dark-error",
+            "light-action-panel",
+            "dark-action-panel",
         ]
     );
 
     let summary = report.summary();
     assert!(summary.contains(
-        "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error"
+        "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error,light-action-panel,dark-action-panel"
     ));
 }
 

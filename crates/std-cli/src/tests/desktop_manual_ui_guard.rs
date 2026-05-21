@@ -83,7 +83,7 @@ fn workspace_root() -> &'static Path {
         .unwrap()
 }
 
-fn launcher_required_capture_states() -> [&'static str; 8] {
+fn launcher_required_capture_states() -> [&'static str; 10] {
     [
         "capture_launcher light results",
         "capture_launcher dark results",
@@ -93,6 +93,8 @@ fn launcher_required_capture_states() -> [&'static str; 8] {
         "capture_launcher dark defer",
         "capture_launcher light error",
         "capture_launcher dark error",
+        "capture_launcher light action-panel",
+        "capture_launcher dark action-panel",
     ]
 }
 

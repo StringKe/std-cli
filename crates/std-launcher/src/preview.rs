@@ -174,6 +174,8 @@ fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String>
         "dark-defer",
         "light-error",
         "dark-error",
+        "light-action-panel",
+        "dark-action-panel",
     ]
     .into_iter()
     .filter(|required| {
@@ -196,6 +198,8 @@ fn required_capture_states_pass(states: &[String]) -> bool {
             "dark-defer",
             "light-error",
             "dark-error",
+            "light-action-panel",
+            "dark-action-panel",
         ]
 }
 

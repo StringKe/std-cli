@@ -183,6 +183,15 @@ pub(crate) fn action_panel_height(item_count: usize) -> f32 {
     crate::ui_metrics_action_panel::height(scale(), item_count)
 }
 
+pub(crate) fn action_panel_rect(anchor_rect: egui::Rect, item_count: usize) -> egui::Rect {
+    let width = action_panel_width(anchor_rect.width());
+    let height = action_panel_height(item_count);
+    egui::Rect::from_min_size(
+        egui::pos2(anchor_rect.right() - width, anchor_rect.top() - height),
+        egui::vec2(width, height),
+    )
+}
+
 pub(crate) fn action_panel_search_height() -> f32 {
     crate::ui_metrics_action_panel::search_height(scale())
 }

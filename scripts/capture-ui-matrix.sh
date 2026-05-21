@@ -61,6 +61,8 @@ capture_launcher light defer
 capture_launcher dark defer
 capture_launcher light error
 capture_launcher dark error
+capture_launcher light action-panel
+capture_launcher dark action-panel
 
 capture_studio light dashboard
 capture_studio dark dashboard

@@ -245,6 +245,28 @@ fn all_preview_visible_states_keep_transparent_capture_window_panel_only() {
 }
 
 #[test]
+fn action_panel_popover_stays_inside_panel_capture_window() {
+    let mut state = LauncherState::new();
+    crate::preview::apply_preview_scenario(&mut state, "action-panel");
+    let viewport = window_inner_size(&state);
+    let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
+    let panel = panel_rect(available, &state);
+    let anchor = egui::Rect::from_min_size(
+        egui::pos2(
+            panel.left() + Space::MD as f32,
+            panel.bottom() - Space::MD as f32 - 36.0,
+        ),
+        egui::vec2(panel.width() - Space::MD as f32 * 2.0, 36.0),
+    );
+    let popover = action_panel_rect(anchor, state.action_panel.items.len());
+
+    assert!(available.contains_rect(popover));
+    assert!(panel.contains_rect(popover));
+    assert_eq!(popover.width(), 320.0);
+    assert!(popover.bottom() <= anchor.top());
+}
+
+#[test]
 fn empty_suggested_workflows_panel_uses_full_native_height() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "empty");
