@@ -9,6 +9,7 @@ mod controller;
 mod hotkey;
 mod keyboard;
 mod layout_contract;
+mod query_mode;
 mod semantics;
 mod studio_intent;
 mod surface_contract;
@@ -26,6 +27,7 @@ pub use keyboard::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport};
 pub use layout_contract::{
     panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
 };
+pub use query_mode::LauncherQueryMode;
 pub use semantics::LauncherUiSemanticsReport;
 use std::time::Instant;
 use std_core::{StdConfig, StdCore};

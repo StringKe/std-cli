@@ -1,4 +1,4 @@
-use crate::LauncherState;
+use crate::{LauncherQueryMode, LauncherState};
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId, ActionType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,7 +42,7 @@ impl LauncherSurfaceContract {
     }
 
     pub fn pass(&self) -> bool {
-        self.search_bar == "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=optional"
+        self.search_bar == "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=all,command,actions,ask"
             && self
                 .result_list
                 .contains("groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other")
@@ -82,7 +82,10 @@ impl Default for LauncherSurfaceContract {
 }
 
 fn search_bar_contract() -> String {
-    "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=optional".to_string()
+    format!(
+        "height=64;text=headline;icon=search;focus=2px-accent;mode-tag={}",
+        mode_tag_contract()
+    )
 }
 
 fn result_list_contract(result_count: usize, selected_type: &ActionType) -> String {
@@ -170,6 +173,16 @@ fn action_type_name(action_type: &ActionType) -> &'static str {
     }
 }
 
+fn mode_tag_contract() -> String {
+    [
+        LauncherQueryMode::from_query("index").contract_name(),
+        LauncherQueryMode::from_query("/workflow new").contract_name(),
+        LauncherQueryMode::from_query("> action").contract_name(),
+        LauncherQueryMode::from_query("? rebuild").contract_name(),
+    ]
+    .join(",")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -183,6 +196,9 @@ mod tests {
             .summary()
             .contains("launcher_surface_contract PASS"));
         assert!(contract.summary().contains("search_bar_contract=height=64"));
+        assert!(contract
+            .summary()
+            .contains("mode-tag=all,command,actions,ask"));
         assert!(contract
             .summary()
             .contains("result_list_contract=groups=Action / Workflow"));

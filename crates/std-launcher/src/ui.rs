@@ -11,6 +11,7 @@ use std_egui::{
     LauncherPhase,
 };
 use std_launcher::LauncherFocusSection;
+use std_launcher::LauncherQueryMode;
 use std_launcher::LauncherState;
 
 pub(crate) fn render_launcher_viewport(
@@ -150,6 +151,7 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                 if !executing && response.changed() {
                     state.update_query(query_text);
                 }
+                render_mode_tag(ui, state);
                 if quiet_button(ui, "Esc").clicked() {
                     *hide_requested = true;
                 }
@@ -188,6 +190,23 @@ fn search_placeholder(state: &LauncherState) -> &'static str {
     } else {
         i18n::t("launcher.search.placeholder")
     }
+}
+
+fn render_mode_tag(ui: &mut egui::Ui, state: &LauncherState) {
+    let ctx = ui.ctx().clone();
+    let mode = LauncherQueryMode::from_query(&state.view.query);
+    egui::Frame::new()
+        .fill(Color::bg_surface_2(&ctx))
+        .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
+        .corner_radius(egui::CornerRadius::same(Radius::sm()))
+        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
+        .show(ui, |ui| {
+            ui.label(
+                egui::RichText::new(mode.tag_label())
+                    .font(Text::caption())
+                    .color(Color::fg_secondary(&ctx)),
+            );
+        });
 }
 
 fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
@@ -270,6 +289,23 @@ mod tests {
         state.focus_section = LauncherFocusSection::Results;
 
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
+    }
+
+    #[test]
+    fn launcher_search_mode_tag_tracks_query_prefix() {
+        let mut state = LauncherState::new();
+
+        assert_eq!(
+            LauncherQueryMode::from_query(&state.view.query).tag_label(),
+            "All"
+        );
+
+        state.update_query("? rebuild");
+
+        assert_eq!(
+            LauncherQueryMode::from_query(&state.view.query).tag_label(),
+            "Ask"
+        );
     }
 
     #[test]
