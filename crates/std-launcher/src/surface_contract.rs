@@ -281,5 +281,7 @@ mod tests {
         assert!(contract
             .summary()
             .contains("error_state_contract=status=Failed"));
+        assert!(contract.summary().contains("title=Needs review"));
+        assert!(contract.summary().contains("title=Unable to run"));
     }
 }

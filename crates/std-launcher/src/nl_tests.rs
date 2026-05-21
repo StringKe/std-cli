@@ -20,7 +20,10 @@ fn launcher_state_defers_external_runner_actions() {
     assert_eq!(execution.action_name, "Open App: StdNeverLaunchFixture");
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     let feedback = state.view.feedback.as_ref().unwrap();
-    assert_eq!(feedback.title, "Needs external runner");
+    assert_eq!(
+        feedback.title,
+        std_egui::i18n::t("launcher.feedback.deferred")
+    );
     assert!(feedback.deferred);
     assert!(feedback.detail.contains("explicit user trigger"));
     assert_eq!(

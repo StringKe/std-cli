@@ -63,7 +63,10 @@ mod tests {
             model.last_execution.as_ref().unwrap().action_name,
             "Rebuild Index"
         );
-        assert_eq!(model.feedback.as_ref().unwrap().title, "Completed");
+        assert_eq!(
+            model.feedback.as_ref().unwrap().title,
+            i18n::t("launcher.feedback.completed")
+        );
         assert_eq!(model.telemetry.last_result_count, model.results.len());
     }
 
@@ -313,7 +316,7 @@ mod tests {
             Some(true)
         );
         let feedback = model.feedback.as_ref().unwrap();
-        assert_eq!(feedback.title, "Needs external runner");
+        assert_eq!(feedback.title, i18n::t("launcher.feedback.deferred"));
         assert!(feedback.deferred);
     }
 

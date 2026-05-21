@@ -90,8 +90,16 @@ impl LauncherSurfaceSmokeReport {
             && self.empty_state.contains("recent_or_suggested")
             && self.matches_state.contains("grouped")
             && self.no_match_state.contains("ask_ai_enter")
-            && self.defer_feedback == "Needs external runner:Open App: StdNeverLaunchFixture"
-            && self.error_feedback == "Failed:Plugin Crash"
+            && self.defer_feedback
+                == format!(
+                    "{}:Open App: StdNeverLaunchFixture",
+                    std_egui::i18n::t("launcher.feedback.deferred")
+                )
+            && self.error_feedback
+                == format!(
+                    "{}:Plugin Crash",
+                    std_egui::i18n::t("launcher.feedback.failed")
+                )
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
             && self.reduced_launcher_exit_ms == 0

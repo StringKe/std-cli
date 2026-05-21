@@ -369,9 +369,13 @@ impl LauncherUiSemanticsReport {
             && self.executing_search_text.starts_with("Running:")
             && !self.executing_input_enabled
             && self.executing_cancel_shortcut == "Cancel Ctrl+C"
-            && self.defer_feedback_label.contains("Needs external runner")
+            && self
+                .defer_feedback_label
+                .contains(std_egui::i18n::t("launcher.feedback.deferred"))
             && self.defer_actions == "Copy,Retry"
-            && self.failed_feedback_label.contains("Failed")
+            && self
+                .failed_feedback_label
+                .contains(std_egui::i18n::t("launcher.feedback.failed"))
             && self.error_actions == "Copy,Retry,Open Studio"
             && self
                 .feedback_keyboard_path

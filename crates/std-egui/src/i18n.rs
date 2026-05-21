@@ -47,6 +47,14 @@ mod tests {
         );
         assert_eq!(translate(Locale::EnUs, "launcher.search.icon"), "Search");
         assert_eq!(
+            translate(Locale::EnUs, "launcher.feedback.failed"),
+            "Unable to run"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.feedback.deferred"),
+            "需要确认"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "launcher.results.group.action_workflow"),
             "Action / Workflow"
         );

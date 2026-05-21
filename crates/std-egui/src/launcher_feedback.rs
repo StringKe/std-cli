@@ -1,3 +1,4 @@
+use crate::i18n;
 use std_types::{ActionExecution, ActionExecutionStatus};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,9 +55,11 @@ impl LauncherFeedback {
 
 fn feedback_title(status: &ActionExecutionStatus) -> String {
     match status {
-        ActionExecutionStatus::Completed => "Completed".to_string(),
-        ActionExecutionStatus::Failed => "Failed".to_string(),
-        ActionExecutionStatus::NeedsExternalRunner => "Needs external runner".to_string(),
+        ActionExecutionStatus::Completed => i18n::t("launcher.feedback.completed").to_string(),
+        ActionExecutionStatus::Failed => i18n::t("launcher.feedback.failed").to_string(),
+        ActionExecutionStatus::NeedsExternalRunner => {
+            i18n::t("launcher.feedback.deferred").to_string()
+        }
     }
 }
 

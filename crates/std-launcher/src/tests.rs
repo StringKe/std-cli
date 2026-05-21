@@ -136,10 +136,15 @@ fn launcher_state_previews_and_triggers_selected_action() {
     assert_eq!(preview.title, "Rebuild Index");
     assert_eq!(execution.action_name, "Rebuild Index");
     let feedback = state.view.feedback.as_ref().unwrap();
-    assert_eq!(feedback.title, "Completed");
+    assert_eq!(
+        feedback.title,
+        std_egui::i18n::t("launcher.feedback.completed")
+    );
     assert_eq!(feedback.status, ActionExecutionStatus::Completed);
     assert!(!feedback.deferred);
-    assert!(feedback.summary().contains("Rebuild Index Completed"));
+    assert!(feedback
+        .summary()
+        .contains(std_egui::i18n::t("launcher.feedback.completed")));
     assert_eq!(
         state.view.telemetry.last_result_count,
         state.view.results.len()
@@ -200,7 +205,10 @@ fn launcher_smoke_report_validates_fast_search_preview_and_feedback() {
     assert_eq!(report.query, "rebuild index");
     assert_eq!(report.preview_title, "Rebuild Index");
     assert_eq!(report.execution_status, ActionExecutionStatus::Completed);
-    assert_eq!(report.feedback_title, "Completed");
+    assert_eq!(
+        report.feedback_title,
+        std_egui::i18n::t("launcher.feedback.completed")
+    );
     assert!(report.performance.pass(), "{summary}");
     assert!(summary.contains("launcher_smoke PASS"));
     assert!(summary.contains("launcher_perf PASS"));
@@ -256,16 +264,21 @@ fn assert_loading_and_execution_semantics(report: &LauncherUiSemanticsReport, su
 fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     assert!(report
         .defer_feedback_label
-        .contains("Needs external runner"));
+        .contains(std_egui::i18n::t("launcher.feedback.deferred")));
     assert_eq!(report.defer_actions, "Copy,Retry");
-    assert!(report.failed_feedback_label.contains("Failed"));
+    assert!(report
+        .failed_feedback_label
+        .contains(std_egui::i18n::t("launcher.feedback.failed")));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
     assert_eq!(report.error_open_studio_target, "ExecutionHistory");
     assert_eq!(
         report.error_open_studio_command,
         "std-studio --open history"
     );
-    assert!(summary.contains("failed_feedback_label=Failed"));
+    assert!(summary.contains(&format!(
+        "failed_feedback_label={}",
+        std_egui::i18n::t("launcher.feedback.failed")
+    )));
     assert!(summary.contains("error_open_studio_target=ExecutionHistory"));
 }
 
