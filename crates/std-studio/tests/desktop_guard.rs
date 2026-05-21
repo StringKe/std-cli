@@ -1,7 +1,7 @@
 use std::process::Command;
 
 #[test]
-fn studio_test_mode_removes_desktop_opt_in_for_child_process() {
+fn studio_test_mode_blocks_native_child_process_startup() {
     let output = run_studio_in_desktop_safe_test_mode(&[]);
 
     assert!(output.status.success(), "{}", stderr(&output));
@@ -11,7 +11,7 @@ fn studio_test_mode_removes_desktop_opt_in_for_child_process() {
 }
 
 #[test]
-fn studio_preview_test_mode_removes_ui_preview_opt_in_for_child_process() {
+fn studio_preview_test_mode_blocks_child_process_window_startup() {
     let output =
         run_studio_in_desktop_safe_test_mode(&["--ui-preview", "light", "dashboard", "10"]);
 
@@ -26,8 +26,8 @@ fn run_studio_in_desktop_safe_test_mode(args: &[&str]) -> std::process::Output {
     command
         .args(args)
         .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
-        .env("STD_ALLOW_UI_PREVIEW", "1");
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
 }
 

@@ -9,13 +9,6 @@ pub(crate) fn assert_order(body: &str, first: &str, second: &str) {
     );
 }
 
-pub(crate) fn restore_env(key: &str, value: Option<String>) {
-    match value {
-        Some(value) => std::env::set_var(key, value),
-        None => std::env::remove_var(key),
-    }
-}
-
 pub(crate) fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),
@@ -107,7 +100,7 @@ pub(crate) fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<S
             continue;
         }
         let body = fs::read_to_string(&path).unwrap();
-        if !body.contains("CARGO_BIN_EXE_") || opt_in_assignment_is_sanitizer_guard(&path, &body) {
+        if !body.contains("CARGO_BIN_EXE_") {
             continue;
         }
         for required in [
@@ -137,7 +130,7 @@ pub(crate) fn scan_rs_files_for_unsafe_opt_ins(dir: &Path, violations: &mut Vec<
         }
         let body = fs::read_to_string(&path).unwrap();
         for term in forbidden_test_opt_in_terms() {
-            if body.contains(&term) && !opt_in_assignment_is_sanitizer_guard(&path, &body) {
+            if body.contains(&term) {
                 violations.push(format!("{} contains {}", path.display(), term));
             }
         }
@@ -151,13 +144,6 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
     ]
-}
-
-fn opt_in_assignment_is_sanitizer_guard(path: &Path, body: &str) -> bool {
-    path.ends_with("tests/desktop_guard.rs")
-        && body.contains(".env(\"STD_TEST_MODE\", \"1\")")
-        && body.contains(".env(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")")
-        && body.contains(".env(\"STD_ALLOW_UI_PREVIEW\", \"1\")")
 }
 
 fn eligible_test_source(path: &Path) -> bool {

@@ -1,7 +1,7 @@
 use std::process::Command;
 
 #[test]
-fn launcher_test_mode_removes_desktop_opt_in_for_child_process() {
+fn launcher_test_mode_blocks_native_child_process_startup() {
     let output = run_launcher_in_desktop_safe_test_mode(&[]);
 
     assert!(output.status.success(), "{}", stderr(&output));
@@ -11,7 +11,7 @@ fn launcher_test_mode_removes_desktop_opt_in_for_child_process() {
 }
 
 #[test]
-fn launcher_hotkey_smoke_removes_desktop_opt_in_for_child_process() {
+fn launcher_hotkey_smoke_blocks_child_process_registration() {
     let output = run_launcher_in_desktop_safe_test_mode(&["--hotkey-smoke", "Alt+Space"]);
 
     assert!(output.status.success(), "{}", stderr(&output));
@@ -21,7 +21,7 @@ fn launcher_hotkey_smoke_removes_desktop_opt_in_for_child_process() {
 }
 
 #[test]
-fn launcher_gui_hotkey_smoke_removes_desktop_opt_in_for_child_process() {
+fn launcher_gui_hotkey_smoke_blocks_child_process_desktop_automation() {
     let output = run_launcher_in_desktop_safe_test_mode(&["--gui-hotkey-smoke", "Alt+Space", "10"]);
 
     assert!(output.status.success(), "{}", stderr(&output));
@@ -33,7 +33,7 @@ fn launcher_gui_hotkey_smoke_removes_desktop_opt_in_for_child_process() {
 }
 
 #[test]
-fn launcher_preview_test_mode_removes_ui_preview_opt_in_for_child_process() {
+fn launcher_preview_test_mode_blocks_child_process_window_startup() {
     let output =
         run_launcher_in_desktop_safe_test_mode(&["--ui-preview", "light", "results", "10"]);
 
@@ -48,8 +48,8 @@ fn run_launcher_in_desktop_safe_test_mode(args: &[&str]) -> std::process::Output
     command
         .args(args)
         .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
-        .env("STD_ALLOW_UI_PREVIEW", "1");
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
 }
 

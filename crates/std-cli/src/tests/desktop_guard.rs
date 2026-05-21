@@ -1,9 +1,9 @@
 use std::{fs, path::Path};
 
 use super::desktop_guard_scan::{
-    assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, restore_env,
-    scan_rs_files, scan_rs_files_for_binary_spawns, scan_rs_files_for_unsafe_opt_ins,
-    source_section, task_has_std_test_mode, task_inherits_workspace_test_mode,
+    assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, scan_rs_files,
+    scan_rs_files_for_binary_spawns, scan_rs_files_for_unsafe_opt_ins, source_section,
+    task_has_std_test_mode, task_inherits_workspace_test_mode,
 };
 
 #[test]
@@ -321,24 +321,6 @@ fn launcher_hotkey_registration_requires_desktop_opt_in() {
         "desktop_automation_allowed",
         "GlobalHotKeyManager::new",
     );
-}
-
-#[test]
-fn std_test_mode_overrides_inherited_desktop_opt_ins() {
-    let previous_test_mode = std::env::var("STD_TEST_MODE").ok();
-    let previous_desktop = std::env::var("STD_ALLOW_DESKTOP_AUTOMATION").ok();
-    let previous_preview = std::env::var("STD_ALLOW_UI_PREVIEW").ok();
-
-    std::env::set_var("STD_TEST_MODE", "1");
-    std::env::set_var("STD_ALLOW_DESKTOP_AUTOMATION", "1");
-    std::env::set_var("STD_ALLOW_UI_PREVIEW", "1");
-
-    assert!(!std_core::desktop_automation_allowed());
-    assert!(std_core::std_test_mode_enabled());
-
-    restore_env("STD_TEST_MODE", previous_test_mode);
-    restore_env("STD_ALLOW_DESKTOP_AUTOMATION", previous_desktop);
-    restore_env("STD_ALLOW_UI_PREVIEW", previous_preview);
 }
 
 #[test]

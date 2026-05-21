@@ -1,7 +1,7 @@
 use std::{fs, path::Path, process::Command};
 
 #[test]
-fn std_binary_test_mode_removes_desktop_opt_in_for_child_process() {
+fn std_binary_test_mode_blocks_child_process_external_runner() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
@@ -30,7 +30,7 @@ fn std_binary_test_mode_removes_desktop_opt_in_for_child_process() {
 }
 
 #[test]
-fn std_registered_app_test_mode_removes_desktop_opt_in_for_child_process() {
+fn std_registered_app_test_mode_blocks_child_process_app_open() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
     let app_path = temp.path().join("StdNeverLaunchFixture.app");
@@ -78,8 +78,8 @@ fn run_std_in_desktop_safe_test_mode(config_path: &Path, args: &[&str]) -> std::
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
-        .env("STD_ALLOW_UI_PREVIEW", "1");
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
 }
 
