@@ -276,6 +276,43 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
 }
 
 #[test]
+fn background_ui_smoke_contract_requires_isolated_harness() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let cli_ui = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+    let quality_doc = fs::read_to_string(root.join("docs/14_Code_Quality.md")).unwrap();
+
+    for required in [
+        "STD_TEST_MODE blocks background UI automation",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
+        "isolated_background_ui_harness_only",
+        "AX_or_CGEvent_postToPid_after_explicit_opt_in",
+        "event_tap_then_appkit_defined_primer_then_center_primer",
+        "fallback=never_frontmost_desktop_click",
+    ] {
+        assert!(
+            cli_ui.contains(required),
+            "background-smoke must keep isolated opt-in boundary: {required}"
+        );
+    }
+    for required in [
+        "per-process event tap",
+        "appKitDefined primer",
+        "center primer",
+        "隔离 harness",
+        "window title 白名单",
+    ] {
+        assert!(
+            quality_doc.contains(required),
+            "background UI acceptance docs must describe safe harness boundary: {required}"
+        );
+    }
+}
+
+#[test]
 fn screenshot_capture_script_requires_ui_preview_opt_in() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

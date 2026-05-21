@@ -297,7 +297,18 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     let cli_ui = read_required(&root.join("crates/std-cli/src/ui.rs"))?;
     check_text(&cli_ui, "STD_TEST_MODE blocks background UI automation")?;
     check_text(&cli_ui, "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required")?;
+    check_text(&cli_ui, "isolated_background_ui_harness_only")?;
+    check_text(&cli_ui, "AX_or_CGEvent_postToPid_after_explicit_opt_in")?;
+    check_text(
+        &cli_ui,
+        "event_tap_then_appkit_defined_primer_then_center_primer",
+    )?;
     check_text(&cli_ui, "fallback=never_frontmost_desktop_click")?;
+    let quality_doc = read_required(&root.join("docs/14_Code_Quality.md"))?;
+    check_text(&quality_doc, "per-process event tap")?;
+    check_text(&quality_doc, "appKitDefined primer")?;
+    check_text(&quality_doc, "center primer")?;
+    check_text(&quality_doc, "隔离 harness")?;
     let guard = read_required(&root.join("crates/std-cli/tests/external_runner_guard.rs"))?;
     check_text(&guard, "binary_test_mode_blocks_dangerous_command_text")?;
     check_text(&guard, "binary_test_mode_blocks_registered_app_launch")

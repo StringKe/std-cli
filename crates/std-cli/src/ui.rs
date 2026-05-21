@@ -27,7 +27,9 @@ fn background_smoke_skip(reason: &str) -> String {
     [
         "background_ui_smoke SKIP".to_string(),
         format!("reason={reason}"),
-        "target=installed_std_launcher_or_std_studio_only".to_string(),
+        "target=isolated_background_ui_harness_only".to_string(),
+        "driver=AX_or_CGEvent_postToPid_after_explicit_opt_in".to_string(),
+        "activation=event_tap_then_appkit_defined_primer_then_center_primer".to_string(),
         "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,System_Settings".to_string(),
         "fallback=never_frontmost_desktop_click".to_string(),
     ]
