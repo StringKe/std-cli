@@ -1,4 +1,5 @@
 use crate::{
+    views::workflow_builder_ai::WorkflowAiAction,
     workspace_panes::{focused_workspace_spec, StudioWorkspaceCommand},
     StudioEguiApp,
 };
@@ -98,6 +99,37 @@ fn workflow_builder_keyboard_shortcuts_move_selected_loaded_step() {
 
     assert_eq!(app.workflow_edit_index, "0");
     assert!(app.status.contains("moved step"));
+}
+
+#[test]
+fn workflow_ai_assist_apply_insert_and_replace_edit_planned_steps() {
+    let mut app = test_app();
+    app.workflow_goal = "release".to_string();
+    app.apply_workflow_ai_action(WorkflowAiAction::Apply(0));
+
+    let workflow = app.app.planned_workflow.as_ref().unwrap();
+    assert_eq!(workflow.steps.len(), 1);
+    assert_eq!(workflow.steps[0].name, "Collect context");
+    assert_eq!(workflow.steps[0].parameters["source"], "release");
+    assert!(app.status.contains("AI applied step"));
+
+    app.workflow_edit_index = "0".to_string();
+    app.apply_workflow_ai_action(WorkflowAiAction::Insert(1));
+
+    let workflow = app.app.planned_workflow.as_ref().unwrap();
+    assert_eq!(workflow.steps.len(), 2);
+    assert_eq!(workflow.steps[0].name, "Validate result");
+    assert_eq!(workflow.steps[1].name, "Collect context");
+    assert!(app.status.contains("AI inserted step"));
+
+    app.workflow_edit_index = "1".to_string();
+    app.apply_workflow_ai_action(WorkflowAiAction::Replace(2));
+
+    let workflow = app.app.planned_workflow.as_ref().unwrap();
+    assert_eq!(workflow.steps.len(), 2);
+    assert_eq!(workflow.steps[1].name, "Record trace");
+    assert_eq!(workflow.steps[1].parameters["target"], "execution-history");
+    assert!(app.status.contains("AI replaced step"));
 }
 
 #[test]

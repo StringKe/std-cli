@@ -15,6 +15,7 @@ pub(crate) mod settings_model;
 mod settings_rows;
 mod workflow_builder;
 mod workflow_builder_actions;
+pub(crate) mod workflow_builder_ai;
 mod workflow_builder_metrics;
 mod workflow_builder_properties;
 mod workflow_builder_status;

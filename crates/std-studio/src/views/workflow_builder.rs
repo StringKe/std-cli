@@ -1,8 +1,8 @@
 use crate::{
     ui,
     views::{
-        workflow_builder_metrics, workflow_builder_properties, workflow_builder_status,
-        workflow_builder_toolbar, workflow_builder_trace, workflow_rows,
+        workflow_builder_ai, workflow_builder_metrics, workflow_builder_properties,
+        workflow_builder_status, workflow_builder_toolbar, workflow_builder_trace, workflow_rows,
     },
     StudioEguiApp,
 };
@@ -187,18 +187,9 @@ impl StudioEguiApp {
     }
 
     fn render_ai_assist_panel(&mut self, ui: &mut egui::Ui) {
-        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.workflow_builder.ai.title"),
-                i18n::t("studio.workflow_builder.ai.detail"),
-            );
-            ui.label(i18n::t("studio.workflow_builder.ai.prompt"));
-            ui.add_sized(
-                workflow_builder_metrics::ai_input_size(ui.available_width()),
-                egui::TextEdit::singleline(&mut self.workflow_goal),
-            );
-        });
+        if let Some(action) = workflow_builder_ai::render(ui, &mut self.workflow_goal) {
+            self.apply_workflow_ai_action(action);
+        }
     }
 
     fn preview_active_workflow(&mut self) {
@@ -409,6 +400,54 @@ impl StudioEguiApp {
             Ok(step) => {
                 self.workflow_edit_index = "0".to_string();
                 self.status = format!("removed planned step {}", step.name);
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    pub(crate) fn apply_workflow_ai_action(
+        &mut self,
+        action: workflow_builder_ai::WorkflowAiAction,
+    ) {
+        let suggestions = workflow_builder_ai::suggestions(&self.workflow_goal);
+        let (mode, index) = match action {
+            workflow_builder_ai::WorkflowAiAction::Apply(index) => ("applied", index),
+            workflow_builder_ai::WorkflowAiAction::Insert(index) => ("inserted", index),
+            workflow_builder_ai::WorkflowAiAction::Replace(index) => ("replaced", index),
+        };
+        let Some(suggestion) = suggestions.get(index) else {
+            self.status = "missing AI suggestion".to_string();
+            return;
+        };
+        self.app.ensure_planned_workflow("AI assisted workflow");
+        let result = match action {
+            workflow_builder_ai::WorkflowAiAction::Apply(_) => self
+                .app
+                .append_planned_workflow_step(suggestion.step_name, suggestion.parameters.clone()),
+            workflow_builder_ai::WorkflowAiAction::Insert(_) => {
+                let index = self.selected_step_index().unwrap_or_default();
+                self.app.insert_planned_workflow_step(
+                    index,
+                    suggestion.step_name,
+                    suggestion.parameters.clone(),
+                )
+            }
+            workflow_builder_ai::WorkflowAiAction::Replace(_) => {
+                let Some(index) = self.selected_step_index() else {
+                    return;
+                };
+                self.app.update_planned_workflow_step(
+                    index,
+                    Some(suggestion.step_name),
+                    Some(suggestion.parameters.clone()),
+                )
+            }
+        };
+        match result {
+            Ok(step) => {
+                self.workflow_step_name = step.name.clone();
+                self.workflow_step_parameters = step.parameters.to_string();
+                self.status = format!("AI {mode} step {}", step.name);
             }
             Err(error) => self.status = error.to_string(),
         }
