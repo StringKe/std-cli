@@ -123,7 +123,10 @@ pub(crate) fn empty_state(ui: &mut egui::Ui, text: &str) {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::LG as f32);
     ui.vertical_centered(|ui| {
-        ui.label(egui::RichText::new(text).color(muted_text(&ctx)));
+        let response = ui.label(egui::RichText::new(text).color(muted_text(&ctx)));
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), text)
+        });
     });
 }
 
@@ -146,6 +149,17 @@ mod tests {
         let implementation = source.split("#[cfg(test)]").next().unwrap();
 
         assert!(implementation.contains("pub(crate) fn chip"));
+        assert!(implementation.contains("response.widget_info"));
+        assert!(implementation.contains("WidgetType::Label"));
+        assert!(implementation.contains("WidgetInfo::labeled"));
+    }
+
+    #[test]
+    fn empty_state_registers_label_widget_info_for_all_surfaces() {
+        let source = include_str!("ui.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("pub(crate) fn empty_state"));
         assert!(implementation.contains("response.widget_info"));
         assert!(implementation.contains("WidgetType::Label"));
         assert!(implementation.contains("WidgetInfo::labeled"));
