@@ -172,7 +172,7 @@ impl StudioEguiApp {
             },
             StudioWorkspaceCommand::Analyze(path) => match self.app.analyze_entity(&path) {
                 Ok(document) => {
-                    self.analysis_path = path.display().to_string();
+                    self.analysis.path = path.display().to_string();
                     self.status = format!(
                         "workspace analyzed {} components",
                         document.components.len()

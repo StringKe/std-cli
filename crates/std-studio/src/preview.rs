@@ -235,7 +235,7 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                 && app.app.last_workflow_execution.is_some()
         }
         "analysis" => {
-            app.app.active_pane == StudioPane::Analysis && !app.analysis_coverage_output.is_empty()
+            app.app.active_pane == StudioPane::Analysis && !app.analysis.coverage_output.is_empty()
         }
         "plugins" => {
             app.app.active_pane == StudioPane::Plugins
@@ -292,10 +292,10 @@ fn seed_analysis_preview(app: &mut StudioEguiApp) {
     if std::fs::write(src_dir.join("lib.rs"), source).is_err() {
         return;
     }
-    app.analysis_path = project_dir.display().to_string();
-    app.analysis_query = "StudioPreviewAnalysis".to_string();
+    app.analysis.path = project_dir.display().to_string();
+    app.analysis.query = "StudioPreviewAnalysis".to_string();
     if app.app.analyze_entity(&project_dir).is_ok() {
-        app.analysis_coverage_output = app
+        app.analysis.coverage_output = app
             .app
             .analysis_coverage_report()
             .map(|report| format!("coverage complete={}", report.complete))

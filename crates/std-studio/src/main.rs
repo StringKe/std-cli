@@ -1,5 +1,6 @@
 mod analysis;
 mod analysis_rows;
+mod analysis_state;
 mod app_rows;
 mod app_view;
 mod bottom_panel;
@@ -23,6 +24,7 @@ mod views;
 mod workspace_panes;
 mod workspace_tabs;
 
+use analysis_state::AnalysisUiState;
 use layout::StudioLayoutState;
 use preview::{
     blocked_studio_preview_summary, run_studio_preview, studio_preview_request_from_args,
@@ -58,11 +60,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) memory_title: String,
     pub(crate) memory_body: String,
     pub(crate) memory_tags: String,
-    pub(crate) analysis_path: String,
-    pub(crate) analysis_query: String,
-    pub(crate) analysis_answer: String,
-    pub(crate) analysis_search_output: String,
-    pub(crate) analysis_coverage_output: String,
+    pub(crate) analysis: AnalysisUiState,
     pub(crate) settings_hotkey: String,
     pub(crate) settings_data_dir: String,
     pub(crate) settings_enable_ai: bool,
@@ -95,11 +93,7 @@ impl Default for StudioEguiApp {
             memory_title: String::new(),
             memory_body: String::new(),
             memory_tags: String::new(),
-            analysis_path: ".".to_string(),
-            analysis_query: "workflow".to_string(),
-            analysis_answer: String::new(),
-            analysis_search_output: String::new(),
-            analysis_coverage_output: String::new(),
+            analysis: AnalysisUiState::initial(),
             settings_hotkey: String::new(),
             settings_data_dir: String::new(),
             settings_enable_ai: false,

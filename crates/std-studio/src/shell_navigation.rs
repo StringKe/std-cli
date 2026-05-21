@@ -108,7 +108,7 @@ impl StudioEguiApp {
                     .open_workflow_builder(self.app.core.config.workflows_dir()),
                 StudioPane::Analysis => self
                     .app
-                    .open_analysis_workbench(std::path::PathBuf::from(&self.analysis_path)),
+                    .open_analysis_workbench(std::path::PathBuf::from(&self.analysis.path)),
                 StudioPane::Plugins => self.app.open_plugin_manager_pane(),
                 StudioPane::Memory => self.app.open_memory_browser_pane(),
                 StudioPane::History => self.app.open_execution_history_pane(),

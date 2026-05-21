@@ -4,6 +4,7 @@ use std_egui::{i18n, tokens::Space};
 use std_index::{
     IndexAnswer, IndexCoverageReport, IndexDocument, IndexInspection, IndexSearchResult,
 };
+use std_studio::AnalysisWorkbenchViewModel;
 
 const ANALYSIS_PANEL_GAP: f32 = Space::SM as f32;
 
@@ -56,7 +57,7 @@ impl StudioEguiApp {
             ui.horizontal(|ui| {
                 ui.add_sized(
                     [ui.available_width() - 120.0, 28.0],
-                    egui::TextEdit::singleline(&mut self.analysis_path)
+                    egui::TextEdit::singleline(&mut self.analysis.path)
                         .hint_text(i18n::t("studio.analysis.path.hint")),
                 );
                 if ui::quiet_button(ui, i18n::t("studio.analysis.analyze")).clicked() {
@@ -73,10 +74,15 @@ impl StudioEguiApp {
                 i18n::t("studio.analysis.entity.title"),
                 i18n::t("studio.analysis.entity.detail"),
             );
+            let model = self.analysis_workbench_model();
+            render_analysis_tabs(ui, &model);
+            ui.add_space(Space::XS as f32);
             let Some(document) = &self.app.active_analysis else {
                 ui::empty_state(ui, i18n::t("studio.analysis.entity.empty"));
                 return;
             };
+            render_overview_cards(ui, &model);
+            ui.add_space(Space::XS as f32);
             render_document_overview(ui, document);
             ui.add_space(Space::XS as f32);
             render_components(ui, document);
@@ -90,7 +96,7 @@ impl StudioEguiApp {
                 i18n::t("studio.analysis.query.title"),
                 i18n::t("studio.analysis.query.detail"),
             );
-            ui.text_edit_singleline(&mut self.analysis_query);
+            ui.text_edit_singleline(&mut self.analysis.query);
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.analysis.ask")).clicked() {
                     self.ask_analysis();
@@ -106,15 +112,18 @@ impl StudioEguiApp {
             render_output(
                 ui,
                 i18n::t("studio.analysis.answer"),
-                &self.analysis_answer,
+                &self.analysis.answer,
                 180.0,
             );
+            let model = self.analysis_workbench_model();
+            render_answer_sources(ui, &model);
             render_output(
                 ui,
                 i18n::t("studio.analysis.search"),
-                &self.analysis_search_output,
+                &self.analysis.search_output,
                 180.0,
             );
+            render_search_hits(ui, &model);
         });
     }
 
@@ -128,9 +137,12 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.analysis.coverage.refresh")).clicked() {
                 self.refresh_analysis_coverage();
             }
-            if self.analysis_coverage_output.is_empty() {
-                match self.app.analysis_coverage_report() {
-                    Ok(report) => render_coverage_report(ui, &report),
+            let model = self.analysis_workbench_model();
+            render_coverage_layers(ui, &model);
+            ui.add_space(Space::XS as f32);
+            if self.analysis.coverage_output.is_empty() {
+                match self.cached_analysis_coverage_report() {
+                    Ok(report) => render_coverage_report(ui, report),
                     Err(error) => {
                         ui.label(error.to_string());
                     }
@@ -139,15 +151,34 @@ impl StudioEguiApp {
                 render_output(
                     ui,
                     i18n::t("studio.analysis.coverage.report"),
-                    &self.analysis_coverage_output,
+                    &self.analysis.coverage_output,
                     460.0,
                 );
             }
         });
     }
 
+    fn analysis_workbench_model(&self) -> AnalysisWorkbenchViewModel {
+        AnalysisWorkbenchViewModel::build(
+            self.app.active_analysis.as_ref(),
+            self.analysis.coverage_report.as_ref(),
+            self.analysis.last_answer.as_ref(),
+            &self.analysis.search_results,
+            self.analysis.last_inspection.as_ref(),
+        )
+    }
+
+    fn cached_analysis_coverage_report(
+        &self,
+    ) -> Result<&IndexCoverageReport, std_index::IndexError> {
+        self.analysis
+            .coverage_report
+            .as_ref()
+            .ok_or_else(|| std_index::IndexError::Io(std::io::Error::other("coverage not loaded")))
+    }
+
     fn analyze_current_path(&mut self) {
-        let path = std::path::PathBuf::from(self.analysis_path.clone());
+        let path = std::path::PathBuf::from(self.analysis.path.clone());
         match self.app.analyze_entity(&path) {
             Ok(document) => {
                 self.status = format!(
@@ -155,38 +186,115 @@ impl StudioEguiApp {
                     document.components.len(),
                     document.relations.len()
                 );
+                self.refresh_analysis_coverage();
             }
             Err(error) => self.status = error.to_string(),
         }
     }
 
     fn ask_analysis(&mut self) {
-        match self.app.ask_analyses(&self.analysis_query, 5) {
-            Ok(answer) => self.analysis_answer = format_analysis_answer(&answer),
-            Err(error) => self.analysis_answer = error.to_string(),
+        match self.app.ask_analyses(&self.analysis.query, 5) {
+            Ok(answer) => {
+                self.analysis.answer = format_analysis_answer(&answer);
+                self.analysis.last_answer = Some(answer);
+            }
+            Err(error) => self.analysis.answer = error.to_string(),
         }
     }
 
     fn search_analysis(&mut self) {
-        match self.app.search_analyses(&self.analysis_query, 8) {
-            Ok(results) => self.analysis_search_output = format_search_results(&results),
-            Err(error) => self.analysis_search_output = error.to_string(),
+        match self.app.search_analyses(&self.analysis.query, 8) {
+            Ok(results) => {
+                self.analysis.search_output = format_search_results(&results);
+                self.analysis.search_results = results;
+            }
+            Err(error) => self.analysis.search_output = error.to_string(),
         }
     }
 
     fn inspect_analysis(&mut self) {
-        match self.app.inspect_analysis(&self.analysis_query, 8) {
-            Ok(Some(inspection)) => self.analysis_answer = format_inspection(&inspection),
-            Ok(None) => self.analysis_answer = "analysis not found".to_string(),
-            Err(error) => self.analysis_answer = error.to_string(),
+        match self.app.inspect_analysis(&self.analysis.query, 8) {
+            Ok(Some(inspection)) => {
+                self.analysis.answer = format_inspection(&inspection);
+                self.analysis.last_inspection = Some(inspection);
+            }
+            Ok(None) => self.analysis.answer = "analysis not found".to_string(),
+            Err(error) => self.analysis.answer = error.to_string(),
         }
     }
 
     fn refresh_analysis_coverage(&mut self) {
         match self.app.analysis_coverage_report() {
-            Ok(report) => self.analysis_coverage_output = format_coverage_report(&report),
-            Err(error) => self.analysis_coverage_output = error.to_string(),
+            Ok(report) => {
+                self.analysis.coverage_output = format_coverage_report(&report);
+                self.analysis.coverage_report = Some(report);
+            }
+            Err(error) => self.analysis.coverage_output = error.to_string(),
         }
+    }
+}
+
+fn render_analysis_tabs(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+    ui.horizontal_wrapped(|ui| {
+        for tab in &model.tabs {
+            ui::chip(
+                ui,
+                &format!("{} {}", tab.label, tab.count),
+                ui::panel_alt(ui.ctx()),
+            );
+        }
+    });
+}
+
+fn render_overview_cards(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+    ui.horizontal_wrapped(|ui| {
+        for card in &model.overview_cards {
+            ui::subtle_frame(ui.ctx()).show(ui, |ui| {
+                ui::metric(ui, card.title, &card.value, &card.detail);
+            });
+        }
+    });
+}
+
+fn render_coverage_layers(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+    ui.horizontal_wrapped(|ui| {
+        for layer in &model.coverage_layers {
+            let fill = if layer.complete {
+                ui::ok_bg(ui.ctx())
+            } else {
+                ui::warn_bg(ui.ctx())
+            };
+            ui::chip(ui, &format!("{} {}", layer.label, layer.count), fill);
+        }
+    });
+}
+
+fn render_answer_sources(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+    if model.answer_sources.is_empty() {
+        return;
+    }
+    ui.label(egui::RichText::new("Sources").strong());
+    for source in &model.answer_sources {
+        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
+            ui::metric(
+                ui,
+                &source.entity,
+                format!("{} evidence", source.evidence_count),
+                &source.detail,
+            );
+        });
+    }
+}
+
+fn render_search_hits(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+    if model.search_hits.is_empty() {
+        return;
+    }
+    ui.label(egui::RichText::new("Search hits").strong());
+    for hit in &model.search_hits {
+        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
+            ui::metric(ui, &hit.title, &hit.score, &hit.detail);
+        });
     }
 }
 

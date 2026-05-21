@@ -4,6 +4,7 @@
 //! Shared Studio application state.
 
 mod analysis_model;
+mod analysis_workbench;
 mod apps;
 mod ops_evidence;
 pub mod plugin_security;
@@ -12,6 +13,10 @@ mod workflow;
 mod workspace_pane;
 mod workspace_policy;
 
+pub use analysis_workbench::{
+    AnalysisAnswerSource, AnalysisCoverageLayer, AnalysisInspectionSummary, AnalysisOverviewCard,
+    AnalysisSearchHit, AnalysisTab, AnalysisWorkbenchViewModel,
+};
 pub use ops_evidence::{OpsEvidence, OpsGate, OpsStatus};
 use std_core::{StdConfig, StdCore};
 use std_egui::{MemoryBrowserViewModel, PluginManagerViewModel, StudioDashboardViewModel};

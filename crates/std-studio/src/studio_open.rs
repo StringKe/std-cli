@@ -44,7 +44,7 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
         StudioOpenRequest::Analysis => {
             let id = app
                 .app
-                .open_analysis_workbench(std::path::PathBuf::from(&app.analysis_path));
+                .open_analysis_workbench(std::path::PathBuf::from(&app.analysis.path));
             app.pending_workspace_focus = Some(id);
         }
         StudioOpenRequest::Apps => {
