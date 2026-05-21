@@ -50,6 +50,7 @@ mod analysis;
 mod operations;
 mod plugins;
 mod trace;
+mod workflow_cancel;
 mod workspace_panes;
 mod workspace_policy_guard;
 

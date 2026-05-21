@@ -10,6 +10,7 @@ pub(crate) enum WorkflowToolbarAction {
     Save,
     Simulate,
     Test,
+    Cancel,
     History,
 }
 
@@ -26,7 +27,11 @@ impl WorkflowToolbarResponse {
     }
 }
 
-pub(crate) fn render(ui: &mut egui::Ui, workflow_goal: &mut String) -> WorkflowToolbarResponse {
+pub(crate) fn render(
+    ui: &mut egui::Ui,
+    workflow_goal: &mut String,
+    can_cancel: bool,
+) -> WorkflowToolbarResponse {
     let mut response = WorkflowToolbarResponse::new();
     ui.horizontal_wrapped(|ui| {
         ui.set_min_height(super::workflow_builder_metrics::BUILDER_TOOLBAR_HEIGHT);
@@ -35,13 +40,17 @@ pub(crate) fn render(ui: &mut egui::Ui, workflow_goal: &mut String) -> WorkflowT
             egui::TextEdit::singleline(workflow_goal)
                 .hint_text(i18n::t("studio.workflow_builder.goal.hint")),
         );
-        render_primary_actions(ui, &mut response);
+        render_primary_actions(ui, &mut response, can_cancel);
         render_secondary_contract(ui);
     });
     response
 }
 
-fn render_primary_actions(ui: &mut egui::Ui, response: &mut WorkflowToolbarResponse) {
+fn render_primary_actions(
+    ui: &mut egui::Ui,
+    response: &mut WorkflowToolbarResponse,
+    can_cancel: bool,
+) {
     if toolbar_button(ui, i18n::t("studio.workflow_builder.flow.plan"), true).clicked() {
         response.actions.push(WorkflowToolbarAction::Plan);
     }
@@ -74,6 +83,11 @@ fn render_primary_actions(ui: &mut egui::Ui, response: &mut WorkflowToolbarRespo
     .clicked()
     {
         response.actions.push(WorkflowToolbarAction::Test);
+    }
+    if can_cancel
+        && toolbar_button(ui, i18n::t("studio.workflow_builder.toolbar.cancel"), false).clicked()
+    {
+        response.actions.push(WorkflowToolbarAction::Cancel);
     }
     if toolbar_button_with_shortcut(
         ui,
@@ -154,7 +168,7 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
 }
 
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
+    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
 }
 
 #[cfg(test)]
@@ -165,7 +179,7 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;history-opens-execution-history"
+            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
         );
     }
 

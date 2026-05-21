@@ -3,8 +3,8 @@ use std_core::StdCore;
 use std_orchestration::{
     add_workflow_step, append_workflow_execution, list_workflows, load_workflow,
     move_workflow_step, read_workflow_executions, remove_workflow_step, update_workflow_step,
-    workflow_from_plan, write_workflow_markdown, OrchestrationError, Workflow, WorkflowDryRun,
-    WorkflowExecution, WorkflowExecutor, WorkflowStep,
+    workflow_from_plan, write_workflow_markdown, ExecutionStatus, OrchestrationError, Workflow,
+    WorkflowDryRun, WorkflowExecution, WorkflowExecutor, WorkflowStep,
 };
 use std_types::{Action, ActionType, RegistryEntry};
 use uuid::Uuid;
@@ -149,6 +149,26 @@ impl StudioApp {
         append_workflow_execution(&self.core.config.history_dir(), &execution)?;
         self.last_workflow_execution = Some(execution);
         self.refresh();
+        Ok(self
+            .last_workflow_execution
+            .as_ref()
+            .expect("last_workflow_execution is set"))
+    }
+
+    pub fn cancel_last_workflow_execution(
+        &mut self,
+    ) -> Result<&WorkflowExecution, OrchestrationError> {
+        let execution = self.last_workflow_execution.as_mut().ok_or_else(|| {
+            OrchestrationError::InvalidWorkflow("missing running workflow".to_string())
+        })?;
+        if execution.status != ExecutionStatus::Running {
+            return Err(OrchestrationError::InvalidWorkflow(
+                "workflow is not running".to_string(),
+            ));
+        }
+        execution.status = ExecutionStatus::Cancelled;
+        execution.finished_at = Some(chrono::Utc::now());
+        append_workflow_execution(&self.core.config.history_dir(), execution)?;
         Ok(self
             .last_workflow_execution
             .as_ref()

@@ -2,7 +2,8 @@ use crate::{
     ui,
     views::{
         workflow_builder_ai, workflow_builder_metrics, workflow_builder_properties,
-        workflow_builder_status, workflow_builder_toolbar, workflow_builder_trace, workflow_rows,
+        workflow_builder_run, workflow_builder_status, workflow_builder_toolbar,
+        workflow_builder_trace, workflow_rows,
     },
     StudioEguiApp,
 };
@@ -57,7 +58,11 @@ impl StudioEguiApp {
     }
 
     fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
-        let response = workflow_builder_toolbar::render(ui, &mut self.workflow_goal);
+        let run_control = workflow_builder_run::WorkflowRunControl::from_execution(
+            self.app.last_workflow_execution.as_ref(),
+        );
+        let response =
+            workflow_builder_toolbar::render(ui, &mut self.workflow_goal, run_control.can_cancel);
         for action in response.actions {
             match action {
                 workflow_builder_toolbar::WorkflowToolbarAction::Plan => {
@@ -71,6 +76,9 @@ impl StudioEguiApp {
                 }
                 workflow_builder_toolbar::WorkflowToolbarAction::Test => {
                     self.run_active_workflow();
+                }
+                workflow_builder_toolbar::WorkflowToolbarAction::Cancel => {
+                    self.cancel_active_workflow();
                 }
                 workflow_builder_toolbar::WorkflowToolbarAction::History => {
                     self.open_workflow_history();
@@ -212,6 +220,20 @@ impl StudioEguiApp {
         self.app.open_execution_history_pane();
         self.layout.open_bottom_panel();
         self.status = "workflow history opened".to_string();
+    }
+
+    pub(crate) fn cancel_active_workflow(&mut self) {
+        match self.app.cancel_last_workflow_execution() {
+            Ok(execution) => {
+                self.layout.open_bottom_panel();
+                self.status = format!(
+                    "cancelled {} steps={}",
+                    execution.workflow_name,
+                    execution.results.len()
+                );
+            }
+            Err(error) => self.status = error.to_string(),
+        }
     }
 
     pub(crate) fn plan_workflow_from_goal(&mut self) {
