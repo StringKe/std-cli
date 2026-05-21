@@ -2,6 +2,7 @@ use crate::{
     layout::StudioLayoutState,
     viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
 };
+use std_egui::motion::MotionContext;
 
 pub(crate) struct StudioLayoutSmoke {
     pub(crate) host_window_size: String,
@@ -35,11 +36,23 @@ impl StudioLayoutSmoke {
             inspector_default_open: layout.inspector_open,
             bottom_panel_height: layout.bottom_panel_height() as u32,
             bottom_panel_default_open: layout.bottom_panel_open,
-            canvas_surface: "bg/surface-0".to_string(),
+            canvas_surface: canvas_motion_evidence(),
         }
     }
 }
 
 fn format_window_size(size: [f32; 2]) -> String {
     format!("{}x{}", size[0] as u32, size[1] as u32)
+}
+
+fn canvas_motion_evidence() -> String {
+    let standard = MotionContext::standard();
+    let reduced = MotionContext::reduced();
+    format!(
+        "surface=bg/surface-0,standard_launcher_enter_ms={},reduced_launcher_enter_ms={},reduced_focus_ring_ms={},reduced_modal_enter_ms={},reduce_motion_env=STD_REDUCE_MOTION",
+        standard.launcher_enter().as_millis(),
+        reduced.launcher_enter().as_millis(),
+        reduced.focus_ring().as_millis(),
+        reduced.modal_enter().as_millis()
+    )
 }

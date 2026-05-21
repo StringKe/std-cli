@@ -19,6 +19,8 @@ mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;
 mod smoke;
+#[cfg(test)]
+mod smoke_tests;
 mod studio_open;
 mod studio_smoke_cli;
 mod ui;

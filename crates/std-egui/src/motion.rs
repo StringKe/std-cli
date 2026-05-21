@@ -73,6 +73,10 @@ impl MotionContext {
         self.duration(self.durations.base_ms)
     }
 
+    pub fn modal_enter(self) -> Duration {
+        self.duration(self.durations.base_ms)
+    }
+
     fn duration(self, ms: u64) -> Duration {
         if self.reduced {
             Duration::from_millis(self.durations.instant_ms)
@@ -107,5 +111,6 @@ mod tests {
 
         assert_eq!(motion.launcher_enter(), Duration::ZERO);
         assert_eq!(motion.focus_ring(), Duration::ZERO);
+        assert_eq!(motion.modal_enter(), Duration::ZERO);
     }
 }
