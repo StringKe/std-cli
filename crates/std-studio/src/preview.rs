@@ -193,13 +193,15 @@ fn required_capture_states(scenarios: &[String]) -> Vec<String> {
         "light-dashboard",
         "dark-dashboard",
         "light-workflow",
-        "light-workflow-error",
         "dark-workflow",
+        "light-workflow-error",
         "dark-workflow-error",
         "light-analysis",
         "dark-analysis",
         "light-plugins",
         "dark-plugins",
+        "light-plugin-permission",
+        "dark-plugin-permission",
         "light-operations",
         "dark-operations",
         "light-settings",
@@ -219,13 +221,15 @@ fn required_capture_states_pass(states: &[String]) -> bool {
             "light-dashboard",
             "dark-dashboard",
             "light-workflow",
-            "light-workflow-error",
             "dark-workflow",
+            "light-workflow-error",
             "dark-workflow-error",
             "light-analysis",
             "dark-analysis",
             "light-plugins",
             "dark-plugins",
+            "light-plugin-permission",
+            "dark-plugin-permission",
             "light-operations",
             "dark-operations",
             "light-settings",
@@ -245,6 +249,7 @@ pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &
         "workflow-error" => seed_workflow_error_preview(app),
         "analysis" => seed_analysis_preview(app),
         "plugins" => seed_plugin_preview(app),
+        "plugin-permission" => seed_plugin_permission_preview(app),
         "operations" => app.app.switch_pane(StudioPane::Operations),
         "settings" => app.app.switch_pane(StudioPane::Settings),
         "panes" | "windows" | "viewports" => {
@@ -418,4 +423,45 @@ fn seed_plugin_preview(app: &mut StudioEguiApp) {
     );
     let _ = app.app.reload_plugins();
     app.status = "plugin preview seeded".to_string();
+}
+
+fn seed_plugin_permission_preview(app: &mut StudioEguiApp) {
+    app.app.switch_pane(StudioPane::Plugins);
+    app.app.open_plugin_manager_pane();
+    let plugin_dir = app
+        .app
+        .core
+        .config
+        .plugins_dir()
+        .join("permission-preview-plugin");
+    let fs_scope = plugin_dir.join("allowed");
+    if std::fs::create_dir_all(&fs_scope).is_err() {
+        return;
+    }
+    let _ = std::fs::write(
+        plugin_dir.join("main.js"),
+        r#"std.emit({ allowed: true });"#,
+    );
+    let _ = std::fs::write(
+        plugin_dir.join("plugin.json"),
+        serde_json::json!({
+            "name": "permission-preview-plugin",
+            "description": "Studio permission boundary preview",
+            "permissions": ["code", "fs_scoped", "network"],
+            "fs_scopes": ["allowed"],
+            "network_hosts": ["api.preview.local"],
+            "actions": [{
+                "name": "Permission Preview Plugin",
+                "description": "Preview plugin permission boundary",
+                "when_to_use": "When reviewing plugin permissions before enable",
+                "kind": "javascript",
+                "script": "main.js",
+                "tags": ["permission-preview-plugin"]
+            }]
+        })
+        .to_string(),
+    );
+    let _ = app.app.reload_plugins();
+    app.app.search_plugins("Permission Preview Plugin");
+    app.status = "plugin permission preview seeded".to_string();
 }

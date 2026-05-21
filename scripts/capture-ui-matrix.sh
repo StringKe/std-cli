@@ -84,6 +84,8 @@ capture_studio light analysis
 capture_studio dark analysis
 capture_studio light plugins
 capture_studio dark plugins
+capture_studio light plugin-permission
+capture_studio dark plugin-permission
 capture_studio light operations
 capture_studio dark operations
 capture_studio light settings

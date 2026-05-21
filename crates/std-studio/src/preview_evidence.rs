@@ -18,6 +18,8 @@ pub(crate) fn preview_matrix() -> Vec<String> {
         "dark-analysis",
         "light-plugins",
         "dark-plugins",
+        "light-plugin-permission",
+        "dark-plugin-permission",
         "light-operations",
         "dark-operations",
         "light-settings",
@@ -40,7 +42,7 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_state_passes(&app, name)
         && preview_surface_passes(&surface, theme);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},{}",
+        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
@@ -48,6 +50,7 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         workflow_e2e_contract(&app, name),
         workflow_error_contract(&app, name),
         pane_management_contract(&app, name),
+        plugin_permission_contract(&app),
         surface.summary()
     )
 }
@@ -114,6 +117,10 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
             app.app.active_pane == StudioPane::Plugins
                 && app.app.open_workspace_panes().count() >= 1
         }
+        "plugin-permission" => {
+            app.app.active_pane == StudioPane::Plugins
+                && plugin_permission_contract(app) == "permissions|fs|network|review-prompt"
+        }
         "operations" => app.app.active_pane == StudioPane::Operations,
         "settings" => app.app.active_pane == StudioPane::Settings,
         "panes" => {
@@ -178,6 +185,33 @@ fn pane_management_contract(app: &StudioEguiApp, scenario: &str) -> &'static str
         "open|focus|close|restore|state-preserved|single-egui-viewport"
     } else {
         "not-panes"
+    }
+}
+
+fn plugin_permission_contract(app: &StudioEguiApp) -> &'static str {
+    let Some(report) = app
+        .app
+        .plugin_manager
+        .check_reports
+        .iter()
+        .find(|report| report.plugin_name == "permission-preview-plugin")
+    else {
+        return "not-plugin-permission";
+    };
+    let permissions = report
+        .permissions
+        .iter()
+        .map(|permission| format!("{permission:?}"))
+        .collect::<Vec<_>>();
+    if permissions.contains(&"Code".to_string())
+        && permissions.contains(&"FsScoped".to_string())
+        && permissions.contains(&"Network".to_string())
+        && !report.fs_scopes.is_empty()
+        && report.network_hosts == ["api.preview.local"]
+    {
+        "permissions|fs|network|review-prompt"
+    } else {
+        "not-plugin-permission"
     }
 }
 

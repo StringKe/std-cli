@@ -97,7 +97,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     let summary = report.summary();
 
     assert!(report.pass(), "{summary}");
-    assert_eq!(report.scenarios.len(), 16);
+    assert_eq!(report.scenarios.len(), 18);
     assert_eq!(report.sizes.len(), report.scenarios.len());
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
     assert_preview_summary_has_scenarios(&summary);
@@ -117,6 +117,8 @@ fn assert_preview_summary_has_scenarios(summary: &str) {
     assert!(summary.contains("light-analysis"));
     assert!(summary.contains("dark-plugins"));
     assert!(summary.contains("light-plugins"));
+    assert!(summary.contains("dark-plugin-permission"));
+    assert!(summary.contains("light-plugin-permission"));
     assert!(summary.contains("dark-operations"));
     assert!(summary.contains("light-operations"));
     assert!(summary.contains("dark-settings"));
@@ -150,6 +152,8 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
             "dark-analysis",
             "light-plugins",
             "dark-plugins",
+            "light-plugin-permission",
+            "dark-plugin-permission",
             "light-operations",
             "dark-operations",
             "light-settings",
@@ -160,12 +164,13 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
     );
 
     assert!(report.summary().contains(
-        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
     ));
 }
 
 fn assert_preview_summary_has_viewport_policy(summary: &str) {
-    assert!(summary.contains("preview_sizes=dark-dashboard=PASS"));
+    assert!(summary.contains("light-dashboard=PASS"));
+    assert!(summary.contains("dark-dashboard=PASS"));
     assert!(summary.contains("host=1280x800,min=1080x640"));
     assert!(summary.contains("native_child_windows=false,detached_panels=false"));
     assert!(summary.contains("dark-settings=PASS"));
@@ -175,6 +180,7 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
+    assert!(summary.contains("plugin_permission=permissions|fs|network|review-prompt"));
     assert!(summary
         .contains("pane_management=open|focus|close|restore|state-preserved|single-egui-viewport"));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));

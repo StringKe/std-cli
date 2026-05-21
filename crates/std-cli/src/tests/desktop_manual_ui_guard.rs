@@ -72,7 +72,7 @@ fn launcher_required_capture_states() -> [&'static str; 20] {
     ]
 }
 
-fn studio_required_capture_states() -> [&'static str; 16] {
+fn studio_required_capture_states() -> [&'static str; 18] {
     [
         "capture_studio light dashboard",
         "capture_studio dark dashboard",
@@ -84,6 +84,8 @@ fn studio_required_capture_states() -> [&'static str; 16] {
         "capture_studio dark analysis",
         "capture_studio light plugins",
         "capture_studio dark plugins",
+        "capture_studio light plugin-permission",
+        "capture_studio dark plugin-permission",
         "capture_studio light operations",
         "capture_studio dark operations",
         "capture_studio light settings",
