@@ -177,6 +177,12 @@ fn assert_analysis_workbench_summary(summary: &str) {
     ));
     assert!(summary.contains("analysis_search_hits=2"));
     assert!(summary.contains("analysis_answer_sources=2"));
+    assert!(summary.contains("analysis_visual_contract=toolbar=target-path|re-index|qa-input"));
+    assert!(summary.contains("tabs=Overview|Components|Symbols|Relations|Q&A"));
+    assert!(summary.contains("overview=target|index|activity"));
+    assert!(summary.contains("coverage=overview|components|relations|history"));
+    assert!(summary.contains("symbols=search-hits:2"));
+    assert!(summary.contains("qa=sources:2"));
     assert!(summary.contains("analysis_inspect_components=1"));
     assert!(summary.contains("analysis_inspect_relations=3"));
     assert!(summary.contains("analysis_inspect_history=1"));

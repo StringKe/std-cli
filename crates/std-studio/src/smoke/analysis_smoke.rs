@@ -4,6 +4,7 @@ pub(crate) struct AnalysisWorkbenchSmoke {
     pub(crate) coverage_layers: String,
     pub(crate) search_hits: usize,
     pub(crate) answer_sources: usize,
+    pub(crate) visual_contract: String,
     pub(crate) inspect_components: usize,
     pub(crate) inspect_relations: usize,
     pub(crate) inspect_history: usize,
@@ -43,9 +44,27 @@ pub(crate) fn run_analysis_workbench_smoke(
         coverage_layers,
         search_hits,
         answer_sources: answer.sources.len(),
+        visual_contract: analysis_visual_contract(
+            search_hits,
+            answer.sources.len(),
+            inspection.component_count,
+            inspection.relation_count,
+        ),
         inspect_components: inspection.component_count,
         inspect_relations: inspection.relation_count,
         inspect_history: inspection.history_count,
         answer_has_evidence,
     })
+}
+
+fn analysis_visual_contract(
+    search_hits: usize,
+    answer_sources: usize,
+    components: usize,
+    relations: usize,
+) -> String {
+    format!(
+        "toolbar=target-path|re-index|qa-input;tabs=Overview|Components|Symbols|Relations|Q&A;overview=target|index|activity;coverage=overview|components|relations|history;symbols=search-hits:{};qa=sources:{};components={};relations={}",
+        search_hits, answer_sources, components, relations
+    )
 }
