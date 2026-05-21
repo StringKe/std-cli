@@ -1,4 +1,8 @@
-use crate::{ui, views::workflow_rows, StudioEguiApp};
+use crate::{
+    ui,
+    views::{workflow_builder_status, workflow_rows},
+    StudioEguiApp,
+};
 use eframe::egui;
 use std::path::Path;
 use std_egui::{i18n, tokens::Space};
@@ -14,6 +18,8 @@ impl StudioEguiApp {
                 i18n::t("studio.workflow_builder.detail"),
             );
             self.render_builder_toolbar(ui);
+            ui.add_space(Space::XS as f32);
+            workflow_builder_status::render(ui, self);
             ui.add_space(Space::XS as f32);
             self.render_builder_workspace(ui);
             ui.add_space(Space::XS as f32);
