@@ -5,7 +5,7 @@ use std_egui::{
     tokens::{Color, Radius, Space, Text},
     LauncherFeedback, LauncherFeedbackAction,
 };
-use std_launcher::{LauncherPerformanceReport, LauncherState};
+use std_launcher::LauncherState;
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,7 +34,6 @@ fn render_contents(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Laun
         render_text(ui, &ctx, feedback);
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
             render_actions(ui, state, feedback);
-            render_performance(ui, &state.performance_report());
         });
     });
 }
@@ -101,19 +100,6 @@ fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Resp
         );
     }
     quiet_button(ui, label)
-}
-
-fn render_performance(ui: &mut egui::Ui, report: &LauncherPerformanceReport) {
-    let ctx = ui.ctx().clone();
-    let text = format!(
-        "{}ms search  {}ms preview  {}ms action",
-        report.last_search_ms, report.last_preview_ms, report.last_trigger_ms
-    );
-    ui.label(
-        egui::RichText::new(text)
-            .font(Text::code())
-            .color(Color::fg_secondary(&ctx)),
-    );
 }
 
 fn feedback_kind(feedback: &LauncherFeedback) -> FeedbackKind {
@@ -230,5 +216,13 @@ mod tests {
         let feedback = feedback(ActionExecutionStatus::Failed, "one\ntwo\nthree");
 
         assert_eq!(clamped_feedback_detail(&feedback), "one two");
+    }
+
+    #[test]
+    fn feedback_surface_hides_performance_metrics_from_user_copy() {
+        let source = include_str!("ui_feedback.rs");
+        let old_metric_label = ["{}ms", " search"].join("");
+
+        assert!(!source.contains(&old_metric_label));
     }
 }

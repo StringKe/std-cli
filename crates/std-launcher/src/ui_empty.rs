@@ -83,32 +83,31 @@ fn render_no_matches_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
 
 fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
     let ctx = ui.ctx().clone();
-    egui::Frame::new()
-        .fill(Color::bg_surface_0(&ctx))
-        .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
-        .corner_radius(egui::CornerRadius::same(Radius::md()))
-        .inner_margin(egui::Margin::symmetric(Space::sm(), Space::xs()))
-        .show(ui, |ui| {
-            let response = ui.allocate_response(
-                egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
-                egui::Sense::click(),
+    let response = ui.allocate_response(
+        egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
+        egui::Sense::click(),
+    );
+    let fill = if response.hovered() {
+        Color::bg_surface_2(&ctx)
+    } else {
+        Color::bg_surface_1(&ctx)
+    };
+    ui.painter()
+        .rect_filled(response.rect, egui::CornerRadius::same(Radius::md()), fill);
+    let rect = response.rect.shrink2(egui::vec2(Space::sm() as f32, 0.0));
+    ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+        ui.horizontal(|ui| {
+            ui.label(
+                egui::RichText::new(label)
+                    .font(Text::body())
+                    .color(Color::fg_primary(&ctx)),
             );
-            let rect = response.rect.shrink2(egui::vec2(Space::xs() as f32, 0.0));
-            ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
-                ui.horizontal(|ui| {
-                    ui.label(
-                        egui::RichText::new(label)
-                            .font(Text::body())
-                            .color(Color::fg_primary(&ctx)),
-                    );
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        keycap(ui, "Enter");
-                    });
-                });
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                keycap(ui, "Enter");
             });
-            response
-        })
-        .inner
+        });
+    });
+    response
 }
 
 #[cfg(test)]
@@ -134,5 +133,10 @@ mod tests {
 
         assert_eq!(size, egui::vec2(32.0, 32.0));
         assert_eq!(radius, 9.0);
+    }
+
+    #[test]
+    fn ask_ai_fallback_uses_inline_result_row_height() {
+        assert_eq!(ui_metrics::ask_ai_row_height(), 34.0);
     }
 }
