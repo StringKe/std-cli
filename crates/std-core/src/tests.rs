@@ -4,6 +4,7 @@ use std::fs;
 use std_types::{Action, ActionExecutionStatus, ActionType, RegistryEntry, StdEventType};
 
 mod apps;
+mod apps_localization;
 mod execution;
 mod indexing;
 

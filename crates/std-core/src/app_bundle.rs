@@ -194,7 +194,30 @@ fn localized_name_key(key: &str) -> bool {
 }
 
 fn unescape_strings(value: &str) -> String {
-    value.replace("\\\"", "\"").replace("\\\\", "\\")
+    let mut output = String::new();
+    let mut chars = value.chars().peekable();
+    while let Some(ch) = chars.next() {
+        if ch != '\\' {
+            output.push(ch);
+            continue;
+        }
+        match chars.next() {
+            Some('"') => output.push('"'),
+            Some('\\') => output.push('\\'),
+            Some('n') => output.push('\n'),
+            Some('r') => output.push('\r'),
+            Some('t') => output.push('\t'),
+            Some('U') | Some('u') => {
+                let hex = chars.by_ref().take(4).collect::<String>();
+                if let Ok(code) = u16::from_str_radix(&hex, 16) {
+                    output.push(char::from_u32(u32::from(code)).unwrap_or('\u{fffd}'));
+                }
+            }
+            Some(other) => output.push(other),
+            None => output.push('\\'),
+        }
+    }
+    output
 }
 
 fn derived_aliases(names: &[String]) -> Vec<String> {
