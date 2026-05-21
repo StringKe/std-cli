@@ -313,7 +313,10 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     check_text(&cli_ui, "STD_TEST_MODE blocks background UI automation")?;
     check_text(&cli_ui, "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required")?;
     check_text(&cli_ui, "isolated_background_ui_harness_only")?;
-    check_text(&cli_ui, "target_identity=fixed_bundle_pid_window_title_quadruple")?;
+    check_text(
+        &cli_ui,
+        "target_identity=fixed_bundle_pid_window_title_quadruple",
+    )?;
     check_text(&cli_ui, "event_route=postToPid_target_pid_only")?;
     check_text(
         &cli_ui,
