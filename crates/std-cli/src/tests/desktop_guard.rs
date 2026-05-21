@@ -289,8 +289,16 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "isolated_background_ui_harness_only",
+        "HARNESS_BUNDLE_ID",
+        "HARNESS_WINDOW_TITLE",
+        "required_bundle_id=",
+        "required_window_title=",
+        "harness_pid required",
+        "window_id required",
         "AX_or_CGEvent_postToPid_after_explicit_opt_in",
         "event_tap_then_appkit_defined_primer_then_center_primer",
+        "event_route=postToPid_target_pid_only",
+        "focus_guard=drop_previous_app_deactivation",
         "fallback=never_frontmost_desktop_click",
     ] {
         assert!(
@@ -304,6 +312,9 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         "center primer",
         "隔离 harness",
         "window title 白名单",
+        "dev.std-cli.background-ui-harness",
+        "postToPid",
+        "用户当前 frontmost app",
     ] {
         assert!(
             quality_doc.contains(required),
