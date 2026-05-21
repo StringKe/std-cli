@@ -108,6 +108,11 @@ fn analysis_query_panel_contract_surfaces_evidence_and_search_hits() {
     assert!(body.contains("model.answer_sources"));
     assert!(body.contains("model.search_hits"));
     assert!(body.contains("AnalysisQueryAction"));
+    assert!(body.contains("WidgetType::TextEdit"));
+    assert!(body.contains("analysis_query_a11y_label"));
+    assert!(body.contains("AnalysisFocusArea::Query.focus_id()"));
+    assert!(body.contains("Analysis query, text box, value"));
+    assert!(body.contains("query.trim().is_empty()"));
 }
 
 #[test]

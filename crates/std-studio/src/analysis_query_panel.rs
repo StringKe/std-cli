@@ -18,8 +18,18 @@ pub(crate) fn render(ui: &mut egui::Ui, state: AnalysisQueryPanelState<'_>) -> A
         i18n::t("studio.analysis.query.title"),
         i18n::t("studio.analysis.query.detail"),
     );
-    let response =
-        ui.add(egui::TextEdit::singleline(state.query).id(AnalysisFocusArea::Query.focus_id()));
+    let response = ui.add(
+        egui::TextEdit::singleline(state.query)
+            .hint_text(i18n::t("studio.analysis.query.title"))
+            .id(AnalysisFocusArea::Query.focus_id()),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            analysis_query_a11y_label(state.query),
+        )
+    });
     if state.focus_area == AnalysisFocusArea::Query {
         response.request_focus();
     }
@@ -99,4 +109,13 @@ fn render_raw_output(ui: &mut egui::Ui, value: &str) {
         .show(ui, |ui| {
             ui.label(value);
         });
+}
+
+pub(crate) fn analysis_query_a11y_label(query: &str) -> String {
+    let value = if query.trim().is_empty() {
+        "empty"
+    } else {
+        query.trim()
+    };
+    format!("Analysis query, text box, value {value}")
 }
