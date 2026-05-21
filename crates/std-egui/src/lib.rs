@@ -199,6 +199,24 @@ mod tests {
         assert_eq!(suggestion.intent, "ask");
         assert_eq!(suggestion.query, "rebuild index");
         assert_eq!(suggestion.actions, vec!["Ask AI", "Search Actions"]);
+        assert_eq!(suggestion.selected_action, 0);
+        assert_eq!(model.selected_nl_action(), Some("Ask AI"));
+    }
+
+    #[test]
+    fn launcher_natural_language_actions_are_keyboard_selectable() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "? rebuild index");
+        model.move_selection(1);
+
+        let suggestion = model.nl_suggestion.as_ref().unwrap();
+        assert_eq!(suggestion.selected_action, 1);
+        assert_eq!(model.selected_nl_action(), Some("Search Actions"));
+
+        model.jump_selection(&core, true);
+        assert_eq!(model.selected_nl_action(), Some("Ask AI"));
     }
 
     #[test]

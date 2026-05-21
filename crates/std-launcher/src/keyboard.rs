@@ -1,5 +1,6 @@
 use crate::LauncherState;
 use std_core::{StdConfig, StdCore};
+use std_egui::LauncherResultMode;
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -128,6 +129,9 @@ impl LauncherState {
                 None
             }
             LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),
+            LauncherKey::Enter if self.view.result_mode == LauncherResultMode::NaturalLanguage => {
+                self.trigger_selected()
+            }
             LauncherKey::Enter if self.view.results.is_empty() => {
                 self.trigger_no_match_fallback();
                 None

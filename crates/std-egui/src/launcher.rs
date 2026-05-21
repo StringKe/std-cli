@@ -64,6 +64,7 @@ pub struct LauncherNlSuggestion {
     pub query: String,
     pub confidence: u8,
     pub actions: Vec<String>,
+    pub selected_action: usize,
 }
 
 impl LauncherFeedback {
@@ -176,6 +177,10 @@ impl LauncherViewModel {
     }
 
     pub fn move_selection(&mut self, delta: isize) {
+        if self.result_mode == LauncherResultMode::NaturalLanguage {
+            self.move_nl_action(delta);
+            return;
+        }
         if self.results.is_empty() {
             self.selected = 0;
             self.preview = None;
@@ -192,6 +197,10 @@ impl LauncherViewModel {
     }
 
     pub fn jump_selection(&mut self, core: &StdCore, first: bool) {
+        if self.result_mode == LauncherResultMode::NaturalLanguage {
+            self.jump_nl_action(first);
+            return;
+        }
         if self.results.is_empty() {
             self.selected = 0;
             self.preview = None;
@@ -203,6 +212,14 @@ impl LauncherViewModel {
 
     pub fn selected_result(&self) -> Option<&SearchResult> {
         self.results.get(self.selected)
+    }
+
+    pub fn selected_nl_action(&self) -> Option<&str> {
+        let suggestion = self.nl_suggestion.as_ref()?;
+        suggestion
+            .actions
+            .get(suggestion.selected_action)
+            .map(String::as_str)
     }
 
     pub fn refresh_preview(&mut self, core: &StdCore) -> Option<ActionPreview> {
@@ -244,6 +261,36 @@ impl LauncherViewModel {
 
     pub fn result_overflowed(&self) -> bool {
         self.telemetry.last_overflowed
+    }
+
+    fn move_nl_action(&mut self, delta: isize) {
+        let Some(suggestion) = self.nl_suggestion.as_mut() else {
+            return;
+        };
+        if suggestion.actions.is_empty() {
+            suggestion.selected_action = 0;
+            return;
+        }
+        let last = suggestion.actions.len() - 1;
+        suggestion.selected_action = suggestion
+            .selected_action
+            .saturating_add_signed(delta)
+            .min(last);
+    }
+
+    fn jump_nl_action(&mut self, first: bool) {
+        let Some(suggestion) = self.nl_suggestion.as_mut() else {
+            return;
+        };
+        if suggestion.actions.is_empty() {
+            suggestion.selected_action = 0;
+            return;
+        }
+        suggestion.selected_action = if first {
+            0
+        } else {
+            suggestion.actions.len() - 1
+        };
     }
 }
 
@@ -313,6 +360,7 @@ impl LauncherNlSuggestion {
             query,
             confidence: 72,
             actions: vec!["Ask AI".to_string(), "Search Actions".to_string()],
+            selected_action: 0,
         }
     }
 }

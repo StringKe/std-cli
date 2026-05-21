@@ -226,6 +226,9 @@ impl LauncherState {
         &mut self,
         allow_external_runner: bool,
     ) -> Option<ActionExecution> {
+        if self.view.result_mode == std_egui::LauncherResultMode::NaturalLanguage {
+            return self.trigger_nl_action();
+        }
         let result = self.view.selected_result()?.clone();
         let started_at = Instant::now();
         self.view.preview_executing();
@@ -242,6 +245,32 @@ impl LauncherState {
         };
         self.view.telemetry.last_trigger_ms = started_at.elapsed().as_millis();
         self.view.last_triggered = Some(result.action.name);
+        self.view.last_execution = Some(execution.clone());
+        self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.phase = std_egui::LauncherPhase::Feedback;
+        Some(execution)
+    }
+
+    fn trigger_nl_action(&mut self) -> Option<ActionExecution> {
+        let suggestion = self.view.nl_suggestion.as_ref()?;
+        let selected = self.view.selected_nl_action()?.to_string();
+        if selected == "Search Actions" {
+            self.update_query(format!("> {}", suggestion.query));
+            return None;
+        }
+        let execution = ActionExecution {
+            action_id: Default::default(),
+            action_name: format!("Natural Language: {selected}"),
+            status: ActionExecutionStatus::NeedsExternalRunner,
+            message: format!("ask {}", suggestion.query),
+            output: Some(serde_json::json!({
+                "deferred": true,
+                "reason": "natural language planner requires explicit AI provider opt-in",
+                "query": suggestion.query,
+            })),
+            created_at: chrono::Utc::now(),
+        };
+        self.view.last_triggered = Some(execution.action_name.clone());
         self.view.last_execution = Some(execution.clone());
         self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
         self.view.phase = std_egui::LauncherPhase::Feedback;
@@ -369,6 +398,8 @@ mod desktop_guard_tests;
 mod keyboard_tests;
 #[cfg(test)]
 mod navigation_tests;
+#[cfg(test)]
+mod nl_tests;
 #[cfg(test)]
 mod shortcut_tests;
 #[cfg(test)]

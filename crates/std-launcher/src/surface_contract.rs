@@ -63,6 +63,9 @@ impl LauncherSurfaceContract {
             && self.query_prefixes.contains("actions_only=true")
             && self.nl_suggestion.contains("mode=NaturalLanguage")
             && self.nl_suggestion.contains("actions=Ask AI|Search Actions")
+            && self.nl_suggestion.contains("selected=Ask AI")
+            && self.nl_suggestion.contains("enter_status=NeedsExternalRunner")
+            && self.nl_suggestion.contains("down_enter_query=> rebuild index")
             && self.executing_state.contains("input_locked=true")
             && self.defer_state.contains("NeedsExternalRunner")
             && self.error_state.contains("copy,retry,open_studio")
@@ -149,8 +152,18 @@ fn nl_suggestion_contract() -> String {
     let mut state = LauncherState::new();
     state.update_query("?rebuild index");
     let suggestion = state.view.nl_suggestion.as_ref();
+    let mut enter_state = LauncherState::new();
+    enter_state.update_query("?rebuild index");
+    let enter_status = enter_state
+        .handle_keyboard_input(crate::LauncherKey::Enter, false)
+        .map(|execution| format!("{:?}", execution.status))
+        .unwrap_or_else(|| "none".to_string());
+    let mut search_state = LauncherState::new();
+    search_state.update_query("?rebuild index");
+    search_state.handle_keyboard_input(crate::LauncherKey::ArrowDown, false);
+    let _ = search_state.handle_keyboard_input(crate::LauncherKey::Enter, false);
     format!(
-        "mode={:?};results={};preview={};intent={};confidence={};actions={}",
+        "mode={:?};results={};preview={};intent={};confidence={};actions={};selected={};enter_status={};down_enter_query={}",
         state.view.result_mode,
         state.view.results.len(),
         state.view.preview.is_some(),
@@ -160,7 +173,10 @@ fn nl_suggestion_contract() -> String {
         suggestion.map(|item| item.confidence).unwrap_or_default(),
         suggestion
             .map(|item| item.actions.join("|"))
-            .unwrap_or_else(|| "none".to_string())
+            .unwrap_or_else(|| "none".to_string()),
+        state.view.selected_nl_action().unwrap_or("none"),
+        enter_status,
+        search_state.view.query
     )
 }
 
