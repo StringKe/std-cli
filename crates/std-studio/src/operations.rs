@@ -1,4 +1,4 @@
-use crate::{operations_rows, ui, StudioEguiApp};
+use crate::{operations_rows, ui, workspace_policy_evidence, StudioEguiApp};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 use std_studio::{OpsEvidence, OpsGate, OpsStatus};
@@ -48,6 +48,8 @@ impl StudioEguiApp {
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
                     self.render_evidence_gate(ui, &evidence.runtime);
+                    ui.add_space(OPERATIONS_PANEL_GAP);
+                    workspace_policy_evidence::render(ui, self.app.workspace_policy);
                     ui.add_space(OPERATIONS_PANEL_GAP);
                     self.render_completion_gate(ui);
                 },

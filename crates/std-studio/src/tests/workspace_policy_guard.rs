@@ -1,6 +1,7 @@
 use std::{fs, path::Path};
 
 const ALLOWED_VIEWPORT_FILES: &[&str] = &["viewport.rs", "host_chrome.rs"];
+const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["native_app.rs", "studio_open.rs", "preview.rs"];
 
 #[test]
 fn studio_main_path_forbids_detached_or_native_child_windows() {
@@ -44,10 +45,14 @@ fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
         }
         if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
             || viewport_file_allowed(&path)
+            || is_guard_file(&path)
         {
             continue;
         }
         let body = fs::read_to_string(&path).unwrap();
+        if !native_entry_file_allowed(&path) && body.contains("eframe::run_native") {
+            violations.push(format!("{} contains eframe::run_native", path.display()));
+        }
         for pattern in forbidden_studio_window_patterns() {
             if body.contains(&pattern) {
                 violations.push(format!("{} contains {}", path.display(), pattern));
@@ -66,9 +71,7 @@ fn scan_rs_files_for_settings_overlay(dir: &Path, violations: &mut Vec<String>) 
             scan_rs_files_for_settings_overlay(&path, violations);
             continue;
         }
-        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
-            || path.file_name().and_then(|name| name.to_str()) == Some("workspace_policy_guard.rs")
-        {
+        if path.extension().and_then(|ext| ext.to_str()) != Some("rs") || is_guard_file(&path) {
             continue;
         }
         let body = fs::read_to_string(&path).unwrap();
@@ -94,5 +97,19 @@ fn viewport_file_allowed(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .map(|name| ALLOWED_VIEWPORT_FILES.contains(&name))
+        .unwrap_or(false)
+}
+
+fn native_entry_file_allowed(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| ALLOWED_NATIVE_ENTRY_FILES.contains(&name))
+        .unwrap_or(false)
+}
+
+fn is_guard_file(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| name == "workspace_policy_guard.rs")
         .unwrap_or(false)
 }

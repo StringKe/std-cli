@@ -28,6 +28,7 @@ mod ui;
 mod viewport;
 mod views;
 mod workspace_panes;
+mod workspace_policy_evidence;
 mod workspace_tabs;
 
 use analysis_state::AnalysisUiState;
