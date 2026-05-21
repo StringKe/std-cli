@@ -34,7 +34,10 @@ use std_orchestration::{
 pub use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecution, SearchResult};
 pub use workflow::built_in_studio_preview_workflow;
-pub use workspace_pane::{WorkspacePane, WorkspacePaneContent, WorkspacePaneId, WorkspacePaneKind};
+pub use workspace_pane::{
+    WorkspacePane, WorkspacePaneCloseGuard, WorkspacePaneCloseSnapshot, WorkspacePaneContent,
+    WorkspacePaneId, WorkspacePaneKind,
+};
 pub use workspace_policy::{HostWindowPolicy, PaneSystemPolicy, StudioWorkspacePolicy};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

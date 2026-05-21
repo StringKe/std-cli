@@ -33,7 +33,7 @@ impl StudioEguiApp {
             ui.horizontal(|ui| {
                 self.render_top_identity(ui);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    host_window_controls(ui, &mut self.host_maximized);
+                    self.render_host_window_controls(ui);
                     ui.add_space(Space::SM as f32);
                     self.render_top_actions(ui);
                 });
@@ -85,6 +85,50 @@ impl StudioEguiApp {
         self.pending_workspace_focus = Some(id);
         id
     }
+
+    fn render_host_window_controls(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            if host_control(
+                ui,
+                HostControlKind::Close,
+                i18n::t("studio.chrome.exit"),
+                i18n::t("studio.chrome.exit.tooltip"),
+            )
+            .clicked()
+            {
+                self.pending_closeguard = Some(self.app.close_workspace_instance());
+                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+            if host_control(
+                ui,
+                HostControlKind::Minimize,
+                i18n::t("studio.chrome.hide"),
+                i18n::t("studio.chrome.hide.tooltip"),
+            )
+            .clicked()
+            {
+                ui.ctx()
+                    .send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+            }
+            let maximize_label = if self.host_maximized {
+                i18n::t("studio.chrome.fit")
+            } else {
+                i18n::t("studio.chrome.fill")
+            };
+            if host_control(
+                ui,
+                HostControlKind::Maximize,
+                maximize_label,
+                i18n::t("studio.chrome.size.tooltip"),
+            )
+            .clicked()
+            {
+                self.host_maximized = !self.host_maximized;
+                ui.ctx()
+                    .send_viewport_cmd(egui::ViewportCommand::Maximized(self.host_maximized));
+            }
+        });
+    }
 }
 
 pub(crate) fn host_chrome_surface_contract() -> &'static str {
@@ -97,49 +141,6 @@ pub(crate) fn host_chrome_surface_token() -> &'static str {
 
 fn host_chrome_surface_fill(ctx: &egui::Context) -> egui::Color32 {
     Color::bg_surface_1(ctx)
-}
-
-fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {
-    ui.horizontal(|ui| {
-        if host_control(
-            ui,
-            HostControlKind::Close,
-            i18n::t("studio.chrome.exit"),
-            i18n::t("studio.chrome.exit.tooltip"),
-        )
-        .clicked()
-        {
-            ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
-        }
-        if host_control(
-            ui,
-            HostControlKind::Minimize,
-            i18n::t("studio.chrome.hide"),
-            i18n::t("studio.chrome.hide.tooltip"),
-        )
-        .clicked()
-        {
-            ui.ctx()
-                .send_viewport_cmd(egui::ViewportCommand::Minimized(true));
-        }
-        let maximize_label = if *host_maximized {
-            i18n::t("studio.chrome.fit")
-        } else {
-            i18n::t("studio.chrome.fill")
-        };
-        if host_control(
-            ui,
-            HostControlKind::Maximize,
-            maximize_label,
-            i18n::t("studio.chrome.size.tooltip"),
-        )
-        .clicked()
-        {
-            *host_maximized = !*host_maximized;
-            ui.ctx()
-                .send_viewport_cmd(egui::ViewportCommand::Maximized(*host_maximized));
-        }
-    });
 }
 
 #[derive(Debug, Clone, Copy)]

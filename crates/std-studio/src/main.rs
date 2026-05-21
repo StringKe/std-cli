@@ -50,7 +50,7 @@ use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std_egui::tokens::ThemeProfile;
-use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
+use std_studio::{StudioApp, StudioPane, WorkspacePaneCloseGuard, WorkspacePaneId};
 use studio_open::{
     run_studio_open_request, studio_open_blocked_summary, studio_open_request_from_args,
     studio_open_smoke_from_args,
@@ -92,6 +92,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) bottom_panel_tab: BottomPanelTab,
     pub(crate) workspace_commands: WorkspaceCommandQueue,
     pub(crate) pending_workspace_focus: Option<WorkspacePaneId>,
+    pub(crate) pending_closeguard: Option<WorkspacePaneCloseGuard>,
 }
 
 impl Default for StudioEguiApp {
@@ -128,6 +129,7 @@ impl Default for StudioEguiApp {
             bottom_panel_tab: BottomPanelTab::BatchDebug,
             workspace_commands: Arc::new(Mutex::new(Vec::new())),
             pending_workspace_focus: None,
+            pending_closeguard: None,
         }
         .with_loaded_settings()
     }

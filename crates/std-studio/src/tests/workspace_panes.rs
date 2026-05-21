@@ -125,6 +125,39 @@ fn closed_workspace_panes_restore_identity_and_state() {
 }
 
 #[test]
+fn studio_closeguard_records_pending_state_before_closing_instance_panes() {
+    let mut studio = test_studio();
+    let workflow_path = studio
+        .create_workflow("Closeguard Workflow", "Close main window")
+        .unwrap();
+    let dashboard = studio.open_workspace_pane(StudioPane::Dashboard);
+    let workflow = studio.open_workflow_builder(workflow_path.clone());
+    let settings = studio.open_settings_pane();
+
+    assert!(studio.focus_workspace_pane(workflow));
+
+    let closeguard = studio.close_workspace_instance();
+
+    assert_eq!(closeguard.focused_pane, Some(workflow));
+    assert_eq!(closeguard.panes.len(), 3);
+    assert!(closeguard.panes.iter().any(|pane| pane.id == dashboard
+        && pane.identity_key == "pane:dashboard"
+        && pane.content_key == "dashboard"
+        && !pane.focused));
+    assert!(closeguard.panes.iter().any(|pane| pane.id == workflow
+        && pane.identity_key.starts_with("workflow:")
+        && pane.content_key == "workflows"
+        && pane.identity_key == format!("workflow:{}", workflow_path.display())
+        && pane.focused));
+    assert!(closeguard
+        .panes
+        .iter()
+        .any(|pane| pane.id == settings && pane.identity_key == "singleton:settings"));
+    assert_eq!(studio.open_workspace_panes().count(), 0);
+    assert_eq!(studio.focused_pane, None);
+}
+
+#[test]
 fn studio_pane_titles_reflect_pane_kind() {
     let mut studio = test_studio();
     let workflow = studio.open_workflow_builder(std::path::PathBuf::from("release/workflow.json"));

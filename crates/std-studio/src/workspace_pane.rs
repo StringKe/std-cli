@@ -108,6 +108,21 @@ pub struct WorkspacePaneContent {
     pub lines: Vec<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorkspacePaneCloseSnapshot {
+    pub id: WorkspacePaneId,
+    pub identity_key: String,
+    pub content_key: &'static str,
+    pub title: String,
+    pub focused: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorkspacePaneCloseGuard {
+    pub panes: Vec<WorkspacePaneCloseSnapshot>,
+    pub focused_pane: Option<WorkspacePaneId>,
+}
+
 impl WorkspacePane {
     pub fn new(id: WorkspacePaneId, kind: WorkspacePaneKind, focus_serial: u64) -> Self {
         let title = kind.title();
@@ -201,6 +216,31 @@ impl StudioApp {
 
     pub fn open_workspace_panes(&self) -> impl Iterator<Item = &WorkspacePane> {
         self.workspace_panes.iter().filter(|pane| pane.open)
+    }
+
+    pub fn prepare_workspace_closeguard(&self) -> WorkspacePaneCloseGuard {
+        WorkspacePaneCloseGuard {
+            panes: self
+                .open_workspace_panes()
+                .map(|pane| WorkspacePaneCloseSnapshot {
+                    id: pane.id,
+                    identity_key: pane.kind.identity_key(),
+                    content_key: pane.kind.content_key(),
+                    title: pane.title.clone(),
+                    focused: self.focused_pane == Some(pane.id),
+                })
+                .collect(),
+            focused_pane: self.focused_pane,
+        }
+    }
+
+    pub fn close_workspace_instance(&mut self) -> WorkspacePaneCloseGuard {
+        let closeguard = self.prepare_workspace_closeguard();
+        for pane in &mut self.workspace_panes {
+            pane.open = false;
+        }
+        self.focused_pane = None;
+        closeguard
     }
 
     fn focus_workspace_pane_by_offset(&mut self, offset: isize) -> Option<WorkspacePaneId> {
