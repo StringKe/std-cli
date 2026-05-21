@@ -65,12 +65,12 @@ impl eframe::App for LauncherApp {
             apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
         }
 
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
         if !self.state.controller.visible {
             ctx.request_repaint_after(Duration::from_millis(50));
             return;
         }
 
-        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
         if ui::render_launcher_viewport(
             ctx,
             &mut self.state,
@@ -181,5 +181,16 @@ mod tests {
         let source = include_str!("app.rs");
 
         assert!(source.contains("!input::ime_composing(ctx) && input::escape().pressed(ctx)"));
+    }
+
+    #[test]
+    fn launcher_app_syncs_native_size_before_hidden_return() {
+        let source = include_str!("app.rs");
+        let size_sync = source
+            .find("ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));")
+            .unwrap();
+        let hidden_return = source.find("if !self.state.controller.visible").unwrap();
+
+        assert!(size_sync < hidden_return);
     }
 }
