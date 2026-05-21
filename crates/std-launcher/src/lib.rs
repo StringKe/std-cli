@@ -28,7 +28,7 @@ pub use keyboard::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport};
 pub use layout_contract::{
     panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
 };
-pub use query_mode::LauncherQueryMode;
+pub use query_mode::{LauncherQueryMode, LauncherQueryRequest};
 pub use reports::{
     format_window_commands, LauncherPerformanceReport, LauncherSmokeReport,
     LauncherWindowSmokeReport, HOTKEY_BUDGET_MS, PREVIEW_BUDGET_MS, SEARCH_BUDGET_MS,

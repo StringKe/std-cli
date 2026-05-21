@@ -6,6 +6,13 @@ pub enum LauncherQueryMode {
     Ask,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LauncherQueryRequest {
+    pub display_query: String,
+    pub search_query: String,
+    pub mode: LauncherQueryMode,
+}
+
 impl LauncherQueryMode {
     pub fn from_query(query: &str) -> Self {
         match query.trim_start().chars().next() {
@@ -35,6 +42,36 @@ impl LauncherQueryMode {
     }
 }
 
+impl LauncherQueryRequest {
+    pub fn parse(query: impl Into<String>) -> Self {
+        let display_query = normalize_query(query.into());
+        let mode = LauncherQueryMode::from_query(&display_query);
+        let search_query = search_query_for_mode(&display_query, mode);
+        Self {
+            display_query,
+            search_query,
+            mode,
+        }
+    }
+
+    pub fn action_only(&self) -> bool {
+        self.mode == LauncherQueryMode::Actions
+    }
+}
+
+fn normalize_query(query: String) -> String {
+    query.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+fn search_query_for_mode(query: &str, mode: LauncherQueryMode) -> String {
+    match mode {
+        LauncherQueryMode::All => query.to_string(),
+        LauncherQueryMode::Command | LauncherQueryMode::Actions | LauncherQueryMode::Ask => {
+            query.chars().skip(1).collect::<String>().trim().to_string()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -57,5 +94,19 @@ mod tests {
             LauncherQueryMode::from_query("? rebuild"),
             LauncherQueryMode::Ask
         );
+    }
+
+    #[test]
+    fn query_request_preserves_display_query_and_strips_prefix_for_search() {
+        let command = LauncherQueryRequest::parse("  /workflow   new ");
+        let actions = LauncherQueryRequest::parse("> plugin");
+        let ask = LauncherQueryRequest::parse("? rebuild index");
+
+        assert_eq!(command.display_query, "/workflow new");
+        assert_eq!(command.search_query, "workflow new");
+        assert!(!command.action_only());
+        assert_eq!(actions.search_query, "plugin");
+        assert!(actions.action_only());
+        assert_eq!(ask.search_query, "rebuild index");
     }
 }

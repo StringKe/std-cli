@@ -163,6 +163,23 @@ mod tests {
     }
 
     #[test]
+    fn launcher_prefix_queries_strip_prefix_before_searching() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "/rebuild index");
+        assert_eq!(model.query, "/rebuild index");
+        assert_eq!(model.preview.as_ref().unwrap().title, "Rebuild Index");
+
+        model.update_query(&core, ">rebuild index");
+        assert!(model.results.iter().all(|result| matches!(
+            result.action.action_type,
+            ActionType::Command | ActionType::Workflow
+        )));
+        assert_eq!(model.preview.as_ref().unwrap().title, "Rebuild Index");
+    }
+
+    #[test]
     fn launcher_records_search_preview_and_trigger_telemetry() {
         let core = test_core();
         let mut model = LauncherViewModel::new(&core);

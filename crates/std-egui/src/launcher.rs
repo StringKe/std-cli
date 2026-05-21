@@ -107,11 +107,19 @@ impl LauncherViewModel {
     }
 
     pub fn update_query(&mut self, core: &StdCore, query: impl Into<String>) {
-        self.query = normalize_query(query.into());
+        let query = LauncherQueryRequest::parse(query);
+        let action_only = query.action_only();
+        self.query = query.display_query;
         let started_at = Instant::now();
         self.results = core
-            .search(&self.query, search_limit_for_query(&self.query))
+            .search(
+                &query.search_query,
+                search_limit_for_query(&query.search_query),
+            )
             .unwrap_or_default();
+        if action_only {
+            self.results.retain(is_action_result);
+        }
         sort_launcher_results(&mut self.results);
         let overflowed = self.results.len() > RESULT_DISPLAY_LIMIT;
         if overflowed {
@@ -208,6 +216,52 @@ fn normalize_query(query: String) -> String {
     query.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LauncherQueryMode {
+    All,
+    Command,
+    Actions,
+    Ask,
+}
+
+struct LauncherQueryRequest {
+    display_query: String,
+    search_query: String,
+    mode: LauncherQueryMode,
+}
+
+impl LauncherQueryRequest {
+    fn parse(query: impl Into<String>) -> Self {
+        let display_query = normalize_query(query.into());
+        let mode = match display_query.trim_start().chars().next() {
+            Some('/') => LauncherQueryMode::Command,
+            Some('>') => LauncherQueryMode::Actions,
+            Some('?') => LauncherQueryMode::Ask,
+            _ => LauncherQueryMode::All,
+        };
+        let search_query = match mode {
+            LauncherQueryMode::All => display_query.clone(),
+            LauncherQueryMode::Command | LauncherQueryMode::Actions | LauncherQueryMode::Ask => {
+                display_query
+                    .chars()
+                    .skip(1)
+                    .collect::<String>()
+                    .trim()
+                    .to_string()
+            }
+        };
+        Self {
+            display_query,
+            search_query,
+            mode,
+        }
+    }
+
+    fn action_only(&self) -> bool {
+        self.mode == LauncherQueryMode::Actions
+    }
+}
+
 fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {
     if query.trim().is_empty() {
         LauncherResultMode::SuggestedWorkflows
@@ -234,6 +288,13 @@ fn search_limit_for_query(query: &str) -> usize {
     } else {
         RESULT_FETCH_LIMIT
     }
+}
+
+fn is_action_result(result: &SearchResult) -> bool {
+    matches!(
+        result.action.action_type,
+        ActionType::Command | ActionType::Workflow
+    )
 }
 
 fn sort_launcher_results(results: &mut [SearchResult]) {

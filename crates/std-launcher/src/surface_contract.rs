@@ -1,4 +1,4 @@
-use crate::{LauncherQueryMode, LauncherState};
+use crate::{LauncherQueryMode, LauncherQueryRequest, LauncherState};
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId, ActionType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -8,6 +8,7 @@ pub struct LauncherSurfaceContract {
     pub action_bar: String,
     pub empty_state: String,
     pub no_match_state: String,
+    pub query_prefixes: String,
     pub executing_state: String,
     pub defer_state: String,
     pub error_state: String,
@@ -35,6 +36,7 @@ impl LauncherSurfaceContract {
             action_bar: action_bar_contract(&preview.primary_command),
             empty_state: empty_state_contract(),
             no_match_state: no_match_state_contract(),
+            query_prefixes: query_prefix_contract(),
             executing_state: executing_state_contract(),
             defer_state: defer_state_contract(),
             error_state: error_state_contract(),
@@ -54,6 +56,8 @@ impl LauncherSurfaceContract {
             && self.action_bar.contains("actions=Mod+K")
             && self.empty_state.contains("recent_or_suggested")
             && self.no_match_state.contains("ask_ai_enter")
+            && self.query_prefixes.contains("command_search=rebuild")
+            && self.query_prefixes.contains("actions_only=true")
             && self.executing_state.contains("input_locked=true")
             && self.defer_state.contains("NeedsExternalRunner")
             && self.error_state.contains("copy,retry,open_studio")
@@ -61,13 +65,14 @@ impl LauncherSurfaceContract {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_bar,
             self.result_list,
             self.action_bar,
             self.empty_state,
             self.no_match_state,
+            self.query_prefixes,
             self.executing_state,
             self.defer_state,
             self.error_state
@@ -116,6 +121,20 @@ fn no_match_state_contract() -> String {
     format!(
         "phase={:?};mode={:?};icon=lg-search;ask_ai_enter={fallback}",
         state.view.phase, state.view.result_mode
+    )
+}
+
+fn query_prefix_contract() -> String {
+    let command = LauncherQueryRequest::parse("/rebuild index");
+    let actions = LauncherQueryRequest::parse(">rebuild index");
+    let ask = LauncherQueryRequest::parse("?rebuild index");
+    format!(
+        "command_display={};command_search={};actions_search={};actions_only={};ask_search={}",
+        command.display_query,
+        command.search_query,
+        actions.search_query,
+        actions.action_only(),
+        ask.search_query
     )
 }
 
@@ -205,6 +224,9 @@ mod tests {
         assert!(contract
             .summary()
             .contains("no_match_state_contract=phase=NoMatches"));
+        assert!(contract
+            .summary()
+            .contains("query_prefix_contract=command_display=/rebuild index"));
         assert!(contract
             .summary()
             .contains("executing_state_contract=phase=Executing"));
