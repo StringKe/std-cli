@@ -198,6 +198,14 @@ impl Color {
             palette::LIGHT_STATUS_DANGER,
         )
     }
+
+    pub fn status_weak(ctx: &egui::Context, color: Color32) -> Color32 {
+        let alpha = match effective_theme_from_context(ctx) {
+            EffectiveTheme::Dark => 42,
+            EffectiveTheme::Light => 28,
+        };
+        Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
+    }
 }
 
 pub(crate) fn effective_theme(ctx: &egui::Context, mode: ThemeMode) -> EffectiveTheme {
@@ -297,5 +305,17 @@ mod tests {
         crate::tokens::apply_theme(&ctx, ThemeMode::Dark);
         assert_eq!(Color::bg_surface_0(&ctx), palette::DARK_SURFACE_0);
         assert_eq!(Color::accent_base(&ctx), palette::DARK_ACCENT_BASE);
+    }
+
+    #[test]
+    fn status_weak_fill_follows_applied_context_theme_alpha() {
+        let ctx = egui::Context::default();
+        let color = palette::DARK_STATUS_SUCCESS;
+
+        crate::tokens::apply_theme(&ctx, ThemeMode::Dark);
+        assert_eq!(Color::status_weak(&ctx, color).a(), 42);
+
+        crate::tokens::apply_theme(&ctx, ThemeMode::Light);
+        assert_eq!(Color::status_weak(&ctx, color).a(), 28);
     }
 }

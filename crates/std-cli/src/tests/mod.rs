@@ -10,6 +10,7 @@ mod plugin;
 mod release;
 mod release_quality;
 mod support;
+mod ui_token_guard;
 mod workflow;
 mod workflow_batch;
 mod workflow_plan;

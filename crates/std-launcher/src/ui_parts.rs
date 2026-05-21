@@ -44,15 +44,6 @@ pub(crate) fn keycap(ui: &mut egui::Ui, text: &str) {
         });
 }
 
-pub(crate) fn weak_status_fill(ctx: &egui::Context, color: egui::Color32) -> egui::Color32 {
-    let alpha = if ctx.style().visuals.dark_mode {
-        42
-    } else {
-        28
-    };
-    egui::Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
-}
-
 pub(crate) fn draw_focus_ring(
     ui: &egui::Ui,
     rect: egui::Rect,

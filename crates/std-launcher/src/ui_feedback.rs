@@ -129,13 +129,9 @@ fn clamped_feedback_detail(feedback: &LauncherFeedback) -> String {
 
 fn feedback_fill(ctx: &egui::Context, feedback: &LauncherFeedback) -> egui::Color32 {
     match feedback_kind(feedback) {
-        FeedbackKind::Completed => {
-            crate::ui_parts::weak_status_fill(ctx, Color::status_success(ctx))
-        }
-        FeedbackKind::Failed => crate::ui_parts::weak_status_fill(ctx, Color::status_danger(ctx)),
-        FeedbackKind::Deferred => {
-            crate::ui_parts::weak_status_fill(ctx, Color::status_warning(ctx))
-        }
+        FeedbackKind::Completed => Color::status_weak(ctx, Color::status_success(ctx)),
+        FeedbackKind::Failed => Color::status_weak(ctx, Color::status_danger(ctx)),
+        FeedbackKind::Deferred => Color::status_weak(ctx, Color::status_warning(ctx)),
     }
 }
 
