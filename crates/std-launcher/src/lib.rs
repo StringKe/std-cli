@@ -476,6 +476,8 @@ mod app_tests;
 #[cfg(test)]
 mod desktop_guard_tests;
 #[cfg(test)]
+mod keyboard_tests;
+#[cfg(test)]
 mod navigation_tests;
 #[cfg(test)]
 mod shortcut_tests;

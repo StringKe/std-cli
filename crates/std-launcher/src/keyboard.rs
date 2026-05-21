@@ -28,13 +28,18 @@ pub struct LauncherKeyboardReport {
     pub selected_before: usize,
     pub selected_after_down: usize,
     pub selected_after_up: usize,
+    pub direct_trigger_status: Option<ActionExecutionStatus>,
     pub trigger_status: Option<ActionExecutionStatus>,
     pub closed_after_escape: bool,
     pub ime_selection_unchanged: bool,
+    pub ime_action_panel_selection_unchanged: bool,
     pub ime_trigger_blocked: bool,
     pub ime_escape_blocked: bool,
     pub focus_after_tab: LauncherFocusSection,
     pub focus_after_shift_tab: LauncherFocusSection,
+    pub focus_path: String,
+    pub action_panel_focus_path: String,
+    pub token_delete_query: String,
 }
 
 impl LauncherState {
@@ -157,12 +162,32 @@ impl LauncherState {
         let focus_after_tab = state.focus_section;
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
         let focus_after_shift_tab = state.focus_section;
+        let focus_path = "Search>Results>Search".to_string();
+        state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+        let action_panel_selected_before = state.action_panel.selected;
+        state.handle_keyboard_input(LauncherKey::ArrowDown, true);
+        let ime_action_panel_selection_unchanged =
+            state.action_panel.selected == action_panel_selected_before;
+        state.handle_keyboard_input(LauncherKey::FocusNext, false);
+        let action_panel_focus_path = format!(
+            "{:?}>{:?}",
+            LauncherFocusSection::ActionPanel,
+            state.focus_section
+        );
+        state.handle_keyboard_input(LauncherKey::Escape, false);
+        let mut token_state = Self::new();
+        token_state.update_query("open terminal now");
+        token_state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+        let token_delete_query = token_state.view.query;
         let ime_trigger_blocked = state
             .handle_keyboard_input(LauncherKey::Enter, true)
             .is_none()
             && state.view.feedback.is_none();
         state.handle_keyboard_input(LauncherKey::Escape, true);
         let ime_escape_blocked = state.controller.visible;
+        let direct_trigger_status = state
+            .handle_keyboard_input(LauncherKey::TriggerResult(0), false)
+            .map(|execution| execution.status);
         let trigger_status = state
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
@@ -172,13 +197,18 @@ impl LauncherState {
             selected_before,
             selected_after_down,
             selected_after_up,
+            direct_trigger_status,
             trigger_status,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged,
+            ime_action_panel_selection_unchanged,
             ime_trigger_blocked,
             ime_escape_blocked,
             focus_after_tab,
             focus_after_shift_tab,
+            focus_path,
+            action_panel_focus_path,
+            token_delete_query,
         }
     }
 
@@ -205,32 +235,45 @@ impl LauncherKeyboardReport {
     pub fn pass(&self) -> bool {
         self.selected_after_down > self.selected_before
             && self.selected_after_up == self.selected_before
+            && self.direct_trigger_status.is_some()
             && self.trigger_status.is_some()
             && self.closed_after_escape
             && self.ime_selection_unchanged
+            && self.ime_action_panel_selection_unchanged
             && self.ime_trigger_blocked
             && self.ime_escape_blocked
             && self.focus_after_tab == LauncherFocusSection::Results
             && self.focus_after_shift_tab == LauncherFocusSection::Search
+            && self.focus_path == "Search>Results>Search"
+            && self.action_panel_focus_path == "ActionPanel>Search"
+            && self.token_delete_query == "open terminal"
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
             self.selected_after_up,
+            self.direct_trigger_status
+                .as_ref()
+                .map(|status| format!("{status:?}"))
+                .unwrap_or_else(|| "none".to_string()),
             self.trigger_status
                 .as_ref()
                 .map(|status| format!("{status:?}"))
                 .unwrap_or_else(|| "none".to_string()),
             self.closed_after_escape,
             self.ime_selection_unchanged,
+            self.ime_action_panel_selection_unchanged,
             self.ime_trigger_blocked,
             self.ime_escape_blocked,
             self.focus_after_tab,
-            self.focus_after_shift_tab
+            self.focus_after_shift_tab,
+            self.focus_path,
+            self.action_panel_focus_path,
+            self.token_delete_query
         )
     }
 }

@@ -293,25 +293,6 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
 }
 
 #[test]
-fn launcher_keyboard_smoke_validates_navigation_trigger_escape_and_ime_guard() {
-    let report = LauncherState::keyboard_smoke("index");
-    let summary = report.summary();
-
-    assert!(report.pass(), "{summary}");
-    assert_eq!(report.selected_before, 0);
-    assert!(report.selected_after_down > report.selected_before);
-    assert_eq!(report.selected_after_up, report.selected_before);
-    assert_eq!(
-        report.trigger_status,
-        Some(ActionExecutionStatus::Completed)
-    );
-    assert!(report.ime_selection_unchanged);
-    assert!(report.ime_trigger_blocked);
-    assert!(report.ime_escape_blocked);
-    assert!(summary.contains("launcher_keyboard_smoke PASS"));
-}
-
-#[test]
 fn launcher_state_defers_external_runner_actions() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {
