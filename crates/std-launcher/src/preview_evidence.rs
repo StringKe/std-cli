@@ -42,8 +42,7 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let rect = ui_metrics::panel_rect(available, &state);
     let body = ui_metrics::body_height(&state, viewport.y);
     let padding = ui_metrics::panel_inner_padding_for_state(&state);
-    let content_clearance =
-        rect.height() - padding * 2.0 - ui_metrics::panel_content_height(&state, body);
+    let content_clearance = preview_content_clearance(&state, rect.height(), padding, body);
     let fits = rect.min.y == 0.0
         && rect.max.y <= viewport.y
         && (rect.height() - viewport.y).abs() < 0.5
@@ -68,6 +67,18 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     )
 }
 
+fn preview_content_clearance(
+    state: &LauncherState,
+    panel_height: f32,
+    padding: f32,
+    body: f32,
+) -> f32 {
+    if !ui_metrics::panel_is_expanded(state) {
+        return panel_height - ui_metrics::search_bar_min_height();
+    }
+    panel_height - padding * 2.0 - ui_metrics::panel_content_height(state, body)
+}
+
 fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
     if ui_metrics::panel_frame_fills_viewport(state) {
         "fills_viewport"
@@ -89,6 +100,11 @@ fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
         "empty" => {
             state.view.phase == std_egui::LauncherPhase::Empty
                 && state.view.result_mode == std_egui::LauncherResultMode::SuggestedWorkflows
+        }
+        "collapsed" => {
+            state.view.phase == std_egui::LauncherPhase::Empty
+                && state.view.results.is_empty()
+                && state.view.preview.is_none()
         }
         "results" => {
             state.view.phase == std_egui::LauncherPhase::WithResults

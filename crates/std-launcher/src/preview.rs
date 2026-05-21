@@ -163,11 +163,6 @@ pub(crate) fn preview_window_title() -> &'static str {
     "std-cli Launcher"
 }
 
-#[cfg(test)]
-pub(crate) fn preview_native_options() -> eframe::NativeOptions {
-    preview_native_options_for_size(ui::launcher_initial_window_inner_size())
-}
-
 pub(crate) fn preview_native_options_for_config(
     config: &LauncherPreviewConfig,
 ) -> eframe::NativeOptions {
@@ -178,6 +173,11 @@ pub(crate) fn preview_window_inner_size(config: &LauncherPreviewConfig) -> egui:
     let mut state = LauncherState::new();
     apply_preview_scenario(&mut state, &config.scenario);
     ui::launcher_window_inner_size(&state)
+}
+
+#[cfg(test)]
+pub(crate) fn preview_viewport_contract(config: &LauncherPreviewConfig) -> String {
+    std_launcher::transparent_visible_panel_contract(preview_window_inner_size(config))
 }
 
 fn preview_native_options_for_size(size: egui::Vec2) -> eframe::NativeOptions {
@@ -193,6 +193,10 @@ fn preview_native_options_for_size(size: egui::Vec2) -> eframe::NativeOptions {
 
 pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
     match scenario {
+        "collapsed" => {
+            state.view.results.clear();
+            state.view.preview = None;
+        }
         "empty" => {
             state.update_query("");
         }
@@ -257,6 +261,14 @@ impl LauncherPreviewScenario {
 
 fn preview_matrix() -> Vec<LauncherPreviewScenario> {
     [
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "collapsed",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "collapsed",
+        },
         LauncherPreviewScenario {
             theme: "light",
             state: "empty",

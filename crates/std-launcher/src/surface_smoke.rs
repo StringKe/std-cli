@@ -166,10 +166,11 @@ fn themed_context(mode: ThemeMode) -> egui::Context {
 }
 
 fn native_viewport_contract() -> String {
-    let native_width = PANEL_WIDTH;
-    let panel_width = crate::panel_width_for_available(native_width, 0.0, 1.0);
-    let transparent = true;
-    if transparent && panel_width == native_width {
+    let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH, 64.0));
+    let panel_width = crate::panel_width_for_available(PANEL_WIDTH, 0.0, 1.0);
+    if size == "transparent=true,decorations=false,visible=false,size=720x64"
+        && panel_width == PANEL_WIDTH
+    {
         return "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel"
             .to_string();
     }
@@ -177,10 +178,11 @@ fn native_viewport_contract() -> String {
 }
 
 fn capture_window_contract() -> String {
-    let preview_width = PANEL_WIDTH;
-    let panel_width = crate::panel_width_for_available(preview_width, 0.0, 1.0);
-    let transparent = true;
-    if transparent && panel_width == preview_width {
+    let panel_width = crate::panel_width_for_available(PANEL_WIDTH, 0.0, 1.0);
+    let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH, 360.0));
+    if preview == "transparent=true,decorations=false,visible=true,size=720x360"
+        && panel_width == PANEL_WIDTH
+    {
         return "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel"
             .to_string();
     }

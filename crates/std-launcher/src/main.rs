@@ -91,10 +91,17 @@ mod tests {
     fn launcher_window_uses_transparent_hidden_chrome() {
         let options = launcher_native_options();
         let description = format!("{:?}", options.viewport);
+        let contract = std_launcher::transparent_hidden_panel_contract(
+            ui::launcher_initial_window_inner_size(),
+        );
 
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(false)"));
+        assert_eq!(
+            contract,
+            "transparent=true,decorations=false,visible=false,size=720x64"
+        );
         assert_eq!(
             ui::launcher_initial_window_inner_size(),
             egui::vec2(720.0, 64.0)

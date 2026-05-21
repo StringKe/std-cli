@@ -18,6 +18,7 @@ mod studio_intent;
 mod suggested;
 mod surface_contract;
 mod surface_smoke;
+mod viewport_contract;
 mod voice;
 
 pub use action_bar_preview::ActionBarPreviewSummary;
@@ -52,6 +53,9 @@ pub use studio_intent::{StudioLaunchIntent, StudioLaunchTarget};
 pub use suggested::{suggested_workflow_rows, SuggestedWorkflowRow};
 pub use surface_contract::LauncherSurfaceContract;
 pub use surface_smoke::LauncherSurfaceSmokeReport;
+pub use viewport_contract::{
+    transparent_hidden_panel_contract, transparent_visible_panel_contract,
+};
 pub use voice::clean_voice_transcript;
 
 pub struct LauncherState {

@@ -1,5 +1,4 @@
 use crate::{preview::*, ui};
-use eframe::egui;
 use std_egui::tokens::ThemeMode;
 use std_types::ActionExecutionStatus;
 
@@ -42,7 +41,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
-    assert_eq!(report.scenarios.len(), 18);
+    assert_eq!(report.scenarios.len(), 20);
     assert!(report
         .commands
         .iter()
@@ -63,6 +62,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
 fn assert_preview_state_matrix(report: &LauncherPreviewSmokeReport) {
     for state in [
         "light-empty=PASS",
+        "light-collapsed=PASS",
         "dark-searching=PASS",
         "light-loading=PASS",
         "dark-loading=PASS",
@@ -128,7 +128,10 @@ fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
-    assert!(report.summary().contains("preview_sizes=light-empty=PASS"));
+    assert!(report
+        .summary()
+        .contains("preview_sizes=light-collapsed=PASS"));
+    assert!(report.summary().contains("light-empty=PASS"));
     assert!(report.summary().contains("bottom_clearance=0"));
     assert!(report.summary().contains("panel_frame=fills_viewport"));
     assert!(report
@@ -141,7 +144,12 @@ fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
 
 #[test]
 fn ui_preview_uses_transparent_visible_chrome() {
-    let options = preview_native_options();
+    let config = LauncherPreviewConfig {
+        theme_mode: ThemeMode::Light,
+        scenario: "empty".to_string(),
+        timeout_ms: 8000,
+    };
+    let options = preview_native_options_for_config(&config);
     let description = format!("{:?}", options.viewport);
 
     assert_eq!(preview_window_title(), "std-cli Launcher");
@@ -149,8 +157,8 @@ fn ui_preview_uses_transparent_visible_chrome() {
     assert!(description.contains("decorations: Some(false)"));
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
-        ui::launcher_initial_window_inner_size(),
-        egui::vec2(720.0, 64.0)
+        preview_viewport_contract(&config),
+        "transparent=true,decorations=false,visible=true,size=720x460"
     );
 }
 
