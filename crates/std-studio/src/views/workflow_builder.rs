@@ -1,14 +1,12 @@
 use crate::{
     ui,
-    views::{workflow_builder_status, workflow_rows},
+    views::{workflow_builder_metrics, workflow_builder_status, workflow_rows},
     StudioEguiApp,
 };
 use eframe::egui;
 use std::path::Path;
 use std_egui::{i18n, tokens::Space};
 use std_orchestration::WorkflowStep;
-
-const BUILDER_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
@@ -30,24 +28,24 @@ impl StudioEguiApp {
 
     fn render_builder_workspace(&mut self, ui: &mut egui::Ui) {
         let available_width = ui.available_width();
-        if available_width < 560.0 {
+        let Some((left_width, right_width)) =
+            workflow_builder_metrics::builder_columns(available_width)
+        else {
             self.render_builder_steps(ui);
-            ui.add_space(BUILDER_PANEL_GAP);
+            ui.add_space(workflow_builder_metrics::BUILDER_PANEL_GAP);
             self.render_step_properties(ui);
             return;
-        }
-        let left_width = ((available_width - BUILDER_PANEL_GAP) * 0.48).max(260.0);
-        let right_width = (available_width - left_width - BUILDER_PANEL_GAP).max(260.0);
+        };
         ui.horizontal_top(|ui| {
             ui.set_min_width(available_width);
             ui.allocate_ui_with_layout(
-                egui::vec2(left_width, 0.0),
+                workflow_builder_metrics::builder_pane_size(left_width),
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| self.render_builder_steps(ui),
             );
-            ui.add_space(BUILDER_PANEL_GAP);
+            ui.add_space(workflow_builder_metrics::BUILDER_PANEL_GAP);
             ui.allocate_ui_with_layout(
-                egui::vec2(right_width, 0.0),
+                workflow_builder_metrics::builder_pane_size(right_width),
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| self.render_step_properties(ui),
             );
@@ -56,8 +54,9 @@ impl StudioEguiApp {
 
     fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
+            ui.set_min_height(workflow_builder_metrics::BUILDER_TOOLBAR_HEIGHT);
             ui.add_sized(
-                [ui.available_width().min(260.0), 28.0],
+                workflow_builder_metrics::goal_input_size(ui.available_width()),
                 egui::TextEdit::singleline(&mut self.workflow_goal)
                     .hint_text(i18n::t("studio.workflow_builder.goal.hint")),
             );
@@ -159,13 +158,13 @@ impl StudioEguiApp {
             ui.text_edit_singleline(&mut self.workflow_step_name);
             ui.label(i18n::t("studio.workflow_builder.parameters"));
             ui.add_sized(
-                [ui.available_width(), 92.0],
+                workflow_builder_metrics::parameter_editor_size(ui.available_width()),
                 egui::TextEdit::multiline(&mut self.workflow_step_parameters),
             );
             ui.horizontal(|ui| {
                 ui.label(i18n::t("studio.workflow_builder.index"));
                 ui.add_sized(
-                    [48.0, 24.0],
+                    workflow_builder_metrics::step_index_size(),
                     egui::TextEdit::singleline(&mut self.workflow_edit_index),
                 );
                 if ui::quiet_button(ui, i18n::t("studio.workflow_builder.add")).clicked() {
@@ -202,13 +201,13 @@ impl StudioEguiApp {
         ui.text_edit_singleline(&mut self.workflow_step_name);
         ui.label(i18n::t("studio.workflow_builder.parameters"));
         ui.add_sized(
-            [ui.available_width(), 92.0],
+            workflow_builder_metrics::parameter_editor_size(ui.available_width()),
             egui::TextEdit::multiline(&mut self.workflow_step_parameters),
         );
         ui.horizontal(|ui| {
             ui.label(i18n::t("studio.workflow_builder.index"));
             ui.add_sized(
-                [48.0, 24.0],
+                workflow_builder_metrics::step_index_size(),
                 egui::TextEdit::singleline(&mut self.workflow_edit_index),
             );
             if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
@@ -237,7 +236,7 @@ impl StudioEguiApp {
             );
             ui.label(i18n::t("studio.workflow_builder.ai.prompt"));
             ui.add_sized(
-                [ui.available_width(), 32.0],
+                workflow_builder_metrics::ai_input_size(ui.available_width()),
                 egui::TextEdit::singleline(&mut self.workflow_goal),
             );
         });

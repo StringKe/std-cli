@@ -12,6 +12,7 @@ pub(crate) mod row_paint;
 mod settings;
 mod settings_rows;
 mod workflow_builder;
+mod workflow_builder_metrics;
 mod workflow_builder_status;
 mod workflow_rows;
 mod workflows;
