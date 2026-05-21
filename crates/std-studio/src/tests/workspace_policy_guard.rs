@@ -58,6 +58,12 @@ fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
         if !native_entry_file_allowed(&path) && body.contains("eframe::run_native") {
             violations.push(format!("{} contains eframe::run_native", path.display()));
         }
+        if path.ends_with("studio_open.rs") && body.contains("run_studio_native_app_with") {
+            violations.push(format!(
+                "{} must emit internal pane intent, not start a host window",
+                path.display()
+            ));
+        }
         for pattern in forbidden_studio_window_patterns() {
             if body.contains(&pattern) {
                 violations.push(format!("{} contains {}", path.display(), pattern));

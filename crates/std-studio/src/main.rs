@@ -27,6 +27,8 @@ mod smoke;
 #[cfg(test)]
 mod smoke_tests;
 mod studio_open;
+#[cfg(test)]
+mod studio_open_tests;
 mod studio_smoke_cli;
 mod ui;
 mod viewport;

@@ -1,4 +1,4 @@
-use crate::{native_app::run_studio_native_app_with, StudioEguiApp};
+use crate::StudioEguiApp;
 use std_studio::StudioPane;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -13,7 +13,7 @@ pub(crate) enum StudioOpenRequest {
 }
 
 impl StudioOpenRequest {
-    fn target(self) -> &'static str {
+    pub(crate) fn target(self) -> &'static str {
         match self {
             Self::Analysis => "analysis",
             Self::Apps => "apps",
@@ -169,13 +169,29 @@ pub(crate) fn studio_open_blocked_summary(request: StudioOpenRequest, reason: &s
 }
 
 pub(crate) fn run_studio_open_request(request: StudioOpenRequest) -> eframe::Result<()> {
-    run_studio_native_app_with(app_for_open_request(request))
+    println!("{}", studio_open_intent_summary(request));
+    Ok(())
 }
 
 pub(crate) fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     apply_studio_open_request(&mut app, request);
     app
+}
+
+pub(crate) fn studio_open_intent_summary(request: StudioOpenRequest) -> String {
+    let app = app_for_open_request(request);
+    format!(
+        "studio_open_intent PASS\ntarget={}\nroute=internal-egui-workspace-pane-intent\nhost_window=existing-studio-host\nfocused_pane={}\nworkspace_panes={}\nnative_child_windows={}\ndetached_panels={}",
+        request.target(),
+        app.app
+            .focused_pane
+            .map(|id| id.value().to_string())
+            .unwrap_or_else(|| "none".to_string()),
+        app.app.open_workspace_panes().count(),
+        app.app.workspace_policy.allows_native_child_windows(),
+        app.app.workspace_policy.allows_detached_panels()
+    )
 }
 
 fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
@@ -190,7 +206,7 @@ fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
     }
 }
 
-fn all_open_requests() -> [StudioOpenRequest; 7] {
+pub(crate) fn all_open_requests() -> [StudioOpenRequest; 7] {
     [
         StudioOpenRequest::Analysis,
         StudioOpenRequest::Apps,
@@ -200,84 +216,4 @@ fn all_open_requests() -> [StudioOpenRequest; 7] {
         StudioOpenRequest::Settings,
         StudioOpenRequest::Workflows,
     ]
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn parses_supported_open_requests() {
-        for (target, request) in [
-            ("analysis", StudioOpenRequest::Analysis),
-            ("apps", StudioOpenRequest::Apps),
-            ("history", StudioOpenRequest::History),
-            ("memory", StudioOpenRequest::Memory),
-            ("plugins", StudioOpenRequest::Plugins),
-            ("settings", StudioOpenRequest::Settings),
-            ("workflows", StudioOpenRequest::Workflows),
-        ] {
-            let args = open_args(target);
-            assert_eq!(studio_open_request_from_args(&args), Some(request));
-        }
-    }
-
-    #[test]
-    fn applies_open_requests_to_internal_workspace_panes() {
-        for request in all_open_requests() {
-            let app = app_for_open_request(request);
-
-            assert_eq!(app.app.open_workspace_panes().count(), 1);
-            assert!(app.app.focused_pane.is_some());
-            assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
-            assert!(app.status.contains(request.target()));
-        }
-    }
-
-    #[test]
-    fn open_smoke_reports_internal_pane_intents_without_native_windows() {
-        let args = vec!["std-studio".to_string(), "--open-smoke".to_string()];
-        let report = studio_open_smoke_from_args(&args).unwrap();
-
-        assert!(report.pass(), "{}", report.summary());
-        assert!(report.summary().contains("studio_open_smoke PASS"));
-        assert!(report
-            .summary()
-            .contains("route=internal-egui-workspace-pane-intent"));
-        assert!(report.summary().contains("native_child_windows=false"));
-        assert!(report.summary().contains("detached_panels=false"));
-    }
-
-    #[test]
-    fn settings_request_uses_internal_workspace_pane() {
-        let app = app_for_open_request(StudioOpenRequest::Settings);
-        let spec = crate::workspace_panes::focused_workspace_spec(&app.app).unwrap();
-
-        assert_eq!(app.app.active_pane, StudioPane::Settings);
-        assert_eq!(spec.content_key, "settings");
-        assert_eq!(spec.heading, "Settings");
-        assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
-        assert!(app.status.contains("opened studio settings"));
-    }
-
-    #[test]
-    fn blocked_summary_keeps_test_mode_from_opening_native_window() {
-        let summary = studio_open_blocked_summary(
-            StudioOpenRequest::Settings,
-            "studio_native_app SKIP reason=STD_TEST_MODE blocked native app startup",
-        );
-
-        assert!(summary.contains("studio_open SKIP"));
-        assert!(summary.contains("target=settings"));
-        assert!(summary.contains("workspace_panes=1"));
-        assert!(summary.contains("STD_TEST_MODE blocked native app startup"));
-    }
-
-    fn open_args(target: &str) -> Vec<String> {
-        vec![
-            "std-studio".to_string(),
-            "--open".to_string(),
-            target.to_string(),
-        ]
-    }
 }
