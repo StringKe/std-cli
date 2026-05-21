@@ -90,7 +90,7 @@ impl LauncherSurfaceSmokeReport {
             && self.empty_state.contains("recent_or_suggested")
             && self.matches_state.contains("grouped")
             && self.no_match_state.contains("ask_ai_enter")
-            && self.defer_feedback == "Needs external runner:Open Terminal"
+            && self.defer_feedback == "Needs external runner:Open App: StdNeverLaunchFixture"
             && self.error_feedback == "Failed:Plugin Crash"
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
@@ -182,9 +182,9 @@ fn feedback_state(execution: ActionExecution) -> String {
 
 fn deferred_execution() -> ActionExecution {
     execution(
-        "Open Terminal",
+        "Open App: StdNeverLaunchFixture",
         ActionExecutionStatus::NeedsExternalRunner,
-        "open -a Terminal",
+        "open /tmp/StdNeverLaunchFixture.app",
     )
 }
 

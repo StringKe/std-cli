@@ -12,7 +12,8 @@ pub mod tokens;
 
 pub use dashboard::StudioDashboardViewModel;
 pub use launcher::{
-    LauncherFeedback, LauncherPhase, LauncherResultMode, LauncherTelemetry, LauncherViewModel,
+    LauncherFeedback, LauncherNlSuggestion, LauncherPhase, LauncherResultMode, LauncherTelemetry,
+    LauncherViewModel,
 };
 pub use memory::MemoryBrowserViewModel;
 pub use plugin::PluginManagerViewModel;
@@ -181,6 +182,23 @@ mod tests {
             ActionType::Command | ActionType::Workflow
         )));
         assert_eq!(model.preview.as_ref().unwrap().title, "Rebuild Index");
+    }
+
+    #[test]
+    fn launcher_question_prefix_uses_natural_language_suggestion_state() {
+        let core = test_core();
+        let mut model = LauncherViewModel::new(&core);
+
+        model.update_query(&core, "? rebuild index");
+
+        assert_eq!(model.result_mode, LauncherResultMode::NaturalLanguage);
+        assert_eq!(model.phase, LauncherPhase::WithResults);
+        assert!(model.results.is_empty());
+        assert!(model.preview.is_none());
+        let suggestion = model.nl_suggestion.as_ref().unwrap();
+        assert_eq!(suggestion.intent, "ask");
+        assert_eq!(suggestion.query, "rebuild index");
+        assert_eq!(suggestion.actions, vec!["Ask AI", "Search Actions"]);
     }
 
     #[test]

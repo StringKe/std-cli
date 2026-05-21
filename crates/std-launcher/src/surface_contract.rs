@@ -9,6 +9,7 @@ pub struct LauncherSurfaceContract {
     pub empty_state: String,
     pub no_match_state: String,
     pub query_prefixes: String,
+    pub nl_suggestion: String,
     pub executing_state: String,
     pub defer_state: String,
     pub error_state: String,
@@ -37,6 +38,7 @@ impl LauncherSurfaceContract {
             empty_state: empty_state_contract(),
             no_match_state: no_match_state_contract(),
             query_prefixes: query_prefix_contract(),
+            nl_suggestion: nl_suggestion_contract(),
             executing_state: executing_state_contract(),
             defer_state: defer_state_contract(),
             error_state: error_state_contract(),
@@ -59,6 +61,8 @@ impl LauncherSurfaceContract {
             && self.query_prefixes.contains("command_search=rebuild")
             && self.query_prefixes.contains("command_only=true")
             && self.query_prefixes.contains("actions_only=true")
+            && self.nl_suggestion.contains("mode=NaturalLanguage")
+            && self.nl_suggestion.contains("actions=Ask AI|Search Actions")
             && self.executing_state.contains("input_locked=true")
             && self.defer_state.contains("NeedsExternalRunner")
             && self.error_state.contains("copy,retry,open_studio")
@@ -66,7 +70,7 @@ impl LauncherSurfaceContract {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_bar,
             self.result_list,
@@ -74,6 +78,7 @@ impl LauncherSurfaceContract {
             self.empty_state,
             self.no_match_state,
             self.query_prefixes,
+            self.nl_suggestion,
             self.executing_state,
             self.defer_state,
             self.error_state
@@ -137,6 +142,25 @@ fn query_prefix_contract() -> String {
         actions.search_query,
         actions.action_only(),
         ask.search_query
+    )
+}
+
+fn nl_suggestion_contract() -> String {
+    let mut state = LauncherState::new();
+    state.update_query("?rebuild index");
+    let suggestion = state.view.nl_suggestion.as_ref();
+    format!(
+        "mode={:?};results={};preview={};intent={};confidence={};actions={}",
+        state.view.result_mode,
+        state.view.results.len(),
+        state.view.preview.is_some(),
+        suggestion
+            .map(|item| item.intent.as_str())
+            .unwrap_or("none"),
+        suggestion.map(|item| item.confidence).unwrap_or_default(),
+        suggestion
+            .map(|item| item.actions.join("|"))
+            .unwrap_or_else(|| "none".to_string())
     )
 }
 
@@ -229,6 +253,9 @@ mod tests {
         assert!(contract
             .summary()
             .contains("query_prefix_contract=command_display=/rebuild index"));
+        assert!(contract
+            .summary()
+            .contains("nl_suggestion_contract=mode=NaturalLanguage"));
         assert!(contract
             .summary()
             .contains("executing_state_contract=phase=Executing"));

@@ -1,5 +1,6 @@
 use super::*;
 use std_core::StdConfig;
+use std_types::{Action, ActionType, RegistryEntry};
 
 #[test]
 fn launcher_exists() {
@@ -299,14 +300,15 @@ fn launcher_state_defers_external_runner_actions() {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
     });
-    core.seed_builtin_actions().unwrap();
+    core.register_action(fixture_app_action(temp.path()))
+        .unwrap();
     let mut state = LauncherState::with_core(core);
 
-    let preview = state.update_query("terminal").unwrap();
+    let preview = state.update_query("StdNeverLaunchFixture").unwrap();
     let execution = state.trigger_selected().unwrap();
 
-    assert_eq!(preview.title, "Open Terminal");
-    assert_eq!(execution.action_name, "Open Terminal");
+    assert_eq!(preview.title, "Open App: StdNeverLaunchFixture");
+    assert_eq!(execution.action_name, "Open App: StdNeverLaunchFixture");
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     let feedback = state.view.feedback.as_ref().unwrap();
     assert_eq!(feedback.title, "Needs external runner");
@@ -321,6 +323,20 @@ fn launcher_state_defers_external_runner_actions() {
             .and_then(|value| value.as_bool()),
         Some(true)
     );
+}
+
+fn fixture_app_action(root: &std::path::Path) -> RegistryEntry {
+    let app = root.join("StdNeverLaunchFixture.app");
+    RegistryEntry::from_action(
+        Action::new(
+            "Open App: StdNeverLaunchFixture",
+            format!("Launch fixture app at {}", app.display()),
+            "When testing external runner deferral",
+            ActionType::AppLaunch,
+        ),
+        vec!["app".to_string(), "fixture".to_string()],
+    )
+    .with_metadata("path", app.display().to_string())
 }
 
 #[test]

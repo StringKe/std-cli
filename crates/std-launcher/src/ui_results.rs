@@ -6,6 +6,7 @@ use crate::{
         group_count as model_group_count, group_header_label, list_items, LauncherResultListItem,
         LauncherResultRowModel,
     },
+    ui_result_nl,
 };
 use eframe::egui;
 use std_egui::{
@@ -58,11 +59,18 @@ fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
             }
             LauncherResultMode::Matches => i18n::t("launcher.results.title"),
             LauncherResultMode::NoMatches => i18n::t("launcher.results.title"),
+            LauncherResultMode::NaturalLanguage => i18n::t("launcher.results.nl.title"),
         },
     }
 }
 
 fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) {
+    if state.view.result_mode == LauncherResultMode::NaturalLanguage {
+        if let Some(suggestion) = state.view.nl_suggestion.as_ref() {
+            ui_result_nl::render(ui, suggestion);
+        }
+        return;
+    }
     let mut clicked = None;
     let items = list_items(
         &state.view.results,

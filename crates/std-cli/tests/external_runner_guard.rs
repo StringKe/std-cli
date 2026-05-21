@@ -120,20 +120,30 @@ fn binary_test_mode_blocks_registered_app_launch() {
 }
 
 #[test]
-fn binary_test_mode_blocks_builtin_terminal_action() {
+fn binary_test_mode_does_not_expose_system_app_results() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
-    let trigger = run_std(
-        &config_path,
-        &["trigger", "Open Terminal", "--allow-external"],
-    );
-    assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+    for query in [
+        ["1P", "assword"].join(""),
+        ["We", "Chat"].join(""),
+        ["wei", "xin"].join(""),
+        String::from("\u{5fae}\u{4fe1}"),
+    ] {
+        let search = run_std(&config_path, &["search", &query]);
+        assert!(search.status.success(), "{}", command_stderr(&search));
 
-    let stdout = command_stdout(&trigger);
-    assert!(stdout.contains("\"action_name\": \"Open Terminal\""));
-    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
-    assert!(!stdout.contains("\"status\": \"Completed\""));
+        let stdout = command_stdout(&search);
+        assert!(
+            !stdout.contains("Open App:"),
+            "STD_TEST_MODE must not expose app launch results for {query}: {stdout}"
+        );
+        assert!(
+            !stdout.contains("/Applications")
+                && !stdout.contains(&["/System", "/Applications"].join("")),
+            "STD_TEST_MODE must not expose system app paths for {query}: {stdout}"
+        );
+    }
 }
 
 #[test]

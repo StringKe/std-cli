@@ -21,6 +21,7 @@ pub enum LauncherResultMode {
     SuggestedWorkflows,
     Matches,
     NoMatches,
+    NaturalLanguage,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,6 +40,7 @@ pub struct LauncherViewModel {
     pub phase: LauncherPhase,
     pub result_mode: LauncherResultMode,
     pub results: Vec<SearchResult>,
+    pub nl_suggestion: Option<LauncherNlSuggestion>,
     pub selected: usize,
     pub preview: Option<ActionPreview>,
     pub last_execution: Option<ActionExecution>,
@@ -54,6 +56,14 @@ pub struct LauncherFeedback {
     pub title: String,
     pub detail: String,
     pub deferred: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LauncherNlSuggestion {
+    pub intent: String,
+    pub query: String,
+    pub confidence: u8,
+    pub actions: Vec<String>,
 }
 
 impl LauncherFeedback {
@@ -90,6 +100,7 @@ impl LauncherViewModel {
             phase: LauncherPhase::Empty,
             result_mode: LauncherResultMode::SuggestedWorkflows,
             results,
+            nl_suggestion: None,
             selected: 0,
             preview: None,
             last_execution: None,
@@ -110,8 +121,14 @@ impl LauncherViewModel {
         let query = LauncherQueryRequest::parse(query);
         let action_only = query.action_only();
         let command_only = query.command_only();
+        let ask_mode = query.ask_mode();
         self.query = query.display_query;
         let started_at = Instant::now();
+        if ask_mode {
+            self.preview_nl_suggestion(query.search_query, started_at);
+            return;
+        }
+        self.nl_suggestion = None;
         self.results = core
             .search(
                 &query.search_query,
@@ -137,6 +154,19 @@ impl LauncherViewModel {
         self.telemetry.last_overflowed = overflowed;
         self.selected = 0;
         self.refresh_preview(core);
+    }
+
+    fn preview_nl_suggestion(&mut self, query: String, started_at: Instant) {
+        self.results.clear();
+        self.preview = None;
+        self.selected = 0;
+        self.nl_suggestion = Some(LauncherNlSuggestion::from_query(query));
+        self.result_mode = LauncherResultMode::NaturalLanguage;
+        self.phase = LauncherPhase::WithResults;
+        self.telemetry.last_search_ms = started_at.elapsed().as_millis();
+        self.telemetry.last_result_count = 1;
+        self.telemetry.last_total_matches = 1;
+        self.telemetry.last_overflowed = false;
     }
 
     pub fn delete_previous_query_token(&mut self, core: &StdCore) {
@@ -201,6 +231,7 @@ impl LauncherViewModel {
     pub fn preview_searching(&mut self, query: impl Into<String>) {
         self.query = normalize_query(query.into());
         self.results.clear();
+        self.nl_suggestion = None;
         self.preview = None;
         self.selected = 0;
         self.result_mode = LauncherResultMode::Matches;
@@ -267,6 +298,22 @@ impl LauncherQueryRequest {
 
     fn command_only(&self) -> bool {
         self.mode == LauncherQueryMode::Command
+    }
+
+    fn ask_mode(&self) -> bool {
+        self.mode == LauncherQueryMode::Ask
+    }
+}
+
+impl LauncherNlSuggestion {
+    fn from_query(query: String) -> Self {
+        let query = query.trim().to_string();
+        Self {
+            intent: "ask".to_string(),
+            query,
+            confidence: 72,
+            actions: vec!["Ask AI".to_string(), "Search Actions".to_string()],
+        }
     }
 }
 

@@ -5,7 +5,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use std_core::{StdConfig, StdCore};
-use std_types::ActionExecutionStatus;
+use std_types::{Action, ActionExecutionStatus, ActionType, RegistryEntry};
 
 #[test]
 fn mod_number_triggers_matching_result() {
@@ -53,22 +53,23 @@ fn mod_number_uses_safe_defer_path_without_user_external_opt_in() {
         data_dir: temp.path().join("data"),
         ..StdConfig::default()
     });
-    core.seed_builtin_actions().unwrap();
+    core.register_action(fixture_app_action(temp.path()))
+        .unwrap();
     let mut state = LauncherState::with_core(core);
 
-    state.update_query("terminal");
-    let terminal_index = state
+    state.update_query("StdNeverLaunchFixture");
+    let fixture_index = state
         .view
         .results
         .iter()
-        .position(|result| result.action.name == "Open Terminal")
+        .position(|result| result.action.name == "Open App: StdNeverLaunchFixture")
         .unwrap();
     let execution = state
-        .handle_keyboard_input(LauncherKey::TriggerResult(terminal_index), false)
+        .handle_keyboard_input(LauncherKey::TriggerResult(fixture_index), false)
         .unwrap();
 
-    assert_eq!(state.view.selected, terminal_index);
-    assert_eq!(execution.action_name, "Open Terminal");
+    assert_eq!(state.view.selected, fixture_index);
+    assert_eq!(execution.action_name, "Open App: StdNeverLaunchFixture");
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     assert_eq!(
         state
@@ -78,6 +79,20 @@ fn mod_number_uses_safe_defer_path_without_user_external_opt_in() {
             .map(|feedback| feedback.deferred),
         Some(true)
     );
+}
+
+fn fixture_app_action(root: &std::path::Path) -> RegistryEntry {
+    let app = root.join("StdNeverLaunchFixture.app");
+    RegistryEntry::from_action(
+        Action::new(
+            "Open App: StdNeverLaunchFixture",
+            format!("Launch fixture app at {}", app.display()),
+            "When testing external runner deferral",
+            ActionType::AppLaunch,
+        ),
+        vec!["app".to_string(), "fixture".to_string()],
+    )
+    .with_metadata("path", app.display().to_string())
 }
 
 #[test]
