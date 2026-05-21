@@ -21,10 +21,11 @@ const LAUNCHER_GATES: [&str; 5] = [
     "preview-smoke",
 ];
 
-const STUDIO_GATES: [&str; 4] = [
+const STUDIO_GATES: [&str; 5] = [
     "smoke",
     "workspace-policy-smoke",
     "theme-smoke",
+    "surface-smoke",
     "preview-smoke",
 ];
 
@@ -76,6 +77,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 std-studio --smoke",
         "STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
         "STD_TEST_MODE=1 std-studio --theme-smoke",
+        "STD_TEST_MODE=1 std-studio --surface-smoke",
         "STD_TEST_MODE=1 std-studio --preview-smoke",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
     ] {
@@ -144,7 +146,9 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "state: \"error\"",
         "theme: \"light\"",
         "theme: \"dark\"",
-        "assert_eq!(report.scenarios.len(), 8)",
+        "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
+        "state: \"action-panel\"",
+        "self.scenarios == preview_matrix()",
     ] {
         check_text(&launcher, required)?;
     }
@@ -188,6 +192,7 @@ mod tests {
         assert_eq!(report.desktop_automation_default, "blocked");
         assert_eq!(report.completion, "INCOMPLETE_REAL_GUI_REQUIRED");
         assert!(report.launcher_gates.contains(&"preview-smoke"));
+        assert!(report.studio_gates.contains(&"surface-smoke"));
         assert!(report.studio_gates.contains(&"preview-smoke"));
     }
 }

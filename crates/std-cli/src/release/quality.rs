@@ -26,7 +26,7 @@ const QUALITY_COMMANDS: [&str; 8] = [
     "cargo machete",
 ];
 
-const SMOKE_COMMANDS: [&str; 17] = [
+const SMOKE_COMMANDS: [&str; 18] = [
     "STD_TEST_MODE=1 std doctor",
     "STD_TEST_MODE=1 std-launcher --smoke \"rebuild index\"",
     "STD_TEST_MODE=1 std-launcher --window-smoke",
@@ -40,6 +40,7 @@ const SMOKE_COMMANDS: [&str; 17] = [
     "STD_TEST_MODE=1 std-studio --smoke",
     "STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
     "STD_TEST_MODE=1 std-studio --theme-smoke",
+    "STD_TEST_MODE=1 std-studio --surface-smoke",
     "STD_TEST_MODE=1 std-studio --preview-smoke",
     "STD_TEST_MODE=1 std workflow trace --limit 5",
     "STD_TEST_MODE=1 std index coverage",
@@ -154,6 +155,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 std-studio --smoke",
         "STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
         "STD_TEST_MODE=1 std-studio --theme-smoke",
+        "STD_TEST_MODE=1 std-studio --surface-smoke",
         "STD_TEST_MODE=1 std-studio --preview-smoke",
         "STD_TEST_MODE=1 std workflow trace --limit 5",
         "STD_TEST_MODE=1 std index coverage",

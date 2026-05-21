@@ -163,6 +163,7 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=STD_TEST_MODE=1 std-studio --smoke",
         "smoke=STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
         "smoke=STD_TEST_MODE=1 std-studio --theme-smoke",
+        "smoke=STD_TEST_MODE=1 std-studio --surface-smoke",
         "smoke=STD_TEST_MODE=1 std-studio --preview-smoke",
         "smoke=STD_TEST_MODE=1 std workflow trace --limit 5",
         "smoke=STD_TEST_MODE=1 std index coverage",
