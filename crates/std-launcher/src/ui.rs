@@ -145,7 +145,7 @@ fn render_search_bar_contents(
     let mut query_text = search_bar_text(state);
     ui.set_min_height(ui_metrics::search_bar_min_height());
     ui.horizontal(|ui| {
-        render_search_icon(ui, &ctx);
+        render_search_indicator(ui, &ctx, search_indicator_for_phase(state.view.phase));
         let response = ui.add_sized(
             [
                 ui_metrics::search_input_width(ui.available_width()),
@@ -238,6 +238,29 @@ fn render_body(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) ->
     ui_results::render(ui, state, max_height)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SearchIndicator {
+    Search,
+    Loading,
+    Executing,
+}
+
+fn search_indicator_for_phase(phase: LauncherPhase) -> SearchIndicator {
+    match phase {
+        LauncherPhase::Searching => SearchIndicator::Loading,
+        LauncherPhase::Executing => SearchIndicator::Executing,
+        _ => SearchIndicator::Search,
+    }
+}
+
+fn render_search_indicator(ui: &mut egui::Ui, ctx: &egui::Context, indicator: SearchIndicator) {
+    match indicator {
+        SearchIndicator::Search => render_search_icon(ui, ctx),
+        SearchIndicator::Loading => render_search_spinner(ui),
+        SearchIndicator::Executing => render_executing_indicator(ui, ctx),
+    }
+}
+
 fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
     let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ctx));
     let (rect, response) =
@@ -254,6 +277,31 @@ fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
         .circle_stroke(geometry.center, geometry.radius, stroke);
     ui.painter()
         .line_segment([geometry.handle_start, geometry.handle_end], stroke);
+}
+
+fn render_search_spinner(ui: &mut egui::Ui) {
+    let (rect, _response) =
+        ui.allocate_exact_size(ui_metrics::search_icon_size(), egui::Sense::hover());
+    ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+        ui.centered_and_justified(|ui| {
+            ui.spinner();
+        });
+    });
+}
+
+fn render_executing_indicator(ui: &mut egui::Ui, ctx: &egui::Context) {
+    let (rect, response) =
+        ui.allocate_exact_size(ui_metrics::search_icon_size(), egui::Sense::hover());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Other,
+            ui.is_enabled(),
+            i18n::t("launcher.results.executing.title"),
+        )
+    });
+    let geometry = ui_metrics::search_icon_geometry(rect);
+    ui.painter()
+        .circle_filled(geometry.center, geometry.radius, Color::accent_base(ctx));
 }
 
 fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: &mut String) {
@@ -358,6 +406,22 @@ mod tests {
         assert!(collapsed_branch.contains("render_search_bar_contents"));
         assert!(!collapsed_branch.contains("egui::Frame::new()"));
         assert!(source.contains("fn render_search_bar_contents"));
+    }
+
+    #[test]
+    fn search_indicator_tracks_loading_and_executing_phases() {
+        assert_eq!(
+            search_indicator_for_phase(LauncherPhase::Empty),
+            SearchIndicator::Search
+        );
+        assert_eq!(
+            search_indicator_for_phase(LauncherPhase::Searching),
+            SearchIndicator::Loading
+        );
+        assert_eq!(
+            search_indicator_for_phase(LauncherPhase::Executing),
+            SearchIndicator::Executing
+        );
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
