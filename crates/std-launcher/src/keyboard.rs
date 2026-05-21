@@ -36,6 +36,7 @@ pub struct LauncherKeyboardReport {
     pub selected_before: usize,
     pub selected_after_down: usize,
     pub selected_after_up: usize,
+    pub navigation_boundary_path: String,
     pub direct_trigger_status: Option<ActionExecutionStatus>,
     pub trigger_status: Option<ActionExecutionStatus>,
     pub user_enter_status: Option<ActionExecutionStatus>,
@@ -269,6 +270,10 @@ impl LauncherKeyboardReport {
     pub fn pass(&self) -> bool {
         self.selected_after_down > self.selected_before
             && self.selected_after_up == self.selected_before
+            && self
+                .navigation_boundary_path
+                .starts_with("top:0->0;bottom:")
+            && self.navigation_boundary_path.ends_with("->same")
             && self.direct_trigger_status.is_some()
             && self.trigger_status.is_some()
             && self.user_enter_status == Some(ActionExecutionStatus::NeedsExternalRunner)
@@ -293,11 +298,12 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
             self.selected_after_up,
+            self.navigation_boundary_path,
             self.direct_trigger_status
                 .as_ref()
                 .map(|status| format!("{status:?}"))

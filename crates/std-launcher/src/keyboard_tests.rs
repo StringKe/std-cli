@@ -18,6 +18,10 @@ fn assert_navigation(report: &LauncherKeyboardReport) {
     assert_eq!(report.selected_before, 0);
     assert!(report.selected_after_down > report.selected_before);
     assert_eq!(report.selected_after_up, report.selected_before);
+    assert!(report
+        .navigation_boundary_path
+        .starts_with("top:0->0;bottom:"));
+    assert!(report.navigation_boundary_path.ends_with("->same"));
 }
 
 fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
@@ -73,4 +77,5 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
     assert!(summary.contains("focus_path=Search>Results>Search"));
     assert!(summary.contains("action_panel_focus_path=ActionPanel>Search"));
     assert!(summary.contains("token_delete_query=open terminal"));
+    assert!(summary.contains("navigation_boundary_path=top:0->0;bottom:"));
 }

@@ -12,6 +12,7 @@ impl LauncherState {
         let selected_after_down = state.view.selected;
         state.handle_keyboard_input(LauncherKey::ArrowUp, false);
         let selected_after_up = state.view.selected;
+        let navigation_boundary_path = navigation_boundary_path(query);
         let ime = ime_evidence(&mut state);
         state.focus_section = LauncherFocusSection::Search;
         state.handle_keyboard_input(LauncherKey::FocusNext, false);
@@ -33,6 +34,7 @@ impl LauncherState {
             selected_before,
             selected_after_down,
             selected_after_up,
+            navigation_boundary_path,
             direct_trigger_status,
             trigger_status,
             user_enter_status: user_enter.status,
@@ -55,6 +57,23 @@ impl LauncherState {
             token_delete_query,
         }
     }
+}
+
+fn navigation_boundary_path(query: &str) -> String {
+    let mut state = LauncherState::new();
+    state.update_query(query);
+    state.handle_keyboard_input(LauncherKey::ArrowUp, false);
+    let top = state.view.selected;
+    state.handle_keyboard_input(LauncherKey::JumpToLast, false);
+    let bottom_before = state.view.selected;
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let bottom_after = state.view.selected;
+    let bottom_marker = if bottom_before == bottom_after {
+        "same".to_string()
+    } else {
+        bottom_after.to_string()
+    };
+    format!("top:0->{top};bottom:{bottom_before}->{bottom_marker}")
 }
 
 struct UserEnterEvidence {
