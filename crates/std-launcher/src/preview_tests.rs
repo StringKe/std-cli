@@ -106,9 +106,10 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .any(|state| state.starts_with("light-action-panel=PASS")));
     assert!(report
         .summary()
-        .contains("preview_capture_contract=explicit-opt-in-only"));
+        .contains("preview_capture_contract=capture-window,opt-in-only"));
     assert!(report.summary().contains("blocked-in-STD_TEST_MODE"));
     assert!(report.summary().contains("no-default-window"));
+    assert!(report.summary().contains("no-product-viewport"));
 }
 
 #[test]
@@ -124,6 +125,17 @@ fn ui_preview_uses_transparent_visible_chrome() {
         ui::launcher_initial_window_inner_size(),
         egui::vec2(720.0, 96.0)
     );
+}
+
+#[test]
+fn preview_evidence_names_capture_window_not_product_viewport() {
+    let surface = include_str!("surface_smoke.rs");
+    let preview = include_str!("preview.rs");
+
+    assert!(surface.contains("capture_window=transparent,opt_in_only"));
+    assert!(preview.contains("no-product-viewport"));
+    assert!(!surface.contains("preview_viewport"));
+    assert!(!preview.contains("preview_viewport"));
 }
 
 #[test]

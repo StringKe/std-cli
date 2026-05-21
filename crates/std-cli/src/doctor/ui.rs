@@ -177,7 +177,7 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
         "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
-        "preview_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel",
+        "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -189,12 +189,21 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     ] {
         check_text(&capture_script, required)?;
     }
-    for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
+    for forbidden in [
+        "const CARRIER_MARGIN",
+        "carrier_margin_for_scale",
+        "preview_viewport",
+    ] {
         if launcher_metrics.contains(forbidden) {
             return Err(CliError::Config(
                 "launcher must not depend on a visible viewport carrier".to_string(),
             ));
         }
+    }
+    if launcher_surface.contains("preview_viewport") {
+        return Err(CliError::Config(
+            "launcher screenshot tooling must not be modeled as a product viewport".to_string(),
+        ));
     }
     check_ui_capture_scripts(root)?;
     Ok(())
@@ -213,6 +222,8 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
+        "capture-window,opt-in-only",
+        "no-product-viewport",
         "preview_surface_summary",
         "preview_size_summary",
         "panel={},search={},result={},selected={}",

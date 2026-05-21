@@ -156,7 +156,7 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 }
 
 fn preview_capture_contract() -> &'static str {
-    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
+    "capture-window,opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,no-product-viewport"
 }
 
 pub(crate) fn preview_window_title() -> &'static str {
