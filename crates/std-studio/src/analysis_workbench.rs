@@ -86,6 +86,7 @@ pub struct AnalysisSearchHit {
 pub struct AnalysisAnswerSource {
     pub entity: String,
     pub detail: String,
+    pub jump_target: String,
     pub evidence_count: usize,
 }
 
@@ -288,6 +289,7 @@ fn answer_sources(answer: Option<&IndexAnswer>) -> Vec<AnalysisAnswerSource> {
                 .map(|source| AnalysisAnswerSource {
                     entity: source.entity.clone(),
                     detail: format!("{} {}", source.path.display(), source.reason),
+                    jump_target: format!("analysis-source://{}", source.path.display()),
                     evidence_count: source.evidence.len(),
                 })
                 .collect()

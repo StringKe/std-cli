@@ -1,4 +1,5 @@
 mod analysis;
+mod analysis_format;
 mod analysis_query_panel;
 mod analysis_rows;
 mod analysis_state;

@@ -165,7 +165,7 @@ fn render_answer_sources(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) 
                 ui,
                 &source.entity,
                 format!("{} evidence", source.evidence_count),
-                &source.detail,
+                &format!("{} {}", source.jump_target, source.detail),
             );
         });
     }

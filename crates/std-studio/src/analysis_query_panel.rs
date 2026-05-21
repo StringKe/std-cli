@@ -70,7 +70,7 @@ fn render_answer(ui: &mut egui::Ui, answer: &str, model: &AnalysisWorkbenchViewM
                 ui,
                 &source.entity,
                 format!("{} evidence", source.evidence_count),
-                &source.detail,
+                &format!("{} {}", source.jump_target, source.detail),
             );
         });
     }

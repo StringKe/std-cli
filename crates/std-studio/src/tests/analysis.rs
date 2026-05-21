@@ -84,6 +84,10 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
         .answer_sources
         .iter()
         .any(|source| source.evidence_count >= 1));
+    assert!(model
+        .answer_sources
+        .iter()
+        .any(|source| source.jump_target.starts_with("analysis-source://")));
     assert_eq!(
         model.inspection_summary.as_ref().unwrap().entity,
         "workbench-project"
@@ -100,6 +104,7 @@ fn analysis_query_panel_contract_surfaces_evidence_and_search_hits() {
     .unwrap();
 
     assert!(body.contains("Evidence Sources"));
+    assert!(body.contains("jump_target"));
     assert!(body.contains("model.answer_sources"));
     assert!(body.contains("model.search_hits"));
     assert!(body.contains("AnalysisQueryAction"));
