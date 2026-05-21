@@ -63,6 +63,11 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("theme_control=segmented-control"));
     assert!(summary.contains("ai_control=token-toggle-row"));
     assert!(summary.contains("storage_control=token-path-row"));
+    assert!(summary.contains("workspace_main_path_contract=host=single-borderless-egui-viewport"));
+    assert!(summary.contains("panes=internal-egui-workspace-panes"));
+    assert!(summary.contains("extra_viewports=forbidden"));
+    assert!(summary.contains("egui_window=forbidden"));
+    assert!(summary.contains("settings_overlay=forbidden"));
 }
 
 fn assert_studio_open_intent_summary(summary: &str) {

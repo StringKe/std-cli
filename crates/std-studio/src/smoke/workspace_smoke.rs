@@ -18,6 +18,7 @@ pub(crate) struct WorkspacePaneSmoke {
     pub(crate) focus_switch_path: String,
     pub(crate) close_restore_path: String,
     pub(crate) settings_contract: String,
+    pub(crate) main_path_contract: String,
 }
 
 pub(crate) fn run_workspace_pane_smoke(
@@ -84,6 +85,7 @@ pub(crate) fn run_workspace_pane_smoke(
         settings_contract.storage_control
     );
     let host_policy = studio.app_workspace_policy_report();
+    let main_path_contract = workspace_main_path_contract();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
     let focus_label = workspace_management_evidence(
         plugin,
@@ -112,7 +114,20 @@ pub(crate) fn run_workspace_pane_smoke(
         focus_switch_path,
         close_restore_path,
         settings_contract,
+        main_path_contract,
     }
+}
+
+fn workspace_main_path_contract() -> String {
+    [
+        "host=single-borderless-egui-viewport",
+        "panes=internal-egui-workspace-panes",
+        "extra_viewports=forbidden",
+        "egui_window=forbidden",
+        "settings_overlay=forbidden",
+        "allowed_viewport_files=viewport|host_chrome|preview",
+    ]
+    .join(",")
 }
 
 fn workspace_management_evidence(

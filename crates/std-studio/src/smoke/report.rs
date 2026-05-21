@@ -5,7 +5,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\npane_settings_contract={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\ninspector_context_route={}\nbottom_panel_height={}\nbottom_panel_default_open={}\nbottom_panel_tabs={}\ncanvas_surface={}\ncanvas_content_route={}\nstatus_bar_right={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_toolbar_contract={}\nbuilder_properties_contract={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nplugin_visual_contract={}\nhistory_count={}\nhistory_timeline_contract={}\nhistory_trace_steps={}\nhistory_payload_visible={}\n{}\n{}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\npane_settings_contract={}\nworkspace_main_path_contract={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\ninspector_context_route={}\nbottom_panel_height={}\nbottom_panel_default_open={}\nbottom_panel_tabs={}\ncanvas_surface={}\ncanvas_content_route={}\nstatus_bar_right={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_toolbar_contract={}\nbuilder_properties_contract={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nplugin_visual_contract={}\nhistory_count={}\nhistory_timeline_contract={}\nhistory_trace_steps={}\nhistory_payload_visible={}\n{}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -25,6 +25,7 @@ impl StudioSmokeReport {
             self.pane_focus_switch_path,
             self.pane_close_restore_path,
             self.pane_settings_contract,
+            self.workspace_main_path_contract,
             self.native_child_windows,
             self.detached_panels,
             self.host_window_size,
@@ -170,6 +171,21 @@ impl StudioSmokeReport {
             && self
                 .pane_settings_contract
                 .contains("storage_control=token-path-row")
+            && self
+                .workspace_main_path_contract
+                .contains("host=single-borderless-egui-viewport")
+            && self
+                .workspace_main_path_contract
+                .contains("panes=internal-egui-workspace-panes")
+            && self
+                .workspace_main_path_contract
+                .contains("extra_viewports=forbidden")
+            && self
+                .workspace_main_path_contract
+                .contains("egui_window=forbidden")
+            && self
+                .workspace_main_path_contract
+                .contains("settings_overlay=forbidden")
             && !self.native_child_windows
             && !self.detached_panels
     }
