@@ -88,7 +88,7 @@ pub(crate) fn metric(ui: &mut egui::Ui, title: &str, value: impl ToString, detai
 
 pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) -> egui::Response {
     let ctx = ui.ctx().clone();
-    egui::Frame::new()
+    let response = egui::Frame::new()
         .fill(fill)
         .corner_radius(egui::CornerRadius::same(Radius::SM))
         .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
@@ -99,7 +99,10 @@ pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) -> egui::
                     .color(strong_text(&ctx)),
             );
         })
-        .response
+        .response;
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), text));
+    response
 }
 
 pub(crate) fn quiet_button(ui: &mut egui::Ui, label: &str) -> egui::Response {
@@ -134,6 +137,17 @@ mod tests {
         assert!(implementation.contains("pub(crate) fn quiet_button"));
         assert!(implementation.contains("response.widget_info"));
         assert!(implementation.contains("WidgetType::Button"));
+        assert!(implementation.contains("WidgetInfo::labeled"));
+    }
+
+    #[test]
+    fn chip_registers_label_widget_info_for_status_and_metadata() {
+        let source = include_str!("ui.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("pub(crate) fn chip"));
+        assert!(implementation.contains("response.widget_info"));
+        assert!(implementation.contains("WidgetType::Label"));
         assert!(implementation.contains("WidgetInfo::labeled"));
     }
 }
