@@ -56,7 +56,7 @@ use studio_open::{
 use studio_smoke_cli::{
     surface_smoke_from_args, theme_smoke_from_args, workspace_policy_smoke_from_args,
 };
-use workspace_panes::WorkspaceCommandQueue;
+use workspace_panes::{StudioWorkspaceCommand, WorkspaceCommandQueue};
 
 pub(crate) struct StudioEguiApp {
     pub(crate) app: StudioApp,
@@ -171,14 +171,24 @@ impl StudioEguiApp {
         if std_egui::input::ime_composing(ctx) {
             return;
         }
+        if std_egui::input::studio_previous_workspace_pane().pressed(ctx) {
+            self.queue_workspace_tab_command(StudioWorkspaceCommand::FocusPrevious);
+        }
+        if std_egui::input::studio_next_workspace_pane().pressed(ctx) {
+            self.queue_workspace_tab_command(StudioWorkspaceCommand::FocusNext);
+        }
         if std_egui::input::studio_close_tab().pressed(ctx) {
             if let Some(command) =
                 crate::workspace_tabs::workspace_tab_keyboard_command(self.app.focused_pane)
             {
-                if let Ok(mut queue) = self.workspace_commands.lock() {
-                    queue.push(command);
-                }
+                self.queue_workspace_tab_command(command);
             }
+        }
+    }
+
+    fn queue_workspace_tab_command(&self, command: StudioWorkspaceCommand) {
+        if let Ok(mut queue) = self.workspace_commands.lock() {
+            queue.push(command);
         }
     }
 

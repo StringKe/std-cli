@@ -36,13 +36,18 @@ fn cycle_controls_use_workspace_focus_commands() {
     assert_eq!(i18n::t("studio.workspace_panes.previous"), "Previous");
     assert_eq!(i18n::t("studio.workspace_panes.next"), "Next");
     assert_eq!(
-        StudioWorkspaceCommand::FocusPrevious,
-        StudioWorkspaceCommand::FocusPrevious
+        workspace_tab_cycle_commands(),
+        [
+            StudioWorkspaceCommand::FocusPrevious,
+            StudioWorkspaceCommand::FocusNext
+        ]
     );
-    assert_eq!(
-        StudioWorkspaceCommand::FocusNext,
-        StudioWorkspaceCommand::FocusNext
-    );
+    assert!(std_egui::input::studio_previous_workspace_pane()
+        .label()
+        .contains("Shift+Up"));
+    assert!(std_egui::input::studio_next_workspace_pane()
+        .label()
+        .contains("Shift+Down"));
 }
 
 #[test]

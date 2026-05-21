@@ -160,6 +160,14 @@ pub fn studio_close_tab() -> KeyBinding {
     KeyBinding::Mod('W')
 }
 
+pub fn studio_previous_workspace_pane() -> KeyBinding {
+    KeyBinding::ModShiftNamed(egui::Key::ArrowUp)
+}
+
+pub fn studio_next_workspace_pane() -> KeyBinding {
+    KeyBinding::ModShiftNamed(egui::Key::ArrowDown)
+}
+
 pub fn escape() -> KeyBinding {
     KeyBinding::Plain(egui::Key::Escape)
 }
@@ -281,6 +289,12 @@ mod tests {
         assert_eq!(studio_analysis_qa_focus().label(), "?");
         assert_eq!(studio_workflow_step_move_up().label(), "Alt+Up");
         assert_eq!(studio_workflow_step_move_down().label(), "Alt+Down");
+        assert!(studio_previous_workspace_pane()
+            .label()
+            .ends_with("+Shift+Up"));
+        assert!(studio_next_workspace_pane()
+            .label()
+            .ends_with("+Shift+Down"));
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));

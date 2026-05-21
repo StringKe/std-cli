@@ -58,6 +58,14 @@ pub(crate) fn workspace_tab_keyboard_command(
     focused.map(StudioWorkspaceCommand::Close)
 }
 
+#[cfg(test)]
+pub(crate) fn workspace_tab_cycle_commands() -> [StudioWorkspaceCommand; 2] {
+    [
+        StudioWorkspaceCommand::FocusPrevious,
+        StudioWorkspaceCommand::FocusNext,
+    ]
+}
+
 fn render_workspace_cycle_controls(
     ui: &mut egui::Ui,
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
