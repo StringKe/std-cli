@@ -159,6 +159,9 @@ fn background_ui_smoke_is_skipped_in_test_mode() {
     assert!(output.contains("harness_pid=MISSING"));
     assert!(output.contains("window_id=MISSING"));
     assert!(output.contains("event_route=postToPid_target_pid_only"));
+    assert!(output.contains("focus_messages=raw_13_19_20"));
+    assert!(output.contains("center_primer=window_center_activation_only_no_user_action"));
+    assert!(output.contains("forbidden_route=global_HID,System_Events,frontmost_click"));
     assert!(output.contains("fallback=never_frontmost_desktop_click"));
 }
 
