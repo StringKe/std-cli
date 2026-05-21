@@ -22,6 +22,12 @@ impl StudioEguiApp {
         if std_egui::input::studio_analysis_qa_focus().pressed(ctx) {
             self.analysis.focus_qa();
         }
+        if std_egui::input::tab().pressed(ctx) {
+            self.analysis.focus_next();
+        }
+        if std_egui::input::shift_tab().pressed(ctx) {
+            self.analysis.focus_previous();
+        }
     }
 
     pub(crate) fn render_analysis(&mut self, ui: &mut egui::Ui) {
@@ -89,6 +95,12 @@ impl StudioEguiApp {
                 i18n::t("studio.analysis.entity.title"),
                 i18n::t("studio.analysis.entity.detail"),
             );
+            ui::chip(
+                ui,
+                &format!("Focus {}", self.analysis.focus_area.label()),
+                ui::selected_bg(ui.ctx()),
+            );
+            ui.add_space(Space::XS as f32);
             let model = self.analysis_workbench_model();
             render_analysis_tabs(ui, &model, &mut self.analysis.active_tab);
             ui.add_space(Space::XS as f32);
