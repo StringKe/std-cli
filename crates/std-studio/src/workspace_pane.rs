@@ -243,6 +243,23 @@ impl StudioApp {
         closeguard
     }
 
+    pub fn restore_workspace_closeguard(&mut self, closeguard: &WorkspacePaneCloseGuard) {
+        for snapshot in &closeguard.panes {
+            if let Some(pane) = self
+                .workspace_panes
+                .iter_mut()
+                .find(|pane| pane.id == snapshot.id)
+            {
+                pane.open = true;
+            }
+        }
+        self.focused_pane = closeguard.focused_pane.filter(|focused| {
+            self.workspace_panes
+                .iter()
+                .any(|pane| pane.id == *focused && pane.open)
+        });
+    }
+
     fn focus_workspace_pane_by_offset(&mut self, offset: isize) -> Option<WorkspacePaneId> {
         let open_ids = self
             .workspace_panes

@@ -1,12 +1,12 @@
 use std::{fs, path::Path};
 
 const ALLOWED_VIEWPORT_FILES: &[&str] = &[
-    "viewport.rs",
-    "host_chrome.rs",
-    "preview.rs",
-    "preview_tests.rs",
+    "src/viewport.rs",
+    "src/host_chrome.rs",
+    "src/preview.rs",
+    "src/preview_tests.rs",
 ];
-const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["native_app.rs", "preview.rs"];
+const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["src/native_app.rs", "src/preview.rs"];
 
 #[test]
 fn studio_main_path_forbids_detached_or_native_child_windows() {
@@ -37,6 +37,22 @@ fn studio_settings_must_be_workspace_pane_not_overlay() {
         "Studio settings must open as an internal workspace pane, not a detached overlay: {}",
         violations.join(", ")
     );
+}
+
+#[test]
+fn viewport_allowlist_uses_exact_src_relative_paths() {
+    let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+
+    assert!(viewport_file_allowed(&crate_dir.join("src/preview.rs")));
+    assert!(!viewport_file_allowed(
+        &crate_dir.join("src/views/preview.rs")
+    ));
+    assert!(native_entry_file_allowed(
+        &crate_dir.join("src/native_app.rs")
+    ));
+    assert!(!native_entry_file_allowed(
+        &crate_dir.join("src/views/native_app.rs")
+    ));
 }
 
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
@@ -97,7 +113,10 @@ fn scan_rs_files_for_settings_overlay(dir: &Path, violations: &mut Vec<String>) 
 
 fn scan_allowed_viewport_files(src_dir: &Path, violations: &mut Vec<String>) {
     for file in ALLOWED_VIEWPORT_FILES {
-        let path = src_dir.join(file);
+        let path = src_dir
+            .parent()
+            .map(|crate_dir| crate_dir.join(file))
+            .unwrap_or_else(|| src_dir.join(file));
         let Ok(body) = fs::read_to_string(&path) else {
             violations.push(format!("{} missing allowed viewport file", path.display()));
             continue;
@@ -128,50 +147,50 @@ fn forbidden_studio_window_patterns() -> Vec<String> {
 fn allowed_viewport_pattern(file: &str, pattern: &str) -> bool {
     matches!(
         (file, pattern),
-        ("viewport.rs", "ViewportBuilder::default")
-            | ("host_chrome.rs", "ViewportCommand::")
-            | ("host_chrome.rs", "send_viewport_cmd")
-            | ("preview.rs", "ViewportCommand::")
-            | ("preview.rs", "send_viewport_cmd")
-            | ("preview_tests.rs", "ViewportCommand::")
+        ("src/viewport.rs", "ViewportBuilder::default")
+            | ("src/host_chrome.rs", "ViewportCommand::")
+            | ("src/host_chrome.rs", "send_viewport_cmd")
+            | ("src/preview.rs", "ViewportCommand::")
+            | ("src/preview.rs", "send_viewport_cmd")
+            | ("src/preview_tests.rs", "ViewportCommand::")
     )
 }
 
 fn required_viewport_patterns(file: &str) -> &'static [&'static str] {
     match file {
-        "viewport.rs" => &[
+        "src/viewport.rs" => &[
             "StudioWorkspacePolicy::studio_v1()",
             "HostWindowPolicy::SingleBorderlessEguiViewport",
             "with_decorations(false)",
         ],
-        "host_chrome.rs" => &[
+        "src/host_chrome.rs" => &[
             "ViewportCommand::StartDrag",
             "ViewportCommand::Close",
             "ViewportCommand::Minimized(true)",
             "ViewportCommand::Maximized",
             "open_current_pane_from_host_chrome",
         ],
-        "preview.rs" => &[
+        "src/preview.rs" => &[
             "STD_ALLOW_UI_PREVIEW",
             "ViewportCommand::Close",
             "studio_native_options()",
         ],
-        "preview_tests.rs" => &["ViewportCommand::Close"],
+        "src/preview_tests.rs" => &["ViewportCommand::Close"],
         _ => &[],
     }
 }
 
 fn viewport_file_allowed(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .map(|name| ALLOWED_VIEWPORT_FILES.contains(&name))
+    studio_src_relative_path(path)
+        .as_deref()
+        .map(|path| ALLOWED_VIEWPORT_FILES.contains(&path))
         .unwrap_or(false)
 }
 
 fn native_entry_file_allowed(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .map(|name| ALLOWED_NATIVE_ENTRY_FILES.contains(&name))
+    studio_src_relative_path(path)
+        .as_deref()
+        .map(|path| ALLOWED_NATIVE_ENTRY_FILES.contains(&path))
         .unwrap_or(false)
 }
 
@@ -180,4 +199,12 @@ fn is_guard_file(path: &Path) -> bool {
         .and_then(|name| name.to_str())
         .map(|name| name == "workspace_policy_guard.rs")
         .unwrap_or(false)
+}
+
+fn studio_src_relative_path(path: &Path) -> Option<String> {
+    let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    path.strip_prefix(crate_dir)
+        .ok()
+        .and_then(|relative| relative.to_str())
+        .map(|relative| relative.replace('\\', "/"))
 }

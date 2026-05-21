@@ -158,6 +158,40 @@ fn studio_closeguard_records_pending_state_before_closing_instance_panes() {
 }
 
 #[test]
+fn studio_closeguard_restores_internal_panes_without_native_windows() {
+    let mut studio = test_studio();
+    let workflow_path = studio
+        .create_workflow("Restore Main Window", "Restore panes")
+        .unwrap();
+    let dashboard = studio.open_workspace_pane(StudioPane::Dashboard);
+    let workflow = studio.open_workflow_builder(workflow_path.clone());
+    let plugins = studio.open_plugin_manager_pane();
+    assert!(studio.focus_workspace_pane(workflow));
+
+    let closeguard = studio.close_workspace_instance();
+    studio.restore_workspace_closeguard(&closeguard);
+
+    assert_eq!(studio.open_workspace_panes().count(), 3);
+    assert_eq!(studio.focused_pane, Some(workflow));
+    assert!(studio
+        .open_workspace_panes()
+        .any(|pane| pane.id == dashboard));
+    assert!(studio.open_workspace_panes().any(|pane| pane.id == plugins));
+    assert!(studio
+        .workspace_policy
+        .summary()
+        .contains("internal workspace panes"));
+    assert!(!studio.workspace_policy.allows_native_child_windows());
+    assert!(!studio.workspace_policy.allows_detached_panels());
+    assert!(studio
+        .workspace_pane_content(&WorkspacePaneKind::WorkflowBuilder {
+            workflow_path: workflow_path.clone()
+        })
+        .lines
+        .contains(&format!("path={}", workflow_path.display())));
+}
+
+#[test]
 fn studio_pane_titles_reflect_pane_kind() {
     let mut studio = test_studio();
     let workflow = studio.open_workflow_builder(std::path::PathBuf::from("release/workflow.json"));
