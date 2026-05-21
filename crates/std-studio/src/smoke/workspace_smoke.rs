@@ -32,11 +32,23 @@ pub(crate) fn run_workspace_pane_smoke(
     let closed_removed = !studio
         .open_workspace_panes()
         .any(|pane| pane.id == close_target);
+    let reopened = studio.open_memory_browser_pane();
+    let reopened_is_internal = reopened != close_target
+        && pane_title(studio, reopened) == "Memory Browser"
+        && pane_lines(studio, reopened)
+            .iter()
+            .any(|line| line.starts_with("memories="));
+    let plugin_refocused = studio.focus_workspace_pane(plugin);
     let focus_restored = studio.focus_workspace_pane(settings)
         && studio.close_workspace_pane(settings)
-        && studio.focused_pane == Some(plugin);
+        && studio.focused_pane == Some(plugin)
+        && plugin_refocused;
     let restored_title = pane_title(studio, plugin);
-    let focus_label = format!("focused={},title={restored_title}", plugin.value());
+    let focus_label = format!(
+        "focused={},title={restored_title},strategy=internal-egui-workspace-panes,reopened_memory={},reopened_internal={reopened_is_internal}",
+        plugin.value(),
+        reopened.value()
+    );
     WorkspacePaneSmoke {
         opened,
         focus_switched,

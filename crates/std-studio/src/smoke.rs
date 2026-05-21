@@ -420,6 +420,9 @@ mod tests {
         assert!(summary.contains("pane_state_preserved=true"));
         assert!(summary.contains("pane_focus_label=focused="));
         assert!(summary.contains("title=Plugin Manager"));
+        assert!(summary.contains("strategy=internal-egui-workspace-panes"));
+        assert!(summary.contains("reopened_memory="));
+        assert!(summary.contains("reopened_internal=true"));
         assert!(summary.contains("native_child_windows=false"));
         assert!(summary.contains("detached_panels=false"));
     }
