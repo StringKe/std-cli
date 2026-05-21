@@ -52,7 +52,7 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(
         summary.contains("pane_management_sequence=open>dedupe>focus>switch>close>reopen>restore")
     );
-    assert!(summary.contains("pane_focus_switch_path=Settings>Plugin Manager>Plugin Manager"));
+    assert!(summary.contains("pane_focus_switch_path=settings>plugins>plugins"));
     assert!(summary.contains("pane_close_restore_path=close:"));
 }
 
@@ -93,6 +93,8 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains("builder_selected_step=Validate edited output"));
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
+    assert!(summary.contains("builder_next_action=complete"));
+    assert!(summary.contains("builder_bottom_panel_contract=batch-debug-open"));
     assert!(summary.contains("plugin_js_status=Completed"));
     assert!(summary.contains("plugin_ts_status=Completed"));
     assert!(summary.contains("plugin_manifest_checks=1"));

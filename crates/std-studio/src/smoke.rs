@@ -66,6 +66,8 @@ pub(crate) struct StudioSmokeReport {
     builder_selected_step: String,
     builder_trace_status: String,
     builder_side_effect_model: String,
+    builder_next_action: String,
+    builder_bottom_panel_contract: String,
     batch_status: String,
     analysis_name: String,
     analysis_coverage_complete: usize,
@@ -94,7 +96,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -141,6 +143,8 @@ impl StudioSmokeReport {
             self.builder_selected_step,
             self.builder_trace_status,
             self.builder_side_effect_model,
+            self.builder_next_action,
+            self.builder_bottom_panel_contract,
             self.batch_status,
             self.analysis_name,
             self.analysis_coverage_complete,
@@ -237,6 +241,8 @@ impl StudioSmokeReport {
             && self.builder_selected_step == "Validate edited output"
             && self.builder_trace_status == "Completed"
             && self.builder_side_effect_model == "simulate=dry-run,run=audit-log"
+            && self.builder_next_action == "complete"
+            && self.builder_bottom_panel_contract == "batch-debug-open"
             && self.batch_status == "NeedsExternalRunner"
             && self.analysis_coverage_complete >= 1
             && self
@@ -337,6 +343,8 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             builder_selected_step: "FAIL".to_string(),
             builder_trace_status: "FAIL".to_string(),
             builder_side_effect_model: "FAIL".to_string(),
+            builder_next_action: "FAIL".to_string(),
+            builder_bottom_panel_contract: "FAIL".to_string(),
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
@@ -462,6 +470,8 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         builder_selected_step: builder_smoke.selected_step_title,
         builder_trace_status: builder_smoke.trace_status,
         builder_side_effect_model: builder_smoke.side_effect_model,
+        builder_next_action: builder_smoke.next_action,
+        builder_bottom_panel_contract: builder_smoke.bottom_panel_contract,
         batch_status,
         analysis_name,
         analysis_coverage_complete: coverage.complete,

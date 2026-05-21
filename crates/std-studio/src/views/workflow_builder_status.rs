@@ -38,6 +38,30 @@ impl WorkflowBuilderStatus {
             self.planned, self.saved, self.simulated, self.ran, self.traced
         )
     }
+
+    pub(crate) fn next_action(self) -> &'static str {
+        if !self.planned {
+            "plan"
+        } else if !self.saved {
+            "save"
+        } else if !self.simulated {
+            "simulate"
+        } else if !self.ran {
+            "run"
+        } else if !self.traced {
+            "trace"
+        } else {
+            "complete"
+        }
+    }
+
+    pub(crate) fn bottom_panel_contract(self) -> &'static str {
+        if self.simulated || self.ran {
+            "batch-debug-open"
+        } else {
+            "batch-debug-pending"
+        }
+    }
 }
 
 pub(crate) fn render(ui: &mut egui::Ui, app: &StudioEguiApp) {
@@ -78,6 +102,15 @@ pub(crate) fn render(ui: &mut egui::Ui, app: &StudioEguiApp) {
                 .font(std_egui::tokens::Text::caption())
                 .color(ui::muted_text(ui.ctx())),
         );
+        ui.label(
+            egui::RichText::new(format!(
+                "next={},{}",
+                status.next_action(),
+                status.bottom_panel_contract()
+            ))
+            .font(std_egui::tokens::Text::caption())
+            .color(ui::muted_text(ui.ctx())),
+        );
     });
 }
 
@@ -117,5 +150,54 @@ mod tests {
             status.summary(),
             "planned=true,saved=true,simulated=true,ran=true,traced=true"
         );
+        assert_eq!(status.next_action(), "complete");
+        assert_eq!(status.bottom_panel_contract(), "batch-debug-open");
+    }
+
+    #[test]
+    fn workflow_builder_status_guides_next_required_action() {
+        let pending = WorkflowBuilderStatus {
+            planned: false,
+            saved: false,
+            simulated: false,
+            ran: false,
+            traced: false,
+        };
+        let planned = WorkflowBuilderStatus {
+            planned: true,
+            saved: false,
+            simulated: false,
+            ran: false,
+            traced: false,
+        };
+        let saved = WorkflowBuilderStatus {
+            planned: true,
+            saved: true,
+            simulated: false,
+            ran: false,
+            traced: false,
+        };
+        let simulated = WorkflowBuilderStatus {
+            planned: true,
+            saved: true,
+            simulated: true,
+            ran: false,
+            traced: false,
+        };
+        let ran = WorkflowBuilderStatus {
+            planned: true,
+            saved: true,
+            simulated: true,
+            ran: true,
+            traced: false,
+        };
+
+        assert_eq!(pending.next_action(), "plan");
+        assert_eq!(planned.next_action(), "save");
+        assert_eq!(saved.next_action(), "simulate");
+        assert_eq!(simulated.next_action(), "run");
+        assert_eq!(ran.next_action(), "trace");
+        assert_eq!(saved.bottom_panel_contract(), "batch-debug-pending");
+        assert_eq!(simulated.bottom_panel_contract(), "batch-debug-open");
     }
 }

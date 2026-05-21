@@ -14,6 +14,8 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) selected_step_title: String,
     pub(crate) trace_status: String,
     pub(crate) side_effect_model: String,
+    pub(crate) next_action: String,
+    pub(crate) bottom_panel_contract: String,
 }
 
 pub(crate) fn run_workflow_builder_smoke(
@@ -70,5 +72,7 @@ pub(crate) fn run_workflow_builder_smoke(
         selected_step_title: moved.name,
         trace_status,
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),
+        next_action: "complete".to_string(),
+        bottom_panel_contract: "batch-debug-open".to_string(),
     })
 }
