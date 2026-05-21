@@ -25,8 +25,8 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
     for required in [
         "STD_ALLOW_UI_PREVIEW",
         "STD_TEST_MODE blocks UI preview",
-        "std-launcher -- --ui-preview",
-        "std-studio -- --ui-preview",
+        "cargo run -p std-launcher -- --ui-preview",
+        "cargo run -p std-studio -- --ui-preview",
         "scripts/capture-window.sh",
         "capture_launcher light results",
         "capture_launcher dark results",

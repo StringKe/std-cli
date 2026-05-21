@@ -71,7 +71,8 @@ fn release_quality_keeps_manual_background_ui_out_of_default_gate() {
     assert!(!quality_commands.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
     assert!(!smoke_commands.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
     assert!(body.contains("background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1"));
-    assert!(body.contains("std ui background-smoke --harness-pid <pid>"));
+    assert!(body.contains("cargo run -p std-cli -- ui background-smoke --harness-pid <pid>"));
+    assert!(!body.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke"));
     assert!(body.contains("dev.std-cli.background-ui-harness"));
 }
 
@@ -184,7 +185,7 @@ fn background_cli_contract_terms() -> [&'static str; 33] {
     ]
 }
 
-fn background_doc_contract_terms() -> [&'static str; 21] {
+fn background_doc_contract_terms() -> [&'static str; 23] {
     [
         "per-process event tap",
         "浮动光标不是输入机制",
@@ -202,11 +203,13 @@ fn background_doc_contract_terms() -> [&'static str; 21] {
         "previous app 永远不能作为输入目标",
         "window title 白名单",
         "scripts/background-ui-harness.sh",
+        "cargo run -p std-cli -- ui background-smoke",
         "open -g",
         "dev.std-cli.background-ui-harness",
         "真实 App 名称",
         "用户当前 frontmost app",
         "默认质量门禁",
+        "cargo run -p std-cli",
     ]
 }
 

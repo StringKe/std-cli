@@ -88,7 +88,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
         "lines.push(format!(\"background_ui_acceptance={command}\"))",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh",
-        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke",
         "--harness-pid <pid>",
         "--window-id <window-id>",
         "--bundle-id dev.std-cli.background-ui-harness",
@@ -222,7 +222,7 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
 fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
     let launcher = read_required(&root.join("crates/std-launcher/src/preview.rs"))?;
     for required in [
-        "STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview",
+        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview",
         "state: \"results\"",
         "state: \"no-results\"",
         "state: \"defer\"",

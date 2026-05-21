@@ -22,7 +22,7 @@ for item in list {
     print("window_id=\(number)")
     print("bundle_id=\(requiredBundleId)")
     print("window_title=\(requiredWindowTitle)")
-    print("smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid \(ownerPid) --window-id \(number) --bundle-id \(requiredBundleId) --window-title \"\(requiredWindowTitle)\"")
+    print("smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid \(ownerPid) --window-id \(number) --bundle-id \(requiredBundleId) --window-title \"\(requiredWindowTitle)\"")
     exit(0)
 }
 

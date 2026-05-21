@@ -42,8 +42,8 @@ pub(crate) fn install_runbook(prefix: &std::path::Path, dist_dir: &std::path::Pa
 pub(crate) fn runtime_runbook() -> String {
     [
         "STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 5000",
-        "STD_ALLOW_UI_PREVIEW=1 std-launcher --ui-preview light defer 8000",
-        "STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000",
+        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview light defer 8000",
+        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000",
     ]
     .join(" && ")
 }
