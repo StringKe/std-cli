@@ -1,10 +1,11 @@
 use std_egui::i18n;
-use std_studio::{StudioApp, StudioPane, WorkspacePaneKind};
+use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StudioCommandAction {
     SwitchPane(StudioPane),
     OpenWorkspace(StudioPane),
+    FocusWorkspace(WorkspacePaneId),
     OpenSettings,
     Refresh,
 }
@@ -53,7 +54,7 @@ pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
             title: pane.title.clone(),
             detail: pane.kind.content_key().to_string(),
             shortcut: "Enter".to_string(),
-            action: StudioCommandAction::OpenWorkspace(main_pane(&pane.kind)),
+            action: StudioCommandAction::FocusWorkspace(pane.id),
         })
         .collect::<Vec<_>>();
     if items.is_empty() {
@@ -105,18 +106,6 @@ fn command_matches(item: &StudioCommandItem, query: &str) -> bool {
         || item.shortcut.to_ascii_lowercase().contains(query)
 }
 
-fn main_pane(kind: &WorkspacePaneKind) -> StudioPane {
-    match kind {
-        WorkspacePaneKind::Pane(pane) => *pane,
-        WorkspacePaneKind::WorkflowBuilder { .. } => StudioPane::Workflows,
-        WorkspacePaneKind::AnalysisWorkbench { .. } => StudioPane::Analysis,
-        WorkspacePaneKind::AppManager => StudioPane::Apps,
-        WorkspacePaneKind::MemoryBrowser => StudioPane::Memory,
-        WorkspacePaneKind::ExecutionHistory => StudioPane::History,
-        WorkspacePaneKind::PluginManager => StudioPane::Plugins,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -142,6 +131,23 @@ mod tests {
         assert!(items
             .iter()
             .any(|item| item.title == "Open Analysis Workbench"));
+    }
+
+    #[test]
+    fn quick_open_targets_existing_workspace_pane_ids() {
+        let mut app = StudioApp::default();
+        let plugin = app.open_plugin_manager_pane();
+        let settings = app.open_settings_pane();
+
+        let items = quick_open_items(&app);
+
+        assert!(items.iter().any(|item| {
+            item.title == "Plugin Manager"
+                && item.action == StudioCommandAction::FocusWorkspace(plugin)
+        }));
+        assert!(items.iter().any(|item| {
+            item.title == "Settings" && item.action == StudioCommandAction::FocusWorkspace(settings)
+        }));
     }
 
     #[test]

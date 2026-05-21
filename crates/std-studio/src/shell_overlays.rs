@@ -140,6 +140,12 @@ impl StudioEguiApp {
     fn apply_command_action(&mut self, action: StudioCommandAction) {
         match action {
             StudioCommandAction::SwitchPane(pane) => self.app.switch_pane(pane),
+            StudioCommandAction::FocusWorkspace(id) => {
+                if self.app.focus_workspace_pane(id) {
+                    self.pending_workspace_focus = Some(id);
+                    self.status = format!("focused workspace pane {}", id.value());
+                }
+            }
             StudioCommandAction::OpenWorkspace(pane) => {
                 let id = match pane {
                     StudioPane::Workflows => self
