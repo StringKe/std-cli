@@ -5,7 +5,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\npane_settings_contract={}\nworkspace_main_path_contract={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\ninspector_context_route={}\nbottom_panel_height={}\nbottom_panel_default_open={}\nbottom_panel_tabs={}\ncanvas_surface={}\ncanvas_content_route={}\nstatus_bar_right={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_toolbar_contract={}\nbuilder_properties_contract={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbuilder_visual_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_visual_contract={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nplugin_visual_contract={}\nhistory_count={}\nhistory_timeline_contract={}\nhistory_trace_steps={}\nhistory_payload_visible={}\n{}\n{}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\npane_settings_contract={}\nworkspace_main_path_contract={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\ninspector_context_route={}\nbottom_panel_height={}\nbottom_panel_default_open={}\nbottom_panel_tabs={}\ncanvas_surface={}\ncanvas_content_route={}\nstatus_bar_right={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_toolbar_contract={}\nbuilder_properties_contract={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbuilder_visual_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_visual_contract={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nplugin_status_bar_contract={}\nplugin_permission_visual_contract={}\nplugin_inspector_contract={}\nplugin_visual_contract={}\nhistory_count={}\nhistory_timeline_contract={}\nhistory_trace_steps={}\nhistory_payload_visible={}\n{}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -84,6 +84,9 @@ impl StudioSmokeReport {
             self.plugin_preview_kind,
             self.plugin_js_runtime,
             self.plugin_ts_runtime,
+            self.plugin_status_bar_contract,
+            self.plugin_permission_visual_contract,
+            self.plugin_inspector_contract,
             self.plugin_visual_contract,
             self.history_count,
             self.history_timeline_contract,
@@ -339,11 +342,44 @@ impl StudioSmokeReport {
             && self.plugin_js_runtime == "deno_core"
             && self.plugin_ts_runtime == "deno_core"
             && self
+                .plugin_status_bar_contract
+                .contains("manifest=1/1 PASS")
+            && self
+                .plugin_status_bar_contract
+                .contains("actions=1 actions")
+            && self.plugin_status_bar_contract.contains("preview=Command")
+            && self.plugin_status_bar_contract.contains("runtime=")
+            && self.plugin_status_bar_contract.contains("permissions=Code")
+            && self
+                .plugin_status_bar_contract
+                .contains("boundary=fs=0 network=0")
+            && self
+                .plugin_permission_visual_contract
+                .contains("manifest_checks=PASS")
+            && self
+                .plugin_permission_visual_contract
+                .contains("permissions=Code")
+            && self
+                .plugin_permission_visual_contract
+                .contains("boundary_panel=permissions|fs|network|actions")
+            && self
+                .plugin_permission_visual_contract
+                .contains("runtime_panel=status|runtime|exit|duration|boundary")
+            && self
+                .plugin_inspector_contract
+                .contains("description=visible;permissions=1;commands=1;audit_log=visible")
+            && self
                 .plugin_visual_contract
                 .contains("list=name|version|status|source|enable")
             && self
                 .plugin_visual_contract
+                .contains("status_bar=manifest=1/1 PASS")
+            && self
+                .plugin_visual_contract
                 .contains("inspector=description|permissions|commands|audit-log")
+            && self
+                .plugin_visual_contract
+                .contains("permission_boundary=manifest_checks=PASS")
             && self.plugin_visual_contract.contains("commands=2")
             && self
                 .plugin_visual_contract

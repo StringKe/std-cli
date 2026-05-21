@@ -120,6 +120,9 @@ impl PluginTool {
         if let Some(script) = &self.action.script {
             action.examples.push(script.clone());
         }
+        action
+            .examples
+            .push(format!("plugin:{}", self.manifest.name));
 
         let mut tags = self.action.tags.clone();
         tags.push("plugin".to_string());

@@ -48,13 +48,7 @@ fn selected_permissions(
 ) -> Vec<String> {
     reports
         .iter()
-        .find(|report| {
-            result.action.name.contains(report.plugin_name.as_str())
-                || result
-                    .action
-                    .description
-                    .contains(report.plugin_name.as_str())
-        })
+        .find(|report| plugin_result_matches_report(result, report))
         .map(|report| {
             report
                 .permissions
@@ -63,6 +57,33 @@ fn selected_permissions(
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn plugin_result_matches_report(
+    result: &SearchResult,
+    report: &std_core::PluginCheckReport,
+) -> bool {
+    let plugin = plugin_key(&report.plugin_name);
+    plugin_matches(&plugin, &result.action.name)
+        || plugin_matches(&plugin, &result.action.description)
+        || plugin_matches(&plugin, &result.action.when_to_use)
+        || result
+            .action
+            .examples
+            .iter()
+            .any(|example| plugin_matches(&plugin, example))
+}
+
+fn plugin_matches(plugin: &str, value: &str) -> bool {
+    plugin_key(value).contains(plugin)
+}
+
+fn plugin_key(value: &str) -> String {
+    value
+        .chars()
+        .filter(|char| char.is_ascii_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .collect()
 }
 
 fn presence(value: &str) -> &'static str {
@@ -119,5 +140,35 @@ mod tests {
             model.contract(),
             "description=visible;permissions=1;commands=1;audit_log=visible"
         );
+    }
+
+    #[test]
+    fn inspector_model_matches_plugin_names_across_punctuation_and_case() {
+        let result = SearchResult {
+            action: Action {
+                examples: vec!["main.ts".to_string()],
+                ..Action::new(
+                    "Plugin Studio TS Smoke",
+                    "Run TypeScript plugin",
+                    "When validating studio smoke",
+                    ActionType::Command,
+                )
+            },
+            score: 1.0,
+            matched_fields: vec!["tags".to_string()],
+        };
+        let report = std_core::PluginCheckReport {
+            manifest_path: PathBuf::from("studio-smoke/plugin.json"),
+            plugin_name: "studio-smoke".to_string(),
+            status: "PASS",
+            actions: 2,
+            permissions: vec![std_core::plugins::PluginPermission::Code],
+            fs_scopes: Vec::new(),
+            network_hosts: Vec::new(),
+        };
+
+        let model = PluginInspectorModel::from_selection(Some(&result), &[report], None);
+
+        assert_eq!(model.permissions, vec!["Code"]);
     }
 }

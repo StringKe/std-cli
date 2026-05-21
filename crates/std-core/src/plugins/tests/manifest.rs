@@ -31,6 +31,11 @@ fn plugin_manifest_loads_shell_tool_without_executing_in_test_mode() {
 
     assert_eq!(tools.len(), 1);
     assert_eq!(tools[0].registry_entry().action.name, "Plugin Smoke");
+    assert!(tools[0]
+        .registry_entry()
+        .action
+        .examples
+        .contains(&"plugin:smoke".to_string()));
     assert_eq!(
         error.to_string(),
         "Plugin permission denied: STD_TEST_MODE blocked shell plugin command"

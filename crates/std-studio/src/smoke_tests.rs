@@ -164,6 +164,11 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
 }
 
 fn assert_plugin_manager_summary(summary: &str) {
+    assert_plugin_manager_runtime_summary(summary);
+    assert_plugin_manager_visual_summary(summary);
+}
+
+fn assert_plugin_manager_runtime_summary(summary: &str) {
     assert!(summary.contains("plugin_js_status=Completed"));
     assert!(summary.contains("plugin_ts_status=Completed"));
     assert!(summary.contains("plugin_manifest_checks=1"));
@@ -172,8 +177,24 @@ fn assert_plugin_manager_summary(summary: &str) {
     assert!(summary.contains("plugin_preview_kind=Command"));
     assert!(summary.contains("plugin_js_runtime=deno_core"));
     assert!(summary.contains("plugin_ts_runtime=deno_core"));
+    assert!(summary.contains("plugin_status_bar_contract=manifest=1/1 PASS"));
+    assert!(summary.contains("actions=1 actions"));
+    assert!(summary.contains("runtime="));
+    assert!(summary.contains("deno_core"));
+    assert!(summary.contains("permissions=Code"));
+    assert!(summary.contains("boundary=fs=0 network=0"));
+}
+
+fn assert_plugin_manager_visual_summary(summary: &str) {
+    assert!(summary.contains("plugin_permission_visual_contract=manifest_checks=PASS"));
+    assert!(summary.contains("boundary_panel=permissions|fs|network|actions"));
+    assert!(summary.contains("runtime_panel=status|runtime|exit|duration|boundary"));
+    assert!(summary.contains("plugin_inspector_contract=description=visible"));
+    assert!(summary.contains("commands=1;audit_log=visible"));
     assert!(summary.contains("plugin_visual_contract=list=name|version|status|source|enable"));
+    assert!(summary.contains("status_bar=manifest=1/1 PASS"));
     assert!(summary.contains("inspector=description|permissions|commands|audit-log"));
+    assert!(summary.contains("permission_boundary=manifest_checks=PASS"));
     assert!(summary.contains("commands=2"));
     assert!(summary.contains("runtime=js:deno_core|ts:deno_core"));
 }

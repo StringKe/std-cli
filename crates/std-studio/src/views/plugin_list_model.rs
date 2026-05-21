@@ -49,11 +49,27 @@ fn plugin_result_matches_report(
     result: &SearchResult,
     report: &std_core::PluginCheckReport,
 ) -> bool {
-    result.action.name.contains(report.plugin_name.as_str())
+    let plugin = plugin_key(&report.plugin_name);
+    plugin_matches(&plugin, &result.action.name)
+        || plugin_matches(&plugin, &result.action.description)
+        || plugin_matches(&plugin, &result.action.when_to_use)
         || result
             .action
-            .description
-            .contains(report.plugin_name.as_str())
+            .examples
+            .iter()
+            .any(|example| plugin_matches(&plugin, example))
+}
+
+fn plugin_matches(plugin: &str, value: &str) -> bool {
+    plugin_key(value).contains(plugin)
+}
+
+fn plugin_key(value: &str) -> String {
+    value
+        .chars()
+        .filter(|char| char.is_ascii_alphanumeric())
+        .flat_map(char::to_lowercase)
+        .collect()
 }
 
 fn source_label(result: &SearchResult) -> String {
