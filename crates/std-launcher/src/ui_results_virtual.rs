@@ -1,5 +1,7 @@
 use crate::{ui_metrics, ui_result_model::LauncherResultListItem};
 
+const OVERSCAN_ROWS: usize = 5;
+
 pub(crate) fn total_height(items: &[LauncherResultListItem]) -> f32 {
     items.iter().map(item_height).sum()
 }
@@ -20,7 +22,7 @@ pub(crate) fn visible_range(
     let mut start = 0;
     for (index, item) in items.iter().enumerate() {
         let next_y = y + item_height(item);
-        if next_y >= clip_min_y {
+        if next_y > clip_min_y {
             start = index;
             break;
         }
@@ -37,7 +39,16 @@ pub(crate) fn visible_range(
         row_y += item_height(item);
         end += 1;
     }
-    (start, end.max(start), y)
+    let visible_start = start;
+    let visible_end = end.max(start);
+    let start = visible_start.saturating_sub(OVERSCAN_ROWS);
+    let end = (visible_end + OVERSCAN_ROWS).min(items.len());
+    let y = height_before(items, start);
+    (start, end, y)
+}
+
+fn height_before(items: &[LauncherResultListItem], index: usize) -> f32 {
+    items.iter().take(index).map(item_height).sum()
 }
 
 #[cfg(test)]
@@ -73,7 +84,16 @@ mod tests {
             LauncherResultListItem::Row(row("Studio", 1)),
         ];
 
-        assert_eq!(visible_range(&items, 30.0, 84.0), (1, 4, 24.0));
+        assert_eq!(visible_range(&items, 30.0, 84.0), (0, 4, 0.0));
+    }
+
+    #[test]
+    fn virtual_results_include_five_rows_of_overscan() {
+        let items = (0..20)
+            .map(|index| LauncherResultListItem::Row(row("Item", index)))
+            .collect::<Vec<_>>();
+
+        assert_eq!(visible_range(&items, 360.0, 396.0), (5, 17, 180.0));
     }
 
     fn row(title: &str, result_index: usize) -> LauncherResultRowModel {
