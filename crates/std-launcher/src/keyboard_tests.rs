@@ -44,16 +44,21 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
     assert!(report.ime_action_panel_selection_unchanged);
     assert!(report.ime_trigger_blocked);
     assert!(report.ime_escape_blocked);
+    assert!(report.ime_preedit_query_unchanged);
+    assert_eq!(report.ime_commit_query, "rebuild index");
     assert_eq!(
         report.ime_composition_path,
-        "zh-preedit>blocked>commit>enter"
+        "zh-preedit(index)>blocked>commit(rebuild index)>enter"
     );
     assert_eq!(
         report.ime_commit_trigger_status,
         Some(ActionExecutionStatus::Completed)
     );
     assert!(summary.contains("ime_action_panel_selection_unchanged=true"));
-    assert!(summary.contains("ime_composition_path=zh-preedit>blocked>commit>enter"));
+    assert!(summary.contains("ime_preedit_query_unchanged=true"));
+    assert!(summary.contains("ime_commit_query=rebuild index"));
+    assert!(summary
+        .contains("ime_composition_path=zh-preedit(index)>blocked>commit(rebuild index)>enter"));
     assert!(summary.contains("ime_commit_trigger_status=Completed"));
 }
 

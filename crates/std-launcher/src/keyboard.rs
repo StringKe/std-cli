@@ -39,6 +39,8 @@ pub struct LauncherKeyboardReport {
     pub ime_trigger_blocked: bool,
     pub ime_escape_blocked: bool,
     pub ime_composition_path: String,
+    pub ime_preedit_query_unchanged: bool,
+    pub ime_commit_query: String,
     pub ime_commit_trigger_status: Option<ActionExecutionStatus>,
     pub focus_after_tab: LauncherFocusSection,
     pub focus_after_shift_tab: LauncherFocusSection,
@@ -62,6 +64,17 @@ impl LauncherState {
         ime_composing: bool,
     ) -> Option<std_types::ActionExecution> {
         self.handle_keyboard_input_with_external_runner(key, ime_composing, true)
+    }
+
+    pub fn handle_ime_preedit(&mut self, _preedit: &str) {
+        // IME preedit is candidate text, not committed query text.
+    }
+
+    pub fn handle_ime_commit(
+        &mut self,
+        committed: impl Into<String>,
+    ) -> Option<std_types::ActionPreview> {
+        self.update_query(committed)
     }
 
     fn handle_keyboard_input_with_external_runner(
@@ -190,8 +203,16 @@ impl LauncherState {
             && state.view.feedback.is_none();
         state.handle_keyboard_input(LauncherKey::Escape, true);
         let ime_escape_blocked = state.controller.visible;
-        let ime_composition_path = "zh-preedit>blocked>commit>enter".to_string();
-        let ime_commit_trigger_status = state
+        let mut ime_commit_state = Self::new();
+        ime_commit_state.update_query("index");
+        let query_before_preedit = ime_commit_state.view.query.clone();
+        ime_commit_state.handle_ime_preedit("zhong");
+        let ime_preedit_query_unchanged = ime_commit_state.view.query == query_before_preedit;
+        ime_commit_state.handle_ime_commit("rebuild index");
+        let ime_commit_query = ime_commit_state.view.query.clone();
+        let ime_composition_path =
+            format!("zh-preedit({query_before_preedit})>blocked>commit({ime_commit_query})>enter");
+        let ime_commit_trigger_status = ime_commit_state
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
         let direct_trigger_status = state
@@ -217,6 +238,8 @@ impl LauncherState {
             ime_trigger_blocked,
             ime_escape_blocked,
             ime_composition_path,
+            ime_preedit_query_unchanged,
+            ime_commit_query,
             ime_commit_trigger_status,
             focus_after_tab,
             focus_after_shift_tab,
@@ -258,7 +281,9 @@ impl LauncherKeyboardReport {
             && self.ime_action_panel_selection_unchanged
             && self.ime_trigger_blocked
             && self.ime_escape_blocked
-            && self.ime_composition_path == "zh-preedit>blocked>commit>enter"
+            && self.ime_preedit_query_unchanged
+            && self.ime_commit_query == "rebuild index"
+            && self.ime_composition_path == "zh-preedit(index)>blocked>commit(rebuild index)>enter"
             && self.ime_commit_trigger_status.is_some()
             && self.focus_after_tab == LauncherFocusSection::Results
             && self.focus_after_shift_tab == LauncherFocusSection::Search
@@ -269,7 +294,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -293,6 +318,8 @@ impl LauncherKeyboardReport {
             self.ime_trigger_blocked,
             self.ime_escape_blocked,
             self.ime_composition_path,
+            self.ime_preedit_query_unchanged,
+            self.ime_commit_query,
             self.ime_commit_trigger_status
                 .as_ref()
                 .map(|status| format!("{status:?}"))
