@@ -28,7 +28,9 @@ impl LauncherAffordanceSummary {
             "no-results" => self.ask_ai,
             "defer" => self.feedback_actions == "Copy,Retry",
             "error" => self.feedback_actions == "Copy,Retry,OpenStudio",
-            "action-panel" => self.action_panel_actions.contains("Open in Studio"),
+            "action-panel" => {
+                self.action_panel_actions == "Review first,Defer,Open in Studio,Copy command"
+            }
             _ => true,
         }
     }
@@ -105,7 +107,10 @@ mod tests {
         assert!(no_results.ask_ai);
         assert_eq!(defer.feedback_actions, "Copy,Retry");
         assert_eq!(error.feedback_actions, "Copy,Retry,OpenStudio");
-        assert!(action_panel.action_panel_actions.contains("Open in Studio"));
+        assert_eq!(
+            action_panel.action_panel_actions,
+            "Review first,Defer,Open in Studio,Copy command"
+        );
         for scenario in ["empty", "no-results", "defer", "error", "action-panel"] {
             assert!(LauncherAffordanceSummary::for_scenario(scenario).passes(scenario));
         }

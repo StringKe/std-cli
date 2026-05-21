@@ -24,7 +24,7 @@ fn action_panel_opens_for_selected_result_and_closes_on_search_change() {
 
     assert!(opened);
     assert!(state.action_panel.action_name.contains("Terminal"));
-    assert_eq!(first_item, "Run");
+    assert_eq!(first_item, "Review first");
     assert!(!state.action_panel.open);
 }
 
@@ -49,6 +49,41 @@ fn action_panel_includes_open_in_studio_for_launcher_results() {
         .collect::<Vec<_>>();
 
     assert!(titles.contains(&"Open in Studio".to_string()));
+}
+
+#[test]
+fn action_panel_labels_external_primary_as_review_first() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.open_action_panel();
+
+    let titles = state
+        .action_panel
+        .items
+        .iter()
+        .map(|item| item.title().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(titles.first().unwrap(), "Review first");
+    assert!(titles.contains(&"Defer".to_string()));
+    assert!(!titles.iter().any(|title| title == "Run"));
+}
+
+#[test]
+fn action_panel_labels_safe_primary_as_run() {
+    let mut state = LauncherState::new();
+
+    state.update_query("index");
+    state.open_action_panel();
+
+    assert_eq!(state.action_panel.items.first().unwrap().title(), "Run");
 }
 
 #[test]

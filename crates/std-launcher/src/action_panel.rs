@@ -4,6 +4,7 @@ use std_types::{Action, ActionType};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ActionPanelItem {
     Run,
+    ReviewFirst,
     Defer,
     OpenInStudio,
     CopyCommand(String),
@@ -89,6 +90,7 @@ impl ActionPanelItem {
     pub fn title(&self) -> &str {
         match self {
             Self::Run => "Run",
+            Self::ReviewFirst => "Review first",
             Self::Defer => "Defer",
             Self::OpenInStudio => "Open in Studio",
             Self::CopyCommand(_) => "Copy command",
@@ -98,6 +100,7 @@ impl ActionPanelItem {
     pub fn shortcut_label(&self) -> String {
         match self {
             Self::Run => input::enter().label(),
+            Self::ReviewFirst => input::enter().label(),
             Self::Defer => input::launcher_defer().label(),
             Self::OpenInStudio => input::launcher_open_studio().label(),
             Self::CopyCommand(_) => input::launcher_copy_command().label(),
@@ -111,7 +114,12 @@ impl ActionPanelItem {
 }
 
 fn action_panel_items(action: &Action) -> Vec<ActionPanelItem> {
-    let mut items = vec![ActionPanelItem::Run];
+    let primary = if action.action_type.needs_external_runner() {
+        ActionPanelItem::ReviewFirst
+    } else {
+        ActionPanelItem::Run
+    };
+    let mut items = vec![primary];
     if action.action_type.needs_external_runner() {
         items.push(ActionPanelItem::Defer);
     }

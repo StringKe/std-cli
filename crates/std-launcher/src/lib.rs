@@ -248,6 +248,7 @@ impl LauncherState {
     pub fn trigger_action_panel_selection(&mut self) -> Option<ActionExecution> {
         match self.action_panel.selected_item()?.clone() {
             ActionPanelItem::Run => self.trigger_selected_by_user(),
+            ActionPanelItem::ReviewFirst => self.trigger_selected_by_user(),
             ActionPanelItem::Defer => self.trigger_selected(),
             ActionPanelItem::OpenInStudio => {
                 self.open_selected_action_in_studio()?;
