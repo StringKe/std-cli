@@ -33,7 +33,7 @@ fn ui_preview_closes_with_viewport_command_not_process_exit() {
 
 #[test]
 fn ui_preview_args_are_blocked_without_opt_in() {
-    std::env::remove_var("STD_ALLOW_UI_PREVIEW");
+    std::env::set_var("STD_ALLOW_UI_PREVIEW", "0");
     let args = vec![
         "std-studio".to_string(),
         "--ui-preview".to_string(),

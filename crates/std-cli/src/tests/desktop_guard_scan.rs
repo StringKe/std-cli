@@ -318,10 +318,14 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
     vec![
         ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
         ".env(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
+        ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")".to_string(),
+        ".env_remove(\"STD_ALLOW_UI_PREVIEW\")".to_string(),
         ".env([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         ".env([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
+        "remove_var(\"STD_ALLOW_DESKTOP_AUTOMATION\")".to_string(),
+        "remove_var(\"STD_ALLOW_UI_PREVIEW\")".to_string(),
         "set_var([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         "set_var([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
     ]
@@ -356,7 +360,8 @@ fn is_static_desktop_guard_file(path: &Path) -> bool {
 }
 
 fn is_runtime_desktop_support_file(path: &Path) -> bool {
-    path.ends_with("std-core/src/app_bundle.rs")
+    path.ends_with("std-core/src/lib.rs")
+        || path.ends_with("std-core/src/app_bundle.rs")
         || path.ends_with("std-core/src/bootstrap.rs")
         || path.ends_with("std-launcher/src/gui_smoke.rs")
 }

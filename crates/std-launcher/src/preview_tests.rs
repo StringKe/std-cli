@@ -21,7 +21,7 @@ fn ui_preview_args_are_explicit_opt_in() {
 
 #[test]
 fn ui_preview_args_are_blocked_without_opt_in() {
-    std::env::remove_var("STD_ALLOW_UI_PREVIEW");
+    std::env::set_var("STD_ALLOW_UI_PREVIEW", "0");
     let args = vec![
         "std-launcher".to_string(),
         "--ui-preview".to_string(),

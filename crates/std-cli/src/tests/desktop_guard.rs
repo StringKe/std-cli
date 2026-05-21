@@ -39,7 +39,7 @@ fn test_sources_do_not_inherit_desktop_automation_opt_ins() {
 
     assert!(
         violations.is_empty(),
-        "test sources must clear desktop opt-in env vars instead of inheriting them: {}",
+        "test sources must set desktop opt-in env vars to 0 instead of inheriting or removing them: {}",
         violations.join(", ")
     );
 }
