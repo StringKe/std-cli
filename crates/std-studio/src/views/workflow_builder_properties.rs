@@ -1,4 +1,4 @@
-use crate::{ui, views::workflow_builder_metrics};
+use crate::{ui, views::workflow_builder_fields};
 use eframe::egui;
 use std_egui::i18n;
 use std_orchestration::WorkflowStep;
@@ -80,34 +80,64 @@ fn render_step_fields(
     allow_add: bool,
 ) -> StepPropertyActions {
     let mut actions = StepPropertyActions::default();
-    ui.label(i18n::t("studio.workflow_builder.step_name"));
-    ui.text_edit_singleline(step_name);
-    ui.label(i18n::t("studio.workflow_builder.parameters"));
-    ui.add_sized(
-        workflow_builder_metrics::parameter_editor_size(ui.available_width()),
-        egui::TextEdit::multiline(parameters),
+    workflow_builder_fields::text_field_row(
+        ui,
+        i18n::t("studio.workflow_builder.step_name"),
+        step_name,
+    );
+    workflow_builder_fields::parameters_field_row(
+        ui,
+        i18n::t("studio.workflow_builder.parameters"),
+        parameters,
     );
     ui.horizontal(|ui| {
-        ui.label(i18n::t("studio.workflow_builder.index"));
-        ui.add_sized(
-            workflow_builder_metrics::step_index_size(),
-            egui::TextEdit::singleline(index),
-        );
-        if allow_add && ui::quiet_button(ui, i18n::t("studio.workflow_builder.add")).clicked() {
+        workflow_builder_fields::index_field(ui, i18n::t("studio.workflow_builder.index"), index);
+        if allow_add
+            && workflow_builder_fields::property_button(
+                ui,
+                i18n::t("studio.workflow_builder.add"),
+                true,
+            )
+            .clicked()
+        {
             actions.actions.push(StepPropertyAction::Add);
         }
-        if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
+        if workflow_builder_fields::property_button(
+            ui,
+            i18n::t("studio.workflow_builder.update"),
+            true,
+        )
+        .clicked()
+        {
             actions.actions.push(StepPropertyAction::Update);
         }
     });
     ui.horizontal_wrapped(|ui| {
-        if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_up")).clicked() {
+        if workflow_builder_fields::property_button(
+            ui,
+            i18n::t("studio.workflow_builder.move_up"),
+            false,
+        )
+        .clicked()
+        {
             actions.actions.push(StepPropertyAction::MoveUp);
         }
-        if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_down")).clicked() {
+        if workflow_builder_fields::property_button(
+            ui,
+            i18n::t("studio.workflow_builder.move_down"),
+            false,
+        )
+        .clicked()
+        {
             actions.actions.push(StepPropertyAction::MoveDown);
         }
-        if ui::quiet_button(ui, i18n::t("studio.workflow_builder.remove")).clicked() {
+        if workflow_builder_fields::property_button(
+            ui,
+            i18n::t("studio.workflow_builder.remove"),
+            false,
+        )
+        .clicked()
+        {
             actions.actions.push(StepPropertyAction::Remove);
         }
     });
@@ -133,5 +163,18 @@ mod tests {
         assert!(!actions.move_up_requested());
         assert!(actions.move_down_requested());
         assert!(!actions.remove_requested());
+    }
+
+    #[test]
+    fn step_properties_use_tokenized_field_rows() {
+        let source = include_str!("workflow_builder_properties.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("workflow_builder_fields::text_field_row"));
+        assert!(implementation.contains("workflow_builder_fields::parameters_field_row"));
+        assert!(implementation.contains("workflow_builder_fields::index_field"));
+        assert!(implementation.contains("workflow_builder_fields::property_button"));
+        assert!(!implementation.contains("ui.text_edit_singleline"));
+        assert!(!implementation.contains("ui::quiet_button"));
     }
 }

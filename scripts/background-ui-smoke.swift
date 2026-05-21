@@ -39,6 +39,9 @@ guard window.ownerPid == config.harnessPid else {
 }
 
 let previousPid = NSWorkspace.shared.frontmostApplication?.processIdentifier ?? 0
+guard previousPid != config.harnessPid else {
+    fail("harness is frontmost; refusing to target active user window")
+}
 var session = BackgroundActivationSession(previousPid: previousPid, targetPid: config.harnessPid)
 session.start()
 sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 1)

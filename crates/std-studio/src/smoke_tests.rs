@@ -99,6 +99,13 @@ fn assert_shell_layout_summary(summary: &str) {
 }
 
 fn assert_workflow_builder_summary(summary: &str) {
+    assert_workflow_builder_lifecycle_summary(summary);
+    assert_workflow_builder_controls_summary(summary);
+    assert_workflow_builder_trace_summary(summary);
+    assert_plugin_manager_summary(summary);
+}
+
+fn assert_workflow_builder_lifecycle_summary(summary: &str) {
     assert!(summary.contains("builder_created=true"));
     assert!(summary.contains("builder_added_step=true"));
     assert!(summary.contains("builder_updated_step=true"));
@@ -110,11 +117,20 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains(
         "builder_interaction_sequence=create>add>edit>move>simulate>run-planned>run-saved>trace"
     ));
+    assert!(summary.contains("builder_selected_step=Validate edited output"));
+}
+
+fn assert_workflow_builder_controls_summary(summary: &str) {
     assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom"));
     assert!(summary.contains("control=token-toolbar-buttons"));
     assert!(summary.contains("primary=plan|test"));
+    assert!(summary.contains("builder_properties_contract=properties=token-field-rows"));
+    assert!(summary.contains("inputs=step-name|parameters-json|index"));
+    assert!(summary.contains("primary=add|update"));
     assert!(summary.contains("builder_keyboard_move_path=Alt+Down:0>1;Alt+Up:1>0"));
-    assert!(summary.contains("builder_selected_step=Validate edited output"));
+}
+
+fn assert_workflow_builder_trace_summary(summary: &str) {
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
     assert!(summary.contains("builder_next_action=complete"));
@@ -127,7 +143,6 @@ fn assert_workflow_builder_summary(summary: &str) {
         "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
     ));
     assert!(summary.contains("success>success>success>success"));
-    assert_plugin_manager_summary(summary);
 }
 
 fn assert_plugin_manager_summary(summary: &str) {

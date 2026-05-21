@@ -1,4 +1,4 @@
-use crate::views::{workflow_builder_toolbar, workflow_builder_trace};
+use crate::views::{workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace};
 use std_studio::StudioApp;
 
 pub(crate) struct WorkflowBuilderSmoke {
@@ -13,6 +13,7 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) trace_events: usize,
     pub(crate) interaction_sequence: String,
     pub(crate) toolbar_contract: String,
+    pub(crate) properties_contract: String,
     pub(crate) keyboard_move_path: String,
     pub(crate) selected_step_title: String,
     pub(crate) trace_status: String,
@@ -80,6 +81,7 @@ pub(crate) fn run_workflow_builder_smoke(
         interaction_sequence: "create>add>edit>move>simulate>run-planned>run-saved>trace"
             .to_string(),
         toolbar_contract: workflow_builder_toolbar::toolbar_contract().to_string(),
+        properties_contract: workflow_builder_fields::fields_contract().to_string(),
         keyboard_move_path,
         selected_step_title: moved.name,
         trace_status,

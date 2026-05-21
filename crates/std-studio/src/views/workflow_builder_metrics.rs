@@ -12,6 +12,8 @@ pub(crate) const BUILDER_GOAL_INPUT_MAX_WIDTH: f32 = BUILDER_PANE_MIN_WIDTH;
 pub(crate) const BUILDER_GOAL_INPUT_HEIGHT: f32 = 28.0;
 pub(crate) const BUILDER_PARAMETERS_HEIGHT: f32 = 92.0;
 pub(crate) const BUILDER_AI_INPUT_HEIGHT: f32 = Space::XL as f32;
+pub(crate) const PROPERTY_SINGLE_LINE_HEIGHT: f32 = Space::LG as f32;
+pub(crate) const PROPERTY_LABEL_HEIGHT: f32 = Space::LG as f32;
 
 pub(crate) fn builder_columns(available_width: f32) -> Option<(f32, f32)> {
     if available_width < BUILDER_WIDE_BREAKPOINT {
@@ -80,5 +82,7 @@ mod tests {
         assert_eq!(parameter_editor_size(640.0), [640.0, 92.0]);
         assert_eq!(step_index_size(), [32.0, 22.0]);
         assert_eq!(ai_input_size(640.0), [640.0, 32.0]);
+        assert_eq!(PROPERTY_SINGLE_LINE_HEIGHT, 24.0);
+        assert_eq!(PROPERTY_LABEL_HEIGHT, 24.0);
     }
 }
