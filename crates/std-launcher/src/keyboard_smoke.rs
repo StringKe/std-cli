@@ -1,4 +1,7 @@
-use crate::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport, LauncherState};
+use crate::{
+    keyboard_enter_window::enter_window_evidence, LauncherFocusSection, LauncherKey,
+    LauncherKeyboardReport, LauncherState,
+};
 use std_core::{StdConfig, StdCore};
 use std_types::ActionExecutionStatus;
 
@@ -23,6 +26,7 @@ impl LauncherState {
         let completed_query = completed_query();
         let token_delete_query = token_delete_query();
         let empty_suggestion_keyboard_path = empty_suggestion_keyboard_path();
+        let enter_window = enter_window_evidence();
         let direct_trigger_status = state
             .handle_keyboard_input(LauncherKey::TriggerResult(0), false)
             .map(|execution| execution.status);
@@ -60,6 +64,7 @@ impl LauncherState {
             action_panel_focus_path,
             completed_query,
             token_delete_query,
+            enter_window,
             model_contract:
                 "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
             real_interaction_contract:

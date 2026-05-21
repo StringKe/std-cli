@@ -1,7 +1,10 @@
 use eframe::egui;
 use std_egui::input;
-use std_launcher::{LauncherKey, LauncherState};
-use std_types::{ActionExecution, ActionExecutionStatus};
+use std_launcher::{launcher_execution_hides_window, LauncherKey, LauncherState};
+use std_types::ActionExecution;
+
+#[cfg(test)]
+use std_types::ActionExecutionStatus;
 
 pub(crate) fn handle_search_shortcuts(
     ctx: &egui::Context,
@@ -60,7 +63,7 @@ fn handle_user_execution(state: &mut LauncherState, key: LauncherKey, hide_reque
 }
 
 pub(crate) fn execution_hides_launcher(execution: &ActionExecution) -> bool {
-    execution.status == ActionExecutionStatus::Completed
+    launcher_execution_hides_window(execution)
 }
 
 #[cfg(test)]

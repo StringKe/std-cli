@@ -83,12 +83,19 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
     assert!(report.user_enter_deferred);
     assert!(report.user_enter_feedback_visible);
     assert!(report.user_enter_keeps_launcher_open);
+    assert!(report.enter_window.pass());
     assert!(summary.contains("direct_trigger_status=Completed"));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
     assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>LauncherUser"));
     assert!(summary.contains("user_enter_deferred=true"));
     assert!(summary.contains("user_enter_feedback_visible=true"));
     assert!(summary.contains("user_enter_keeps_launcher_open=true"));
+    assert!(summary.contains("enter_window=completed_status=Completed"));
+    assert!(summary.contains("completed_hide=true"));
+    assert!(summary.contains("completed_commands=Visible(false)"));
+    assert!(summary.contains("deferred_status=NeedsExternalRunner"));
+    assert!(summary.contains("deferred_hide=false"));
+    assert!(summary.contains("deferred_commands=none"));
 }
 
 fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {

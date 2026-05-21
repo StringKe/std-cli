@@ -10,6 +10,7 @@ mod close_smoke;
 mod controller;
 mod hotkey;
 mod keyboard;
+mod keyboard_enter_window;
 mod keyboard_smoke;
 mod layout_contract;
 mod query_completion;
@@ -34,7 +35,8 @@ pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
 };
 pub use keyboard::{
-    LauncherFocusSection, LauncherFocusSource, LauncherKey, LauncherKeyboardReport,
+    launcher_execution_hides_window, LauncherEnterWindowReport, LauncherFocusSection,
+    LauncherFocusSource, LauncherKey, LauncherKeyboardReport,
 };
 pub use layout_contract::{
     panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
@@ -137,6 +139,13 @@ impl LauncherState {
         let previous_visible = self.controller.visible;
         self.hide();
         LauncherController::window_commands(previous_visible, self.controller.visible)
+    }
+
+    pub fn enter_window_commands(
+        previous_visible: bool,
+        current_visible: bool,
+    ) -> Vec<LauncherWindowCommand> {
+        LauncherController::window_commands(previous_visible, current_visible)
     }
 
     pub fn hide(&mut self) {

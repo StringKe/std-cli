@@ -1,6 +1,10 @@
 use crate::LauncherState;
 use std_egui::{LauncherFeedbackAction, LauncherPhase, LauncherResultMode};
-use std_types::ActionExecutionStatus;
+use std_types::{ActionExecution, ActionExecutionStatus};
+
+pub fn launcher_execution_hides_window(execution: &ActionExecution) -> bool {
+    execution.status == ActionExecutionStatus::Completed
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LauncherKey {
@@ -64,8 +68,19 @@ pub struct LauncherKeyboardReport {
     pub action_panel_focus_path: String,
     pub completed_query: String,
     pub token_delete_query: String,
+    pub enter_window: LauncherEnterWindowReport,
     pub model_contract: &'static str,
     pub real_interaction_contract: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LauncherEnterWindowReport {
+    pub completed_status: Option<ActionExecutionStatus>,
+    pub completed_hide_requested: bool,
+    pub completed_window_commands: String,
+    pub deferred_status: Option<ActionExecutionStatus>,
+    pub deferred_hide_requested: bool,
+    pub deferred_window_commands: String,
 }
 
 impl LauncherState {
@@ -376,6 +391,7 @@ impl LauncherKeyboardReport {
             && self.action_panel_focus_path == "ActionPanel>Search"
             && self.completed_query == "rebuild index"
             && self.token_delete_query == "open terminal"
+            && self.enter_window.pass()
             && self.model_contract
                 == "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
             && self.real_interaction_contract
@@ -384,7 +400,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nmodel_contract={}\nreal_interaction_contract={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nenter_window={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -425,8 +441,38 @@ impl LauncherKeyboardReport {
             self.action_panel_focus_path,
             self.completed_query,
             self.token_delete_query,
+            self.enter_window.summary(),
             self.model_contract,
             self.real_interaction_contract
         )
     }
+}
+
+impl LauncherEnterWindowReport {
+    pub fn pass(&self) -> bool {
+        self.completed_status == Some(ActionExecutionStatus::Completed)
+            && self.completed_hide_requested
+            && self.completed_window_commands == "Visible(false)"
+            && self.deferred_status == Some(ActionExecutionStatus::NeedsExternalRunner)
+            && !self.deferred_hide_requested
+            && self.deferred_window_commands == "none"
+    }
+
+    pub fn summary(&self) -> String {
+        format!(
+            "completed_status={};completed_hide={};completed_commands={};deferred_status={};deferred_hide={};deferred_commands={}",
+            status_label(self.completed_status.as_ref()),
+            self.completed_hide_requested,
+            self.completed_window_commands,
+            status_label(self.deferred_status.as_ref()),
+            self.deferred_hide_requested,
+            self.deferred_window_commands
+        )
+    }
+}
+
+fn status_label(status: Option<&ActionExecutionStatus>) -> String {
+    status
+        .map(|status| format!("{status:?}"))
+        .unwrap_or_else(|| "none".to_string())
 }
