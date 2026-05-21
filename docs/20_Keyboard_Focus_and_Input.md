@@ -98,6 +98,17 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 - 唤起 Launcher 后再次按下相同热键 -> 关闭 Launcher（toggle）
 - Esc 始终关闭 Launcher，不可禁用
 
+**后台 UI 验收**：
+
+- 默认测试禁止 AX、CGEvent、postToPid、System Events 和真实全局热键
+- 真实焦点、Enter 打开、窗口 toggle、面板管理验收只能走显式 opt-in
+- 推荐使用隔离 harness 后台验证，不操作用户正在使用的窗口
+- 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
+- driver 顺序固定为 per-process event tap -> appKitDefined primer -> center primer -> postToPid 定向输入
+- event tap 只拦截 previous app deactivation，target activation 必须放行
+- 浮动光标只是状态可视化，不是输入机制
+- 禁止向当前 frontmost app、Terminal、1Password、WeChat、系统设置或用户既有窗口投递事件
+
 ## 05. Launcher 内快捷键
 
 **导航**：
