@@ -5,7 +5,7 @@ use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 #[test]
 fn mod_arrow_keys_jump_to_result_edges() {
     let mut state = LauncherState::new();
-    state.update_query("");
+    state.update_query("index");
     assert!(state.view.results.len() > 1);
 
     state.handle_keyboard_input(LauncherKey::JumpToLast, false);
@@ -220,4 +220,42 @@ fn no_match_enter_respects_ime_composition() {
 
     assert!(execution.is_none());
     assert_eq!(state.view.query, "missing launcher item");
+}
+
+#[test]
+fn empty_query_suggestions_are_keyboard_reachable() {
+    let mut state = LauncherState::new();
+    state.update_query("");
+    assert!(state.empty_query_suggestions_visible());
+    assert_eq!(state.empty_suggestion_selected, 0);
+
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    assert_eq!(state.empty_suggestion_selected, 1);
+    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Results));
+
+    state.handle_keyboard_input(LauncherKey::JumpToLast, false);
+    assert_eq!(state.empty_suggestion_selected, 2);
+
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    assert_eq!(state.empty_suggestion_selected, 2);
+
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    assert!(execution.is_none());
+    assert_eq!(state.view.query, "> studio");
+    assert_eq!(state.empty_suggestion_selected, 0);
+}
+
+#[test]
+fn empty_query_suggestions_respect_ime_composition() {
+    let mut state = LauncherState::new();
+    state.update_query("");
+
+    state.handle_keyboard_input(LauncherKey::ArrowDown, true);
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, true);
+
+    assert!(execution.is_none());
+    assert_eq!(state.empty_suggestion_selected, 0);
+    assert_eq!(state.view.query, "");
 }

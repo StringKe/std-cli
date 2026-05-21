@@ -95,9 +95,11 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                     render_progress(ui, i18n::t("launcher.results.searching"));
                     return;
                 }
-                if let Some(EmptyAction::AskAi(query)) =
-                    ui_empty::render_no_results(ui, &state.view.query)
-                {
+                if let Some(EmptyAction::AskAi(query)) = ui_empty::render_no_results(
+                    ui,
+                    &state.view.query,
+                    state.empty_suggestion_selected,
+                ) {
                     state.update_query(query);
                 }
                 if let Some(EmptyAction::SetQuery(query)) = ui_empty::take_empty_query_action(ui) {

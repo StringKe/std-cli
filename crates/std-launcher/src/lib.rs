@@ -15,6 +15,7 @@ mod query_mode;
 mod reports;
 mod semantics;
 mod studio_intent;
+mod suggested;
 mod surface_contract;
 mod surface_smoke;
 mod voice;
@@ -48,6 +49,7 @@ use std_orchestration::{
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType};
 pub use studio_intent::{StudioLaunchIntent, StudioLaunchTarget};
+pub use suggested::{suggested_workflow_rows, SuggestedWorkflowRow};
 pub use surface_contract::LauncherSurfaceContract;
 pub use surface_smoke::LauncherSurfaceSmokeReport;
 pub use voice::clean_voice_transcript;
@@ -59,6 +61,7 @@ pub struct LauncherState {
     pub action_panel: ActionPanel,
     pub focus_section: LauncherFocusSection,
     pub focus_source: LauncherFocusSource,
+    pub empty_suggestion_selected: usize,
     pub studio_intent: Option<StudioLaunchIntent>,
 }
 
@@ -75,6 +78,7 @@ impl Default for LauncherState {
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
             focus_source: LauncherFocusSource::Keyboard,
+            empty_suggestion_selected: 0,
             studio_intent: None,
         }
     }
@@ -96,6 +100,7 @@ impl LauncherState {
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
             focus_source: LauncherFocusSource::Keyboard,
+            empty_suggestion_selected: 0,
             studio_intent: None,
         }
     }
@@ -134,6 +139,7 @@ impl LauncherState {
         self.focus_section = LauncherFocusSection::Search;
         self.focus_source = LauncherFocusSource::Keyboard;
         self.view.update_query(&self.core, query);
+        self.empty_suggestion_selected = 0;
         self.view.preview.clone()
     }
 
@@ -156,6 +162,42 @@ impl LauncherState {
         };
         self.update_query(query);
         true
+    }
+
+    pub fn empty_suggestion_count(&self) -> usize {
+        3
+    }
+
+    pub fn move_empty_suggestion(&mut self, delta: isize) {
+        let max = self.empty_suggestion_count().saturating_sub(1);
+        self.empty_suggestion_selected = bounded_index(self.empty_suggestion_selected, delta, max);
+        self.focus_section = LauncherFocusSection::Results;
+        self.focus_source = LauncherFocusSource::Keyboard;
+    }
+
+    pub fn jump_empty_suggestion(&mut self, first: bool) {
+        self.empty_suggestion_selected = if first {
+            0
+        } else {
+            self.empty_suggestion_count().saturating_sub(1)
+        };
+        self.focus_section = LauncherFocusSection::Results;
+        self.focus_source = LauncherFocusSource::Keyboard;
+    }
+
+    pub fn apply_empty_suggestion(&mut self) -> bool {
+        let Some(row) = suggested_workflow_rows()
+            .get(self.empty_suggestion_selected)
+            .copied()
+        else {
+            return false;
+        };
+        self.update_query(row.query);
+        true
+    }
+
+    pub fn empty_query_suggestions_visible(&self) -> bool {
+        self.view.result_mode == std_egui::LauncherResultMode::SuggestedWorkflows
     }
 
     pub fn move_selection(&mut self, delta: isize) -> Option<ActionPreview> {
@@ -403,6 +445,10 @@ impl LauncherState {
             created_at: chrono::Utc::now(),
         })
     }
+}
+
+fn bounded_index(current: usize, delta: isize, max: usize) -> usize {
+    current.saturating_add_signed(delta).min(max)
 }
 
 pub fn ask_ai_fallback_query(query: &str) -> Option<String> {

@@ -21,6 +21,7 @@ impl LauncherState {
         let focus_after_shift_tab = state.focus_section;
         let action_panel_focus_path = action_panel_focus_path(&mut state);
         let token_delete_query = token_delete_query();
+        let empty_suggestion_keyboard_path = empty_suggestion_keyboard_path();
         let direct_trigger_status = state
             .handle_keyboard_input(LauncherKey::TriggerResult(0), false)
             .map(|execution| execution.status);
@@ -50,6 +51,7 @@ impl LauncherState {
             ime_preedit_query_unchanged: ime.preedit_query_unchanged,
             ime_commit_query: ime.commit_query,
             ime_commit_trigger_status: ime.commit_trigger_status,
+            empty_suggestion_keyboard_path,
             focus_after_tab,
             focus_after_shift_tab,
             focus_path: "Search>Results>Search".to_string(),
@@ -57,6 +59,23 @@ impl LauncherState {
             token_delete_query,
         }
     }
+}
+
+fn empty_suggestion_keyboard_path() -> String {
+    let mut state = LauncherState::new();
+    state.update_query("");
+    let before = state.empty_suggestion_selected;
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let after_down = state.empty_suggestion_selected;
+    state.handle_keyboard_input(LauncherKey::JumpToLast, false);
+    let after_last = state.empty_suggestion_selected;
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let after_boundary = state.empty_suggestion_selected;
+    state.handle_keyboard_input(LauncherKey::Enter, false);
+    format!(
+        "{before}->{after_down}->{after_last}->{after_boundary}=> {}",
+        state.view.query
+    )
 }
 
 fn navigation_boundary_path(query: &str) -> String {

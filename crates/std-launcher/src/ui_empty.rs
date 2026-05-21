@@ -4,16 +4,21 @@ use std_egui::{
     i18n, input,
     tokens::{Color, Radius, Space, Text},
 };
+use std_launcher::{suggested_workflow_rows, SuggestedWorkflowRow};
 
 pub(crate) enum EmptyAction {
     AskAi(String),
     SetQuery(String),
 }
 
-pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyAction> {
+pub(crate) fn render_no_results(
+    ui: &mut egui::Ui,
+    query: &str,
+    selected_suggestion: usize,
+) -> Option<EmptyAction> {
     let trimmed = query.trim();
     if trimmed.is_empty() {
-        render_empty_query(ui);
+        render_empty_query(ui, selected_suggestion);
         return None;
     }
 
@@ -26,7 +31,7 @@ pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyA
     }
 }
 
-fn render_empty_query(ui: &mut egui::Ui) {
+fn render_empty_query(ui: &mut egui::Ui, selected_suggestion: usize) {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::xs() as f32);
     ui.label(
@@ -36,8 +41,8 @@ fn render_empty_query(ui: &mut egui::Ui) {
             .strong(),
     );
     ui.add_space(Space::xs() as f32);
-    for item in suggested_workflow_rows() {
-        if suggested_row(ui, item).clicked() {
+    for (index, item) in suggested_workflow_rows().into_iter().enumerate() {
+        if suggested_row(ui, item, index == selected_suggestion).clicked() {
             ui.data_mut(|data| data.insert_temp(empty_action_id(), item.query.to_string()));
         }
         ui.add_space(Space::two_xs() as f32);
@@ -52,38 +57,7 @@ fn render_empty_query(ui: &mut egui::Ui) {
     });
 }
 
-#[derive(Clone, Copy)]
-struct SuggestedWorkflowRow {
-    title_key: &'static str,
-    detail_key: &'static str,
-    shortcut: &'static str,
-    query: &'static str,
-}
-
-fn suggested_workflow_rows() -> [SuggestedWorkflowRow; 3] {
-    [
-        SuggestedWorkflowRow {
-            title_key: "launcher.empty.suggestion.rebuild.title",
-            detail_key: "launcher.empty.suggestion.rebuild.detail",
-            shortcut: "/",
-            query: "/rebuild index",
-        },
-        SuggestedWorkflowRow {
-            title_key: "launcher.empty.suggestion.ask.title",
-            detail_key: "launcher.empty.suggestion.ask.detail",
-            shortcut: "?",
-            query: "? ",
-        },
-        SuggestedWorkflowRow {
-            title_key: "launcher.empty.suggestion.studio.title",
-            detail_key: "launcher.empty.suggestion.studio.detail",
-            shortcut: ">",
-            query: "> studio",
-        },
-    ]
-}
-
-fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow) -> egui::Response {
+fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow, selected: bool) -> egui::Response {
     let ctx = ui.ctx().clone();
     let response = ui.allocate_response(
         egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
@@ -96,7 +70,9 @@ fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow) -> egui::Respons
             i18n::t(item.title_key),
         )
     });
-    let fill = if response.hovered() {
+    let fill = if selected {
+        Color::accent_weak(&ctx)
+    } else if response.hovered() {
         Color::bg_surface_2(&ctx)
     } else {
         Color::bg_surface_1(&ctx)

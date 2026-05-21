@@ -10,8 +10,17 @@ fn launcher_keyboard_smoke_validates_navigation_trigger_escape_and_ime_guard() {
     assert_navigation(&report);
     assert_trigger_paths(&report, &summary);
     assert_ime_guard(&report, &summary);
+    assert_empty_suggestions(&report, &summary);
     assert_focus_and_editing(&report, &summary);
     assert!(summary.contains("launcher_keyboard_smoke PASS"));
+}
+
+fn assert_empty_suggestions(report: &LauncherKeyboardReport, summary: &str) {
+    assert_eq!(
+        report.empty_suggestion_keyboard_path,
+        "0->1->2->2=> > studio"
+    );
+    assert!(summary.contains("empty_suggestion_keyboard_path=0->1->2->2=> > studio"));
 }
 
 fn assert_navigation(report: &LauncherKeyboardReport) {

@@ -52,6 +52,7 @@ pub struct LauncherKeyboardReport {
     pub ime_preedit_query_unchanged: bool,
     pub ime_commit_query: String,
     pub ime_commit_trigger_status: Option<ActionExecutionStatus>,
+    pub empty_suggestion_keyboard_path: String,
     pub focus_after_tab: LauncherFocusSection,
     pub focus_after_shift_tab: LauncherFocusSection,
     pub focus_path: String,
@@ -98,55 +99,10 @@ impl LauncherState {
         }
         self.focus_source = LauncherFocusSource::Keyboard;
         match key {
-            LauncherKey::ArrowDown if self.focus_section == LauncherFocusSection::Feedback => {
-                self.view.move_feedback_action(1);
-                None
-            }
-            LauncherKey::ArrowUp if self.focus_section == LauncherFocusSection::Feedback => {
-                self.view.move_feedback_action(-1);
-                None
-            }
-            LauncherKey::JumpToFirst if self.focus_section == LauncherFocusSection::Feedback => {
-                self.view.selected_feedback_action = 0;
-                None
-            }
-            LauncherKey::JumpToLast if self.focus_section == LauncherFocusSection::Feedback => {
-                let last = self.view.feedback_actions().len().saturating_sub(1);
-                self.view.selected_feedback_action = last;
-                None
-            }
-            LauncherKey::ArrowDown if self.action_panel.open => {
-                self.move_action_panel_selection(1);
-                None
-            }
-            LauncherKey::ArrowUp if self.action_panel.open => {
-                self.move_action_panel_selection(-1);
-                None
-            }
-            LauncherKey::JumpToFirst if self.action_panel.open => {
-                self.jump_action_panel_selection(true);
-                None
-            }
-            LauncherKey::JumpToLast if self.action_panel.open => {
-                self.jump_action_panel_selection(false);
-                None
-            }
-            LauncherKey::ArrowDown => {
-                self.move_selection(1);
-                None
-            }
-            LauncherKey::ArrowUp => {
-                self.move_selection(-1);
-                None
-            }
-            LauncherKey::JumpToFirst => {
-                self.jump_selection(true);
-                None
-            }
-            LauncherKey::JumpToLast => {
-                self.jump_selection(false);
-                None
-            }
+            LauncherKey::ArrowDown
+            | LauncherKey::ArrowUp
+            | LauncherKey::JumpToFirst
+            | LauncherKey::JumpToLast => self.handle_navigation_key(key),
             LauncherKey::FocusNext => {
                 self.focus_next_section();
                 None
@@ -155,19 +111,7 @@ impl LauncherState {
                 self.focus_previous_section();
                 None
             }
-            LauncherKey::Enter if self.focus_section == LauncherFocusSection::Feedback => {
-                self.trigger_feedback_action()
-            }
-            LauncherKey::Enter if self.action_panel.open => self.trigger_action_panel_selection(),
-            LauncherKey::Enter if self.view.result_mode == LauncherResultMode::NaturalLanguage => {
-                self.trigger_selected()
-            }
-            LauncherKey::Enter if self.view.results.is_empty() => {
-                self.trigger_no_match_fallback();
-                None
-            }
-            LauncherKey::Enter if allow_external_runner => self.trigger_selected_by_user(),
-            LauncherKey::Enter => self.trigger_selected(),
+            LauncherKey::Enter => self.handle_enter_key(allow_external_runner),
             LauncherKey::ActionPanel => {
                 self.open_action_panel();
                 self.focus_section = LauncherFocusSection::ActionPanel;
@@ -181,24 +125,100 @@ impl LauncherState {
                 self.trigger_result_by_user(index)
             }
             LauncherKey::TriggerResult(index) => self.trigger_result(index),
-            LauncherKey::Escape if self.action_panel.open => {
-                self.close_action_panel();
-                self.focus_section = LauncherFocusSection::Results;
-                None
-            }
-            LauncherKey::Escape if self.focus_section == LauncherFocusSection::Feedback => {
-                self.focus_section = LauncherFocusSection::Search;
-                None
-            }
-            LauncherKey::Escape if !self.view.query.is_empty() => {
-                self.update_query("");
-                None
-            }
-            LauncherKey::Escape => {
-                self.hide();
-                None
-            }
+            LauncherKey::Escape => self.handle_escape_key(),
         }
+    }
+
+    fn handle_navigation_key(&mut self, key: LauncherKey) -> Option<std_types::ActionExecution> {
+        let (first, delta) = match key {
+            LauncherKey::ArrowDown => (None, 1),
+            LauncherKey::ArrowUp => (None, -1),
+            LauncherKey::JumpToFirst => (Some(true), 0),
+            LauncherKey::JumpToLast => (Some(false), 0),
+            _ => return None,
+        };
+        if self.focus_section == LauncherFocusSection::Feedback {
+            self.navigate_feedback(first, delta);
+        } else if self.action_panel.open {
+            self.navigate_action_panel(first, delta);
+        } else if self.empty_query_suggestions_visible() {
+            self.navigate_empty_suggestion(first, delta);
+        } else if let Some(first) = first {
+            self.jump_selection(first);
+        } else {
+            self.move_selection(delta);
+        }
+        None
+    }
+
+    fn navigate_feedback(&mut self, first: Option<bool>, delta: isize) {
+        if let Some(first) = first {
+            self.view.selected_feedback_action = if first {
+                0
+            } else {
+                self.view.feedback_actions().len().saturating_sub(1)
+            };
+        } else {
+            self.view.move_feedback_action(delta);
+        }
+    }
+
+    fn navigate_action_panel(&mut self, first: Option<bool>, delta: isize) {
+        if let Some(first) = first {
+            self.jump_action_panel_selection(first);
+        } else {
+            self.move_action_panel_selection(delta);
+        }
+    }
+
+    fn navigate_empty_suggestion(&mut self, first: Option<bool>, delta: isize) {
+        if let Some(first) = first {
+            self.jump_empty_suggestion(first);
+        } else {
+            self.move_empty_suggestion(delta);
+        }
+    }
+
+    fn handle_enter_key(
+        &mut self,
+        allow_external_runner: bool,
+    ) -> Option<std_types::ActionExecution> {
+        if self.focus_section == LauncherFocusSection::Feedback {
+            return self.trigger_feedback_action();
+        }
+        if self.action_panel.open {
+            return self.trigger_action_panel_selection();
+        }
+        if self.view.result_mode == LauncherResultMode::NaturalLanguage {
+            return self.trigger_selected();
+        }
+        if self.empty_query_suggestions_visible() {
+            self.apply_empty_suggestion();
+            return None;
+        }
+        if self.view.results.is_empty() {
+            self.trigger_no_match_fallback();
+            return None;
+        }
+        if allow_external_runner {
+            self.trigger_selected_by_user()
+        } else {
+            self.trigger_selected()
+        }
+    }
+
+    fn handle_escape_key(&mut self) -> Option<std_types::ActionExecution> {
+        if self.action_panel.open {
+            self.close_action_panel();
+            self.focus_section = LauncherFocusSection::Results;
+        } else if self.focus_section == LauncherFocusSection::Feedback {
+            self.focus_section = LauncherFocusSection::Search;
+        } else if !self.view.query.is_empty() {
+            self.update_query("");
+        } else {
+            self.hide();
+        }
+        None
     }
 
     pub fn trigger_feedback_action(&mut self) -> Option<std_types::ActionExecution> {
@@ -289,6 +309,7 @@ impl LauncherKeyboardReport {
             && self.ime_commit_query == "rebuild index"
             && self.ime_composition_path == "zh-preedit(index)>blocked>commit(rebuild index)>enter"
             && self.ime_commit_trigger_status.is_some()
+            && self.empty_suggestion_keyboard_path == "0->1->2->2=> > studio"
             && self.focus_after_tab == LauncherFocusSection::Results
             && self.focus_after_shift_tab == LauncherFocusSection::Search
             && self.focus_path == "Search>Results>Search"
@@ -298,7 +319,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -331,6 +352,7 @@ impl LauncherKeyboardReport {
                 .as_ref()
                 .map(|status| format!("{status:?}"))
                 .unwrap_or_else(|| "none".to_string()),
+            self.empty_suggestion_keyboard_path,
             self.focus_after_tab,
             self.focus_after_shift_tab,
             self.focus_path,
