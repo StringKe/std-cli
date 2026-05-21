@@ -44,6 +44,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_ui_docs(&root)?;
     check_quality_report_gates(&root)?;
     check_runtime_theme_profiles(&root)?;
+    check_studio_operations_evidence(&root)?;
     check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
     check_launcher_keyboard_ime_evidence(&root)?;
@@ -110,6 +111,25 @@ fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> 
     let studio = read_required(&root.join("crates/std-studio/src/main.rs"))?;
     check_text(&studio, "pub(crate) theme_profile: Option<ThemeProfile>")?;
     check_text(&studio, "self.theme_profile = Some(ui::install_visuals")?;
+    Ok(())
+}
+
+fn check_studio_operations_evidence(root: &std::path::Path) -> Result<(), CliError> {
+    let operations = read_required(&root.join("crates/std-studio/src/smoke/operations_smoke.rs"))?;
+    for required in [
+        "operations_qa_command",
+        "mise run quality",
+        "operations_doctor_command",
+        "std doctor",
+        "operations_release_command",
+        "std release verify",
+        "operations_install_command",
+        "std install verify",
+    ] {
+        check_text(&operations, required)?;
+    }
+    let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
+    check_text(&studio_smoke, "operations_smoke=PASS")?;
     Ok(())
 }
 

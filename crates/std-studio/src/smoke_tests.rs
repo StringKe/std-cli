@@ -10,6 +10,7 @@ fn studio_smoke_reports_internal_workspace_pane_management() {
     assert_shell_layout_summary(&summary);
     assert_workflow_builder_summary(&summary);
     assert_analysis_workbench_summary(&summary);
+    assert_operations_summary(&summary);
 }
 
 fn assert_workspace_policy_summary(summary: &str) {
@@ -91,4 +92,16 @@ fn assert_analysis_workbench_summary(summary: &str) {
     assert!(summary.contains("analysis_inspect_relations=3"));
     assert!(summary.contains("analysis_inspect_history=1"));
     assert!(summary.contains("analysis_answer_has_evidence=true"));
+}
+
+fn assert_operations_summary(summary: &str) {
+    assert!(summary.contains("operations_smoke=PASS"));
+    assert!(summary.contains("operations_qa_command=mise run quality"));
+    assert!(summary.contains("operations_qa_output=rustfmt=PASS"));
+    assert!(summary.contains("operations_doctor_command=std doctor"));
+    assert!(summary.contains("operations_doctor_result=doctor source gates"));
+    assert!(summary.contains("operations_release_command=std release verify"));
+    assert!(summary.contains("operations_release_output=manifest="));
+    assert!(summary.contains("operations_install_command=std install verify"));
+    assert!(summary.contains("operations_install_output=std="));
 }
