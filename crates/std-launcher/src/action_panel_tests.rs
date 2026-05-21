@@ -180,6 +180,45 @@ fn action_panel_filters_actions_and_resets_selection() {
 }
 
 #[test]
+fn action_panel_filter_is_keyboard_reachable_from_panel_focus() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    state.handle_keyboard_input(LauncherKey::TypeActionPanelQuery('c'), false);
+    state.handle_keyboard_input(LauncherKey::TypeActionPanelQuery('o'), false);
+
+    let visible_titles = state
+        .action_panel
+        .visible_items()
+        .into_iter()
+        .map(|item| item.title().to_string())
+        .collect::<Vec<_>>();
+
+    assert_eq!(state.action_panel.query, "co");
+    assert_eq!(state.action_panel.selected, 0);
+    assert_eq!(visible_titles, vec!["Copy command"]);
+}
+
+#[test]
+fn action_panel_filter_respects_ime_composition() {
+    let mut state = LauncherState::new();
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+
+    state.handle_keyboard_input(LauncherKey::TypeActionPanelQuery('c'), true);
+
+    assert_eq!(state.action_panel.query, "");
+    assert!(state.action_panel.open);
+}
+
+#[test]
 fn mod_backspace_deletes_previous_query_token() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

@@ -103,12 +103,28 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
     if input::ime_composing(ui.ctx()) {
         return;
     }
+    for ch in typed_action_panel_chars(ui.ctx()) {
+        state.handle_keyboard_input_by_user(LauncherKey::TypeActionPanelQuery(ch), false);
+    }
     if input::arrow_down().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
     }
     if input::arrow_up().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowUp, false);
     }
+}
+
+fn typed_action_panel_chars(ctx: &egui::Context) -> Vec<char> {
+    ctx.input(|input| {
+        input
+            .events
+            .iter()
+            .filter_map(|event| match event {
+                egui::Event::Text(text) => text.chars().next(),
+                _ => None,
+            })
+            .collect()
+    })
 }
 
 fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui::Response {
@@ -175,5 +191,16 @@ mod tests {
 
         assert!(guard_index < arrow_down_index);
         assert!(guard_index < arrow_up_index);
+    }
+
+    #[test]
+    fn action_panel_typed_filter_uses_text_events_after_ime_guard() {
+        let source = include_str!("ui_action_panel.rs");
+        let guard_index = source.find("input::ime_composing(ui.ctx())").unwrap();
+        let typed_index = source.find("typed_action_panel_chars(ui.ctx())").unwrap();
+        let key_index = source.find("LauncherKey::TypeActionPanelQuery").unwrap();
+
+        assert!(guard_index < typed_index);
+        assert!(typed_index < key_index);
     }
 }

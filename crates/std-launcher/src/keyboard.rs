@@ -15,6 +15,7 @@ pub enum LauncherKey {
     ActionPanel,
     CompleteSelectedQuery,
     DeletePreviousToken,
+    TypeActionPanelQuery(char),
     TriggerResult(usize),
 }
 
@@ -126,6 +127,10 @@ impl LauncherState {
             }
             LauncherKey::DeletePreviousToken => {
                 self.view.delete_previous_query_token(&self.core);
+                None
+            }
+            LauncherKey::TypeActionPanelQuery(ch) => {
+                self.type_action_panel_query(ch);
                 None
             }
             LauncherKey::TriggerResult(index) if allow_external_runner => {

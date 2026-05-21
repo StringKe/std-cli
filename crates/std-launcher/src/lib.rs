@@ -5,6 +5,7 @@
 mod action_bar_preview;
 mod action_panel;
 mod action_panel_smoke;
+mod action_panel_state;
 mod close_smoke;
 mod controller;
 mod hotkey;
@@ -225,35 +226,6 @@ impl LauncherState {
         self.focus_source = LauncherFocusSource::Keyboard;
         self.view.jump_selection(&self.core, first);
         self.view.preview.clone()
-    }
-
-    pub fn open_action_panel(&mut self) -> bool {
-        let Some(result) = self.view.selected_result() else {
-            self.action_panel.close();
-            return false;
-        };
-        self.action_panel.open_for(&result.action);
-        self.focus_section = LauncherFocusSection::ActionPanel;
-        self.focus_source = LauncherFocusSource::Keyboard;
-        true
-    }
-
-    pub fn close_action_panel(&mut self) {
-        self.action_panel.close();
-        self.focus_section = LauncherFocusSection::Results;
-        self.focus_source = LauncherFocusSource::Keyboard;
-    }
-
-    pub fn move_action_panel_selection(&mut self, delta: isize) {
-        self.action_panel.move_selection(delta);
-    }
-
-    pub fn jump_action_panel_selection(&mut self, first: bool) {
-        self.action_panel.jump_selection(first);
-    }
-
-    pub fn update_action_panel_query(&mut self, query: impl Into<String>) {
-        self.action_panel.update_query(query);
     }
 
     pub fn trigger_action_panel_selection(&mut self) -> Option<ActionExecution> {
