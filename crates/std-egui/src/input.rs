@@ -6,6 +6,7 @@ pub enum KeyBinding {
     ModShift(char),
     ModNamed(egui::Key),
     ModShiftNamed(egui::Key),
+    ModOnlyNamed(egui::Key),
     AltNamed(egui::Key),
     ShiftNamed(egui::Key),
     Plain(egui::Key),
@@ -31,6 +32,9 @@ impl KeyBinding {
                     named_key_label(key)
                 )
             }
+            Self::ModOnlyNamed(key) => {
+                format!("{}+{}", primary_modifier_label(), named_key_label(key))
+            }
             Self::AltNamed(key) => format!("Alt+{}", named_key_label(key)),
             Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
@@ -51,6 +55,13 @@ impl KeyBinding {
             }
             Self::ModShiftNamed(key) => {
                 input.modifiers.command && input.modifiers.shift && input.key_pressed(key)
+            }
+            Self::ModOnlyNamed(key) => {
+                input.modifiers.command
+                    && !input.modifiers.shift
+                    && !input.modifiers.alt
+                    && !input.modifiers.ctrl
+                    && input.key_pressed(key)
             }
             Self::AltNamed(key) => {
                 !input.modifiers.command
@@ -152,6 +163,22 @@ pub fn studio_workflow_step_move_up() -> KeyBinding {
 
 pub fn studio_workflow_step_move_down() -> KeyBinding {
     KeyBinding::AltNamed(egui::Key::ArrowDown)
+}
+
+pub fn studio_workflow_test() -> KeyBinding {
+    KeyBinding::ModOnlyNamed(egui::Key::Enter)
+}
+
+pub fn studio_workflow_simulate() -> KeyBinding {
+    KeyBinding::ModShiftNamed(egui::Key::Enter)
+}
+
+pub fn studio_workflow_save() -> KeyBinding {
+    KeyBinding::Mod('S')
+}
+
+pub fn studio_workflow_history() -> KeyBinding {
+    KeyBinding::ModShift('H')
 }
 
 pub fn studio_bottom_panel_toggle() -> KeyBinding {
@@ -258,8 +285,10 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
         'J' => egui::Key::J,
         'K' => egui::Key::K,
         'L' => egui::Key::L,
+        'H' => egui::Key::H,
         'O' => egui::Key::O,
         'P' => egui::Key::P,
+        'S' => egui::Key::S,
         _ => return false,
     };
     input.key_pressed(key)
@@ -303,14 +332,26 @@ mod tests {
         assert!(studio_settings().label().ends_with("+,"));
         assert!(studio_analysis_relation_toggle().label().ends_with("+L"));
         assert_eq!(studio_analysis_qa_focus().label(), "?");
+        assert_studio_workflow_bindings();
+        assert_launcher_bindings();
+    }
+
+    fn assert_studio_workflow_bindings() {
         assert_eq!(studio_workflow_step_move_up().label(), "Alt+Up");
         assert_eq!(studio_workflow_step_move_down().label(), "Alt+Down");
+        assert!(studio_workflow_test().label().ends_with("+Enter"));
+        assert!(studio_workflow_simulate().label().ends_with("+Shift+Enter"));
+        assert!(studio_workflow_save().label().ends_with("+S"));
+        assert!(studio_workflow_history().label().ends_with("+Shift+H"));
         assert!(studio_previous_workspace_pane()
             .label()
             .ends_with("+Shift+Up"));
         assert!(studio_next_workspace_pane()
             .label()
             .ends_with("+Shift+Down"));
+    }
+
+    fn assert_launcher_bindings() {
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));

@@ -1,4 +1,5 @@
 use crate::smoke::run_studio_smoke;
+use std_egui::input;
 
 #[test]
 fn studio_smoke_reports_internal_workspace_pane_management() {
@@ -124,10 +125,15 @@ fn assert_workflow_builder_controls_summary(summary: &str) {
     assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>test>history-action>ai>zoom"));
     assert!(summary.contains("control=token-toolbar-buttons"));
     assert!(summary.contains("primary=plan|test"));
+    assert!(summary.contains("shortcuts=save|simulate|test|history"));
     assert!(summary.contains("builder_properties_contract=properties=token-field-rows"));
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("primary=add|update"));
-    assert!(summary.contains("builder_keyboard_move_path=Alt+Down:0>1;Alt+Up:1>0"));
+    assert!(summary.contains(&format!(
+        "builder_keyboard_move_path={}:0>1;{}:1>0",
+        input::studio_workflow_step_move_down().label(),
+        input::studio_workflow_step_move_up().label()
+    )));
 }
 
 fn assert_workflow_builder_trace_summary(summary: &str) {
@@ -182,11 +188,27 @@ fn assert_operations_summary(summary: &str) {
 
 fn assert_keyboard_summary(summary: &str) {
     assert!(summary.contains("studio_keyboard_smoke=PASS"));
-    assert!(summary.contains("studio_sidebar_toggle_path=Cmd+B:open>closed>open"));
-    assert!(summary.contains("studio_inspector_toggle_path=Cmd+I:closed>open>closed"));
-    assert!(summary.contains("studio_bottom_panel_toggle_path=Cmd+J:closed>open>closed"));
-    assert!(summary.contains("studio_command_palette_path=Cmd+Shift+P|Cmd+/:closed>command"));
-    assert!(summary.contains("studio_quick_open_path=Cmd+P:command>quick-open"));
+    assert!(summary.contains(&format!(
+        "studio_sidebar_toggle_path={}:open>closed>open",
+        input::studio_sidebar_toggle().label()
+    )));
+    assert!(summary.contains(&format!(
+        "studio_inspector_toggle_path={}:closed>open>closed",
+        input::studio_inspector_toggle().label()
+    )));
+    assert!(summary.contains(&format!(
+        "studio_bottom_panel_toggle_path={}:closed>open>closed",
+        input::studio_bottom_panel_toggle().label()
+    )));
+    assert!(summary.contains(&format!(
+        "studio_command_palette_path={}|{}:closed>command",
+        input::studio_command_palette().label(),
+        input::studio_command_palette_slash().label()
+    )));
+    assert!(summary.contains(&format!(
+        "studio_quick_open_path={}:command>quick-open",
+        input::studio_quick_open().label()
+    )));
     assert!(summary.contains("studio_workspace_focus_path=dashboard>plugins>settings>dashboard"));
     assert!(
         summary.contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target")

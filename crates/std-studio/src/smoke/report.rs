@@ -1,4 +1,5 @@
 use super::StudioSmokeReport;
+use std_egui::input;
 
 impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
@@ -226,6 +227,9 @@ impl StudioSmokeReport {
                 .contains("control=token-toolbar-buttons")
             && self.builder_toolbar_contract.contains("primary=plan|test")
             && self
+                .builder_toolbar_contract
+                .contains("shortcuts=save|simulate|test|history")
+            && self
                 .builder_properties_contract
                 .contains("properties=token-field-rows")
             && self
@@ -234,7 +238,12 @@ impl StudioSmokeReport {
             && self
                 .builder_properties_contract
                 .contains("primary=add|update")
-            && self.builder_keyboard_move_path == "Alt+Down:0>1;Alt+Up:1>0"
+            && self.builder_keyboard_move_path
+                == format!(
+                    "{}:0>1;{}:1>0",
+                    input::studio_workflow_step_move_down().label(),
+                    input::studio_workflow_step_move_up().label()
+                )
             && self.builder_selected_step == "Validate edited output"
             && self.builder_trace_status == "Completed"
             && self.builder_side_effect_model == "simulate=dry-run,run=audit-log"

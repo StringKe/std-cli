@@ -1,4 +1,5 @@
 use crate::views::{workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace};
+use std_egui::input;
 use std_studio::StudioApp;
 
 pub(crate) struct WorkflowBuilderSmoke {
@@ -47,7 +48,7 @@ pub(crate) fn run_workflow_builder_smoke(
         Some(serde_json::json!({"phase": "edited"})),
     )?;
     let moved = studio.move_workflow_step(&workflow_path, 1, 0)?;
-    let keyboard_move_path = "Alt+Down:0>1;Alt+Up:1>0".to_string();
+    let keyboard_move_path = workflow_step_keyboard_path();
     let simulated = studio.preview_workflow_path(&workflow_path)?.steps.len() == 2;
     let planned = studio.plan_workflow("terminal")?;
     let planned_run = studio.run_planned_workflow()?.clone();
@@ -90,4 +91,12 @@ pub(crate) fn run_workflow_builder_smoke(
         bottom_panel_contract: "batch-debug-open".to_string(),
         debug_panel_contract,
     })
+}
+
+fn workflow_step_keyboard_path() -> String {
+    format!(
+        "{}:0>1;{}:1>0",
+        input::studio_workflow_step_move_down().label(),
+        input::studio_workflow_step_move_up().label()
+    )
 }
