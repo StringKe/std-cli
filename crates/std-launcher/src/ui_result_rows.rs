@@ -149,11 +149,14 @@ fn paint_result_right(
 ) {
     ui.scope_builder(egui::UiBuilder::new().max_rect(layout.right_rect), |ui| {
         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if let Some(shortcut) = model.shortcut.as_deref() {
-                keycap(ui, shortcut);
-            }
             if model.action_hint.is_some() {
+                if let Some(shortcut) = model.primary_shortcut.as_deref() {
+                    keycap(ui, shortcut);
+                }
                 action_hint_label(ui, &model.action_label);
+            }
+            if let Some(shortcut) = model.direct_shortcut.as_deref() {
+                keycap(ui, shortcut);
             }
         });
     });
@@ -196,9 +199,18 @@ fn action_hint_label(ui: &mut egui::Ui, label: &str) {
 }
 
 #[cfg(test)]
-pub(crate) fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (String, &str) {
+pub(crate) fn result_row_keyboard_affordance(
+    model: &LauncherResultRowModel,
+) -> (String, String, &str) {
     (
-        model.shortcut.clone().unwrap_or_else(|| "none".to_string()),
+        model
+            .direct_shortcut
+            .clone()
+            .unwrap_or_else(|| "none".to_string()),
+        model
+            .primary_shortcut
+            .clone()
+            .unwrap_or_else(|| "none".to_string()),
         model.action_label.as_str(),
     )
 }

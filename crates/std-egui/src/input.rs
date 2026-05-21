@@ -80,7 +80,7 @@ impl KeyBinding {
 
 pub fn primary_modifier_label() -> &'static str {
     if cfg!(target_os = "macos") {
-        "Cmd"
+        "⌘"
     } else {
         "Ctrl"
     }
@@ -288,7 +288,11 @@ mod tests {
     fn keybinding_labels_use_platform_primary_modifier() {
         let label = launcher_action_panel().label();
 
-        assert!(label == "Cmd+K" || label == "Ctrl+K");
+        if cfg!(target_os = "macos") {
+            assert_eq!(label, "⌘+K");
+        } else {
+            assert_eq!(label, "Ctrl+K");
+        }
     }
 
     #[test]
@@ -317,6 +321,9 @@ mod tests {
         assert!(launcher_copy_command().label().ends_with("+C"));
         assert!(launcher_result_keycap(0).unwrap().ends_with("+1"));
         assert!(launcher_result_keycap(8).unwrap().ends_with("+9"));
+        if cfg!(target_os = "macos") {
+            assert_eq!(launcher_result_keycap(0).unwrap(), "⌘+1");
+        }
         assert!(launcher_result_keycap(9).is_none());
         assert_eq!(tab().label(), "Tab");
         assert_eq!(shift_tab().label(), "Shift+Tab");

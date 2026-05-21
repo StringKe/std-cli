@@ -4,7 +4,7 @@ use std_types::{ActionPreview, ActionType, SearchResult};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum LauncherResultListItem {
     Group { label: String },
-    Row(LauncherResultRowModel),
+    Row(Box<LauncherResultRowModel>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,7 +15,8 @@ pub(crate) struct LauncherResultRowModel {
     pub(crate) icon_label: String,
     pub(crate) group: String,
     pub(crate) position: String,
-    pub(crate) shortcut: Option<String>,
+    pub(crate) direct_shortcut: Option<String>,
+    pub(crate) primary_shortcut: Option<String>,
     pub(crate) action_hint: Option<String>,
     pub(crate) action_label: String,
     pub(crate) result_index: usize,
@@ -29,13 +30,7 @@ impl LauncherResultRowModel {
         total: usize,
         selected: bool,
     ) -> Self {
-        let shortcut = if selected {
-            Some(input::enter().label())
-        } else if index < 9 {
-            input::launcher_result_keycap(index)
-        } else {
-            None
-        };
+        let direct_shortcut = input::launcher_result_keycap(index);
         Self {
             title: result.action.name.clone(),
             subtitle: result_subtitle(result, preview),
@@ -43,7 +38,8 @@ impl LauncherResultRowModel {
             icon_label: action_icon_label(&result.action.action_type).to_string(),
             group: action_group(result),
             position: format!("{} of {total}", index + 1),
-            shortcut,
+            direct_shortcut,
+            primary_shortcut: selected.then(|| input::enter().label()),
             action_hint: selected.then(|| selected_action_hint(preview, &result.action.name)),
             action_label: selected_action_label(preview),
             result_index: index,
@@ -89,7 +85,7 @@ pub(crate) fn list_items(
                 label: model.group.clone(),
             });
         }
-        items.push(LauncherResultListItem::Row(model));
+        items.push(LauncherResultListItem::Row(Box::new(model)));
     }
     items
 }
@@ -189,7 +185,8 @@ mod tests {
             &items[3],
             LauncherResultListItem::Row(row)
                 if row.result_index == 1
-                    && row.shortcut.as_deref() == Some(input::enter().label().as_str())
+                    && row.direct_shortcut == input::launcher_result_keycap(1)
+                    && row.primary_shortcut.as_deref() == Some(input::enter().label().as_str())
         ));
     }
 
@@ -205,7 +202,11 @@ mod tests {
         assert_eq!(row.group, i18n::t("launcher.results.group.action_workflow"));
         assert_eq!(row.icon_label, "CMD");
         assert_eq!(
-            row.shortcut.as_deref(),
+            row.direct_shortcut.as_deref(),
+            input::launcher_result_keycap(0).as_deref()
+        );
+        assert_eq!(
+            row.primary_shortcut.as_deref(),
             Some(input::enter().label().as_str())
         );
         assert_eq!(row.action_label, "std index rebuild .");
@@ -228,11 +229,13 @@ mod tests {
         let tenth_row = LauncherResultRowModel::from_result(&tenth, None, 9, 10, false);
 
         assert_eq!(
-            third_row.shortcut.as_deref(),
+            third_row.direct_shortcut.as_deref(),
             input::launcher_result_keycap(2).as_deref()
         );
+        assert!(third_row.primary_shortcut.is_none());
         assert!(third_row.action_hint.is_none());
-        assert!(tenth_row.shortcut.is_none());
+        assert!(tenth_row.direct_shortcut.is_none());
+        assert!(tenth_row.primary_shortcut.is_none());
         assert_eq!(tenth_row.group, i18n::t("launcher.results.group.app_file"));
         assert_eq!(tenth_row.icon_label, "FIL");
     }

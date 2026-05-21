@@ -62,8 +62,8 @@ mod tests {
             LauncherResultListItem::Group {
                 label: "Action / Workflow".to_string(),
             },
-            LauncherResultListItem::Row(row("Index", 0)),
-            LauncherResultListItem::Row(row("Terminal", 1)),
+            LauncherResultListItem::Row(Box::new(row("Index", 0))),
+            LauncherResultListItem::Row(Box::new(row("Terminal", 1))),
         ];
 
         assert_eq!(item_height(&items[0]), 24.0);
@@ -77,11 +77,11 @@ mod tests {
             LauncherResultListItem::Group {
                 label: "Action / Workflow".to_string(),
             },
-            LauncherResultListItem::Row(row("Index", 0)),
+            LauncherResultListItem::Row(Box::new(row("Index", 0))),
             LauncherResultListItem::Group {
                 label: "App / File".to_string(),
             },
-            LauncherResultListItem::Row(row("Studio", 1)),
+            LauncherResultListItem::Row(Box::new(row("Studio", 1))),
         ];
 
         assert_eq!(visible_range(&items, 30.0, 84.0), (0, 4, 0.0));
@@ -90,7 +90,7 @@ mod tests {
     #[test]
     fn virtual_results_include_five_rows_of_overscan() {
         let items = (0..20)
-            .map(|index| LauncherResultListItem::Row(row("Item", index)))
+            .map(|index| LauncherResultListItem::Row(Box::new(row("Item", index))))
             .collect::<Vec<_>>();
 
         assert_eq!(visible_range(&items, 360.0, 396.0), (5, 17, 180.0));
@@ -104,7 +104,8 @@ mod tests {
             icon_label: "CMD".to_string(),
             group: "Action / Workflow".to_string(),
             position: format!("{} of 2", result_index + 1),
-            shortcut: None,
+            direct_shortcut: None,
+            primary_shortcut: None,
             action_hint: None,
             action_label: "Run".to_string(),
             result_index,

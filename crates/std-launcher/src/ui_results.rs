@@ -217,7 +217,7 @@ fn result_row(
 }
 
 #[cfg(test)]
-fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (String, &str) {
+fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (String, String, &str) {
     ui_result_rows::result_row_keyboard_affordance(model)
 }
 
@@ -241,12 +241,36 @@ mod tests {
 
         assert_eq!(
             result_row_keyboard_affordance(&row).0,
-            std_egui::input::enter().label()
+            std_egui::input::launcher_result_keycap(0).unwrap()
         );
         assert_eq!(
             result_row_keyboard_affordance(&row).1,
+            std_egui::input::enter().label()
+        );
+        assert_eq!(
+            result_row_keyboard_affordance(&row).2,
             i18n::t("launcher.action.run")
         );
+    }
+
+    #[test]
+    fn selected_result_row_keeps_number_shortcut_and_enter_primary_hint() {
+        let result = std_types::SearchResult {
+            action: std_types::Action::new(
+                "Open Studio",
+                "Open the workspace",
+                "test",
+                std_types::ActionType::AppLaunch,
+            ),
+            score: 1.0,
+            matched_fields: vec!["name".to_string()],
+        };
+        let row = LauncherResultRowModel::from_result(&result, None, 2, 5, true);
+        let (direct, primary, action) = result_row_keyboard_affordance(&row);
+
+        assert_eq!(direct, std_egui::input::launcher_result_keycap(2).unwrap());
+        assert_eq!(primary, std_egui::input::enter().label());
+        assert_eq!(action, i18n::t("launcher.action.run"));
     }
 
     #[test]
