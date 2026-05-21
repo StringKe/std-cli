@@ -1,3 +1,5 @@
+const IME_COMPOSING_ID: &str = "std-egui.ime-composing";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum KeyBinding {
     Mod(char),
@@ -227,14 +229,24 @@ pub fn pressed_mod_number(ctx: &egui::Context, max: usize) -> Option<usize> {
 }
 
 pub fn ime_composing(ctx: &egui::Context) -> bool {
-    ctx.input(|input| {
-        input.events.iter().any(|event| {
-            matches!(
-                event,
-                egui::Event::Ime(egui::ImeEvent::Enabled)
-                    | egui::Event::Ime(egui::ImeEvent::Preedit(_))
-            )
-        })
+    let frame_state = ctx.input(ime_composing_from_events);
+    ctx.data_mut(|data| {
+        let previous = data
+            .get_temp::<bool>(egui::Id::new(IME_COMPOSING_ID))
+            .unwrap_or(false);
+        let current = frame_state.unwrap_or(previous);
+        data.insert_temp(egui::Id::new(IME_COMPOSING_ID), current);
+        current
+    })
+}
+
+fn ime_composing_from_events(input: &egui::InputState) -> Option<bool> {
+    input.events.iter().fold(None, |state, event| match event {
+        egui::Event::Ime(egui::ImeEvent::Enabled)
+        | egui::Event::Ime(egui::ImeEvent::Preedit(_)) => Some(true),
+        egui::Event::Ime(egui::ImeEvent::Commit(_))
+        | egui::Event::Ime(egui::ImeEvent::Disabled) => Some(false),
+        _ => state,
     })
 }
 
@@ -315,5 +327,35 @@ mod tests {
         let ctx = egui::Context::default();
 
         assert!(!ime_composing(&ctx));
+    }
+
+    #[test]
+    fn ime_composing_persists_until_commit_or_disabled() {
+        let ctx = egui::Context::default();
+
+        run_with_ime_event(&ctx, egui::ImeEvent::Preedit("zhong".to_string()));
+        assert!(ime_composing(&ctx));
+
+        let _ = ctx.run(Default::default(), |_| {});
+        assert!(ime_composing(&ctx));
+
+        run_with_ime_event(&ctx, egui::ImeEvent::Commit("中".to_string()));
+        assert!(!ime_composing(&ctx));
+
+        run_with_ime_event(&ctx, egui::ImeEvent::Enabled);
+        assert!(ime_composing(&ctx));
+
+        run_with_ime_event(&ctx, egui::ImeEvent::Disabled);
+        assert!(!ime_composing(&ctx));
+    }
+
+    fn run_with_ime_event(ctx: &egui::Context, event: egui::ImeEvent) {
+        let _ = ctx.run(
+            egui::RawInput {
+                events: vec![egui::Event::Ime(event)],
+                ..Default::default()
+            },
+            |_| {},
+        );
     }
 }
