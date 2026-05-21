@@ -5,16 +5,24 @@ use crate::{
 };
 use eframe::egui;
 use std_egui::{
+    a11y::AccessibilityContext,
     tokens::{Color, Radius, Space, Text},
     LauncherViewModel,
 };
 
 pub(crate) fn group_header(ui: &mut egui::Ui, group: &str) {
     let ctx = ui.ctx().clone();
-    let (slot, _response) = ui.allocate_exact_size(
+    let (slot, response) = ui.allocate_exact_size(
         egui::vec2(ui.available_width(), ui_metrics::group_header_slot_height()),
         egui::Sense::hover(),
     );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            AccessibilityContext::from_env().launcher_result_group_label(group),
+        )
+    });
     let divider = ui_metrics::group_divider_rect(slot.width(), slot.min);
     let label_pos = egui::pos2(
         slot.left(),
@@ -225,6 +233,14 @@ mod tests {
     #[test]
     fn group_header_label_is_uppercase() {
         assert_eq!(group_header_label("Action / Workflow"), "ACTION / WORKFLOW");
+    }
+
+    #[test]
+    fn group_header_exposes_screen_reader_group_label() {
+        let source = include_str!("ui_result_rows.rs");
+
+        assert!(source.contains("launcher_result_group_label(group)"));
+        assert!(source.contains("WidgetType::Label"));
     }
 
     #[test]

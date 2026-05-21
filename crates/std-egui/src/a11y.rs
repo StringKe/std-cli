@@ -41,6 +41,10 @@ impl AccessibilityContext {
     ) -> String {
         format!("{title}, {subtitle}, {position} of {total}, press Enter to run")
     }
+
+    pub fn launcher_result_group_label(&self, group: &str) -> String {
+        format!("{group}, result group")
+    }
 }
 
 fn env_flag(name: &str) -> bool {
@@ -66,6 +70,10 @@ mod tests {
         assert_eq!(
             a11y.launcher_result_label("Rebuild Index", "Workflow", 1, 5),
             "Rebuild Index, Workflow, 1 of 5, press Enter to run"
+        );
+        assert_eq!(
+            a11y.launcher_result_group_label("Action / Workflow"),
+            "Action / Workflow, result group"
         );
     }
 
