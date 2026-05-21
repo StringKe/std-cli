@@ -27,6 +27,7 @@ pub(crate) struct StudioPreviewSmokeReport {
     pub(crate) commands: Vec<String>,
     pub(crate) states: Vec<String>,
     pub(crate) sizes: Vec<String>,
+    pub(crate) required_capture_states: Vec<String>,
     pub(crate) capture_contract: &'static str,
 }
 
@@ -49,6 +50,7 @@ impl StudioPreviewSmokeReport {
                 .iter()
                 .map(|scenario| preview_size_summary(scenario))
                 .collect(),
+            required_capture_states: required_capture_states(&scenarios),
             scenarios,
             capture_contract: preview_capture_contract(),
         }
@@ -59,17 +61,20 @@ impl StudioPreviewSmokeReport {
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
             && self.sizes.iter().all(|size| size.contains("PASS"))
+            && self.required_capture_states == required_capture_states(&self.scenarios)
+            && required_capture_states_pass(&self.required_capture_states)
             && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\npreview_capture_contract={}",
+            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios.join(","),
             self.commands.join(";"),
             self.states.join(";"),
             self.sizes.join(";"),
+            self.required_capture_states.join(","),
             self.capture_contract
         )
     }
@@ -178,6 +183,49 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
 
 fn preview_capture_contract() -> &'static str {
     "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,normal-viewport-close"
+}
+
+fn required_capture_states(scenarios: &[String]) -> Vec<String> {
+    [
+        "light-dashboard",
+        "dark-dashboard",
+        "light-workflow",
+        "dark-workflow",
+        "light-analysis",
+        "dark-analysis",
+        "light-plugins",
+        "dark-plugins",
+        "light-operations",
+        "dark-operations",
+        "light-settings",
+        "dark-settings",
+        "light-panes",
+        "dark-panes",
+    ]
+    .into_iter()
+    .filter(|required| scenarios.iter().any(|scenario| scenario == *required))
+    .map(str::to_string)
+    .collect()
+}
+
+fn required_capture_states_pass(states: &[String]) -> bool {
+    states
+        == [
+            "light-dashboard",
+            "dark-dashboard",
+            "light-workflow",
+            "dark-workflow",
+            "light-analysis",
+            "dark-analysis",
+            "light-plugins",
+            "dark-plugins",
+            "light-operations",
+            "dark-operations",
+            "light-settings",
+            "dark-settings",
+            "light-panes",
+            "dark-panes",
+        ]
 }
 
 pub(crate) fn studio_preview_window_title() -> &'static str {

@@ -80,6 +80,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     assert_eq!(report.sizes.len(), report.scenarios.len());
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
     assert_preview_summary_has_scenarios(&summary);
+    assert_required_capture_state_contract(&report);
     assert_preview_summary_has_surfaces(&summary);
     assert_preview_summary_has_viewport_policy(&summary);
 }
@@ -110,6 +111,32 @@ fn assert_preview_summary_has_surfaces(summary: &str) {
     assert!(summary.contains("inspector_token=bg/surface-1:#F2F5F8"));
     assert!(summary.contains("selected_token=accent/weak:#4E9CFF@46"));
     assert!(summary.contains("selected_token=accent/weak:#0A6BFF@31"));
+}
+
+fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
+    assert_eq!(
+        report.required_capture_states,
+        [
+            "light-dashboard",
+            "dark-dashboard",
+            "light-workflow",
+            "dark-workflow",
+            "light-analysis",
+            "dark-analysis",
+            "light-plugins",
+            "dark-plugins",
+            "light-operations",
+            "dark-operations",
+            "light-settings",
+            "dark-settings",
+            "light-panes",
+            "dark-panes",
+        ]
+    );
+
+    assert!(report.summary().contains(
+        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+    ));
 }
 
 fn assert_preview_summary_has_viewport_policy(summary: &str) {

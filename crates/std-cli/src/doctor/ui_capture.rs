@@ -39,6 +39,16 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "capture_studio light dashboard",
         "capture_studio dark dashboard",
         "capture_studio light workflow",
+        "capture_studio dark workflow",
+        "capture_studio light analysis",
+        "capture_studio dark analysis",
+        "capture_studio light plugins",
+        "capture_studio dark plugins",
+        "capture_studio light operations",
+        "capture_studio dark operations",
+        "capture_studio light settings",
+        "capture_studio dark settings",
+        "capture_studio light panes",
         "capture_studio dark panes",
     ] {
         check_text(&body, required)?;

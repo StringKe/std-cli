@@ -50,6 +50,12 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
             "capture matrix must include Launcher required state: {required}"
         );
     }
+    for required in studio_required_capture_states() {
+        assert!(
+            body.contains(required),
+            "capture matrix must include Studio required state: {required}"
+        );
+    }
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher");
     assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher");
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
@@ -87,6 +93,25 @@ fn launcher_required_capture_states() -> [&'static str; 8] {
         "capture_launcher dark defer",
         "capture_launcher light error",
         "capture_launcher dark error",
+    ]
+}
+
+fn studio_required_capture_states() -> [&'static str; 14] {
+    [
+        "capture_studio light dashboard",
+        "capture_studio dark dashboard",
+        "capture_studio light workflow",
+        "capture_studio dark workflow",
+        "capture_studio light analysis",
+        "capture_studio dark analysis",
+        "capture_studio light plugins",
+        "capture_studio dark plugins",
+        "capture_studio light operations",
+        "capture_studio dark operations",
+        "capture_studio light settings",
+        "capture_studio dark settings",
+        "capture_studio light panes",
+        "capture_studio dark panes",
     ]
 }
 

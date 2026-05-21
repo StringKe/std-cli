@@ -279,6 +279,21 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "selected_token=accent/weak",
         "host={},min={},workspace={}",
         "native_child_windows={},detached_panels={}",
+        "required_capture_states",
+        "light-dashboard",
+        "dark-dashboard",
+        "light-workflow",
+        "dark-workflow",
+        "light-analysis",
+        "dark-analysis",
+        "light-plugins",
+        "dark-plugins",
+        "light-operations",
+        "dark-operations",
+        "light-settings",
+        "dark-settings",
+        "light-panes",
+        "dark-panes",
     ] {
         check_text(&studio_preview, required)?;
     }
