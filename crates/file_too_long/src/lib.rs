@@ -27,6 +27,10 @@ fn is_forbidden_color_constructor(path: &str) -> bool {
             | "egui::Color32::from_rgba_premultiplied"
             | "Color32::from_rgba_unmultiplied"
             | "egui::Color32::from_rgba_unmultiplied"
+            | "Color32::from_black_alpha"
+            | "egui::Color32::from_black_alpha"
+            | "Color32::from_white_alpha"
+            | "egui::Color32::from_white_alpha"
     )
 }
 
@@ -80,7 +84,7 @@ declare_lint! {
 declare_lint! {
     /// ### What it does
     ///
-    /// Reports inline egui Color32 RGB/RGBA constructors outside the token palette.
+    /// Reports inline egui Color32 RGB/RGBA or alpha constructors outside the token palette.
     ///
     /// ### Why is this bad?
     ///
@@ -161,7 +165,7 @@ impl EarlyLintPass for FileTooLong {
             return;
         }
         cx.span_lint(NO_INLINE_VISUAL_VALUES, expr.span, |diag| {
-            diag.primary_message("inline Color32 RGB/RGBA constructor must use token palette");
+            diag.primary_message("inline Color32 constructor must use token palette");
         });
     }
 }
@@ -183,6 +187,7 @@ fn inline_visual_color_lint_matches_egui_rgb_constructors() {
     assert!(is_forbidden_color_constructor(
         "Color32::from_rgba_premultiplied"
     ));
+    assert!(is_forbidden_color_constructor("Color32::from_black_alpha"));
     assert!(!is_forbidden_color_constructor("Color::bg_surface_0"));
 }
 

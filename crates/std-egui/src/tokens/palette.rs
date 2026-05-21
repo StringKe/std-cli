@@ -37,3 +37,7 @@ pub(crate) const LIGHT_STATUS_DANGER: Color32 = Color32::from_rgb(200, 49, 43);
 pub(crate) fn color_with_alpha(color: Color32, alpha: u8) -> Color32 {
     Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
 }
+
+pub(crate) fn shadow_alpha(alpha: u8) -> Color32 {
+    Color32::from_black_alpha(alpha)
+}

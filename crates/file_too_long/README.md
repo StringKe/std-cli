@@ -5,7 +5,7 @@
 ## Rule
 
 - `file_too_long`: Rust source files must be at most 500 lines. Files above the limit fail the Dylint quality gate when run with `DYLINT_RUSTFLAGS="-D warnings"`.
-- `no_inline_visual_values`: product UI code must not call `Color32::from_rgb` or `Color32::from_rgba_*` directly. Visual colors must come from `std-egui::tokens`; `std-egui/src/tokens/palette.rs` is the only RGB/RGBA definition boundary.
+- `no_inline_visual_values`: product UI code must not call `Color32::from_rgb`, `Color32::from_rgba_*`, `Color32::from_black_alpha` or `Color32::from_white_alpha` directly. Visual colors must come from `std-egui::tokens`; `std-egui/src/tokens/palette.rs` is the only color constructor boundary.
 
 ## Usage
 

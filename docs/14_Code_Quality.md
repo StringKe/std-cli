@@ -38,7 +38,7 @@ cargo deny check
 cargo machete
 ```
 
-`clippy.toml` 负责函数行数、参数数量、认知复杂度和测试宽松规则。`crates/file_too_long` 通过 Dylint 强制 Rust 源文件不超过 500 行，并用 `no_inline_visual_values` 禁止业务 UI 代码直接调用 `Color32::from_rgb` / `Color32::from_rgba_*`。视觉颜色必须通过 `std-egui::tokens` 暴露，token palette 自身是唯一允许定义 RGB/RGBA 的位置。`std-cli` 的 file limit gate 扫描配置文件，强制不超过 300 行。Markdown 文档不做行数限制。`deny.toml` 负责依赖安全、许可证和来源策略。`cargo machete` 负责未使用依赖。
+`clippy.toml` 负责函数行数、参数数量、认知复杂度和测试宽松规则。`crates/file_too_long` 通过 Dylint 强制 Rust 源文件不超过 500 行，并用 `no_inline_visual_values` 禁止业务 UI 代码直接调用 `Color32::from_rgb`、`Color32::from_rgba_*`、`Color32::from_black_alpha` 或 `Color32::from_white_alpha`。视觉颜色必须通过 `std-egui::tokens` 暴露，token palette 自身是唯一允许定义 Color32 构造的位置。`std-cli` 的 file limit gate 扫描配置文件，强制不超过 300 行。Markdown 文档不做行数限制。`deny.toml` 负责依赖安全、许可证和来源策略。`cargo machete` 负责未使用依赖。
 
 Release 包还必须附带 v1.0 表面 smoke 证据：
 

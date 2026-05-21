@@ -1,6 +1,5 @@
-use super::typography::UiScale;
+use super::{palette, typography::UiScale};
 use crate::a11y::AccessibilityContext;
-use egui::Color32;
 
 pub struct Space;
 
@@ -87,7 +86,7 @@ impl Elevation {
         scaled_shadow(
             [0, scale.i8(8)],
             elevation_blur(scale.u8(24), a11y),
-            Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
+            palette::shadow_alpha(if ctx.style().visuals.dark_mode {
                 128
             } else {
                 26
@@ -108,7 +107,7 @@ impl Elevation {
         scaled_shadow(
             [0, scale.i8(16)],
             elevation_blur(scale.u8(48), a11y),
-            Color32::from_black_alpha(if ctx.style().visuals.dark_mode {
+            palette::shadow_alpha(if ctx.style().visuals.dark_mode {
                 153
             } else {
                 41
@@ -125,7 +124,7 @@ pub(crate) fn elevation_blur(default_blur: u8, a11y: &AccessibilityContext) -> u
     }
 }
 
-fn scaled_shadow(offset: [i8; 2], blur: u8, color: Color32) -> egui::Shadow {
+fn scaled_shadow(offset: [i8; 2], blur: u8, color: egui::Color32) -> egui::Shadow {
     egui::Shadow {
         offset,
         blur,

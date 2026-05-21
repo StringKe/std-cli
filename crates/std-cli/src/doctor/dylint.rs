@@ -11,6 +11,7 @@ pub(crate) fn check_dylint_lint(root: &Path) -> Result<(), CliError> {
         "NO_INLINE_VISUAL_VALUES",
         "Color32::from_rgb",
         "Color32::from_rgba_premultiplied",
+        "Color32::from_black_alpha",
         "std-egui tokens",
         "TOKEN_PALETTE_PATH",
     ] {
@@ -21,7 +22,7 @@ pub(crate) fn check_dylint_lint(root: &Path) -> Result<(), CliError> {
     let expected = read_required(&root.join("crates/file_too_long/ui/inline_visual_color.stderr"))?;
     check_text(
         &expected,
-        "inline Color32 RGB/RGBA constructor must use token palette",
+        "inline Color32 constructor must use token palette",
     )?;
     check_text(
         &read_required(&root.join("crates/file_too_long/Cargo.toml"))?,
