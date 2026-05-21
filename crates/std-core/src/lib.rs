@@ -90,12 +90,17 @@ impl StdCore {
         runner: impl Fn(&str, &[String]) -> Result<Output, io::Error> + Send + Sync + 'static,
     ) -> Self {
         let store = LocalStore::new(config.clone());
+        let command_runner: Arc<CommandRunner> = if std_test_mode_enabled() {
+            Arc::new(blocked_test_mode_command_runner)
+        } else {
+            Arc::new(runner)
+        };
         Self {
             registry: Arc::new(RwLock::new(ActionRegistry::new())),
             event_log: Arc::new(RwLock::new(EventLog::new())),
             tools: Arc::new(RwLock::new(ToolRegistry::new())),
             store,
-            command_runner: Arc::new(runner),
+            command_runner,
             config,
         }
     }
@@ -132,14 +137,13 @@ fn default_core_with_config(config: StdConfig) -> StdCore {
 
 #[cfg(test)]
 fn default_core_with_config(config: StdConfig) -> StdCore {
-    StdCore::with_config_and_command_runner(config, guarded_test_command_runner)
+    StdCore::with_config_and_command_runner(config, blocked_test_mode_command_runner)
 }
 
-#[cfg(test)]
-fn guarded_test_command_runner(program: &str, args: &[String]) -> Result<Output, io::Error> {
+fn blocked_test_mode_command_runner(program: &str, args: &[String]) -> Result<Output, io::Error> {
     Err(io::Error::new(
         io::ErrorKind::PermissionDenied,
-        format!("test command runner blocked external command: {program} {args:?}"),
+        format!("STD_TEST_MODE blocked external command: {program} {args:?}"),
     ))
 }
 
