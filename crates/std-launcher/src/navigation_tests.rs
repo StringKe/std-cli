@@ -88,6 +88,19 @@ fn tab_keys_cycle_launcher_focus_sections_without_wrapping_into_mouse_only_state
 }
 
 #[test]
+fn complete_selected_query_uses_current_selected_result_keyword() {
+    let mut state = LauncherState::new();
+    state.update_query("reb");
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+
+    state.handle_keyboard_input(LauncherKey::CompleteSelectedQuery, false);
+
+    assert_eq!(state.view.query, "rebuild index");
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
+}
+
+#[test]
 fn pointer_result_selection_suppresses_keyboard_focus_ring() {
     let mut state = LauncherState::new();
     state.update_query("index");

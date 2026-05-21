@@ -26,6 +26,10 @@ pub(crate) fn handle_search_shortcuts(
     }
     if input::shift_tab().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
+    } else if input::tab().pressed(ctx)
+        && state.focus_section == std_launcher::LauncherFocusSection::Search
+    {
+        state.handle_keyboard_input(LauncherKey::CompleteSelectedQuery, false);
     } else if input::tab().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::FocusNext, false);
     }

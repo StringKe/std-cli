@@ -11,6 +11,7 @@ mod hotkey;
 mod keyboard;
 mod keyboard_smoke;
 mod layout_contract;
+mod query_completion;
 mod query_mode;
 mod reports;
 mod semantics;

@@ -20,6 +20,7 @@ impl LauncherState {
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
         let focus_after_shift_tab = state.focus_section;
         let action_panel_focus_path = action_panel_focus_path(&mut state);
+        let completed_query = completed_query();
         let token_delete_query = token_delete_query();
         let empty_suggestion_keyboard_path = empty_suggestion_keyboard_path();
         let direct_trigger_status = state
@@ -57,6 +58,7 @@ impl LauncherState {
             focus_after_shift_tab,
             focus_path: "Search>Results>Search".to_string(),
             action_panel_focus_path,
+            completed_query,
             token_delete_query,
         }
     }
@@ -171,6 +173,13 @@ fn token_delete_query() -> String {
     let mut state = LauncherState::new();
     state.update_query("open terminal now");
     state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+    state.view.query
+}
+
+fn completed_query() -> String {
+    let mut state = LauncherState::new();
+    state.update_query("reb");
+    state.handle_keyboard_input(LauncherKey::CompleteSelectedQuery, false);
     state.view.query
 }
 

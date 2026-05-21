@@ -29,6 +29,21 @@ fn launcher_ui_keyboard_uses_input_ime_guard_before_actions() {
     assert!(guard_index < direct_trigger_index);
 }
 
+#[test]
+fn launcher_ui_tab_completes_query_before_focus_cycling_when_search_is_focused() {
+    let source = include_str!("ui_keyboard.rs");
+    let tab_index = source.find("input::tab().pressed(ctx)").unwrap();
+    let search_focus_index = source
+        .find("state.focus_section == std_launcher::LauncherFocusSection::Search")
+        .unwrap();
+    let complete_index = source.find("LauncherKey::CompleteSelectedQuery").unwrap();
+    let focus_index = source.find("LauncherKey::FocusNext").unwrap();
+
+    assert!(tab_index < complete_index);
+    assert!(search_focus_index < complete_index);
+    assert!(complete_index < focus_index);
+}
+
 fn assert_empty_suggestions(report: &LauncherKeyboardReport, summary: &str) {
     assert_eq!(
         report.empty_suggestion_keyboard_path,
@@ -101,9 +116,11 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
 fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
     assert_eq!(report.focus_path, "Search>Results>Search");
     assert_eq!(report.action_panel_focus_path, "ActionPanel>Search");
+    assert_eq!(report.completed_query, "rebuild index");
     assert_eq!(report.token_delete_query, "open terminal");
     assert!(summary.contains("focus_path=Search>Results>Search"));
     assert!(summary.contains("action_panel_focus_path=ActionPanel>Search"));
+    assert!(summary.contains("completed_query=rebuild index"));
     assert!(summary.contains("token_delete_query=open terminal"));
     assert!(summary.contains("navigation_boundary_path=top:0->0;bottom:"));
 }
