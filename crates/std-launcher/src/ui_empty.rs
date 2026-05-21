@@ -27,21 +27,86 @@ pub(crate) fn render_no_results(ui: &mut egui::Ui, query: &str) -> Option<EmptyA
 
 fn render_empty_query(ui: &mut egui::Ui) {
     let ctx = ui.ctx().clone();
-    ui.add_space(Space::lg() as f32);
-    ui.vertical_centered(|ui| {
-        ui.label(
-            egui::RichText::new(i18n::t("launcher.empty.ready.title"))
-                .font(Text::body())
-                .color(Color::fg_primary(&ctx))
-                .strong(),
-        );
+    ui.add_space(Space::xs() as f32);
+    ui.label(
+        egui::RichText::new(i18n::t("launcher.results.suggested_workflows.title"))
+            .font(Text::body())
+            .color(Color::fg_primary(&ctx))
+            .strong(),
+    );
+    ui.add_space(Space::xs() as f32);
+    for item in suggested_workflow_rows() {
+        suggested_row(ui, item);
         ui.add_space(Space::two_xs() as f32);
+    }
+    ui.add_space(Space::xs() as f32);
+    ui.horizontal_wrapped(|ui| {
         ui.label(
-            egui::RichText::new(i18n::t("launcher.empty.ready.detail"))
+            egui::RichText::new(empty_query_hint())
                 .font(Text::footnote())
                 .color(Color::fg_tertiary(&ctx)),
         );
     });
+}
+
+struct SuggestedWorkflowRow {
+    title: &'static str,
+    detail: &'static str,
+    shortcut: &'static str,
+}
+
+fn suggested_workflow_rows() -> [SuggestedWorkflowRow; 3] {
+    [
+        SuggestedWorkflowRow {
+            title: "Rebuild Index",
+            detail: "Refresh local project search data",
+            shortcut: "/",
+        },
+        SuggestedWorkflowRow {
+            title: "Ask Project",
+            detail: "Start a natural language analysis query",
+            shortcut: "?",
+        },
+        SuggestedWorkflowRow {
+            title: "Open Studio",
+            detail: "Continue in the full workspace",
+            shortcut: ">",
+        },
+    ]
+}
+
+fn suggested_row(ui: &mut egui::Ui, item: SuggestedWorkflowRow) {
+    let ctx = ui.ctx().clone();
+    let response = ui.allocate_response(
+        egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
+        egui::Sense::hover(),
+    );
+    ui.painter().rect_filled(
+        response.rect,
+        egui::CornerRadius::same(Radius::md()),
+        Color::bg_surface_1(&ctx),
+    );
+    let rect = response.rect.shrink2(egui::vec2(Space::sm() as f32, 0.0));
+    ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
+        ui.horizontal(|ui| {
+            keycap(ui, item.shortcut);
+            ui.label(
+                egui::RichText::new(item.title)
+                    .font(Text::body())
+                    .color(Color::fg_primary(&ctx))
+                    .strong(),
+            );
+            ui.label(
+                egui::RichText::new(item.detail)
+                    .font(Text::footnote())
+                    .color(Color::fg_secondary(&ctx)),
+            );
+        });
+    });
+}
+
+fn empty_query_hint() -> &'static str {
+    i18n::t("launcher.empty.ready.detail")
 }
 
 fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
@@ -138,5 +203,15 @@ mod tests {
     #[test]
     fn ask_ai_fallback_uses_inline_result_row_height() {
         assert_eq!(ui_metrics::ask_ai_row_height(), 34.0);
+    }
+
+    #[test]
+    fn empty_query_uses_suggested_workflow_rows_not_blank_window() {
+        let rows = suggested_workflow_rows();
+
+        assert_eq!(rows.len(), 3);
+        assert_eq!(rows[0].title, "Rebuild Index");
+        assert!(empty_query_hint().contains('/'));
+        assert!(empty_query_hint().contains('?'));
     }
 }

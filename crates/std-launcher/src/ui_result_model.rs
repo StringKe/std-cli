@@ -56,13 +56,6 @@ impl LauncherResultRowModel {
             .and_then(|(number, _)| number.parse().ok())
             .unwrap_or(0)
     }
-
-    pub(crate) fn position_total(&self) -> usize {
-        self.position
-            .split_once(" of ")
-            .and_then(|(_, total)| total.parse().ok())
-            .unwrap_or(0)
-    }
 }
 
 pub(crate) fn group_count(results: &[SearchResult]) -> usize {
