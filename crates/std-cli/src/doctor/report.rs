@@ -32,6 +32,7 @@ pub(crate) struct DoctorReport {
     pub(crate) launcher_ui_gates: Vec<&'static str>,
     pub(crate) studio_ui_gates: Vec<&'static str>,
     pub(crate) manual_desktop_acceptance: &'static str,
+    pub(crate) background_ui_acceptance: &'static str,
     pub(crate) desktop_automation_default: &'static str,
     pub(crate) ui_completion: &'static str,
     pub(crate) release_plan: &'static str,
@@ -42,7 +43,7 @@ pub(crate) struct DoctorReport {
 impl DoctorReport {
     pub(crate) fn text(&self) -> String {
         format!(
-            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nconfig_files={config_files}\nmax_config_file={max_config_file}:{max_config_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nui_docs={ui_docs}\nui_docs_count={ui_docs_count}\nlauncher_ui_gates={launcher_ui_gates}\nstudio_ui_gates={studio_ui_gates}\nmanual_desktop_acceptance={manual_desktop_acceptance}\ndesktop_automation_default={desktop_automation_default}\nui_completion={ui_completion}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
+            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nconfig_files={config_files}\nmax_config_file={max_config_file}:{max_config_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nui_docs={ui_docs}\nui_docs_count={ui_docs_count}\nlauncher_ui_gates={launcher_ui_gates}\nstudio_ui_gates={studio_ui_gates}\nmanual_desktop_acceptance={manual_desktop_acceptance}\nbackground_ui_acceptance={background_ui_acceptance}\ndesktop_automation_default={desktop_automation_default}\nui_completion={ui_completion}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
             status = self.status,
             storage = self.storage,
             actions = self.actions,
@@ -72,6 +73,7 @@ impl DoctorReport {
             launcher_ui_gates = self.launcher_ui_gates.join(","),
             studio_ui_gates = self.studio_ui_gates.join(","),
             manual_desktop_acceptance = self.manual_desktop_acceptance,
+            background_ui_acceptance = self.background_ui_acceptance,
             desktop_automation_default = self.desktop_automation_default,
             ui_completion = self.ui_completion,
             release_plan = self.release_plan,
@@ -111,6 +113,7 @@ impl DoctorReport {
             "launcher_ui_gates": self.launcher_ui_gates,
             "studio_ui_gates": self.studio_ui_gates,
             "manual_desktop_acceptance": self.manual_desktop_acceptance,
+            "background_ui_acceptance": self.background_ui_acceptance,
             "desktop_automation_default": self.desktop_automation_default,
             "ui_completion": self.ui_completion,
             "release_plan": self.release_plan,

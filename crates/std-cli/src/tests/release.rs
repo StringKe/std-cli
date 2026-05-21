@@ -169,6 +169,7 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
         "smoke=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std index coverage",
         "smoke=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std plugin check examples/plugins/hello-js",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
+        "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke",
         "quality_command=mise run quality",
         "command=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     ] {

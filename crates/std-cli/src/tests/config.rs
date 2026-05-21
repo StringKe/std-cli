@@ -61,11 +61,16 @@ fn config_commands_get_set_list_and_path() {
 
 #[test]
 fn config_command_rejects_invalid_environment_field() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = temp.path().join("std-cli.json");
+    std::fs::write(&config_path, serde_json::json!({}).to_string()).unwrap();
+    std::env::set_var("STDCLI_CONFIG", &config_path);
     std::env::set_var("STDCLI_ENABLE_AI", "yes");
 
     let error = run_cli(["std", "config", "get", "enable_ai"]).unwrap_err();
 
     std::env::remove_var("STDCLI_ENABLE_AI");
+    std::env::remove_var("STDCLI_CONFIG");
 
     assert!(error.to_string().contains("Config error"));
     assert!(error.to_string().contains("STDCLI_ENABLE_AI invalid"));
@@ -135,7 +140,21 @@ fn assert_doctor_ui_output(output: &str) {
     ));
     assert!(output.contains("desktop_automation_default=blocked"));
     assert!(output.contains("manual_desktop_acceptance=explicit_opt_in_only"));
+    assert!(output.contains("background_ui_acceptance=explicit_opt_in_only"));
     assert!(output.contains("ui_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
+}
+
+#[test]
+fn background_ui_smoke_is_skipped_in_test_mode() {
+    std::env::set_var("STD_ALLOW_BACKGROUND_UI_AUTOMATION", "0");
+
+    let output = run_cli(["std", "ui", "background-smoke"]).unwrap();
+
+    std::env::set_var("STD_ALLOW_BACKGROUND_UI_AUTOMATION", "0");
+
+    assert!(output.contains("background_ui_smoke SKIP"));
+    assert!(output.contains("reason=STD_TEST_MODE blocks background UI automation"));
+    assert!(output.contains("fallback=never_frontmost_desktop_click"));
 }
 
 #[test]
@@ -172,6 +191,10 @@ fn doctor_command_can_print_machine_readable_json() {
     assert_eq!(report["ui_docs_count"].as_u64(), Some(7));
     assert_eq!(
         report["manual_desktop_acceptance"].as_str(),
+        Some("explicit_opt_in_only")
+    );
+    assert_eq!(
+        report["background_ui_acceptance"].as_str(),
         Some("explicit_opt_in_only")
     );
     assert_eq!(

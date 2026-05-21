@@ -8,6 +8,7 @@ mod events;
 mod index;
 mod install;
 mod release;
+mod ui;
 mod workflow;
 
 use clap::{Parser, Subcommand};
@@ -28,6 +29,7 @@ use events::format_events;
 use index::{format_index_document, handle_files, handle_index, FilesCommand, IndexCommand};
 use install::{install_plan, install_run, install_verify};
 use release::{release_package, release_plan, release_verify};
+use ui::{handle_ui, UiCommand};
 use workflow::{
     handle_plan, handle_workflow, run_workflow, trigger_workflow_action, WorkflowCommand,
 };
@@ -61,6 +63,11 @@ pub enum Commands {
     Doctor {
         #[arg(long)]
         json: bool,
+    },
+    /// Run UI acceptance gates that are not part of default smoke.
+    Ui {
+        #[command(subcommand)]
+        command: UiCommand,
     },
     /// Search registered actions.
     Search {
@@ -226,6 +233,7 @@ fn dispatch_command(core: &StdCore, command: Commands) -> Result<String, CliErro
         Commands::Install { command } => handle_install(core, command),
         Commands::Release { command } => handle_release(core, command),
         Commands::Doctor { json } => doctor(core, json),
+        Commands::Ui { command } => Ok(handle_ui(command)),
         Commands::Search { query, limit } => search_actions(core, &query, limit),
         Commands::Preview { query } => preview_action(core, &query),
         Commands::Trigger {

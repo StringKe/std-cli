@@ -36,6 +36,7 @@ pub(crate) struct UiDoctor {
     pub(crate) launcher_gates: Vec<&'static str>,
     pub(crate) studio_gates: Vec<&'static str>,
     pub(crate) manual_desktop_acceptance: &'static str,
+    pub(crate) background_ui_acceptance: &'static str,
     pub(crate) desktop_automation_default: &'static str,
     pub(crate) completion: &'static str,
 }
@@ -57,6 +58,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
         launcher_gates: LAUNCHER_GATES.to_vec(),
         studio_gates: STUDIO_GATES.to_vec(),
         manual_desktop_acceptance: "explicit_opt_in_only",
+        background_ui_acceptance: "explicit_opt_in_only",
         desktop_automation_default: "blocked",
         completion: "INCOMPLETE_REAL_GUI_REQUIRED",
     })
@@ -84,6 +86,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --surface-smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --preview-smoke",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
+        "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke",
     ] {
         check_text(&body, required)?;
     }
@@ -141,6 +144,8 @@ fn check_studio_operations_evidence(root: &std::path::Path) -> Result<(), CliErr
 
 fn check_studio_keyboard_evidence(root: &std::path::Path) -> Result<(), CliError> {
     let keyboard = read_required(&root.join("crates/std-studio/src/smoke/keyboard_smoke.rs"))?;
+    let keyboard_tests = read_required(&root.join("crates/std-studio/src/smoke_tests.rs"))?;
+    let evidence = format!("{keyboard}\n{keyboard_tests}");
     for required in [
         "studio_keyboard_smoke=PASS",
         "Cmd+B:open>closed>open",
@@ -153,7 +158,7 @@ fn check_studio_keyboard_evidence(root: &std::path::Path) -> Result<(), CliError
         "?:coverage>query",
         "docs/20#studio-shortcuts",
     ] {
-        check_text(&keyboard, required)?;
+        check_text(&evidence, required)?;
     }
     let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
     check_text(&studio_smoke, "StudioKeyboardSmoke::run")?;
@@ -288,6 +293,11 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     check_text(&core, "pub fn desktop_integration_allowed()")?;
     check_text(&core, "cfg!(test) || std_test_mode_enabled()")?;
     check_text(&core, "STD_ALLOW_DESKTOP_AUTOMATION")?;
+    check_text(&core, "STD_ALLOW_BACKGROUND_UI_AUTOMATION")?;
+    let cli_ui = read_required(&root.join("crates/std-cli/src/ui.rs"))?;
+    check_text(&cli_ui, "STD_TEST_MODE blocks background UI automation")?;
+    check_text(&cli_ui, "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required")?;
+    check_text(&cli_ui, "fallback=never_frontmost_desktop_click")?;
     let guard = read_required(&root.join("crates/std-cli/tests/external_runner_guard.rs"))?;
     check_text(&guard, "binary_test_mode_blocks_dangerous_command_text")?;
     check_text(&guard, "binary_test_mode_blocks_registered_app_launch")
@@ -304,6 +314,7 @@ mod tests {
         assert_eq!(report.docs, "PASS");
         assert_eq!(report.docs_count, UI_DOCS.len());
         assert_eq!(report.manual_desktop_acceptance, "explicit_opt_in_only");
+        assert_eq!(report.background_ui_acceptance, "explicit_opt_in_only");
         assert_eq!(report.desktop_automation_default, "blocked");
         assert_eq!(report.completion, "INCOMPLETE_REAL_GUI_REQUIRED");
         assert!(report.launcher_gates.contains(&"preview-smoke"));

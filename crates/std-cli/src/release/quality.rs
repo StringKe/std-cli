@@ -49,6 +49,8 @@ const SMOKE_COMMANDS: [&str; 18] = [
 
 const MANUAL_DESKTOP_ACCEPTANCE: [&str; 1] =
     ["STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space"];
+const BACKGROUND_UI_ACCEPTANCE: [&str; 1] =
+    ["STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke"];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
     fs::create_dir_all(quality_dir)?;
@@ -124,6 +126,9 @@ fn quality_report() -> String {
     for command in MANUAL_DESKTOP_ACCEPTANCE {
         lines.push(format!("manual_desktop_acceptance={command}"));
     }
+    for command in BACKGROUND_UI_ACCEPTANCE {
+        lines.push(format!("background_ui_acceptance={command}"));
+    }
     lines.join("\n")
 }
 
@@ -161,6 +166,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std index coverage",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std plugin check examples/plugins/hello-js",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
+        "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(
