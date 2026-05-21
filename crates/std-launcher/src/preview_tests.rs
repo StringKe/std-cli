@@ -52,12 +52,27 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .iter()
         .all(|command| command.contains(" --ui-preview light ")
             || command.contains(" --ui-preview dark ")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("light-empty=PASS")));
     assert_eq!(report.sizes.len(), report.scenarios.len());
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
+    assert_preview_state_matrix(&report);
+    assert_preview_theme_tokens(&report);
+    assert_preview_affordance_contract(&report);
+    assert_preview_capture_contract(&report);
+}
+
+fn assert_preview_state_matrix(report: &LauncherPreviewSmokeReport) {
+    for state in [
+        "light-empty=PASS",
+        "dark-searching=PASS",
+        "light-loading=PASS",
+        "dark-loading=PASS",
+        "light-executing=PASS",
+        "light-no-results=PASS",
+        "dark-error=PASS",
+        "light-action-panel=PASS",
+    ] {
+        assert!(report.states.iter().any(|entry| entry.starts_with(state)));
+    }
     assert!(report
         .sizes
         .iter()
@@ -66,6 +81,9 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .sizes
         .iter()
         .any(|size| size.starts_with("dark-error=PASS")));
+}
+
+fn assert_preview_theme_tokens(report: &LauncherPreviewSmokeReport) {
     assert!(report
         .states
         .iter()
@@ -84,40 +102,25 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .states
         .iter()
         .any(|state| state.contains("selected_token=accent/weak:#4E9CFF@46")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("dark-searching=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("light-loading=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("dark-loading=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("light-executing=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("light-no-results=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("dark-error=PASS")));
-    assert!(report
-        .states
-        .iter()
-        .any(|state| state.starts_with("light-action-panel=PASS")));
-    assert!(report
-        .summary()
-        .contains("preview_capture_contract=capture-window,opt-in-only"));
-    assert!(report.summary().contains("blocked-in-STD_TEST_MODE"));
-    assert!(report.summary().contains("no-default-window"));
-    assert!(report.summary().contains("no-product-viewport"));
+}
+
+fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(summary.contains("suggested=3"));
+    assert!(summary.contains("ask_ai=true"));
+    assert!(summary.contains("feedback_actions=Copy,Retry"));
+    assert!(summary.contains("feedback_actions=Copy,Retry,OpenStudio"));
+    assert!(summary.contains("action_panel_actions=Run,Defer,Open in Studio,Copy command"));
+}
+
+fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(summary.contains("preview_capture_contract=capture-window,opt-in-only"));
+    assert!(summary.contains("blocked-in-STD_TEST_MODE"));
+    assert!(summary.contains("no-default-window"));
+    assert!(summary.contains("no-product-viewport"));
 }
 
 #[test]

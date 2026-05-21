@@ -1,4 +1,6 @@
-use crate::{preview::apply_preview_scenario, ui, ui_metrics};
+use crate::{
+    preview::apply_preview_scenario, preview_affordance::LauncherAffordanceSummary, ui, ui_metrics,
+};
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
 use std_launcher::LauncherState;
@@ -11,9 +13,12 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
         matches!(scenario.theme, "dark" | "light") && preview_state_passes(&state, scenario.state);
     let theme = ThemeMode::resolve(scenario.theme);
     let surface = preview_surface_summary(theme);
-    let passes = valid && preview_surface_passes(&surface, scenario.theme);
+    let affordance = LauncherAffordanceSummary::for_scenario(scenario.state);
+    let passes = valid
+        && preview_surface_passes(&surface, scenario.theme)
+        && affordance.passes(scenario.state);
     format!(
-        "{}={}:phase={:?},results={},feedback={},{}",
+        "{}={}:phase={:?},results={},feedback={},{},{}",
         scenario.label(),
         if passes { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -24,6 +29,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .as_ref()
             .map(|feedback| feedback.title.as_str())
             .unwrap_or("none"),
+        affordance.summary(),
         surface.summary()
     )
 }
