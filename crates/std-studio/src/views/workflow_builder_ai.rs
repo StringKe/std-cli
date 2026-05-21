@@ -14,8 +14,8 @@ pub(crate) enum WorkflowAiAction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorkflowAiSuggestion {
-    pub(crate) title: &'static str,
-    pub(crate) detail: &'static str,
+    pub(crate) title_key: &'static str,
+    pub(crate) detail_key: &'static str,
     pub(crate) step_name: &'static str,
     pub(crate) parameters: serde_json::Value,
 }
@@ -28,20 +28,20 @@ pub(crate) fn suggestions(goal: &str) -> Vec<WorkflowAiSuggestion> {
     };
     vec![
         WorkflowAiSuggestion {
-            title: "Collect context",
-            detail: "Insert a first step that gathers local context before acting.",
+            title_key: "studio.workflow_builder.ai.collect.title",
+            detail_key: "studio.workflow_builder.ai.collect.detail",
             step_name: "Collect context",
             parameters: serde_json::json!({"source": source, "mode": "read-only"}),
         },
         WorkflowAiSuggestion {
-            title: "Validate result",
-            detail: "Add a verification step before marking the workflow complete.",
+            title_key: "studio.workflow_builder.ai.validate.title",
+            detail_key: "studio.workflow_builder.ai.validate.detail",
             step_name: "Validate result",
             parameters: serde_json::json!({"gate": "verify-output", "required": true}),
         },
         WorkflowAiSuggestion {
-            title: "Record trace",
-            detail: "Capture the execution trace for History and Operations panes.",
+            title_key: "studio.workflow_builder.ai.trace.title",
+            detail_key: "studio.workflow_builder.ai.trace.detail",
             step_name: "Record trace",
             parameters: serde_json::json!({"target": "execution-history"}),
         },
@@ -87,23 +87,23 @@ fn suggestion_row(
             ui.horizontal_wrapped(|ui| {
                 ui.vertical(|ui| {
                     ui.label(
-                        egui::RichText::new(suggestion.title)
+                        egui::RichText::new(i18n::t(suggestion.title_key))
                             .font(Text::body())
                             .strong(),
                     );
                     ui.label(
-                        egui::RichText::new(suggestion.detail)
+                        egui::RichText::new(i18n::t(suggestion.detail_key))
                             .font(Text::caption())
                             .color(Color::fg_secondary(&ctx)),
                     );
                 });
-                if ui::quiet_button(ui, "Apply").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.ai.apply")).clicked() {
                     action = Some(WorkflowAiAction::Apply(index));
                 }
-                if ui::quiet_button(ui, "Insert").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.ai.insert")).clicked() {
                     action = Some(WorkflowAiAction::Insert(index));
                 }
-                if ui::quiet_button(ui, "Replace").clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.ai.replace")).clicked() {
                     action = Some(WorkflowAiAction::Replace(index));
                 }
             });
@@ -121,6 +121,10 @@ mod tests {
 
         assert_eq!(suggestions.len(), 3);
         assert_eq!(suggestions[0].step_name, "Collect context");
+        assert_eq!(
+            suggestions[0].title_key,
+            "studio.workflow_builder.ai.collect.title"
+        );
         assert_eq!(suggestions[0].parameters["source"], "release");
         assert_eq!(WorkflowAiAction::Apply(0), WorkflowAiAction::Apply(0));
         assert_eq!(WorkflowAiAction::Insert(1), WorkflowAiAction::Insert(1));

@@ -82,6 +82,34 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workflow_builder.ai.prompt") => {
             Some("Describe what this workflow should do")
         }
+        (Locale::ZhCn, "studio.workflow_builder.ai.apply") => Some("Apply"),
+        (Locale::EnUs, "studio.workflow_builder.ai.apply") => Some("Apply"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.insert") => Some("Insert"),
+        (Locale::EnUs, "studio.workflow_builder.ai.insert") => Some("Insert"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.replace") => Some("Replace"),
+        (Locale::EnUs, "studio.workflow_builder.ai.replace") => Some("Replace"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.collect.title") => Some("Collect context"),
+        (Locale::EnUs, "studio.workflow_builder.ai.collect.title") => Some("Collect context"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.collect.detail") => {
+            Some("先读取本地上下文，再执行动作")
+        }
+        (Locale::EnUs, "studio.workflow_builder.ai.collect.detail") => {
+            Some("Gather local context before acting")
+        }
+        (Locale::ZhCn, "studio.workflow_builder.ai.validate.title") => Some("Validate result"),
+        (Locale::EnUs, "studio.workflow_builder.ai.validate.title") => Some("Validate result"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.validate.detail") => Some("完成前加入验证步骤"),
+        (Locale::EnUs, "studio.workflow_builder.ai.validate.detail") => {
+            Some("Verify output before completion")
+        }
+        (Locale::ZhCn, "studio.workflow_builder.ai.trace.title") => Some("Record trace"),
+        (Locale::EnUs, "studio.workflow_builder.ai.trace.title") => Some("Record trace"),
+        (Locale::ZhCn, "studio.workflow_builder.ai.trace.detail") => {
+            Some("把运行 trace 写入 History 和 Operations")
+        }
+        (Locale::EnUs, "studio.workflow_builder.ai.trace.detail") => {
+            Some("Record execution trace for History and Operations")
+        }
         _ => None,
     }
 }
@@ -125,6 +153,17 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.workflow_builder.ai.title" => Some("AI Assist"),
         "studio.workflow_builder.ai.detail" => Some("plan from goal"),
         "studio.workflow_builder.ai.prompt" => Some("Describe what this workflow should do"),
+        "studio.workflow_builder.ai.apply" => Some("Apply"),
+        "studio.workflow_builder.ai.insert" => Some("Insert"),
+        "studio.workflow_builder.ai.replace" => Some("Replace"),
+        "studio.workflow_builder.ai.collect.title" => Some("Collect context"),
+        "studio.workflow_builder.ai.collect.detail" => Some("Gather local context before acting"),
+        "studio.workflow_builder.ai.validate.title" => Some("Validate result"),
+        "studio.workflow_builder.ai.validate.detail" => Some("Verify output before completion"),
+        "studio.workflow_builder.ai.trace.title" => Some("Record trace"),
+        "studio.workflow_builder.ai.trace.detail" => {
+            Some("Record execution trace for History and Operations")
+        }
         _ => None,
     }
 }
