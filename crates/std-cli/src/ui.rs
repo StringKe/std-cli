@@ -2,6 +2,12 @@ use clap::Subcommand;
 
 const HARNESS_BUNDLE_ID: &str = "dev.std-cli.background-ui-harness";
 const HARNESS_WINDOW_TITLE: &str = "std-cli Background UI Harness";
+const BACKGROUND_DRIVER: [&str; 4] = [
+    "per-process-event-tap",
+    "appKitDefined-activation-primer",
+    "window-center-primer",
+    "postToPid-target-pid-input",
+];
 
 #[derive(Debug, Subcommand)]
 pub enum UiCommand {
@@ -62,7 +68,7 @@ fn background_smoke(config: BackgroundSmokeConfig) -> String {
     }
     background_smoke_report(
         "SKIP",
-        "background UI driver pending isolated harness implementation",
+        "background UI driver requires isolated harness implementation",
         &config,
     )
 }
@@ -101,7 +107,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         format!("window_id={}", opt_u32(config.window_id)),
         format!("bundle_id={}", opt_str(config.bundle_id.as_deref())),
         format!("window_title={}", opt_str(config.window_title.as_deref())),
-        "driver=AX_or_CGEvent_postToPid_after_explicit_opt_in".to_string(),
+        format!("driver_sequence={}", BACKGROUND_DRIVER.join(",")),
         "cursor_visual=floating_cursor_not_required_for_event_delivery".to_string(),
         "tap_order=install_previous_and_target_taps_before_primer".to_string(),
         "activation=event_tap_then_appkit_defined_primer_then_center_primer".to_string(),

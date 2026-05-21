@@ -140,6 +140,51 @@ fn binary_entrypoints_sanitize_desktop_opt_ins_before_dispatch() {
 }
 
 #[test]
+fn background_ui_smoke_accepts_only_isolated_harness_identity() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+
+    for required in [
+        "const HARNESS_BUNDLE_ID: &str = \"dev.std-cli.background-ui-harness\";",
+        "const HARNESS_WINDOW_TITLE: &str = \"std-cli Background UI Harness\";",
+        "bundle_id outside whitelist",
+        "window_title outside whitelist",
+        "STD_TEST_MODE blocks background UI automation",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
+        "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,System_Settings",
+        "fallback=never_frontmost_desktop_click",
+    ] {
+        assert!(
+            body.contains(required),
+            "background UI smoke must be harness-only and deny real apps: {required}"
+        );
+    }
+}
+
+#[test]
+fn background_ui_smoke_documents_safe_background_event_route() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
+
+    for required in [
+        "per-process-event-tap",
+        "appKitDefined-activation-primer",
+        "window-center-primer",
+        "postToPid-target-pid-input",
+        "tap_order=install_previous_and_target_taps_before_primer",
+        "focus_guard=drop_previous_app_deactivation",
+        "focus_policy=allow_target_activation_only",
+        "event_route=postToPid_target_pid_only",
+        "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
+    ] {
+        assert!(
+            body.contains(required),
+            "background UI smoke must keep the isolated event route explicit: {required}"
+        );
+    }
+}
+
+#[test]
 fn std_core_does_not_use_build_env_as_runtime_test_mode_guard() {
     let root = workspace_root();
     let body = fs::read_to_string(root.join("crates/std-core/src/lib.rs")).unwrap();
