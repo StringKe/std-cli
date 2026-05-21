@@ -4,6 +4,7 @@ use std_egui::{
     i18n,
     tokens::{Color, Radius, Space},
 };
+use std_studio::WorkspacePaneId;
 
 const HOST_CONTROL_WIDTH: f32 = Space::XL as f32;
 const HOST_CONTROL_HEIGHT: f32 = Space::LG as f32;
@@ -59,7 +60,7 @@ impl StudioEguiApp {
             self.status = i18n::t("studio.status.workspace_refreshed").to_string();
         }
         if ui::quiet_button(ui, i18n::t("studio.chrome.open_current_pane")).clicked() {
-            let id = self.app.open_workspace_pane(self.app.active_pane);
+            let id = self.open_current_pane_from_host_chrome();
             self.status = format!(
                 "{} {}",
                 i18n::t("studio.status.workspace_pane_opened"),
@@ -74,6 +75,14 @@ impl StudioEguiApp {
             ))
             .color(ui::muted_text(ui.ctx())),
         );
+    }
+
+    fn open_current_pane_from_host_chrome(&mut self) -> WorkspacePaneId {
+        debug_assert!(!self.app.workspace_policy.allows_native_child_windows());
+        debug_assert!(!self.app.workspace_policy.allows_detached_panels());
+        let id = self.app.open_workspace_pane(self.app.active_pane);
+        self.pending_workspace_focus = Some(id);
+        id
     }
 }
 
@@ -213,4 +222,36 @@ fn paint_maximize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
         stroke,
         egui::StrokeKind::Inside,
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std_studio::StudioPane;
+
+    #[test]
+    fn host_chrome_open_current_pane_uses_internal_workspace_pane() {
+        let mut app = StudioEguiApp::default();
+        app.app.switch_pane(StudioPane::Plugins);
+
+        let id = app.open_current_pane_from_host_chrome();
+
+        assert_eq!(app.app.focused_pane, Some(id));
+        assert_eq!(app.pending_workspace_focus, Some(id));
+        assert_eq!(app.app.open_workspace_panes().count(), 1);
+        assert!(!app.app.workspace_policy.allows_native_child_windows());
+        assert!(!app.app.workspace_policy.allows_detached_panels());
+    }
+
+    #[test]
+    fn host_chrome_open_current_pane_deduplicates_same_workspace() {
+        let mut app = StudioEguiApp::default();
+        app.app.switch_pane(StudioPane::Plugins);
+
+        let first = app.open_current_pane_from_host_chrome();
+        let second = app.open_current_pane_from_host_chrome();
+
+        assert_eq!(first, second);
+        assert_eq!(app.app.open_workspace_panes().count(), 1);
+    }
 }
