@@ -15,13 +15,15 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     let surface = preview_surface_summary(theme);
     let affordance = LauncherAffordanceSummary::for_scenario(scenario.state);
     let state_surface = PreviewStateSurface::for_state(&state, scenario.state);
+    let carrier = PreviewCarrierSurface::for_state(&state);
     let passes = valid
         && preview_surface_passes(&surface, scenario.theme)
         && affordance.passes(scenario.state)
         && state_surface.passes(scenario.state)
+        && carrier.passes()
         && feedback_status_icon_passes(scenario.state);
     format!(
-        "{}={}:phase={:?},results={},feedback={},{},{},{},{}",
+        "{}={}:phase={:?},results={},feedback={},{},{},{},{},{}",
         scenario.label(),
         if passes { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -34,6 +36,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .unwrap_or("none"),
         affordance.summary(),
         state_surface.summary(),
+        carrier.summary(),
         feedback_status_icon_summary(scenario.state),
         surface.summary()
     )
@@ -163,6 +166,36 @@ struct PreviewStateSurface {
     action_bar: &'static str,
     feedback: &'static str,
     popover: &'static str,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewCarrierSurface {
+    clear_color: String,
+    viewport_frame: String,
+    panel_only: bool,
+}
+
+impl PreviewCarrierSurface {
+    fn for_state(state: &LauncherState) -> Self {
+        Self {
+            clear_color: std_launcher::launcher_clear_color_contract(),
+            viewport_frame: std_launcher::launcher_viewport_frame_contract(),
+            panel_only: ui_metrics::panel_is_only_visible_surface(state),
+        }
+    }
+
+    fn passes(&self) -> bool {
+        self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
+            && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
+            && self.panel_only
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "carrier_contract={},{};panel_only={};forbidden=black_or_white_carrier_background",
+            self.clear_color, self.viewport_frame, self.panel_only
+        )
+    }
 }
 
 impl PreviewStateSurface {

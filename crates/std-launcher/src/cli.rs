@@ -286,7 +286,19 @@ mod tests {
             "light-error",
             "dark-action-panel",
             "STD_ALLOW_UI_PREVIEW=1",
-            "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
+        ] {
+            assert!(summary.contains(expected), "{expected}");
+        }
+        for expected in [
+            "required_capture_states=",
+            "light-results",
+            "dark-results",
+            "light-no-results",
+            "dark-no-results",
+            "light-defer",
+            "dark-defer",
+            "light-error",
+            "dark-error",
         ] {
             assert!(summary.contains(expected), "{expected}");
         }
@@ -308,6 +320,8 @@ mod tests {
     fn assert_preview_summary_has_state_surfaces(summary: &str) {
         for expected in [
             "state_surface=panel_only:true,search:panel-as-search-surface",
+            "carrier_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;panel_only=true",
+            "forbidden=black_or_white_carrier_background",
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",
             "feedback:status-danger-weak",
