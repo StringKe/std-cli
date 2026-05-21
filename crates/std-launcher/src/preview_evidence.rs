@@ -11,10 +11,11 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
         matches!(scenario.theme, "dark" | "light") && preview_state_passes(&state, scenario.state);
     let theme = ThemeMode::resolve(scenario.theme);
     let surface = preview_surface_summary(theme);
+    let passes = valid && preview_surface_passes(&surface, scenario.theme);
     format!(
         "{}={}:phase={:?},results={},feedback={},{}",
         scenario.label(),
-        if valid { "PASS" } else { "FAIL" },
+        if passes { "PASS" } else { "FAIL" },
         state.view.phase,
         state.view.results.len(),
         state
@@ -23,7 +24,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .as_ref()
             .map(|feedback| feedback.title.as_str())
             .unwrap_or("none"),
-        surface
+        surface.summary()
     )
 }
 
@@ -103,16 +104,50 @@ fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
     }
 }
 
-fn preview_surface_summary(theme: ThemeMode) -> String {
+fn preview_surface_summary(theme: ThemeMode) -> PreviewSurfaceSummary {
     let ctx = egui::Context::default();
     apply_theme(&ctx, theme);
-    format!(
-        "panel={},search={},result={},selected={}",
-        color_hex(Color::bg_surface_0(&ctx)),
-        color_hex(Color::bg_surface_1(&ctx)),
-        color_hex(Color::bg_surface_1(&ctx)),
-        color_hex_alpha(Color::accent_weak(&ctx))
-    )
+    PreviewSurfaceSummary {
+        panel: color_hex(Color::bg_surface_0(&ctx)),
+        search: color_hex(Color::bg_surface_1(&ctx)),
+        result: color_hex(Color::bg_surface_1(&ctx)),
+        selected: color_hex_alpha(Color::accent_weak(&ctx)),
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewSurfaceSummary {
+    panel: String,
+    search: String,
+    result: String,
+    selected: String,
+}
+
+impl PreviewSurfaceSummary {
+    fn summary(&self) -> String {
+        format!(
+            "panel_token=bg/surface-0:{},search_token=bg/surface-1:{},result_token=bg/surface-1:{},selected_token=accent/weak:{}",
+            self.panel, self.search, self.result, self.selected
+        )
+    }
+}
+
+fn preview_surface_passes(surface: &PreviewSurfaceSummary, theme: &str) -> bool {
+    match theme {
+        "dark" => {
+            surface.panel == "#1C1E22"
+                && surface.search == "#24272C"
+                && surface.result == "#24272C"
+                && surface.selected == "#4E9CFF@46"
+        }
+        "light" => {
+            surface.panel == "#FAFBFD"
+                && surface.search == "#F2F5F8"
+                && surface.result == "#F2F5F8"
+                && surface.selected == "#0A6BFF@31"
+        }
+        _ => false,
+    }
 }
 
 fn color_hex(color: egui::Color32) -> String {

@@ -250,5 +250,23 @@ mod tests {
         assert!(report.summary().contains("light-error"));
         assert!(report.summary().contains("dark-action-panel"));
         assert!(report.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
+        assert!(report
+            .summary()
+            .contains("panel_token=bg/surface-0:#FAFBFD"));
+        assert!(report
+            .summary()
+            .contains("panel_token=bg/surface-0:#1C1E22"));
+        assert!(report
+            .summary()
+            .contains("search_token=bg/surface-1:#F2F5F8"));
+        assert!(report
+            .summary()
+            .contains("search_token=bg/surface-1:#24272C"));
+        assert!(report
+            .summary()
+            .contains("selected_token=accent/weak:#0A6BFF@31"));
+        assert!(report
+            .summary()
+            .contains("selected_token=accent/weak:#4E9CFF@46"));
     }
 }
