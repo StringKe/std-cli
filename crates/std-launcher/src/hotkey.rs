@@ -50,11 +50,8 @@ pub struct GlobalHotkeyRuntime {
 
 impl GlobalHotkeyRuntime {
     pub fn register(plan: HotkeyRegistrationPlan) -> Result<Self, String> {
-        if std_core::std_test_mode_enabled() {
-            return Err(
-                "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in"
-                    .to_string(),
-            );
+        if !std_core::desktop_automation_allowed() {
+            return Err(hotkey_block_reason());
         }
         let hotkey = global_hotkey::hotkey::HotKey::try_from(plan.accelerator.as_str())
             .map_err(|error| error.to_string())?;
@@ -140,17 +137,14 @@ impl HotkeySmokeReport {
 }
 
 pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
-    if hotkey_smoke_blocked_by_test_mode() {
+    if hotkey_smoke_blocked() {
         return HotkeySmokeReport {
             status: "SKIP",
             accelerator: accelerator.to_string(),
             registered: false,
             register_ms: 0,
             budget_ms: HOTKEY_BUDGET_MS,
-            error: Some(
-                "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in"
-                    .to_string(),
-            ),
+            error: Some(hotkey_block_reason()),
         };
     }
     let plan = HotkeyRegistrationPlan {
@@ -183,8 +177,17 @@ pub fn hotkey_smoke(accelerator: &str) -> HotkeySmokeReport {
     }
 }
 
-fn hotkey_smoke_blocked_by_test_mode() -> bool {
-    cfg!(test) || std_core::std_test_mode_enabled()
+fn hotkey_smoke_blocked() -> bool {
+    !std_core::desktop_automation_allowed()
+}
+
+fn hotkey_block_reason() -> String {
+    if std_core::std_test_mode_enabled() {
+        "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in".to_string()
+    } else {
+        "global hotkey registration requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in"
+            .to_string()
+    }
 }
 
 pub(crate) fn normalize_modifier(value: &str) -> Option<String> {

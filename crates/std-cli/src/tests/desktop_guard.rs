@@ -150,6 +150,51 @@ fn std_core_external_runner_requires_desktop_opt_in() {
     );
 }
 
+#[test]
+fn plugin_shell_runner_requires_desktop_opt_in() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-core/src/plugins/command.rs")).unwrap();
+
+    assert!(
+        body.contains("if !crate::desktop_automation_allowed()"),
+        "shell plugins must require STD_ALLOW_DESKTOP_AUTOMATION before spawning sh"
+    );
+    assert_order(&body, "desktop_automation_allowed", "Command::new(\"sh\")");
+}
+
+#[test]
+fn launcher_hotkey_registration_requires_desktop_opt_in() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("crates/std-launcher/src/hotkey.rs")).unwrap();
+
+    assert!(
+        body.contains("if !std_core::desktop_automation_allowed()"),
+        "global hotkey registration must require STD_ALLOW_DESKTOP_AUTOMATION"
+    );
+    assert_order(
+        &body,
+        "desktop_automation_allowed",
+        "GlobalHotKeyManager::new",
+    );
+}
+
+fn assert_order(body: &str, first: &str, second: &str) {
+    let first_index = body.find(first).unwrap();
+    let second_index = body.find(second).unwrap();
+    assert!(
+        first_index < second_index,
+        "{first} must appear before {second}"
+    );
+}
+
 fn forbidden_test_app_terms() -> Vec<String> {
     vec![
         ["1", "Password"].join(""),

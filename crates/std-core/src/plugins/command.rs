@@ -21,14 +21,20 @@ pub(crate) fn run_shell_with_timeout(
     command: &str,
     timeout: Duration,
 ) -> Result<PluginCommandOutput, CoreError> {
-    if crate::std_test_mode_enabled() {
-        return Err(CoreError::PluginPermissionDenied(
-            "STD_TEST_MODE blocked shell plugin command".to_string(),
-        ));
+    if !crate::desktop_automation_allowed() {
+        return Err(CoreError::PluginPermissionDenied(shell_block_reason()));
     }
     let mut process = Command::new("sh");
     process.arg("-c").arg(command);
     run_command_with_timeout(process, None, timeout, "shell")
+}
+
+fn shell_block_reason() -> String {
+    if crate::std_test_mode_enabled() {
+        "STD_TEST_MODE blocked shell plugin command".to_string()
+    } else {
+        "shell plugin command requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in".to_string()
+    }
 }
 
 pub(crate) fn run_command_with_timeout(
