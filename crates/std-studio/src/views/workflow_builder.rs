@@ -347,6 +347,14 @@ impl StudioEguiApp {
         }
     }
 
+    pub(crate) fn move_workflow_builder_step_by_keyboard(&mut self, offset: isize) {
+        if let Some(path) = self.workflow_selected_path.clone() {
+            self.move_selected_step(&path, offset);
+        } else {
+            self.move_planned_step(offset);
+        }
+    }
+
     pub(crate) fn remove_selected_step(&mut self, path: &Path) {
         let Some(index) = self.selected_step_index() else {
             return;

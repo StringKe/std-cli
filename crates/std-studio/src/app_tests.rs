@@ -74,6 +74,33 @@ fn workspace_focus_cycle_commands_switch_internal_tabs() {
 }
 
 #[test]
+fn workflow_builder_keyboard_shortcuts_move_selected_loaded_step() {
+    let mut app = test_app();
+    let path = app
+        .app
+        .create_workflow("Keyboard Move", "Move selected step")
+        .unwrap();
+    app.app
+        .add_workflow_step(&path, "First", serde_json::json!({"order": 1}))
+        .unwrap();
+    app.app
+        .add_workflow_step(&path, "Second", serde_json::json!({"order": 2}))
+        .unwrap();
+    app.workflow_selected_path = Some(path);
+    app.workflow_edit_index = "0".to_string();
+
+    app.move_workflow_builder_step_by_keyboard(1);
+
+    assert_eq!(app.workflow_edit_index, "1");
+    assert!(app.status.contains("moved step"));
+
+    app.move_workflow_builder_step_by_keyboard(-1);
+
+    assert_eq!(app.workflow_edit_index, "0");
+    assert!(app.status.contains("moved step"));
+}
+
+#[test]
 fn workspace_focus_ids_are_stable_for_accessibility() {
     assert_eq!(
         crate::workspace_panes::workspace_pane_focus_id(WorkspacePaneId::new(7)),

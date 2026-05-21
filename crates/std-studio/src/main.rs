@@ -144,6 +144,7 @@ impl eframe::App for StudioEguiApp {
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
+        self.handle_workflow_builder_keyboard(ctx);
         self.handle_analysis_workbench_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
@@ -173,6 +174,18 @@ impl StudioEguiApp {
                     queue.push(command);
                 }
             }
+        }
+    }
+
+    fn handle_workflow_builder_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        if std_egui::input::studio_workflow_step_move_up().pressed(ctx) {
+            self.move_workflow_builder_step_by_keyboard(-1);
+        }
+        if std_egui::input::studio_workflow_step_move_down().pressed(ctx) {
+            self.move_workflow_builder_step_by_keyboard(1);
         }
     }
 }

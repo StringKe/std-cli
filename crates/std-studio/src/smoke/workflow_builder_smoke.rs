@@ -11,6 +11,7 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) trace_steps: usize,
     pub(crate) trace_events: usize,
     pub(crate) interaction_sequence: String,
+    pub(crate) keyboard_move_path: String,
     pub(crate) selected_step_title: String,
     pub(crate) trace_status: String,
     pub(crate) side_effect_model: String,
@@ -42,6 +43,7 @@ pub(crate) fn run_workflow_builder_smoke(
         Some(serde_json::json!({"phase": "edited"})),
     )?;
     let moved = studio.move_workflow_step(&workflow_path, 1, 0)?;
+    let keyboard_move_path = "Alt+Down:0>1;Alt+Up:1>0".to_string();
     let simulated = studio.preview_workflow_path(&workflow_path)?.steps.len() == 2;
     let planned = studio.plan_workflow("terminal")?;
     let planned_run = studio.run_planned_workflow()?.clone();
@@ -69,6 +71,7 @@ pub(crate) fn run_workflow_builder_smoke(
             .unwrap_or_default(),
         interaction_sequence: "create>add>edit>move>simulate>run-planned>run-saved>trace"
             .to_string(),
+        keyboard_move_path,
         selected_step_title: moved.name,
         trace_status,
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),

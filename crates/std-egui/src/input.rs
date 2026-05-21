@@ -4,6 +4,7 @@ pub enum KeyBinding {
     ModShift(char),
     ModNamed(egui::Key),
     ModShiftNamed(egui::Key),
+    AltNamed(egui::Key),
     ShiftNamed(egui::Key),
     Plain(egui::Key),
     Named(&'static str),
@@ -28,6 +29,7 @@ impl KeyBinding {
                     named_key_label(key)
                 )
             }
+            Self::AltNamed(key) => format!("Alt+{}", named_key_label(key)),
             Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
             Self::Named(name) => name.to_string(),
@@ -47,6 +49,13 @@ impl KeyBinding {
             }
             Self::ModShiftNamed(key) => {
                 input.modifiers.command && input.modifiers.shift && input.key_pressed(key)
+            }
+            Self::AltNamed(key) => {
+                !input.modifiers.command
+                    && !input.modifiers.shift
+                    && input.modifiers.alt
+                    && !input.modifiers.ctrl
+                    && input.key_pressed(key)
             }
             Self::ShiftNamed(key) => {
                 !input.modifiers.command
@@ -109,6 +118,14 @@ pub fn studio_analysis_relation_toggle() -> KeyBinding {
 
 pub fn studio_analysis_qa_focus() -> KeyBinding {
     KeyBinding::Plain(egui::Key::Questionmark)
+}
+
+pub fn studio_workflow_step_move_up() -> KeyBinding {
+    KeyBinding::AltNamed(egui::Key::ArrowUp)
+}
+
+pub fn studio_workflow_step_move_down() -> KeyBinding {
+    KeyBinding::AltNamed(egui::Key::ArrowDown)
 }
 
 pub fn studio_bottom_panel_toggle() -> KeyBinding {
@@ -236,6 +253,8 @@ mod tests {
         assert!(studio_settings().label().ends_with("+,"));
         assert!(studio_analysis_relation_toggle().label().ends_with("+L"));
         assert_eq!(studio_analysis_qa_focus().label(), "?");
+        assert_eq!(studio_workflow_step_move_up().label(), "Alt+Up");
+        assert_eq!(studio_workflow_step_move_down().label(), "Alt+Down");
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));

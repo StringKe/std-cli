@@ -90,6 +90,7 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains(
         "builder_interaction_sequence=create>add>edit>move>simulate>run-planned>run-saved>trace"
     ));
+    assert!(summary.contains("builder_keyboard_move_path=Alt+Down:0>1;Alt+Up:1>0"));
     assert!(summary.contains("builder_selected_step=Validate edited output"));
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
