@@ -45,7 +45,9 @@ use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 use studio_open::{
     run_studio_open_request, studio_open_blocked_summary, studio_open_request_from_args,
 };
-use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
+use studio_smoke_cli::{
+    surface_smoke_from_args, theme_smoke_from_args, workspace_policy_smoke_from_args,
+};
 use workspace_panes::WorkspaceCommandQueue;
 
 pub(crate) struct StudioEguiApp {
@@ -206,6 +208,10 @@ fn main() -> eframe::Result<()> {
         return Ok(());
     }
     if let Some(report) = workspace_policy_smoke_from_args(&args) {
+        println!("{}", report.output());
+        return Ok(());
+    }
+    if let Some(report) = surface_smoke_from_args(&args) {
         println!("{}", report.output());
         return Ok(());
     }
