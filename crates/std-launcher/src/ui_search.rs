@@ -170,8 +170,15 @@ fn render_search_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
 }
 
 fn render_search_spinner(ui: &mut egui::Ui) {
-    let (rect, _response) =
+    let (rect, response) =
         ui.allocate_exact_size(ui_metrics::search_icon_size(), egui::Sense::hover());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::ProgressIndicator,
+            ui.is_enabled(),
+            i18n::t("launcher.search.loading"),
+        )
+    });
     ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
         ui.centered_and_justified(|ui| {
             ui.spinner();
@@ -191,7 +198,12 @@ fn render_executing_indicator(ui: &mut egui::Ui, ctx: &egui::Context) {
     });
     let geometry = ui_metrics::search_icon_geometry(rect);
     ui.painter()
-        .circle_filled(geometry.center, geometry.radius, Color::accent_base(ctx));
+        .circle_filled(geometry.center, geometry.radius, Color::accent_weak(ctx));
+    ui.painter().circle_stroke(
+        geometry.center,
+        geometry.radius,
+        egui::Stroke::new(1.5, Color::accent_base(ctx)),
+    );
 }
 
 #[cfg(test)]
@@ -264,6 +276,17 @@ mod tests {
             search_indicator_for_phase(LauncherPhase::Executing),
             SearchIndicator::Executing
         );
+    }
+
+    #[test]
+    fn search_loading_and_executing_indicators_expose_status_semantics() {
+        let source = include_str!("ui_search.rs");
+
+        assert!(source.contains("WidgetType::ProgressIndicator"));
+        assert!(source.contains("launcher.search.loading"));
+        assert!(source.contains("launcher.results.executing.title"));
+        assert!(source.contains("Color::accent_weak"));
+        assert!(source.contains("circle_stroke"));
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {

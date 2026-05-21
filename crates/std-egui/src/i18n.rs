@@ -47,6 +47,14 @@ mod tests {
         );
         assert_eq!(translate(Locale::EnUs, "launcher.search.icon"), "Search");
         assert_eq!(
+            translate(Locale::EnUs, "launcher.search.loading"),
+            "Searching"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.search.loading"),
+            "正在搜索"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "launcher.feedback.failed"),
             "Unable to run"
         );
