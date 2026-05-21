@@ -156,6 +156,41 @@ fn scan_binary_spawn_blocks(path: &Path, body: &str, violations: &mut Vec<String
     }
 }
 
+pub(crate) fn scan_rs_files_for_desktop_process_commands(dir: &Path, violations: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if path.is_dir() {
+            scan_rs_files_for_desktop_process_commands(&path, violations);
+            continue;
+        }
+        if !eligible_test_source(&path) {
+            continue;
+        }
+        let body = fs::read_to_string(&path).unwrap();
+        for term in forbidden_desktop_process_terms() {
+            if body.contains(&term) {
+                violations.push(format!("{} contains {}", path.display(), term));
+            }
+        }
+    }
+}
+
+fn forbidden_desktop_process_terms() -> Vec<String> {
+    vec![
+        "Command::new(\"open\")".to_string(),
+        "Command::new(\"/usr/bin/open\")".to_string(),
+        "Command::new(\"osascript\")".to_string(),
+        "Command::new(\"/usr/bin/osascript\")".to_string(),
+        "Command::new(\"screencapture\")".to_string(),
+        "Command::new(\"/usr/sbin/screencapture\")".to_string(),
+        "Command::new(\"/bin/ps\")".to_string(),
+        "Command::new(\"ps\")".to_string(),
+    ]
+}
+
 pub(crate) fn scan_rs_files_for_unsafe_opt_ins(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
