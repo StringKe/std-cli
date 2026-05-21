@@ -1,6 +1,7 @@
 mod analysis;
 mod analysis_rows;
 mod analysis_state;
+mod analysis_tab_content;
 mod app_rows;
 mod app_view;
 mod bottom_panel;

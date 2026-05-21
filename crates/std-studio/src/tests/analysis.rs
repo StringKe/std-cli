@@ -50,7 +50,11 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
     );
 
     assert_eq!(
-        model.tabs.iter().map(|tab| tab.key).collect::<Vec<_>>(),
+        model
+            .tabs
+            .iter()
+            .map(|tab| tab.tab.key())
+            .collect::<Vec<_>>(),
         ["overview", "components", "symbols", "relations", "qa"]
     );
     assert_eq!(
@@ -65,15 +69,15 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
     assert!(model
         .tabs
         .iter()
-        .any(|tab| tab.key == "components" && tab.count >= 1));
+        .any(|tab| tab.tab == AnalysisWorkbenchTab::Components && tab.count >= 1));
     assert!(model
         .tabs
         .iter()
-        .any(|tab| tab.key == "relations" && tab.count >= 1));
+        .any(|tab| tab.tab == AnalysisWorkbenchTab::Relations && tab.count >= 1));
     assert!(model
         .tabs
         .iter()
-        .any(|tab| tab.key == "qa" && tab.count >= 1));
+        .any(|tab| tab.tab == AnalysisWorkbenchTab::Qa && tab.count >= 1));
     assert_eq!(model.overview_cards.len(), 3);
     assert!(!model.search_hits.is_empty());
     assert!(model
@@ -83,6 +87,21 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
     assert_eq!(
         model.inspection_summary.as_ref().unwrap().entity,
         "workbench-project"
+    );
+}
+
+#[test]
+fn analysis_workbench_tabs_have_stable_default_and_order() {
+    assert_eq!(
+        AnalysisWorkbenchTab::default(),
+        AnalysisWorkbenchTab::Overview
+    );
+    assert_eq!(
+        AnalysisWorkbenchTab::all()
+            .into_iter()
+            .map(AnalysisWorkbenchTab::key)
+            .collect::<Vec<_>>(),
+        ["overview", "components", "symbols", "relations", "qa"]
     );
 }
 

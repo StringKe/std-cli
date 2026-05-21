@@ -2,6 +2,48 @@ use std_index::{
     IndexAnswer, IndexCoverageReport, IndexDocument, IndexInspection, IndexSearchResult,
 };
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum AnalysisWorkbenchTab {
+    #[default]
+    Overview,
+    Components,
+    Symbols,
+    Relations,
+    Qa,
+}
+
+impl AnalysisWorkbenchTab {
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Overview => "overview",
+            Self::Components => "components",
+            Self::Symbols => "symbols",
+            Self::Relations => "relations",
+            Self::Qa => "qa",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::Overview => "Overview",
+            Self::Components => "Components",
+            Self::Symbols => "Symbols",
+            Self::Relations => "Relations",
+            Self::Qa => "Q&A",
+        }
+    }
+
+    pub fn all() -> [Self; 5] {
+        [
+            Self::Overview,
+            Self::Components,
+            Self::Symbols,
+            Self::Relations,
+            Self::Qa,
+        ]
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisWorkbenchViewModel {
     pub tabs: Vec<AnalysisTab>,
@@ -14,8 +56,7 @@ pub struct AnalysisWorkbenchViewModel {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisTab {
-    pub key: &'static str,
-    pub label: &'static str,
+    pub tab: AnalysisWorkbenchTab,
     pub count: usize,
 }
 
@@ -96,33 +137,21 @@ fn tabs(
         .map(|document| document.relations.len())
         .or_else(|| inspection.map(|inspection| inspection.relation_count))
         .unwrap_or(0);
-    vec![
-        AnalysisTab {
-            key: "overview",
-            label: "Overview",
-            count: usize::from(document.is_some() || inspection.is_some()),
-        },
-        AnalysisTab {
-            key: "components",
-            label: "Components",
-            count: components,
-        },
-        AnalysisTab {
-            key: "symbols",
-            label: "Symbols",
-            count: search.len(),
-        },
-        AnalysisTab {
-            key: "relations",
-            label: "Relations",
-            count: relations,
-        },
-        AnalysisTab {
-            key: "qa",
-            label: "Q&A",
-            count: answer.map(|answer| answer.sources.len()).unwrap_or(0),
-        },
-    ]
+    AnalysisWorkbenchTab::all()
+        .into_iter()
+        .map(|tab| AnalysisTab {
+            tab,
+            count: match tab {
+                AnalysisWorkbenchTab::Overview => {
+                    usize::from(document.is_some() || inspection.is_some())
+                }
+                AnalysisWorkbenchTab::Components => components,
+                AnalysisWorkbenchTab::Symbols => search.len(),
+                AnalysisWorkbenchTab::Relations => relations,
+                AnalysisWorkbenchTab::Qa => answer.map(|answer| answer.sources.len()).unwrap_or(0),
+            },
+        })
+        .collect()
 }
 
 fn overview_cards(

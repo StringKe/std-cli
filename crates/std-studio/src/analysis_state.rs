@@ -9,6 +9,7 @@ pub(crate) struct AnalysisUiState {
     pub(crate) search_results: Vec<std_index::IndexSearchResult>,
     pub(crate) last_inspection: Option<std_index::IndexInspection>,
     pub(crate) coverage_report: Option<std_index::IndexCoverageReport>,
+    pub(crate) active_tab: std_studio::AnalysisWorkbenchTab,
 }
 
 impl AnalysisUiState {
@@ -16,6 +17,7 @@ impl AnalysisUiState {
         Self {
             path: ".".to_string(),
             query: "workflow".to_string(),
+            active_tab: std_studio::AnalysisWorkbenchTab::Overview,
             ..Self::default()
         }
     }

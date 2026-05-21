@@ -1,10 +1,11 @@
-use crate::{analysis_rows, ui, StudioEguiApp};
+use crate::{
+    analysis_tab_content::{self, AnalysisTabRenderState},
+    ui, StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
-use std_index::{
-    IndexAnswer, IndexCoverageReport, IndexDocument, IndexInspection, IndexSearchResult,
-};
-use std_studio::AnalysisWorkbenchViewModel;
+use std_index::{IndexAnswer, IndexCoverageReport, IndexInspection, IndexSearchResult};
+use std_studio::{AnalysisWorkbenchTab, AnalysisWorkbenchViewModel};
 
 const ANALYSIS_PANEL_GAP: f32 = Space::SM as f32;
 
@@ -67,7 +68,7 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_active_analysis(&self, ui: &mut egui::Ui) {
+    fn render_active_analysis(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -75,17 +76,9 @@ impl StudioEguiApp {
                 i18n::t("studio.analysis.entity.detail"),
             );
             let model = self.analysis_workbench_model();
-            render_analysis_tabs(ui, &model);
+            render_analysis_tabs(ui, &model, &mut self.analysis.active_tab);
             ui.add_space(Space::XS as f32);
-            let Some(document) = &self.app.active_analysis else {
-                ui::empty_state(ui, i18n::t("studio.analysis.entity.empty"));
-                return;
-            };
-            render_overview_cards(ui, &model);
-            ui.add_space(Space::XS as f32);
-            render_document_overview(ui, document);
-            ui.add_space(Space::XS as f32);
-            render_components(ui, document);
+            analysis_tab_content::render_tab_content(ui, self.analysis_render_state(&model));
         });
     }
 
@@ -115,15 +108,12 @@ impl StudioEguiApp {
                 &self.analysis.answer,
                 180.0,
             );
-            let model = self.analysis_workbench_model();
-            render_answer_sources(ui, &model);
             render_output(
                 ui,
                 i18n::t("studio.analysis.search"),
                 &self.analysis.search_output,
                 180.0,
             );
-            render_search_hits(ui, &model);
         });
     }
 
@@ -137,12 +127,15 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.analysis.coverage.refresh")).clicked() {
                 self.refresh_analysis_coverage();
             }
-            let model = self.analysis_workbench_model();
-            render_coverage_layers(ui, &model);
-            ui.add_space(Space::XS as f32);
             if self.analysis.coverage_output.is_empty() {
                 match self.cached_analysis_coverage_report() {
-                    Ok(report) => render_coverage_report(ui, report),
+                    Ok(report) => {
+                        let model = self.analysis_workbench_model();
+                        let mut state = self.analysis_render_state(&model);
+                        state.active_tab = AnalysisWorkbenchTab::Overview;
+                        state.coverage = Some(report);
+                        analysis_tab_content::render_tab_content(ui, state);
+                    }
                     Err(error) => {
                         ui.label(error.to_string());
                     }
@@ -166,6 +159,20 @@ impl StudioEguiApp {
             &self.analysis.search_results,
             self.analysis.last_inspection.as_ref(),
         )
+    }
+
+    fn analysis_render_state<'a>(
+        &'a self,
+        model: &'a AnalysisWorkbenchViewModel,
+    ) -> AnalysisTabRenderState<'a> {
+        AnalysisTabRenderState {
+            active_tab: self.analysis.active_tab,
+            model,
+            document: self.app.active_analysis.as_ref(),
+            coverage: self.analysis.coverage_report.as_ref(),
+            answer: &self.analysis.answer,
+            search_output: &self.analysis.search_output,
+        }
     }
 
     fn cached_analysis_coverage_report(
@@ -234,94 +241,35 @@ impl StudioEguiApp {
     }
 }
 
-fn render_analysis_tabs(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
+fn render_analysis_tabs(
+    ui: &mut egui::Ui,
+    model: &AnalysisWorkbenchViewModel,
+    active_tab: &mut AnalysisWorkbenchTab,
+) {
     ui.horizontal_wrapped(|ui| {
         for tab in &model.tabs {
-            ui::chip(
-                ui,
-                &format!("{} {}", tab.label, tab.count),
-                ui::panel_alt(ui.ctx()),
-            );
-        }
-    });
-}
-
-fn render_overview_cards(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
-    ui.horizontal_wrapped(|ui| {
-        for card in &model.overview_cards {
-            ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-                ui::metric(ui, card.title, &card.value, &card.detail);
-            });
-        }
-    });
-}
-
-fn render_coverage_layers(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
-    ui.horizontal_wrapped(|ui| {
-        for layer in &model.coverage_layers {
-            let fill = if layer.complete {
-                ui::ok_bg(ui.ctx())
+            let selected = tab.tab == *active_tab;
+            let label = format!("{} {}", tab.tab.label(), tab.count);
+            let fill = if selected {
+                ui::selected_bg(ui.ctx())
             } else {
-                ui::warn_bg(ui.ctx())
+                ui::panel_alt(ui.ctx())
             };
-            ui::chip(ui, &format!("{} {}", layer.label, layer.count), fill);
+            let response = ui.add(egui::Button::new(label.clone()).fill(fill));
+            if selected {
+                response.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::Button,
+                        ui.is_enabled(),
+                        format!("selected {label}"),
+                    )
+                });
+            }
+            if response.clicked() {
+                *active_tab = tab.tab;
+            }
         }
     });
-}
-
-fn render_answer_sources(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
-    if model.answer_sources.is_empty() {
-        return;
-    }
-    ui.label(egui::RichText::new("Sources").strong());
-    for source in &model.answer_sources {
-        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::metric(
-                ui,
-                &source.entity,
-                format!("{} evidence", source.evidence_count),
-                &source.detail,
-            );
-        });
-    }
-}
-
-fn render_search_hits(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
-    if model.search_hits.is_empty() {
-        return;
-    }
-    ui.label(egui::RichText::new("Search hits").strong());
-    for hit in &model.search_hits {
-        ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-            ui::metric(ui, &hit.title, &hit.score, &hit.detail);
-        });
-    }
-}
-
-fn render_document_overview(ui: &mut egui::Ui, document: &IndexDocument) {
-    analysis_rows::document_overview_row(ui, document);
-    ui.label(&document.overview.summary);
-}
-
-fn render_components(ui: &mut egui::Ui, document: &IndexDocument) {
-    egui::ScrollArea::vertical()
-        .max_height(450.0)
-        .show(ui, |ui| {
-            for component in document.components.iter().take(12) {
-                analysis_rows::component_row(ui, component);
-            }
-        });
-}
-
-fn render_coverage_report(ui: &mut egui::Ui, report: &IndexCoverageReport) {
-    analysis_rows::coverage_summary(ui, report.total, report.complete, report.incomplete);
-    egui::ScrollArea::vertical()
-        .max_height(460.0)
-        .show(ui, |ui| {
-            for item in &report.items {
-                analysis_rows::coverage_item_row(ui, item);
-            }
-        });
 }
 
 fn render_output(ui: &mut egui::Ui, title: &str, value: &str, height: f32) {

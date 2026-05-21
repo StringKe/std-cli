@@ -15,7 +15,7 @@ mod workspace_policy;
 
 pub use analysis_workbench::{
     AnalysisAnswerSource, AnalysisCoverageLayer, AnalysisInspectionSummary, AnalysisOverviewCard,
-    AnalysisSearchHit, AnalysisTab, AnalysisWorkbenchViewModel,
+    AnalysisSearchHit, AnalysisTab, AnalysisWorkbenchTab, AnalysisWorkbenchViewModel,
 };
 pub use ops_evidence::{OpsEvidence, OpsGate, OpsStatus};
 use std_core::{StdConfig, StdCore};
