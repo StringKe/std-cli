@@ -294,7 +294,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn add_step_to_selected(&mut self, path: &Path) {
+    pub(crate) fn add_step_to_selected(&mut self, path: &Path) {
         let Ok(parameters) = serde_json::from_str(&self.workflow_step_parameters) else {
             self.status = "invalid step parameters JSON".to_string();
             return;
@@ -308,7 +308,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn update_selected_step(&mut self, path: &Path) {
+    pub(crate) fn update_selected_step(&mut self, path: &Path) {
         let Some(index) = self.selected_step_index() else {
             return;
         };
@@ -327,7 +327,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn move_selected_step(&mut self, path: &Path, offset: isize) {
+    pub(crate) fn move_selected_step(&mut self, path: &Path, offset: isize) {
         let Some(index) = self.selected_step_index() else {
             return;
         };
@@ -341,35 +341,13 @@ impl StudioEguiApp {
         }
     }
 
-    fn remove_selected_step(&mut self, path: &Path) {
+    pub(crate) fn remove_selected_step(&mut self, path: &Path) {
         let Some(index) = self.selected_step_index() else {
             return;
         };
         match self.app.remove_workflow_step(path, index) {
             Ok(step) => self.status = format!("removed step {}", step.name),
             Err(error) => self.status = error.to_string(),
-        }
-    }
-
-    fn apply_loaded_step_actions(
-        &mut self,
-        path: &Path,
-        actions: workflow_builder_properties::StepPropertyActions,
-    ) {
-        if actions.add_requested() {
-            self.add_step_to_selected(path);
-        }
-        if actions.update_requested() {
-            self.update_selected_step(path);
-        }
-        if actions.move_up_requested() {
-            self.move_selected_step(path, -1);
-        }
-        if actions.move_down_requested() {
-            self.move_selected_step(path, 1);
-        }
-        if actions.remove_requested() {
-            self.remove_selected_step(path);
         }
     }
 
@@ -407,7 +385,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn remove_planned_step(&mut self) {
+    pub(crate) fn remove_planned_step(&mut self) {
         let Some(index) = self.selected_step_index() else {
             return;
         };
@@ -417,24 +395,6 @@ impl StudioEguiApp {
                 self.status = format!("removed planned step {}", step.name);
             }
             Err(error) => self.status = error.to_string(),
-        }
-    }
-
-    fn apply_planned_step_actions(
-        &mut self,
-        actions: workflow_builder_properties::StepPropertyActions,
-    ) {
-        if actions.update_requested() {
-            self.update_planned_step();
-        }
-        if actions.move_up_requested() {
-            self.move_planned_step(-1);
-        }
-        if actions.move_down_requested() {
-            self.move_planned_step(1);
-        }
-        if actions.remove_requested() {
-            self.remove_planned_step();
         }
     }
 
