@@ -204,7 +204,9 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
         "preview_surface_summary",
+        "preview_size_summary",
         "panel={},search={},result={},selected={}",
+        "bottom_clearance",
         "selected=",
     ] {
         check_text(&launcher, required)?;

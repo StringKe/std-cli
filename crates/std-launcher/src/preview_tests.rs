@@ -56,6 +56,18 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .states
         .iter()
         .any(|state| state.starts_with("light-empty=PASS")));
+    assert_eq!(report.sizes.len(), report.scenarios.len());
+    assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
+    assert!(report
+        .sizes
+        .iter()
+        .any(|size| size.starts_with("light-defer=PASS")));
+    assert!(report
+        .sizes
+        .iter()
+        .any(|size| size.starts_with("dark-error=PASS")));
+    assert!(report.summary().contains("preview_sizes=light-empty=PASS"));
+    assert!(report.summary().contains("bottom_clearance=0"));
     assert!(report
         .states
         .iter()

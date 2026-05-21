@@ -1,5 +1,6 @@
 use crate::app::LauncherApp;
 use crate::ui;
+use crate::ui_metrics;
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
@@ -25,6 +26,7 @@ pub(crate) struct LauncherPreviewSmokeReport {
     pub(crate) scenarios: Vec<LauncherPreviewScenario>,
     pub(crate) commands: Vec<String>,
     pub(crate) states: Vec<String>,
+    pub(crate) sizes: Vec<String>,
     pub(crate) capture_contract: &'static str,
 }
 
@@ -37,6 +39,7 @@ impl LauncherPreviewSmokeReport {
                 .map(LauncherPreviewScenario::command)
                 .collect(),
             states: scenarios.iter().map(preview_state_summary).collect(),
+            sizes: scenarios.iter().map(preview_size_summary).collect(),
             scenarios,
             capture_contract: preview_capture_contract(),
         }
@@ -46,12 +49,13 @@ impl LauncherPreviewSmokeReport {
         self.scenarios == preview_matrix()
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
+            && self.sizes.iter().all(|size| size.contains("PASS"))
             && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_capture_contract={}",
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios
                 .iter()
@@ -60,6 +64,7 @@ impl LauncherPreviewSmokeReport {
                 .join(","),
             self.commands.join(";"),
             self.states.join(";"),
+            self.sizes.join(";"),
             self.capture_contract
         )
     }
@@ -323,6 +328,31 @@ fn preview_state_summary(scenario: &LauncherPreviewScenario) -> String {
             .map(|feedback| feedback.title.as_str())
             .unwrap_or("none"),
         surface
+    )
+}
+
+fn preview_size_summary(scenario: &LauncherPreviewScenario) -> String {
+    let mut state = LauncherState::new();
+    apply_preview_scenario(&mut state, scenario.state);
+    let viewport = ui::launcher_window_inner_size(&state);
+    let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
+    let rect = ui_metrics::panel_rect(available, &state);
+    let body = ui_metrics::body_height(&state, viewport.y);
+    let fits = rect.min.y == 0.0
+        && rect.max.y <= viewport.y
+        && (rect.height() - viewport.y).abs() < 0.5
+        && viewport.x >= rect.width()
+        && body >= 0.0;
+    format!(
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={}",
+        scenario.label(),
+        if fits { "PASS" } else { "FAIL" },
+        viewport.x.round() as u32,
+        viewport.y.round() as u32,
+        rect.width().round() as u32,
+        rect.height().round() as u32,
+        body.round() as u32,
+        (viewport.y - rect.max.y).round() as i32
     )
 }
 
