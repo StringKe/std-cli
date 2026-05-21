@@ -8,7 +8,7 @@ use std_egui::{
     tokens::{Color, Space, Text},
     LauncherPhase,
 };
-use std_launcher::LauncherState;
+use std_launcher::{ActionBarPreviewSummary, LauncherState};
 
 pub(crate) fn render(
     ui: &mut egui::Ui,
@@ -114,11 +114,11 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         return;
     }
     if let Some(preview) = state.view.preview.as_ref() {
-        let (title, command) = action_summary_parts(preview);
+        let summary = ActionBarPreviewSummary::from_preview(preview);
         ui.add_sized(
             [max_width * 0.34, ui_metrics::action_summary_label_height()],
             egui::Label::new(
-                egui::RichText::new(title)
+                egui::RichText::new(summary.breadcrumb.as_str())
                     .font(Text::footnote())
                     .color(Color::fg_primary(&ctx))
                     .strong(),
@@ -128,7 +128,7 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         ui.add_sized(
             [max_width * 0.62, ui_metrics::action_summary_label_height()],
             egui::Label::new(
-                egui::RichText::new(command)
+                egui::RichText::new(summary.primary.as_str())
                     .font(Text::code())
                     .color(Color::fg_secondary(&ctx)),
             )
@@ -145,15 +145,6 @@ fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f3
         )
         .truncate(),
     );
-}
-
-fn action_summary_parts(preview: &std_types::ActionPreview) -> (&str, &str) {
-    let command = if preview.primary_command.trim().is_empty() {
-        preview.subtitle.as_str()
-    } else {
-        preview.primary_command.as_str()
-    };
-    (preview.title.as_str(), command)
 }
 
 #[cfg(test)]
@@ -193,7 +184,7 @@ mod tests {
     }
 
     #[test]
-    fn action_bar_summary_uses_primary_command_as_preview_breadcrumb() {
+    fn action_bar_summary_uses_type_and_title_as_breadcrumb() {
         let preview = ActionPreview {
             action_id: ActionId::default(),
             title: "Rebuild Index".to_string(),
@@ -205,8 +196,11 @@ mod tests {
         };
 
         assert_eq!(
-            action_summary_parts(&preview),
-            ("Rebuild Index", "std index rebuild .")
+            ActionBarPreviewSummary::from_preview(&preview),
+            ActionBarPreviewSummary {
+                breadcrumb: "Command > Rebuild Index".to_string(),
+                primary: "std index rebuild .".to_string()
+            }
         );
     }
 
@@ -223,8 +217,11 @@ mod tests {
         };
 
         assert_eq!(
-            action_summary_parts(&preview),
-            ("Memory", "Pinned workspace memory")
+            ActionBarPreviewSummary::from_preview(&preview),
+            ActionBarPreviewSummary {
+                breadcrumb: "Skill > Memory".to_string(),
+                primary: "Pinned workspace memory".to_string()
+            }
         );
     }
 }

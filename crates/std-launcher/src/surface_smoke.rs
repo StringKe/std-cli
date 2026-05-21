@@ -24,6 +24,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub light_selected_surface_layer: String,
     pub empty_state: String,
     pub matches_state: String,
+    pub action_bar_preview: String,
     pub no_match_state: String,
     pub defer_feedback: String,
     pub error_feedback: String,
@@ -59,6 +60,7 @@ impl LauncherSurfaceSmokeReport {
             light_selected_surface_layer: layer("light_selected", "accent/weak", &light),
             empty_state: "empty=query,recent_or_suggested,footnote".to_string(),
             matches_state: "matches=grouped,selected,preview,action_bar".to_string(),
+            action_bar_preview: action_bar_preview_state(),
             no_match_state: "no_matches=icon,title,detail,ask_ai_enter".to_string(),
             defer_feedback: feedback_state(deferred_execution()),
             error_feedback: feedback_state(failed_execution()),
@@ -92,6 +94,12 @@ impl LauncherSurfaceSmokeReport {
             && self.light_selected_surface_layer == "light_selected=accent/weak:#0A6BFF@31"
             && self.empty_state.contains("recent_or_suggested")
             && self.matches_state.contains("grouped")
+            && self
+                .action_bar_preview
+                .contains("breadcrumb=Command > Rebuild Index")
+            && self
+                .action_bar_preview
+                .contains("primary=std index rebuild .")
             && self.no_match_state.contains("ask_ai_enter")
             && self.defer_feedback
                 == format!(
@@ -113,7 +121,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\ncapture_window_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -131,6 +139,7 @@ impl LauncherSurfaceSmokeReport {
             self.light_selected_surface_layer,
             self.empty_state,
             self.matches_state,
+            self.action_bar_preview,
             self.no_match_state,
             self.defer_feedback,
             self.error_feedback,
@@ -180,6 +189,18 @@ fn capture_window_contract() -> String {
 
 fn preview_viewport_contract() -> String {
     "preview_viewport=all_states_fill_panel,no_carrier_background".to_string()
+}
+
+fn action_bar_preview_state() -> String {
+    let mut state = crate::LauncherState::new();
+    state.update_query("rebuild index");
+    state
+        .view
+        .preview
+        .as_ref()
+        .map(crate::ActionBarPreviewSummary::from_preview)
+        .map(|summary| summary.contract())
+        .unwrap_or_else(|| "breadcrumb=none,primary=none".to_string())
 }
 
 fn layer(name: &str, token: &str, ctx: &egui::Context) -> String {
