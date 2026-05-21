@@ -76,6 +76,32 @@ fn release_quality_keeps_manual_background_ui_out_of_default_gate() {
     assert!(body.contains("dev.std-cli.background-ui-harness"));
 }
 
+#[test]
+fn mise_quality_keeps_background_ui_manual_only() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("mise.toml")).unwrap();
+    let quality = source_section(&body, "[tasks.quality]", "[tasks.release-build]");
+    let harness = source_section(
+        &body,
+        "[tasks.ui-background-harness]",
+        "[tasks.ui-background-smoke]",
+    );
+    let smoke = source_section(&body, "[tasks.ui-background-smoke]", "[tasks.quality]");
+
+    assert!(!quality.contains("ui-background-harness"));
+    assert!(!quality.contains("ui-background-smoke"));
+    assert!(!quality.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(harness.contains("Manual opt-in"));
+    assert!(harness.contains("STD_TEST_MODE = \"0\""));
+    assert!(harness.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(harness.contains("scripts/background-ui-harness.sh"));
+    assert!(smoke.contains("Manual opt-in"));
+    assert!(smoke.contains("STD_TEST_MODE = \"0\""));
+    assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+    assert!(smoke.contains("--bundle-id dev.std-cli.background-ui-harness"));
+    assert!(smoke.contains("--window-title \\\"std-cli Background UI Harness\\\""));
+}
+
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
