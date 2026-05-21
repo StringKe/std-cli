@@ -154,6 +154,10 @@ mod tests {
 
         assert_eq!(frame.fill, egui::Color32::TRANSPARENT);
         assert_eq!(frame.stroke, egui::Stroke::NONE);
+        assert_eq!(
+            std_launcher::launcher_viewport_frame_contract(),
+            "viewport_frame=transparent_fill,no_stroke"
+        );
     }
 
     #[test]

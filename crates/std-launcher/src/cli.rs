@@ -235,6 +235,12 @@ mod tests {
         assert!(report.summary().contains("panel_opaque=true"));
         assert!(report
             .summary()
+            .contains("native_clear_color=transparent_rgba_0_0_0_0"));
+        assert!(report
+            .summary()
+            .contains("viewport_frame_contract=viewport_frame=transparent_fill,no_stroke"));
+        assert!(report
+            .summary()
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()

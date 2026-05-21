@@ -1,4 +1,7 @@
-use crate::{LauncherSurfaceContract, PANEL_WIDTH};
+use crate::{
+    launcher_clear_color_contract, launcher_viewport_frame_contract, LauncherSurfaceContract,
+    PANEL_WIDTH,
+};
 use std_egui::{
     motion::MotionContext,
     tokens::{apply_theme, Color, Radius, Space, ThemeMode},
@@ -11,6 +14,8 @@ pub struct LauncherSurfaceSmokeReport {
     pub dark_panel_fill: String,
     pub light_panel_fill: String,
     pub panel_opaque: bool,
+    pub native_clear_color: String,
+    pub viewport_frame_contract: String,
     pub panel_radius: u8,
     pub native_host_window_contract: String,
     pub capture_window_contract: String,
@@ -48,6 +53,8 @@ impl LauncherSurfaceSmokeReport {
             light_panel_fill: color_hex(Color::bg_surface_0(&light)),
             panel_opaque: Color::bg_surface_0(&dark).a() == 255
                 && Color::bg_surface_0(&light).a() == 255,
+            native_clear_color: native_clear_color_contract(),
+            viewport_frame_contract: viewport_frame_contract(),
             panel_radius: Radius::xl(),
             native_host_window_contract: native_host_window_contract(),
             capture_window_contract: capture_window_contract(),
@@ -80,6 +87,8 @@ impl LauncherSurfaceSmokeReport {
         self.dark_panel_fill == "#1C1E22"
             && self.light_panel_fill == "#FAFBFD"
             && self.panel_opaque
+            && self.native_clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
+            && self.viewport_frame_contract == "viewport_frame=transparent_fill,no_stroke"
             && self.panel_radius == 16
             && self.native_host_window_contract
                 == "native_host_window=panel_surface,no_carrier_background"
@@ -124,11 +133,13 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
             self.panel_opaque,
+            self.native_clear_color,
+            self.viewport_frame_contract,
             self.panel_radius,
             self.native_host_window_contract,
             self.capture_window_contract,
@@ -167,6 +178,14 @@ fn themed_context(mode: ThemeMode) -> egui::Context {
     let ctx = egui::Context::default();
     apply_theme(&ctx, mode);
     ctx
+}
+
+fn native_clear_color_contract() -> String {
+    launcher_clear_color_contract()
+}
+
+fn viewport_frame_contract() -> String {
+    launcher_viewport_frame_contract()
 }
 
 fn native_host_window_contract() -> String {

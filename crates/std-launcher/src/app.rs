@@ -90,7 +90,7 @@ impl eframe::App for LauncherApp {
     }
 }
 
-fn launcher_clear_color() -> [f32; 4] {
+pub(crate) fn launcher_clear_color() -> [f32; 4] {
     egui::Color32::TRANSPARENT.to_normalized_gamma_f32()
 }
 
@@ -173,6 +173,10 @@ mod tests {
     #[test]
     fn launcher_app_clears_to_transparent_for_floating_overlay() {
         assert_eq!(launcher_clear_color(), [0.0, 0.0, 0.0, 0.0]);
+        assert_eq!(
+            std_launcher::launcher_clear_color_contract(),
+            "native_clear_color=transparent_rgba_0_0_0_0"
+        );
     }
 
     #[test]

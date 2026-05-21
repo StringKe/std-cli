@@ -8,6 +8,14 @@ pub fn transparent_visible_panel_contract(size: egui::Vec2) -> String {
     viewport_contract(size, true)
 }
 
+pub fn launcher_clear_color_contract() -> String {
+    "native_clear_color=transparent_rgba_0_0_0_0".to_string()
+}
+
+pub fn launcher_viewport_frame_contract() -> String {
+    "viewport_frame=transparent_fill,no_stroke".to_string()
+}
+
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
         "native=panel-surface,transparent=true,decorations=false,visible={visible},size={}x{}",
@@ -28,6 +36,18 @@ mod tests {
         assert_eq!(
             transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
             "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x320"
+        );
+    }
+
+    #[test]
+    fn launcher_viewport_contracts_forbid_carrier_background() {
+        assert_eq!(
+            launcher_clear_color_contract(),
+            "native_clear_color=transparent_rgba_0_0_0_0"
+        );
+        assert_eq!(
+            launcher_viewport_frame_contract(),
+            "viewport_frame=transparent_fill,no_stroke"
         );
     }
 }
