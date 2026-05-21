@@ -161,7 +161,7 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 }
 
 fn preview_capture_contract() -> &'static str {
-    "capture-window,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,no-product-viewport"
+    "transparent-carrier,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,panel-only,no-shadow-clip"
 }
 
 fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {

@@ -5,8 +5,8 @@ fn initial_window_size_scales_with_ui_zoom() {
     let base = initial_window_inner_size_for_scale(UiScale::default());
     let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
 
-    assert_eq!(base, egui::vec2(720.0, 64.0));
-    assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
+    assert_eq!(base, egui::vec2(848.0, 192.0));
+    assert_eq!(zoomed, egui::vec2(1272.0, 288.0));
 }
 
 #[test]
@@ -114,9 +114,9 @@ fn panel_rect_stays_inside_tightly_sized_native_window() {
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
     let rect = panel_rect(available, &state);
 
-    assert_eq!(rect.min.x, 0.0);
-    assert_eq!(rect.min.y, 0.0);
-    assert_eq!(rect.max.x, available.right());
+    assert_eq!(rect.min.x, window_margin());
+    assert_eq!(rect.min.y, window_margin());
+    assert_eq!(rect.max.x, available.right() - window_margin());
     assert!(rect.max.y <= available.bottom());
 }
 
@@ -128,7 +128,7 @@ fn panel_rect_matches_native_host_window_height() {
     let rect = panel_rect(available, &state);
 
     assert_eq!(rect.width(), PANEL_WIDTH);
-    assert_eq!(rect.height(), available.height());
+    assert_eq!(rect.height(), available.height() - window_margin() * 2.0);
 }
 
 #[test]
@@ -153,7 +153,9 @@ fn collapsed_panel_rect_matches_native_host_window() {
 
     assert_eq!(rect.width(), PANEL_WIDTH);
     assert_eq!(rect.height(), SEARCH_HEIGHT);
-    assert_eq!(rect.height(), available.height());
+    assert_eq!(rect.min.x, window_margin());
+    assert_eq!(rect.min.y, window_margin());
+    assert_eq!(available.height(), SEARCH_HEIGHT + window_margin() * 2.0);
 }
 
 #[test]
@@ -169,18 +171,18 @@ fn panel_rect_clamps_when_viewport_is_short() {
 }
 
 #[test]
-fn transparent_capture_window_has_no_carrier_background() {
+fn transparent_carrier_window_has_margin_for_shadow_without_visible_background() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
     let rect = panel_rect(available, &state);
 
-    assert_eq!(available.width(), PANEL_WIDTH);
+    assert_eq!(available.width(), PANEL_WIDTH + window_margin() * 2.0);
     assert_eq!(rect.width(), PANEL_WIDTH);
-    assert_eq!(rect.min.x, 0.0);
-    assert_eq!(rect.max.x, available.right());
-    assert_eq!(rect.min.y, 0.0);
-    assert_eq!(rect.max.y, available.bottom());
+    assert_eq!(rect.min.x, window_margin());
+    assert_eq!(rect.max.x, available.right() - window_margin());
+    assert_eq!(rect.min.y, window_margin());
+    assert_eq!(rect.max.y, available.bottom() - window_margin());
     assert!(panel_is_only_visible_surface(&state));
 }
 
@@ -193,7 +195,7 @@ fn collapsed_launcher_uses_docs_search_bar_height_without_outer_padding() {
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
     let rect = panel_rect(available, &state);
 
-    assert_eq!(viewport.y, SEARCH_HEIGHT);
+    assert_eq!(viewport.y, SEARCH_HEIGHT + window_margin() * 2.0);
     assert_eq!(rect.height(), SEARCH_HEIGHT);
     assert_eq!(panel_inner_padding_for_state(&state), 0.0);
 }
@@ -206,7 +208,10 @@ fn native_host_window_height_includes_panel_inner_padding() {
     let chrome = Space::MD as f32 * 3.0 + Space::SM as f32;
     let expected = SEARCH_HEIGHT + body + ACTION_BAR_HEIGHT + chrome;
 
-    assert_eq!(window_inner_size(&state).y, expected);
+    assert_eq!(
+        window_inner_size(&state).y,
+        expected + window_margin() * 2.0
+    );
 }
 
 #[test]
@@ -226,7 +231,7 @@ fn body_height_counts_virtual_group_header_slots() {
 }
 
 #[test]
-fn all_preview_visible_states_keep_transparent_capture_window_panel_only() {
+fn all_preview_visible_states_keep_transparent_carrier_panel_only() {
     for scenario in [
         "empty",
         "results",
