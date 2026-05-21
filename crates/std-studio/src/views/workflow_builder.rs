@@ -1,12 +1,14 @@
 use crate::{
     ui,
-    views::{workflow_builder_metrics, workflow_builder_status, workflow_rows},
+    views::{
+        workflow_builder_metrics, workflow_builder_properties, workflow_builder_status,
+        workflow_rows,
+    },
     StudioEguiApp,
 };
 use eframe::egui;
 use std::path::Path;
 use std_egui::{i18n, tokens::Space};
-use std_orchestration::WorkflowStep;
 
 impl StudioEguiApp {
     pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
@@ -154,37 +156,13 @@ impl StudioEguiApp {
                 return;
             };
             workflow_rows::path_row(ui, "workflow", &path);
-            ui.label(i18n::t("studio.workflow_builder.step_name"));
-            ui.text_edit_singleline(&mut self.workflow_step_name);
-            ui.label(i18n::t("studio.workflow_builder.parameters"));
-            ui.add_sized(
-                workflow_builder_metrics::parameter_editor_size(ui.available_width()),
-                egui::TextEdit::multiline(&mut self.workflow_step_parameters),
+            let actions = workflow_builder_properties::render_loaded_step_properties(
+                ui,
+                &mut self.workflow_step_name,
+                &mut self.workflow_step_parameters,
+                &mut self.workflow_edit_index,
             );
-            ui.horizontal(|ui| {
-                ui.label(i18n::t("studio.workflow_builder.index"));
-                ui.add_sized(
-                    workflow_builder_metrics::step_index_size(),
-                    egui::TextEdit::singleline(&mut self.workflow_edit_index),
-                );
-                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.add")).clicked() {
-                    self.add_step_to_selected(&path);
-                }
-                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
-                    self.update_selected_step(&path);
-                }
-            });
-            ui.horizontal_wrapped(|ui| {
-                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_up")).clicked() {
-                    self.move_selected_step(&path, -1);
-                }
-                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_down")).clicked() {
-                    self.move_selected_step(&path, 1);
-                }
-                if ui::quiet_button(ui, i18n::t("studio.workflow_builder.remove")).clicked() {
-                    self.remove_selected_step(&path);
-                }
-            });
+            self.apply_loaded_step_actions(&path, actions);
         });
     }
 
@@ -196,35 +174,14 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.workflow_builder.properties.empty"));
             return;
         };
-        render_step_identity(ui, index, &step);
-        ui.label(i18n::t("studio.workflow_builder.step_name"));
-        ui.text_edit_singleline(&mut self.workflow_step_name);
-        ui.label(i18n::t("studio.workflow_builder.parameters"));
-        ui.add_sized(
-            workflow_builder_metrics::parameter_editor_size(ui.available_width()),
-            egui::TextEdit::multiline(&mut self.workflow_step_parameters),
+        workflow_builder_properties::render_step_identity(ui, index, &step);
+        let actions = workflow_builder_properties::render_planned_step_properties(
+            ui,
+            &mut self.workflow_step_name,
+            &mut self.workflow_step_parameters,
+            &mut self.workflow_edit_index,
         );
-        ui.horizontal(|ui| {
-            ui.label(i18n::t("studio.workflow_builder.index"));
-            ui.add_sized(
-                workflow_builder_metrics::step_index_size(),
-                egui::TextEdit::singleline(&mut self.workflow_edit_index),
-            );
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
-                self.update_planned_step();
-            }
-        });
-        ui.horizontal_wrapped(|ui| {
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_up")).clicked() {
-                self.move_planned_step(-1);
-            }
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_down")).clicked() {
-                self.move_planned_step(1);
-            }
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.remove")).clicked() {
-                self.remove_planned_step();
-            }
-        });
+        self.apply_planned_step_actions(actions);
     }
 
     fn render_ai_assist_panel(&mut self, ui: &mut egui::Ui) {
@@ -394,6 +351,28 @@ impl StudioEguiApp {
         }
     }
 
+    fn apply_loaded_step_actions(
+        &mut self,
+        path: &Path,
+        actions: workflow_builder_properties::StepPropertyActions,
+    ) {
+        if actions.add_requested() {
+            self.add_step_to_selected(path);
+        }
+        if actions.update_requested() {
+            self.update_selected_step(path);
+        }
+        if actions.move_up_requested() {
+            self.move_selected_step(path, -1);
+        }
+        if actions.move_down_requested() {
+            self.move_selected_step(path, 1);
+        }
+        if actions.remove_requested() {
+            self.remove_selected_step(path);
+        }
+    }
+
     pub(crate) fn update_planned_step(&mut self) {
         let Some(index) = self.selected_step_index() else {
             return;
@@ -441,6 +420,24 @@ impl StudioEguiApp {
         }
     }
 
+    fn apply_planned_step_actions(
+        &mut self,
+        actions: workflow_builder_properties::StepPropertyActions,
+    ) {
+        if actions.update_requested() {
+            self.update_planned_step();
+        }
+        if actions.move_up_requested() {
+            self.move_planned_step(-1);
+        }
+        if actions.move_down_requested() {
+            self.move_planned_step(1);
+        }
+        if actions.remove_requested() {
+            self.remove_planned_step();
+        }
+    }
+
     fn sync_selected_step_parameters(&mut self, index: usize) {
         if let Some(step) = self.app.selected_planned_step(index) {
             self.workflow_step_parameters = step.parameters.to_string();
@@ -456,14 +453,4 @@ impl StudioEguiApp {
             }
         }
     }
-}
-
-fn render_step_identity(ui: &mut egui::Ui, index: usize, step: &WorkflowStep) {
-    workflow_rows::workflow_summary(ui, &step.name, &format!("{:?}", step.step_type), index + 1);
-    ui.label(
-        egui::RichText::new(step.parameters.to_string())
-            .font(std_egui::tokens::Text::caption())
-            .color(ui::muted_text(ui.ctx())),
-    );
-    ui.add_space(Space::XS as f32);
 }
