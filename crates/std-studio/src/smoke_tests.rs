@@ -76,6 +76,9 @@ fn assert_shell_layout_summary(summary: &str) {
     assert!(summary.contains("collapsed_sidebar_width=48"));
     assert!(summary.contains("inspector_width=320"));
     assert!(summary.contains("inspector_default_open=false"));
+    assert!(
+        summary.contains("inspector_context_route=focused-workspace-pane-context,global-fallback")
+    );
     assert!(summary.contains("bottom_panel_height=240"));
     assert!(summary.contains("bottom_panel_default_open=false"));
     assert!(summary.contains("canvas_surface=surface=bg/surface-0"));

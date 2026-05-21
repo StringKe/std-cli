@@ -13,6 +13,7 @@ pub(crate) struct StudioLayoutSmoke {
     pub(crate) collapsed_sidebar_width: u32,
     pub(crate) inspector_width: u32,
     pub(crate) inspector_default_open: bool,
+    pub(crate) inspector_context_route: String,
     pub(crate) bottom_panel_height: u32,
     pub(crate) bottom_panel_default_open: bool,
     pub(crate) canvas_surface: String,
@@ -35,6 +36,7 @@ impl StudioLayoutSmoke {
             collapsed_sidebar_width: collapsed.sidebar_width() as u32,
             inspector_width: layout.inspector_width() as u32,
             inspector_default_open: layout.inspector_open,
+            inspector_context_route: inspector_context_route_evidence(),
             bottom_panel_height: layout.bottom_panel_height() as u32,
             bottom_panel_default_open: layout.bottom_panel_open,
             canvas_surface: canvas_motion_evidence(),
@@ -69,5 +71,17 @@ fn canvas_content_route_evidence() -> String {
         "focused-workspace-pane-primary,main-pane-fallback".to_string()
     } else {
         "workspace-pane-appended-to-main".to_string()
+    }
+}
+
+fn inspector_context_route_evidence() -> String {
+    let source = include_str!("../shell.rs");
+    if source.contains("focused_workspace_spec(&self.app)")
+        && source.contains("render_workspace_context(ui, &spec)")
+        && source.contains("workspace_context_summary")
+    {
+        "focused-workspace-pane-context,global-fallback".to_string()
+    } else {
+        "global-context-only".to_string()
     }
 }
