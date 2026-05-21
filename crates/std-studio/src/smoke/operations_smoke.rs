@@ -1,3 +1,4 @@
+use crate::operations_rows;
 use std_studio::OpsEvidence;
 
 pub(crate) struct OperationsSmoke {
@@ -14,11 +15,25 @@ pub(crate) struct OperationsSmoke {
     pub(crate) install_result: String,
     pub(crate) install_output: String,
     pub(crate) step_summary: String,
+    pub(crate) visual_contract: String,
+    pub(crate) a11y_contract: String,
 }
 
 impl OperationsSmoke {
     pub(crate) fn new() -> Self {
         let evidence = OpsEvidence::load();
+        let step_summary = [
+            evidence.qa.steps.clone(),
+            evidence.release.steps.clone(),
+            evidence.install.steps.clone(),
+        ]
+        .concat()
+        .into_iter()
+        .map(|step| step.summary())
+        .collect::<Vec<_>>()
+        .join("|");
+        let visual_contract = operations_visual_contract(&evidence);
+        let a11y_contract = operations_a11y_contract(&evidence);
         Self {
             qa_command: evidence.qa.command,
             qa_result: evidence.qa.result,
@@ -32,16 +47,9 @@ impl OperationsSmoke {
             install_command: evidence.install.command,
             install_result: evidence.install.result,
             install_output: evidence.install.output,
-            step_summary: [
-                evidence.qa.steps,
-                evidence.release.steps,
-                evidence.install.steps,
-            ]
-            .concat()
-            .into_iter()
-            .map(|step| step.summary())
-            .collect::<Vec<_>>()
-            .join("|"),
+            step_summary,
+            visual_contract,
+            a11y_contract,
         }
     }
 
@@ -63,11 +71,26 @@ impl OperationsSmoke {
             && self.step_summary.contains("release-verify:")
             && self.step_summary.contains("install-run:")
             && self.step_summary.contains("install-verify:")
+            && self
+                .visual_contract
+                .contains(operations_rows::operations_gate_visual_contract())
+            && self
+                .visual_contract
+                .contains("gates=QA|Doctor|Release|Install")
+            && self.visual_contract.contains("commands=4")
+            && self.visual_contract.contains("results=4")
+            && self.visual_contract.contains("outputs=4")
+            && self
+                .a11y_contract
+                .contains(operations_rows::operations_gate_a11y_contract())
+            && self
+                .a11y_contract
+                .contains("rows=command|step|runbook|evidence|result|artifact|output")
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_step_summary={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -82,8 +105,57 @@ impl OperationsSmoke {
             self.install_result,
             self.install_output,
             self.step_summary,
+            self.visual_contract,
+            self.a11y_contract,
         )
     }
+}
+
+fn operations_visual_contract(evidence: &OpsEvidence) -> String {
+    format!(
+        "{};gates={};commands={};results={};outputs={};steps={}",
+        operations_rows::operations_gate_visual_contract(),
+        [
+            evidence.qa.title,
+            evidence.doctor.title,
+            evidence.release.title,
+            evidence.install.title
+        ]
+        .join("|"),
+        visible_count([
+            &evidence.qa.command,
+            &evidence.doctor.command,
+            &evidence.release.command,
+            &evidence.install.command,
+        ]),
+        visible_count([
+            &evidence.qa.result,
+            &evidence.doctor.result,
+            &evidence.release.result,
+            &evidence.install.result,
+        ]),
+        visible_count([
+            &evidence.qa.output,
+            &evidence.doctor.output,
+            &evidence.release.output,
+            &evidence.install.output,
+        ]),
+        evidence.qa.steps.len() + evidence.release.steps.len() + evidence.install.steps.len()
+    )
+}
+
+fn operations_a11y_contract(_evidence: &OpsEvidence) -> String {
+    format!(
+        "{};rows=command|step|runbook|evidence|result|artifact|output",
+        operations_rows::operations_gate_a11y_contract()
+    )
+}
+
+fn visible_count(values: [&String; 4]) -> usize {
+    values
+        .iter()
+        .filter(|value| !value.trim().is_empty())
+        .count()
 }
 
 #[cfg(test)]
@@ -108,6 +180,15 @@ mod tests {
             .summary()
             .contains("operations_install_command=std install verify"));
         assert!(smoke.summary().contains("operations_step_summary="));
+        assert!(smoke.summary().contains("operations_visual_contract="));
+        assert!(smoke.summary().contains("gates=QA|Doctor|Release|Install"));
+        assert!(smoke.summary().contains("commands=4"));
+        assert!(smoke.summary().contains("results=4"));
+        assert!(smoke.summary().contains("outputs=4"));
+        assert!(smoke.summary().contains("operations_a11y_contract="));
+        assert!(smoke
+            .summary()
+            .contains("a11y=row-label-includes-label-value-detail"));
         assert!(smoke
             .summary()
             .contains("release-package:std release package"));

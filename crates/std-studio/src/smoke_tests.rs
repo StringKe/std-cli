@@ -199,6 +199,16 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_release_output=manifest="));
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
+    assert!(summary.contains("operations_visual_contract="));
+    assert!(summary.contains(
+        "gate=title|status|command|steps|runbook|evidence|result|artifact|output|record-evidence"
+    ));
+    assert!(summary.contains("gates=QA|Doctor|Release|Install"));
+    assert!(summary.contains("commands=4"));
+    assert!(summary.contains("results=4"));
+    assert!(summary.contains("outputs=4"));
+    assert!(summary.contains("operations_a11y_contract="));
+    assert!(summary.contains("a11y=row-label-includes-label-value-detail"));
 }
 
 fn assert_keyboard_summary(summary: &str) {

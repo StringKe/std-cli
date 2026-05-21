@@ -364,6 +364,20 @@ impl StudioSmokeReport {
             && self
                 .operations_summary
                 .contains("install-run:std install run")
+            && self.operations_summary.contains("operations_visual_contract=")
+            && self
+                .operations_summary
+                .contains("gate=title|status|command|steps|runbook|evidence|result|artifact|output|record-evidence")
+            && self
+                .operations_summary
+                .contains("gates=QA|Doctor|Release|Install")
+            && self.operations_summary.contains("commands=4")
+            && self.operations_summary.contains("results=4")
+            && self.operations_summary.contains("outputs=4")
+            && self.operations_summary.contains("operations_a11y_contract=")
+            && self
+                .operations_summary
+                .contains("a11y=row-label-includes-label-value-detail")
     }
 
     fn open_intent_contract_pass(&self) -> bool {
