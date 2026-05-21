@@ -22,6 +22,7 @@ pub(crate) struct StudioPreviewSmokeReport {
     scenarios: Vec<String>,
     commands: Vec<String>,
     states: Vec<String>,
+    capture_contract: &'static str,
 }
 
 impl StudioPreviewSmokeReport {
@@ -40,6 +41,7 @@ impl StudioPreviewSmokeReport {
                 .map(|scenario| preview_state_summary(scenario))
                 .collect(),
             scenarios,
+            capture_contract: preview_capture_contract(),
         }
     }
 
@@ -47,15 +49,17 @@ impl StudioPreviewSmokeReport {
         self.scenarios == preview_matrix()
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
+            && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}",
+            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios.join(","),
             self.commands.join(";"),
-            self.states.join(";")
+            self.states.join(";"),
+            self.capture_contract
         )
     }
 }
@@ -158,6 +162,10 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
         studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioPreviewApp::new(config)))),
     )
+}
+
+fn preview_capture_contract() -> &'static str {
+    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
 }
 
 fn studio_preview_window_title() -> &'static str {
@@ -411,5 +419,8 @@ mod tests {
         assert!(summary.contains("light-analysis"));
         assert!(summary.contains("dark-settings"));
         assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
+        assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
+        assert!(summary.contains("blocked-in-STD_TEST_MODE"));
+        assert!(summary.contains("no-default-window"));
     }
 }

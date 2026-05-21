@@ -25,6 +25,7 @@ pub(crate) struct LauncherPreviewSmokeReport {
     scenarios: Vec<LauncherPreviewScenario>,
     commands: Vec<String>,
     states: Vec<String>,
+    capture_contract: &'static str,
 }
 
 impl LauncherPreviewSmokeReport {
@@ -37,6 +38,7 @@ impl LauncherPreviewSmokeReport {
                 .collect(),
             states: scenarios.iter().map(preview_state_summary).collect(),
             scenarios,
+            capture_contract: preview_capture_contract(),
         }
     }
 
@@ -44,11 +46,12 @@ impl LauncherPreviewSmokeReport {
         self.scenarios == preview_matrix()
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
+            && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}",
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios
                 .iter()
@@ -56,7 +59,8 @@ impl LauncherPreviewSmokeReport {
                 .collect::<Vec<_>>()
                 .join(","),
             self.commands.join(";"),
-            self.states.join(";")
+            self.states.join(";"),
+            self.capture_contract
         )
     }
 }
@@ -143,6 +147,10 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
         preview_native_options(),
         Box::new(|_cc| Ok(Box::new(LauncherPreviewApp::new(config)))),
     )
+}
+
+fn preview_capture_contract() -> &'static str {
+    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
 }
 
 fn preview_window_title() -> &'static str {
@@ -381,6 +389,11 @@ mod tests {
             .states
             .iter()
             .any(|state| state.starts_with("dark-error=PASS")));
+        assert!(report
+            .summary()
+            .contains("preview_capture_contract=explicit-opt-in-only"));
+        assert!(report.summary().contains("blocked-in-STD_TEST_MODE"));
+        assert!(report.summary().contains("no-default-window"));
     }
 
     #[test]
