@@ -122,7 +122,8 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "primer_end=appKitDefined_subtype_2_applicationDeactivated".to_string(),
         "center_primer=window_center_activation_only_no_user_action".to_string(),
         "window_addressing=windowUnderMouse_windowThatCanHandle_fields_51_58".to_string(),
-        "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,System_Settings".to_string(),
+        "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings"
+            .to_string(),
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click"
             .to_string(),
         "fallback=never_frontmost_desktop_click".to_string(),
@@ -229,4 +230,71 @@ fn opt_u32(value: Option<u32>) -> String {
 
 fn opt_str(value: Option<&str>) -> &str {
     value.unwrap_or("MISSING")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn harness_config(bundle_id: &str, window_title: &str) -> BackgroundSmokeConfig {
+        BackgroundSmokeConfig {
+            harness_pid: Some(42),
+            window_id: Some(24),
+            bundle_id: Some(bundle_id.to_string()),
+            window_title: Some(window_title.to_string()),
+        }
+    }
+
+    #[test]
+    fn background_harness_identity_rejects_real_app_bundle_ids() {
+        for bundle_id in [
+            "com.apple.Terminal",
+            "com.1password.1password",
+            "com.tencent.xinWeChat",
+            "com.tencent.WeChat",
+        ] {
+            let config = harness_config(bundle_id, HARNESS_WINDOW_TITLE);
+            assert_eq!(
+                invalid_harness_reason(&config),
+                Some("bundle_id outside whitelist")
+            );
+        }
+    }
+
+    #[test]
+    fn background_harness_identity_rejects_real_app_titles() {
+        for title in [
+            "Terminal",
+            "1Password",
+            "WeChat",
+            "weixin",
+            "wechat",
+            "微信",
+        ] {
+            let config = harness_config(HARNESS_BUNDLE_ID, title);
+            assert_eq!(
+                invalid_harness_reason(&config),
+                Some("window_title outside whitelist")
+            );
+        }
+    }
+
+    #[test]
+    fn background_report_names_multilingual_forbidden_apps() {
+        let report = background_smoke_report(
+            "SKIP",
+            "test",
+            &harness_config(HARNESS_BUNDLE_ID, HARNESS_WINDOW_TITLE),
+        );
+        for name in [
+            "WeChat",
+            "weixin",
+            "wechat",
+            "微信",
+            "Terminal",
+            "1Password",
+        ] {
+            assert!(report.contains(name));
+        }
+    }
 }

@@ -96,8 +96,8 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为
 - CGEvent 必须写入 `windowUnderMouse`、`windowThatCanHandle` 和 field 51/58，事件路由必须保持 window id 与 harness 匹配
 - previous app 永远不能作为输入目标；它只允许被安装 event tap，用来丢弃 deactivation focus message
-- 不向用户当前 frontmost app、Terminal、1Password、WeChat 或系统设置发送事件
-- 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件，harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
+- 不向用户当前 frontmost app、Terminal、1Password、WeChat、weixin、wechat、微信或系统设置发送事件
+- 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件。macOS App 名称和窗口标题存在多语言别名，WeChat、weixin、wechat、微信这类名称都不能作为允许条件。harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
 
 当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `cargo run -p std-cli -- ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1` 和 `STD_TEST_MODE`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。
