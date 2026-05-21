@@ -1,0 +1,95 @@
+use std::{fs, path::Path, process::Command};
+
+#[test]
+fn std_binary_test_mode_wins_over_inherited_desktop_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+
+    let define = run_std_with_inherited_desktop_opt_in(
+        &config_path,
+        &[
+            "command",
+            "define",
+            "Inherited Opt In Guard",
+            "External runner guard",
+            "printf inherited-opt-in-guard",
+        ],
+    );
+    assert!(define.status.success(), "{}", stderr(&define));
+
+    let trigger = run_std_with_inherited_desktop_opt_in(
+        &config_path,
+        &["trigger", "Inherited Opt In Guard", "--allow-external"],
+    );
+
+    assert!(trigger.status.success(), "{}", stderr(&trigger));
+    let stdout = stdout(&trigger);
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(stdout.contains("printf inherited-opt-in-guard"));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
+#[test]
+fn std_registered_app_test_mode_wins_over_inherited_desktop_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+    let app_path = temp.path().join("StdNeverLaunchFixture.app");
+    fs::create_dir_all(app_path.join("Contents").join("MacOS")).unwrap();
+    fs::write(
+        app_path.join("Contents").join("MacOS").join("fixture"),
+        "bin",
+    )
+    .unwrap();
+
+    let register = run_std_with_inherited_desktop_opt_in(
+        &config_path,
+        &["app", "register", app_path.to_str().unwrap()],
+    );
+    assert!(register.status.success(), "{}", stderr(&register));
+
+    let trigger = run_std_with_inherited_desktop_opt_in(
+        &config_path,
+        &["trigger", "StdNeverLaunchFixture", "--allow-external"],
+    );
+
+    assert!(trigger.status.success(), "{}", stderr(&trigger));
+    let stdout = stdout(&trigger);
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(stdout.contains("StdNeverLaunchFixture.app"));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
+fn write_config(root: &Path) -> std::path::PathBuf {
+    let config_path = root.join("std-cli.json");
+    fs::write(
+        &config_path,
+        serde_json::json!({
+            "data_dir": root.join("data"),
+        })
+        .to_string(),
+    )
+    .unwrap();
+    config_path
+}
+
+fn run_std_with_inherited_desktop_opt_in(
+    config_path: &Path,
+    args: &[&str],
+) -> std::process::Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_std"));
+    command
+        .args(args)
+        .env("STDCLI_CONFIG", config_path)
+        .env("STD_TEST_MODE", "1")
+        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
+        .env("STD_ALLOW_UI_PREVIEW", "1");
+    command.output().unwrap()
+}
+
+fn stdout(output: &std::process::Output) -> String {
+    String::from_utf8_lossy(&output.stdout).to_string()
+}
+
+fn stderr(output: &std::process::Output) -> String {
+    String::from_utf8_lossy(&output.stderr).to_string()
+}
