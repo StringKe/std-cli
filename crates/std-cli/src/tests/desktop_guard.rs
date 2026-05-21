@@ -3,9 +3,9 @@ use std::{fs, path::Path};
 use super::desktop_guard_scan::{
     assert_order, command_sets_desktop_safe_env, forbidden_test_app_terms,
     forbidden_test_mode_clear_terms, scan_rs_files, scan_rs_files_for_binary_spawns,
-    scan_rs_files_for_desktop_process_commands, scan_rs_files_for_unsafe_opt_ins, source_section,
-    task_blocks_desktop_opt_ins, task_has_std_test_mode, task_inherits_workspace_test_mode,
-    workspace_blocks_desktop_opt_ins,
+    scan_rs_files_for_desktop_process_commands, scan_rs_files_for_raw_process_spawns,
+    scan_rs_files_for_unsafe_opt_ins, source_section, task_blocks_desktop_opt_ins,
+    task_has_std_test_mode, task_inherits_workspace_test_mode, workspace_blocks_desktop_opt_ins,
 };
 
 #[test]
@@ -17,11 +17,7 @@ fn test_sources_do_not_reference_real_app_launch_targets() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files(
-        &root.join("crates"),
-        &forbidden_test_app_terms(),
-        &mut violations,
-    );
+    scan_rs_files(root, &forbidden_test_app_terms(), &mut violations);
 
     assert!(
         violations.is_empty(),
@@ -39,7 +35,7 @@ fn test_sources_do_not_inherit_desktop_automation_opt_ins() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files_for_unsafe_opt_ins(&root.join("crates"), &mut violations);
+    scan_rs_files_for_unsafe_opt_ins(root, &mut violations);
 
     assert!(
         violations.is_empty(),
@@ -57,11 +53,29 @@ fn test_binary_spawns_are_forced_into_test_mode() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files_for_binary_spawns(&root.join("crates"), &mut violations);
+    scan_rs_files_for_binary_spawns(root, &mut violations);
 
     assert!(
         violations.is_empty(),
         "test binary spawns must set STD_TEST_MODE=1 and remove desktop opt-ins: {}",
+        violations.join(", ")
+    );
+}
+
+#[test]
+fn test_sources_only_spawn_repo_binaries() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut violations = Vec::new();
+
+    scan_rs_files_for_raw_process_spawns(root, &mut violations);
+
+    assert!(
+        violations.is_empty(),
+        "test sources must not spawn raw desktop or shell processes: {}",
         violations.join(", ")
     );
 }
@@ -75,7 +89,7 @@ fn test_sources_do_not_spawn_desktop_process_commands() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files_for_desktop_process_commands(&root.join("crates"), &mut violations);
+    scan_rs_files_for_desktop_process_commands(root, &mut violations);
 
     assert!(
         violations.is_empty(),
@@ -93,11 +107,7 @@ fn test_sources_must_not_clear_test_mode() {
         .unwrap();
     let mut violations = Vec::new();
 
-    scan_rs_files(
-        &root.join("crates"),
-        &forbidden_test_mode_clear_terms(),
-        &mut violations,
-    );
+    scan_rs_files(root, &forbidden_test_mode_clear_terms(), &mut violations);
 
     assert!(
         violations.is_empty(),

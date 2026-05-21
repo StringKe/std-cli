@@ -6,6 +6,16 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.history.title") => Some("History"),
         (Locale::ZhCn, "studio.history.detail") => Some("workflow trace 与 audit event"),
         (Locale::EnUs, "studio.history.detail") => Some("workflow traces and audit events"),
+        (Locale::ZhCn, "studio.history.filter.time_range") => Some("时间范围"),
+        (Locale::EnUs, "studio.history.filter.time_range") => Some("Time range"),
+        (Locale::ZhCn, "studio.history.filter.placeholder") => Some("状态或 workflow"),
+        (Locale::EnUs, "studio.history.filter.placeholder") => Some("Status or workflow"),
+        (Locale::ZhCn, "studio.history.filter.columns") => {
+            Some("时间 / workflow / 状态 / 耗时 / 来源")
+        }
+        (Locale::EnUs, "studio.history.filter.columns") => {
+            Some("time / workflow / status / duration / source")
+        }
         (Locale::ZhCn, "studio.history.traces.title") => Some("Workflow Traces"),
         (Locale::EnUs, "studio.history.traces.title") => Some("Workflow Traces"),
         (Locale::ZhCn, "studio.history.traces.detail") => Some("已持久化执行时间线"),
@@ -30,6 +40,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
     match key {
         "studio.history.title" => Some("History"),
         "studio.history.detail" => Some("workflow traces and audit events"),
+        "studio.history.filter.time_range" => Some("Time range"),
+        "studio.history.filter.placeholder" => Some("Status or workflow"),
+        "studio.history.filter.columns" => Some("time / workflow / status / duration / source"),
         "studio.history.traces.title" => Some("Workflow Traces"),
         "studio.history.traces.detail" => Some("persisted execution timeline"),
         "studio.history.traces.empty" => Some("No workflow traces"),

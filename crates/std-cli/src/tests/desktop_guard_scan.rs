@@ -104,6 +104,9 @@ pub(crate) fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: 
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
         if path.is_dir() {
+            if ignored_scan_dir(&path) {
+                continue;
+            }
             scan_rs_files(&path, forbidden_terms, violations);
             continue;
         }
@@ -128,6 +131,9 @@ pub(crate) fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<S
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
         if path.is_dir() {
+            if ignored_scan_dir(&path) {
+                continue;
+            }
             scan_rs_files_for_binary_spawns(&path, violations);
             continue;
         }
@@ -141,6 +147,29 @@ pub(crate) fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<S
             continue;
         }
         scan_binary_spawn_blocks(&path, &body, violations);
+    }
+}
+
+pub(crate) fn scan_rs_files_for_raw_process_spawns(dir: &Path, violations: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if path.is_dir() {
+            if ignored_scan_dir(&path) {
+                continue;
+            }
+            scan_rs_files_for_raw_process_spawns(&path, violations);
+            continue;
+        }
+        let Ok(body) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !eligible_raw_process_spawn_source(&path, &body) {
+            continue;
+        }
+        scan_raw_process_spawn_blocks(&path, &body, violations);
     }
 }
 
@@ -174,6 +203,50 @@ fn scan_binary_spawn_blocks(path: &Path, body: &str, violations: &mut Vec<String
     }
 }
 
+fn scan_raw_process_spawn_blocks(path: &Path, body: &str, violations: &mut Vec<String>) {
+    let mut rest = body;
+    let mut offset = 0;
+    while let Some(index) = rest.find("Command::new(") {
+        let start = offset + index;
+        if command_new_is_string_literal(body, start) {
+            offset = start + "Command::new(".len();
+            rest = &body[offset..];
+            continue;
+        }
+        let after_start = &body[start..];
+        let end = after_start
+            .find(".output()")
+            .map(|end| start + end)
+            .unwrap_or(body.len());
+        let block = &body[start..end];
+        if !block.contains("Command::new(env!(\"CARGO_BIN_EXE_") {
+            violations.push(format!(
+                "{} raw process spawn at byte {} must use CARGO_BIN_EXE test binary",
+                path.display(),
+                start
+            ));
+        }
+        offset = start + "Command::new(".len();
+        rest = &body[offset..];
+    }
+}
+
+fn eligible_raw_process_spawn_source(path: &Path, body: &str) -> bool {
+    path.extension().and_then(|ext| ext.to_str()) == Some("rs")
+        && is_test_path(path)
+        && !is_static_desktop_guard_file(path)
+        && !is_runtime_desktop_support_file(path)
+        && body.contains("Command::new(")
+}
+
+fn command_new_is_string_literal(body: &str, start: usize) -> bool {
+    let line_start = body[..start]
+        .rfind('\n')
+        .map(|index| index + 1)
+        .unwrap_or(0);
+    body[line_start..start].contains('"')
+}
+
 pub(crate) fn scan_rs_files_for_desktop_process_commands(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -181,6 +254,9 @@ pub(crate) fn scan_rs_files_for_desktop_process_commands(dir: &Path, violations:
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
         if path.is_dir() {
+            if ignored_scan_dir(&path) {
+                continue;
+            }
             scan_rs_files_for_desktop_process_commands(&path, violations);
             continue;
         }
@@ -218,6 +294,9 @@ pub(crate) fn scan_rs_files_for_unsafe_opt_ins(dir: &Path, violations: &mut Vec<
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
         if path.is_dir() {
+            if ignored_scan_dir(&path) {
+                continue;
+            }
             scan_rs_files_for_unsafe_opt_ins(&path, violations);
             continue;
         }
@@ -253,6 +332,13 @@ fn eligible_test_source(path: &Path, body: &str) -> bool {
         && (is_test_path(path) || body.contains("#[cfg(test)]"))
         && !is_static_desktop_guard_file(path)
         && !is_runtime_desktop_support_file(path)
+}
+
+fn ignored_scan_dir(path: &Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| matches!(name, ".git" | ".std-cli" | "dist" | "target"))
+        .unwrap_or(false)
 }
 
 fn is_test_path(path: &Path) -> bool {

@@ -6,6 +6,7 @@ use crate::{
     },
 };
 use eframe::egui;
+use std_egui::i18n;
 use std_egui::tokens::{Color, Space, Text};
 use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecutionStatus, StdEvent};
@@ -13,20 +14,32 @@ use std_types::{ActionExecutionStatus, StdEvent};
 pub(crate) fn filter_bar(ui: &mut egui::Ui, filter: &mut String) {
     ui::surface_frame(ui.ctx()).show(ui, |ui| {
         ui.horizontal_wrapped(|ui| {
-            filter_chip(ui, "Time range");
+            filter_chip(ui, history_time_range_label());
             ui.add_sized(
                 [140.0, 26.0],
-                egui::TextEdit::singleline(filter).hint_text("Status or workflow"),
+                egui::TextEdit::singleline(filter).hint_text(history_filter_placeholder()),
             );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 ui.label(
-                    egui::RichText::new("time / workflow / status / duration / source")
+                    egui::RichText::new(history_filter_columns_label())
                         .font(Text::caption())
                         .color(ui::muted_text(ui.ctx())),
                 );
             });
         });
     });
+}
+
+fn history_time_range_label() -> &'static str {
+    i18n::t("studio.history.filter.time_range")
+}
+
+fn history_filter_placeholder() -> &'static str {
+    i18n::t("studio.history.filter.placeholder")
+}
+
+fn history_filter_columns_label() -> &'static str {
+    i18n::t("studio.history.filter.columns")
 }
 
 pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
@@ -202,14 +215,32 @@ fn compact_payload(payload: &serde_json::Value) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn history_filter_bar_contract_matches_docs_22() {
         let source = include_str!("history_rows.rs");
 
-        assert!(source.contains("Time range"));
+        assert!(source.contains("history_time_range_label()"));
         assert!(source.contains("TextEdit::singleline"));
-        assert!(source.contains("Status or workflow"));
-        assert!(source.contains("duration"));
+        assert!(source.contains("history_filter_placeholder()"));
+        assert!(source.contains("history_filter_columns_label()"));
         assert!(crate::views::history::history_layout_contract().contains("filter-bar"));
+    }
+
+    #[test]
+    fn history_filter_bar_copy_uses_i18n_keys() {
+        assert_eq!(
+            history_time_range_label(),
+            i18n::t("studio.history.filter.time_range")
+        );
+        assert_eq!(
+            history_filter_placeholder(),
+            i18n::t("studio.history.filter.placeholder")
+        );
+        assert_eq!(
+            history_filter_columns_label(),
+            i18n::t("studio.history.filter.columns")
+        );
     }
 }
