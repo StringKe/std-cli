@@ -130,6 +130,14 @@ fn cargo_test_binary_is_forced_into_std_test_mode() {
 }
 
 #[test]
+fn build_env_forces_runtime_binary_into_std_test_mode() {
+    assert_eq!(option_env!("STD_TEST_MODE"), Some("1"));
+    assert_eq!(option_env!("STD_ALLOW_DESKTOP_AUTOMATION"), Some("0"));
+    assert_eq!(option_env!("STD_ALLOW_UI_PREVIEW"), Some("0"));
+    assert!(compiled_for_safe_tests());
+}
+
+#[test]
 fn core_executes_clipboard_action_locally() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

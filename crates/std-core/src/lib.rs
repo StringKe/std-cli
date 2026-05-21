@@ -167,11 +167,24 @@ pub fn std_test_mode_enabled() -> bool {
     if cfg!(test) {
         return true;
     }
+    if compiled_for_safe_tests() {
+        return true;
+    }
     if running_under_cargo_test_context() {
         return true;
     }
-    std::env::var("STD_TEST_MODE")
-        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+    env_flag_enabled(std::env::var("STD_TEST_MODE").ok().as_deref())
+}
+
+fn compiled_for_safe_tests() -> bool {
+    env_flag_enabled(option_env!("STD_TEST_MODE"))
+        && option_env!("STD_ALLOW_DESKTOP_AUTOMATION") == Some("0")
+        && option_env!("STD_ALLOW_UI_PREVIEW") == Some("0")
+}
+
+fn env_flag_enabled(value: Option<&str>) -> bool {
+    value
+        .map(|value| matches!(value, "1" | "true" | "TRUE" | "yes" | "YES"))
         .unwrap_or(false)
 }
 

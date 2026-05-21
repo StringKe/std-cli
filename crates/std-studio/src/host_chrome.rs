@@ -9,15 +9,16 @@ use std_studio::WorkspacePaneId;
 const HOST_CONTROL_WIDTH: f32 = Space::XL as f32;
 const HOST_CONTROL_HEIGHT: f32 = Space::LG as f32;
 const CLOSE_ICON_HALF: f32 = Space::TWO_XS as f32;
-const MINIMIZE_ICON_HALF_WIDTH: f32 = 5.0;
-const MINIMIZE_ICON_Y_OFFSET: f32 = 3.0;
-const MAXIMIZE_ICON_WIDTH: f32 = 10.0;
+const MINIMIZE_ICON_HALF_WIDTH: f32 = (Space::XS as f32) * 0.5;
+const MINIMIZE_ICON_Y_OFFSET: f32 = (Space::XS as f32) * 0.5;
+const MAXIMIZE_ICON_WIDTH: f32 = Space::SM as f32;
 const MAXIMIZE_ICON_HEIGHT: f32 = Space::XS as f32;
+const HOST_CHROME_SURFACE_TOKEN: &str = "bg/surface-1";
 
 impl StudioEguiApp {
     pub(crate) fn render_app_chrome(&mut self, ui: &mut egui::Ui) {
         let frame = egui::Frame::new()
-            .fill(std_egui::tokens::Color::bg_surface_1(ui.ctx()))
+            .fill(host_chrome_surface_fill(ui.ctx()))
             .inner_margin(egui::Margin::symmetric(Space::SM, Space::XS));
         frame.show(ui, |ui| {
             let drag_rect = ui.max_rect();
@@ -84,6 +85,18 @@ impl StudioEguiApp {
         self.pending_workspace_focus = Some(id);
         id
     }
+}
+
+pub(crate) fn host_chrome_surface_contract() -> &'static str {
+    "host_chrome=egui-owned,borderless,native-controls=false,surface=bg/surface-1"
+}
+
+pub(crate) fn host_chrome_surface_token() -> &'static str {
+    HOST_CHROME_SURFACE_TOKEN
+}
+
+fn host_chrome_surface_fill(ctx: &egui::Context) -> egui::Color32 {
+    Color::bg_surface_1(ctx)
 }
 
 fn host_window_controls(ui: &mut egui::Ui, host_maximized: &mut bool) {

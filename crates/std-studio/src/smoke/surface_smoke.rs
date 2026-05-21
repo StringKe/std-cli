@@ -11,9 +11,12 @@ pub(crate) struct StudioSurfaceSmoke {
     light_bottom_panel_surface_layer: String,
     dark_status_surface_layer: String,
     light_status_surface_layer: String,
+    dark_host_chrome_surface_layer: String,
+    light_host_chrome_surface_layer: String,
     dark_selected_surface_layer: String,
     light_selected_surface_layer: String,
     canvas_outer_frame: String,
+    host_chrome_contract: &'static str,
     standard_modal_enter_ms: u128,
     reduced_modal_enter_ms: u128,
     reduced_focus_ring_ms: u128,
@@ -70,6 +73,16 @@ impl StudioSurfaceSmoke {
                 "bg/surface-1",
                 theme.light_surface_1,
             ),
+            dark_host_chrome_surface_layer: surface(
+                "dark_host_chrome",
+                crate::host_chrome::host_chrome_surface_token(),
+                theme.dark_surface_1,
+            ),
+            light_host_chrome_surface_layer: surface(
+                "light_host_chrome",
+                crate::host_chrome::host_chrome_surface_token(),
+                theme.light_surface_1,
+            ),
             dark_selected_surface_layer: rgba_surface(
                 "dark_selected",
                 "accent/weak",
@@ -81,6 +94,7 @@ impl StudioSurfaceSmoke {
                 theme.light_selection,
             ),
             canvas_outer_frame: canvas_outer_frame_contract(),
+            host_chrome_contract: crate::host_chrome::host_chrome_surface_contract(),
             standard_modal_enter_ms: standard_motion.modal_enter().as_millis(),
             reduced_modal_enter_ms: reduced_motion.modal_enter().as_millis(),
             reduced_focus_ring_ms: reduced_motion.focus_ring().as_millis(),
@@ -113,9 +127,17 @@ impl StudioSurfaceSmoke {
                 .contains("bg/surface-1")
             && self.dark_status_surface_layer.contains("bg/surface-1")
             && self.light_status_surface_layer.contains("bg/surface-1")
+            && self
+                .dark_host_chrome_surface_layer
+                .contains("bg/surface-1:#24272C")
+            && self
+                .light_host_chrome_surface_layer
+                .contains("bg/surface-1:#F2F5F8")
             && self.dark_selected_surface_layer.contains("#4E9CFF@46")
             && self.light_selected_surface_layer.contains("#0A6BFF@31")
             && self.canvas_outer_frame == "unframed,no_nested_card"
+            && self.host_chrome_contract
+                == "host_chrome=egui-owned,borderless,native-controls=false,surface=bg/surface-1"
             && self.standard_modal_enter_ms == 220
             && self.reduced_modal_enter_ms == 0
             && self.reduced_focus_ring_ms == 0
@@ -128,7 +150,7 @@ impl StudioSurfaceSmoke {
     pub(crate) fn output(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
+            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_host_chrome_surface_layer={}\nlight_host_chrome_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nhost_chrome_contract={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
             self.dark_canvas_surface_layer,
             self.light_canvas_surface_layer,
             self.dark_sidebar_surface_layer,
@@ -139,9 +161,12 @@ impl StudioSurfaceSmoke {
             self.light_bottom_panel_surface_layer,
             self.dark_status_surface_layer,
             self.light_status_surface_layer,
+            self.dark_host_chrome_surface_layer,
+            self.light_host_chrome_surface_layer,
             self.dark_selected_surface_layer,
             self.light_selected_surface_layer,
             self.canvas_outer_frame,
+            self.host_chrome_contract,
             self.standard_modal_enter_ms,
             self.reduced_modal_enter_ms,
             self.reduced_focus_ring_ms,
@@ -189,6 +214,10 @@ mod tests {
         assert!(report.output().contains("studio_surface_smoke PASS"));
         assert!(report.output().contains("dark_canvas_surface_layer"));
         assert!(report.output().contains("light_canvas_surface_layer"));
+        assert!(report
+            .output()
+            .contains("host_chrome_contract=host_chrome=egui-owned,borderless"));
+        assert!(report.output().contains("native-controls=false"));
         assert!(report.output().contains("canvas_outer_frame=unframed"));
         assert!(report.output().contains("standard_modal_enter_ms=220"));
         assert!(report.output().contains("reduced_modal_enter_ms=0"));
