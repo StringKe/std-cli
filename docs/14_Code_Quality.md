@@ -84,7 +84,9 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - 目标进程限定为测试命令启动的隔离 harness，不复用用户已打开的真实窗口
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
 - `std ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
+- 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置
 - driver 只能使用 `postToPid` 定向投递到 harness pid，不能使用全局 HID、System Events、前台点击或用户当前 frontmost app
+- 激活前先安装 previous 和 target 两个 per-process event tap，然后再发 appKitDefined primer 和 center primer
 - per-process event tap 只允许拦截 previous app deactivation，target activation 必须放行；focus message 按 raw value 13、19、20 识别
 - activation start 使用 `appKitDefined` subtype 1 `applicationActivated`，结束使用 subtype 2 `applicationDeactivated`
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为

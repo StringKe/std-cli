@@ -296,9 +296,12 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         "harness_pid required",
         "window_id required",
         "AX_or_CGEvent_postToPid_after_explicit_opt_in",
+        "cursor_visual=floating_cursor_not_required_for_event_delivery",
+        "tap_order=install_previous_and_target_taps_before_primer",
         "event_tap_then_appkit_defined_primer_then_center_primer",
         "event_route=postToPid_target_pid_only",
         "focus_guard=drop_previous_app_deactivation",
+        "focus_policy=allow_target_activation_only",
         "focus_messages=raw_13_19_20",
         "primer_start=appKitDefined_subtype_1_applicationActivated",
         "primer_end=appKitDefined_subtype_2_applicationDeactivated",
@@ -314,6 +317,8 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
     }
     for required in [
         "per-process event tap",
+        "浮动光标不是输入机制",
+        "先安装 previous 和 target",
         "appKitDefined primer",
         "center primer",
         "raw value 13、19、20",
