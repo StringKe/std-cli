@@ -34,9 +34,13 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
         Some(ActionExecutionStatus::NeedsExternalRunner)
     );
     assert!(report.user_enter_deferred);
+    assert!(report.user_enter_feedback_visible);
+    assert!(report.user_enter_keeps_launcher_open);
     assert!(summary.contains("direct_trigger_status=Completed"));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
     assert!(summary.contains("user_enter_deferred=true"));
+    assert!(summary.contains("user_enter_feedback_visible=true"));
+    assert!(summary.contains("user_enter_keeps_launcher_open=true"));
 }
 
 fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {

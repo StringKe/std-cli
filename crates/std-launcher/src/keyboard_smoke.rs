@@ -26,7 +26,7 @@ impl LauncherState {
         let trigger_status = state
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
-        let (user_enter_status, user_enter_deferred) = user_enter_defer_evidence();
+        let user_enter = user_enter_defer_evidence();
         state.handle_keyboard_input(LauncherKey::Escape, false);
         state.handle_keyboard_input(LauncherKey::Escape, false);
         LauncherKeyboardReport {
@@ -35,8 +35,10 @@ impl LauncherState {
             selected_after_up,
             direct_trigger_status,
             trigger_status,
-            user_enter_status,
-            user_enter_deferred,
+            user_enter_status: user_enter.status,
+            user_enter_deferred: user_enter.deferred,
+            user_enter_feedback_visible: user_enter.feedback_visible,
+            user_enter_keeps_launcher_open: user_enter.keeps_launcher_open,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged: ime.selection_unchanged,
             ime_action_panel_selection_unchanged: ime.action_panel_selection_unchanged,
@@ -53,6 +55,13 @@ impl LauncherState {
             token_delete_query,
         }
     }
+}
+
+struct UserEnterEvidence {
+    status: Option<ActionExecutionStatus>,
+    deferred: bool,
+    feedback_visible: bool,
+    keeps_launcher_open: bool,
 }
 
 struct ImeEvidence {
@@ -125,7 +134,7 @@ fn token_delete_query() -> String {
     state.view.query
 }
 
-fn user_enter_defer_evidence() -> (Option<ActionExecutionStatus>, bool) {
+fn user_enter_defer_evidence() -> UserEnterEvidence {
     let root = std::env::temp_dir().join(format!(
         "std-launcher-keyboard-smoke-{}",
         std::process::id()
@@ -141,7 +150,12 @@ fn user_enter_defer_evidence() -> (Option<ActionExecutionStatus>, bool) {
     state.update_query("Keyboard Smoke App");
     let Some(execution) = state.handle_keyboard_input_by_user(LauncherKey::Enter, false) else {
         let _ = std::fs::remove_dir_all(&root);
-        return (None, false);
+        return UserEnterEvidence {
+            status: None,
+            deferred: false,
+            feedback_visible: false,
+            keeps_launcher_open: false,
+        };
     };
     let deferred = execution
         .output
@@ -149,8 +163,15 @@ fn user_enter_defer_evidence() -> (Option<ActionExecutionStatus>, bool) {
         .and_then(|output| output.get("deferred"))
         .and_then(|value| value.as_bool())
         .unwrap_or(false);
+    let feedback_visible = state.view.feedback.is_some();
+    let keeps_launcher_open = state.controller.visible;
     let _ = std::fs::remove_dir_all(root);
-    (Some(execution.status), deferred)
+    UserEnterEvidence {
+        status: Some(execution.status),
+        deferred,
+        feedback_visible,
+        keeps_launcher_open,
+    }
 }
 
 fn write_keyboard_smoke_app(config: &StdConfig) {
