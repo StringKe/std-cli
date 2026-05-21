@@ -20,6 +20,10 @@ fn workspace_tab_specs_mark_only_focused_pane() {
     assert!(!specs[0].focused);
     assert!(specs[1].focused);
     assert_eq!(specs[1].title, "Settings");
+    assert_eq!(specs[0].position, 1);
+    assert_eq!(specs[1].position, 2);
+    assert_eq!(specs[0].total, 2);
+    assert_eq!(specs[1].total, 2);
 }
 
 #[test]
@@ -56,17 +60,22 @@ fn workspace_tab_a11y_labels_include_role_title_and_state() {
         id: WorkspacePaneId::new(9),
         title: "Workflow Builder".to_string(),
         focused: true,
+        position: 2,
+        total: 4,
     };
 
     assert_eq!(
         workspace_tab_a11y_label(&spec),
-        "Workspace pane tab, Workflow Builder, focused"
+        "Workspace pane tab, Workflow Builder, focused, 2 of 4, press Enter to focus"
     );
     assert_eq!(
         workspace_tab_close_a11y_label(&spec),
-        "Close workspace pane, Workflow Builder"
+        "Close workspace pane, Workflow Builder, button, press Enter to close"
     );
-    assert_eq!(workspace_cycle_a11y_label("Next"), "Next workspace pane");
+    assert_eq!(
+        workspace_cycle_a11y_label("Next", "Mod+Shift+Down"),
+        "Next workspace pane, shortcut Mod+Shift+Down"
+    );
 }
 
 #[test]

@@ -1,7 +1,7 @@
 use crate::{ui, workspace_panes::StudioWorkspaceCommand};
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Radius, Space, Text},
 };
 use std_studio::{WorkspacePane, WorkspacePaneId};
@@ -20,19 +20,25 @@ pub(crate) struct WorkspaceTabSpec {
     pub id: WorkspacePaneId,
     pub title: String,
     pub focused: bool,
+    pub position: usize,
+    pub total: usize,
 }
 
 pub(crate) fn workspace_tab_specs(
     panes: &[WorkspacePane],
     focused: Option<WorkspacePaneId>,
 ) -> Vec<WorkspaceTabSpec> {
-    panes
-        .iter()
-        .filter(|pane| pane.open)
-        .map(|pane| WorkspaceTabSpec {
+    let open_panes = panes.iter().filter(|pane| pane.open).collect::<Vec<_>>();
+    let total = open_panes.len();
+    open_panes
+        .into_iter()
+        .enumerate()
+        .map(|(index, pane)| WorkspaceTabSpec {
             id: pane.id,
             title: pane.title.clone(),
             focused: Some(pane.id) == focused,
+            position: index + 1,
+            total,
         })
         .collect()
 }
@@ -75,7 +81,10 @@ fn render_workspace_cycle_controls(
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
             ui.is_enabled(),
-            workspace_cycle_a11y_label("Previous"),
+            workspace_cycle_a11y_label(
+                "Previous",
+                input::studio_previous_workspace_pane().label().as_str(),
+            ),
         )
     });
     if previous.clicked() {
@@ -86,7 +95,10 @@ fn render_workspace_cycle_controls(
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
             ui.is_enabled(),
-            workspace_cycle_a11y_label("Next"),
+            workspace_cycle_a11y_label(
+                "Next",
+                input::studio_next_workspace_pane().label().as_str(),
+            ),
         )
     });
     if next.clicked() {
@@ -202,15 +214,21 @@ fn paint_workspace_tab_close(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
 
 pub(crate) fn workspace_tab_a11y_label(spec: &WorkspaceTabSpec) -> String {
     let state = if spec.focused { "focused" } else { "inactive" };
-    format!("Workspace pane tab, {}, {}", spec.title, state)
+    format!(
+        "Workspace pane tab, {}, {}, {} of {}, press Enter to focus",
+        spec.title, state, spec.position, spec.total
+    )
 }
 
 pub(crate) fn workspace_tab_close_a11y_label(spec: &WorkspaceTabSpec) -> String {
-    format!("Close workspace pane, {}", spec.title)
+    format!(
+        "Close workspace pane, {}, button, press Enter to close",
+        spec.title
+    )
 }
 
-pub(crate) fn workspace_cycle_a11y_label(direction: &str) -> String {
-    format!("{direction} workspace pane")
+pub(crate) fn workspace_cycle_a11y_label(direction: &str, shortcut: &str) -> String {
+    format!("{direction} workspace pane, shortcut {shortcut}")
 }
 
 fn push_command(
