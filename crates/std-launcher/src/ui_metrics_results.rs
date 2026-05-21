@@ -9,6 +9,7 @@ const GROUP_LABEL_OFFSET_Y: f32 = 4.0;
 const RESULT_ICON_SIZE: f32 = 20.0;
 const RESULT_ICON_TEXT_OFFSET_Y: f32 = 0.5;
 const RESULT_ROW_TITLE_Y: f32 = 12.0;
+const RESULT_ROW_TITLE_HEIGHT: f32 = 18.0;
 const RESULT_ROW_SUBTITLE_Y: f32 = 28.0;
 const RESULT_RIGHT_AREA_WIDTH: f32 = 180.0;
 const RESULT_TEXT_RIGHT_GAP: f32 = 12.0;
@@ -78,6 +79,13 @@ pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherRes
     LauncherResultRowLayout {
         icon_rect,
         title_pos: egui::pos2(text_left, rect.top() + scale.f32(RESULT_ROW_TITLE_Y)),
+        title_rect: egui::Rect::from_min_size(
+            egui::pos2(text_left, rect.top()),
+            egui::vec2(
+                (text_right - text_left).max(0.0),
+                scale.f32(RESULT_ROW_TITLE_HEIGHT),
+            ),
+        ),
         subtitle_pos: egui::pos2(text_left, rect.top() + scale.f32(RESULT_ROW_SUBTITLE_Y)),
         text_clip: egui::Rect::from_min_max(
             egui::pos2(text_left, rect.top()),
@@ -92,6 +100,7 @@ pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherRes
 pub(crate) struct LauncherResultRowLayout {
     pub(crate) icon_rect: egui::Rect,
     pub(crate) title_pos: egui::Pos2,
+    pub(crate) title_rect: egui::Rect,
     pub(crate) subtitle_pos: egui::Pos2,
     pub(crate) text_clip: egui::Rect,
     pub(crate) right_rect: egui::Rect,

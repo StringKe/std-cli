@@ -122,13 +122,15 @@ fn paint_result_text(
     ctx: &egui::Context,
 ) {
     let painter = ui.painter().with_clip_rect(layout.text_clip);
-    painter.text(
-        layout.title_pos,
-        egui::Align2::LEFT_CENTER,
-        &model.title,
-        Text::body(),
-        Color::fg_primary(ctx),
-    );
+    ui.scope_builder(egui::UiBuilder::new().max_rect(layout.text_clip), |ui| {
+        ui.scope_builder(egui::UiBuilder::new().max_rect(layout.title_rect), |ui| {
+            let text = egui::RichText::new(&model.title)
+                .font(Text::body())
+                .color(Color::fg_primary(ctx));
+            let text = if selected { text.strong() } else { text };
+            ui.add(egui::Label::new(text).truncate());
+        });
+    });
     painter.text(
         layout.subtitle_pos,
         egui::Align2::LEFT_CENTER,
@@ -238,5 +240,13 @@ mod tests {
             Some(Color::bg_surface_2(&ctx))
         );
         assert_eq!(result_row_background_color(false, false, &ctx), None);
+    }
+
+    #[test]
+    fn selected_result_title_uses_strong_text_contract() {
+        let source = include_str!("ui_result_rows.rs");
+
+        assert!(source.contains("let text = if selected { text.strong() } else { text };"));
+        assert!(source.contains(".font(Text::body())"));
     }
 }
