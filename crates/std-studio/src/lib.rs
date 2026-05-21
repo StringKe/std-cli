@@ -6,6 +6,7 @@
 mod analysis_model;
 mod apps;
 mod ops_evidence;
+pub mod plugin_security;
 mod trace;
 mod workflow;
 mod workspace_pane;

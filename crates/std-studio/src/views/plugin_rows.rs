@@ -8,6 +8,7 @@ use crate::{
 use eframe::egui;
 use std::path::Path;
 use std_egui::tokens::{Color, Space, Text};
+use std_studio::plugin_security::{boundary_summary, runtime_summary, PluginBoundarySummary};
 use std_types::{ActionExecutionStatus, ActionPreview, SearchResult};
 
 pub(crate) enum PluginActionRowEvent {
@@ -84,24 +85,22 @@ pub(crate) fn action_row(
 }
 
 pub(crate) fn check_report_row(ui: &mut egui::Ui, report: &std_core::PluginCheckReport) {
+    let boundary = boundary_summary(report);
     let detail = format!(
-        "permissions={} fs_scopes={} network_hosts={}",
-        report
-            .permissions
-            .iter()
-            .map(|permission| format!("{permission:?}"))
-            .collect::<Vec<_>>()
-            .join(","),
-        report.fs_scopes.len(),
-        report.network_hosts.len()
+        "{} permissions={} fs={} network={}",
+        boundary.actions,
+        boundary.permissions.join(","),
+        boundary.fs_scopes,
+        boundary.network_hosts
     );
     status_row(
         ui,
-        &format!("{} actions={}", report.plugin_name, report.actions),
-        report.status,
+        &report.plugin_name,
+        boundary.status,
         &detail,
         ui::ok_bg(ui.ctx()),
     );
+    boundary_panel(ui, &boundary);
 }
 
 pub(crate) fn preview_panel(ui: &mut egui::Ui, preview: &ActionPreview) {
@@ -126,14 +125,20 @@ pub(crate) fn execution_panel(
     name: &str,
     status: &ActionExecutionStatus,
     message: &str,
+    output: Option<&serde_json::Value>,
 ) {
+    let runtime = runtime_summary(status, output);
     status_row(
         ui,
         name,
-        &format!("{status:?}"),
+        &runtime.status,
         message,
         plugin_status_fill(ui.ctx(), status),
     );
+    runtime_row(ui, "runtime", &runtime.runtime);
+    runtime_row(ui, "exit", &runtime.exit_code);
+    runtime_row(ui, "duration", &runtime.duration);
+    runtime_row(ui, "boundary", &runtime.boundary);
 }
 
 pub(crate) fn output_view(ui: &mut egui::Ui, output: &serde_json::Value) {
@@ -190,6 +195,40 @@ fn metadata_row(ui: &mut egui::Ui, key: &str, value: &str) {
     ui.horizontal(|ui| {
         ui.label(
             egui::RichText::new(key)
+                .font(Text::caption())
+                .color(ui::muted_text(ui.ctx())),
+        );
+        ui.label(
+            egui::RichText::new(value)
+                .font(Text::caption())
+                .color(ui::strong_text(ui.ctx())),
+        );
+    });
+}
+
+fn boundary_panel(ui: &mut egui::Ui, boundary: &PluginBoundarySummary) {
+    ui.horizontal_wrapped(|ui| {
+        for permission in &boundary.permissions {
+            ui::chip(ui, permission, Color::accent_weak(ui.ctx()));
+        }
+        ui::chip(
+            ui,
+            &format!("fs {}", boundary.fs_scopes),
+            Color::bg_surface_2(ui.ctx()),
+        );
+        ui::chip(
+            ui,
+            &format!("net {}", boundary.network_hosts),
+            Color::bg_surface_2(ui.ctx()),
+        );
+    });
+    ui.add_space(Space::XS as f32);
+}
+
+fn runtime_row(ui: &mut egui::Ui, label: &str, value: &str) {
+    ui.horizontal(|ui| {
+        ui.label(
+            egui::RichText::new(label)
                 .font(Text::caption())
                 .color(ui::muted_text(ui.ctx())),
         );

@@ -1,5 +1,3 @@
-//! std-studio - Professional environment (full product)
-
 mod analysis;
 mod analysis_rows;
 mod app_rows;

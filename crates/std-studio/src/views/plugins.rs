@@ -189,6 +189,7 @@ impl StudioEguiApp {
             &execution.action_name,
             &execution.status,
             &execution.message,
+            execution.output.as_ref(),
         );
         if let Some(output) = &execution.output {
             plugin_rows::output_view(ui, output);
