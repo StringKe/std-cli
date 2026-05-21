@@ -350,7 +350,7 @@ fn scan_rs_files(dir: &Path, forbidden_terms: &[String], violations: &mut Vec<St
         }
         if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
             || !is_test_path(&path)
-            || is_guard_file(&path)
+            || is_static_desktop_guard_file(&path)
         {
             continue;
         }
@@ -375,7 +375,7 @@ fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<String>) {
         }
         if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
             || !is_test_path(&path)
-            || is_guard_file(&path)
+            || is_static_desktop_guard_file(&path)
         {
             continue;
         }
@@ -404,9 +404,6 @@ fn is_test_path(path: &Path) -> bool {
             .unwrap_or(false)
 }
 
-fn is_guard_file(path: &Path) -> bool {
-    path.file_name()
-        .and_then(|name| name.to_str())
-        .map(|name| name == "desktop_guard.rs")
-        .unwrap_or(false)
+fn is_static_desktop_guard_file(path: &Path) -> bool {
+    path.ends_with("std-cli/src/tests/desktop_guard.rs")
 }

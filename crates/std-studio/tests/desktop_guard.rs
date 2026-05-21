@@ -1,8 +1,8 @@
 use std::process::Command;
 
 #[test]
-fn studio_test_mode_wins_over_inherited_desktop_opt_in() {
-    let output = run_studio_with_inherited_desktop_opt_in(&[]);
+fn studio_test_mode_removes_desktop_opt_in_for_child_process() {
+    let output = run_studio_in_desktop_safe_test_mode(&[]);
 
     assert!(output.status.success(), "{}", stderr(&output));
     let stdout = stdout(&output);
@@ -11,9 +11,9 @@ fn studio_test_mode_wins_over_inherited_desktop_opt_in() {
 }
 
 #[test]
-fn studio_preview_test_mode_wins_over_inherited_preview_opt_in() {
+fn studio_preview_test_mode_removes_ui_preview_opt_in_for_child_process() {
     let output =
-        run_studio_with_inherited_desktop_opt_in(&["--ui-preview", "light", "dashboard", "10"]);
+        run_studio_in_desktop_safe_test_mode(&["--ui-preview", "light", "dashboard", "10"]);
 
     assert!(output.status.success(), "{}", stderr(&output));
     let stdout = stdout(&output);
@@ -21,13 +21,13 @@ fn studio_preview_test_mode_wins_over_inherited_preview_opt_in() {
     assert!(stdout.contains("STD_TEST_MODE blocked Studio UI preview"));
 }
 
-fn run_studio_with_inherited_desktop_opt_in(args: &[&str]) -> std::process::Output {
+fn run_studio_in_desktop_safe_test_mode(args: &[&str]) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_std-studio"));
     command
         .args(args)
         .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
-        .env("STD_ALLOW_UI_PREVIEW", "1");
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
 }
 

@@ -23,6 +23,8 @@ mise run quality
 
 `mise run test` 会设置 `STD_TEST_MODE=1`。该模式下 release/debug binary 即使被测试间接调用，也会阻断 `open`、`osascript` 和其他 external runner。CLI、batch、workflow 的外部执行必须同时满足 `--allow-external` 和 `STD_ALLOW_DESKTOP_AUTOMATION=1`，只给其中一个条件一律返回 `NeedsExternalRunner`。Launcher 真实用户 Enter 使用独立入口打开 App / File，但该入口在 `STD_TEST_MODE=1` 下同样返回 `NeedsExternalRunner`。默认测试严禁唤起 Terminal、App、1Password、WeChat、menu bar resident 或全局热键。
 
+测试代码禁止设置 `STD_ALLOW_DESKTOP_AUTOMATION` 或 `STD_ALLOW_UI_PREVIEW`。任何测试子进程必须设置 `STD_TEST_MODE=1`，并显式移除这两个 opt-in 环境变量。
+
 `quality` 任务展开为：
 
 ```bash

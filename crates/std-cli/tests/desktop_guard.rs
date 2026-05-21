@@ -1,11 +1,11 @@
 use std::{fs, path::Path, process::Command};
 
 #[test]
-fn std_binary_test_mode_wins_over_inherited_desktop_opt_in() {
+fn std_binary_test_mode_removes_desktop_opt_in_for_child_process() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
-    let define = run_std_with_inherited_desktop_opt_in(
+    let define = run_std_in_desktop_safe_test_mode(
         &config_path,
         &[
             "command",
@@ -17,7 +17,7 @@ fn std_binary_test_mode_wins_over_inherited_desktop_opt_in() {
     );
     assert!(define.status.success(), "{}", stderr(&define));
 
-    let trigger = run_std_with_inherited_desktop_opt_in(
+    let trigger = run_std_in_desktop_safe_test_mode(
         &config_path,
         &["trigger", "Inherited Opt In Guard", "--allow-external"],
     );
@@ -30,7 +30,7 @@ fn std_binary_test_mode_wins_over_inherited_desktop_opt_in() {
 }
 
 #[test]
-fn std_registered_app_test_mode_wins_over_inherited_desktop_opt_in() {
+fn std_registered_app_test_mode_removes_desktop_opt_in_for_child_process() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
     let app_path = temp.path().join("StdNeverLaunchFixture.app");
@@ -41,13 +41,13 @@ fn std_registered_app_test_mode_wins_over_inherited_desktop_opt_in() {
     )
     .unwrap();
 
-    let register = run_std_with_inherited_desktop_opt_in(
+    let register = run_std_in_desktop_safe_test_mode(
         &config_path,
         &["app", "register", app_path.to_str().unwrap()],
     );
     assert!(register.status.success(), "{}", stderr(&register));
 
-    let trigger = run_std_with_inherited_desktop_opt_in(
+    let trigger = run_std_in_desktop_safe_test_mode(
         &config_path,
         &["trigger", "StdNeverLaunchFixture", "--allow-external"],
     );
@@ -72,17 +72,14 @@ fn write_config(root: &Path) -> std::path::PathBuf {
     config_path
 }
 
-fn run_std_with_inherited_desktop_opt_in(
-    config_path: &Path,
-    args: &[&str],
-) -> std::process::Output {
+fn run_std_in_desktop_safe_test_mode(config_path: &Path, args: &[&str]) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_std"));
     command
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env("STD_ALLOW_DESKTOP_AUTOMATION", "1")
-        .env("STD_ALLOW_UI_PREVIEW", "1");
+        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
+        .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
 }
 
