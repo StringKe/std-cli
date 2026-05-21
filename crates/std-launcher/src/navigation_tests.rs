@@ -1,4 +1,4 @@
-use crate::{LauncherFocusSection, LauncherKey, LauncherState};
+use crate::{LauncherFocusSection, LauncherFocusSource, LauncherKey, LauncherState};
 use std_egui::{LauncherFeedback, LauncherFeedbackAction};
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 
@@ -69,9 +69,12 @@ fn tab_keys_cycle_launcher_focus_sections_without_wrapping_into_mouse_only_state
     state.controller.show();
     state.update_query("index");
     assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
 
     state.handle_keyboard_input(LauncherKey::FocusNext, false);
     assert_eq!(state.focus_section, LauncherFocusSection::Results);
+    assert_eq!(state.focus_source, LauncherFocusSource::Keyboard);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Results));
 
     state.handle_keyboard_input(LauncherKey::FocusNext, false);
     assert_eq!(state.focus_section, LauncherFocusSection::Search);
@@ -81,6 +84,18 @@ fn tab_keys_cycle_launcher_focus_sections_without_wrapping_into_mouse_only_state
 
     state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
     assert_eq!(state.focus_section, LauncherFocusSection::Search);
+}
+
+#[test]
+fn pointer_result_selection_suppresses_keyboard_focus_ring() {
+    let mut state = LauncherState::new();
+    state.update_query("index");
+
+    state.mark_pointer_focus(LauncherFocusSection::Results);
+
+    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+    assert_eq!(state.focus_source, LauncherFocusSource::Pointer);
+    assert!(!state.keyboard_focus_visible(LauncherFocusSection::Results));
 }
 
 #[test]

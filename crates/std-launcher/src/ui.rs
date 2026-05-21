@@ -143,7 +143,7 @@ fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requeste
                         a11y.launcher_search_label(&state.view.query),
                     )
                 });
-                if state.focus_section == LauncherFocusSection::Search {
+                if state.keyboard_focus_visible(LauncherFocusSection::Search) {
                     draw_focus_ring(
                         ui,
                         response.rect,
@@ -289,10 +289,12 @@ mod tests {
     fn search_focus_ring_is_tied_to_search_section() {
         let mut state = LauncherState::new();
         assert_eq!(state.focus_section, LauncherFocusSection::Search);
+        assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
 
         state.focus_section = LauncherFocusSection::Results;
 
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
+        assert!(!state.keyboard_focus_visible(LauncherFocusSection::Search));
     }
 
     #[test]

@@ -25,7 +25,9 @@ pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{
     hotkey_smoke, GlobalHotkeyRuntime, HotkeyRegistrationPlan, HotkeySmokeReport, LauncherHotkey,
 };
-pub use keyboard::{LauncherFocusSection, LauncherKey, LauncherKeyboardReport};
+pub use keyboard::{
+    LauncherFocusSection, LauncherFocusSource, LauncherKey, LauncherKeyboardReport,
+};
 pub use layout_contract::{
     panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
 };
@@ -54,6 +56,7 @@ pub struct LauncherState {
     pub controller: LauncherController,
     pub action_panel: ActionPanel,
     pub focus_section: LauncherFocusSection,
+    pub focus_source: LauncherFocusSource,
     pub studio_intent: Option<StudioLaunchIntent>,
 }
 
@@ -69,6 +72,7 @@ impl Default for LauncherState {
             controller,
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
+            focus_source: LauncherFocusSource::Keyboard,
             studio_intent: None,
         }
     }
@@ -89,6 +93,7 @@ impl LauncherState {
             controller,
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
+            focus_source: LauncherFocusSource::Keyboard,
             studio_intent: None,
         }
     }
@@ -118,14 +123,25 @@ impl LauncherState {
     pub fn hide(&mut self) {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Search;
+        self.focus_source = LauncherFocusSource::Keyboard;
         self.controller.hide();
     }
 
     pub fn update_query(&mut self, query: impl Into<String>) -> Option<ActionPreview> {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Search;
+        self.focus_source = LauncherFocusSource::Keyboard;
         self.view.update_query(&self.core, query);
         self.view.preview.clone()
+    }
+
+    pub fn keyboard_focus_visible(&self, section: LauncherFocusSection) -> bool {
+        self.focus_section == section && self.focus_source == LauncherFocusSource::Keyboard
+    }
+
+    pub fn mark_pointer_focus(&mut self, section: LauncherFocusSection) {
+        self.focus_section = section;
+        self.focus_source = LauncherFocusSource::Pointer;
     }
 
     pub fn no_match_fallback_query(&self) -> Option<String> {
@@ -143,6 +159,7 @@ impl LauncherState {
     pub fn move_selection(&mut self, delta: isize) -> Option<ActionPreview> {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Results;
+        self.focus_source = LauncherFocusSource::Keyboard;
         self.view.move_selection_with_preview(&self.core, delta);
         self.view.preview.clone()
     }
@@ -150,6 +167,7 @@ impl LauncherState {
     pub fn jump_selection(&mut self, first: bool) -> Option<ActionPreview> {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Results;
+        self.focus_source = LauncherFocusSource::Keyboard;
         self.view.jump_selection(&self.core, first);
         self.view.preview.clone()
     }
@@ -161,12 +179,14 @@ impl LauncherState {
         };
         self.action_panel.open_for(&result.action);
         self.focus_section = LauncherFocusSection::ActionPanel;
+        self.focus_source = LauncherFocusSource::Keyboard;
         true
     }
 
     pub fn close_action_panel(&mut self) {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Results;
+        self.focus_source = LauncherFocusSource::Keyboard;
     }
 
     pub fn move_action_panel_selection(&mut self, delta: isize) {

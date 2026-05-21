@@ -25,6 +25,12 @@ pub enum LauncherFocusSection {
     Feedback,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LauncherFocusSource {
+    Keyboard,
+    Pointer,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LauncherKeyboardReport {
     pub selected_before: usize,
@@ -89,6 +95,7 @@ impl LauncherState {
         if ime_composing {
             return None;
         }
+        self.focus_source = LauncherFocusSource::Keyboard;
         match key {
             LauncherKey::ArrowDown if self.focus_section == LauncherFocusSection::Feedback => {
                 self.view.move_feedback_action(1);

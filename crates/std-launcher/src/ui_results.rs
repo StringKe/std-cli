@@ -37,7 +37,7 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f
         );
         hide_requested = render_results(ui, state, max_height);
     });
-    if state.focus_section == LauncherFocusSection::Results {
+    if state.keyboard_focus_visible(LauncherFocusSection::Results) {
         let a11y = AccessibilityContext::from_env();
         draw_focus_ring(
             ui,
@@ -134,6 +134,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
     if let Some(index) = double_clicked {
         return trigger_result_from_row(state, index);
     } else if let Some(index) = clicked {
+        state.mark_pointer_focus(LauncherFocusSection::Results);
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
