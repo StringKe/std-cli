@@ -125,6 +125,11 @@ fn desktop_automation_is_disabled_in_unit_tests() {
 }
 
 #[test]
+fn desktop_integration_is_disabled_in_unit_tests() {
+    assert!(!desktop_integration_allowed());
+}
+
+#[test]
 fn cargo_test_binary_is_forced_into_std_test_mode() {
     assert!(std_test_mode_enabled());
 }

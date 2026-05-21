@@ -50,7 +50,7 @@ pub struct GlobalHotkeyRuntime {
 
 impl GlobalHotkeyRuntime {
     pub fn register(plan: HotkeyRegistrationPlan) -> Result<Self, String> {
-        if !std_core::desktop_automation_allowed() {
+        if !std_core::desktop_integration_allowed() {
             return Err(hotkey_block_reason());
         }
         let hotkey = global_hotkey::hotkey::HotKey::try_from(plan.accelerator.as_str())
@@ -183,7 +183,7 @@ fn hotkey_smoke_blocked() -> bool {
 
 fn hotkey_block_reason() -> String {
     if std_core::std_test_mode_enabled() {
-        "STD_TEST_MODE blocked global hotkey registration; use explicit desktop opt-in".to_string()
+        "STD_TEST_MODE blocked global hotkey registration".to_string()
     } else {
         "global hotkey registration requires STD_ALLOW_DESKTOP_AUTOMATION=1 explicit opt-in"
             .to_string()

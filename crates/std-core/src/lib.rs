@@ -211,6 +211,10 @@ pub fn desktop_automation_allowed() -> bool {
         .unwrap_or(false)
 }
 
+pub fn desktop_integration_allowed() -> bool {
+    !(cfg!(test) || std_test_mode_enabled())
+}
+
 pub fn sanitize_desktop_opt_ins_for_test_mode() {
     if std_test_mode_enabled() {
         std::env::remove_var("STD_ALLOW_DESKTOP_AUTOMATION");

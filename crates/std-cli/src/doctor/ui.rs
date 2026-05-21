@@ -285,6 +285,7 @@ fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), Cl
 fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliError> {
     let core = read_required(&root.join("crates/std-core/src/lib.rs"))?;
     check_text(&core, "pub fn desktop_automation_allowed()")?;
+    check_text(&core, "pub fn desktop_integration_allowed()")?;
     check_text(&core, "cfg!(test) || std_test_mode_enabled()")?;
     check_text(&core, "STD_ALLOW_DESKTOP_AUTOMATION")?;
     let guard = read_required(&root.join("crates/std-cli/tests/external_runner_guard.rs"))?;

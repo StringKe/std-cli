@@ -103,18 +103,23 @@ fn plugin_shell_runner_requires_desktop_opt_in() {
 }
 
 #[test]
-fn launcher_hotkey_registration_requires_desktop_opt_in() {
+fn launcher_hotkey_registration_uses_product_desktop_integration_gate() {
     let root = workspace_root();
     let body = fs::read_to_string(root.join("crates/std-launcher/src/hotkey.rs")).unwrap();
 
     assert!(
-        body.contains("if !std_core::desktop_automation_allowed()"),
-        "global hotkey registration must require STD_ALLOW_DESKTOP_AUTOMATION"
+        body.contains("if !std_core::desktop_integration_allowed()"),
+        "product global hotkey registration must be allowed outside tests and STD_TEST_MODE"
     );
     assert_order(
         &body,
-        "desktop_automation_allowed",
+        "desktop_integration_allowed",
         "GlobalHotKeyManager::new",
+    );
+    assert!(
+        body.contains("fn hotkey_smoke_blocked() -> bool")
+            && body.contains("!std_core::desktop_automation_allowed()"),
+        "hotkey smoke must still require explicit desktop automation opt-in"
     );
 }
 
