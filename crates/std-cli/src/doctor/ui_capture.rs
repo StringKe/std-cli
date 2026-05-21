@@ -50,6 +50,8 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "capture_studio dark dashboard",
         "capture_studio light workflow",
         "capture_studio dark workflow",
+        "capture_studio light workflow-error",
+        "capture_studio dark workflow-error",
         "capture_studio light analysis",
         "capture_studio dark analysis",
         "capture_studio light plugins",

@@ -72,12 +72,32 @@ fn workflow_preview_seeds_builder_runtime_state() {
 }
 
 #[test]
+fn workflow_error_preview_seeds_failed_execution_and_problems_panel() {
+    let app = seeded_preview_app("light", "workflow-error");
+
+    assert_eq!(app.app.active_pane, StudioPane::Workflows);
+    assert_eq!(
+        app.app
+            .last_workflow_execution
+            .as_ref()
+            .map(|execution| &execution.status),
+        Some(&std_orchestration::ExecutionStatus::Failed)
+    );
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::Problems
+    );
+    assert!(app.layout.bottom_panel_open);
+    assert_eq!(app.bottom_panel_snapshot().status, "1 issues");
+}
+
+#[test]
 fn preview_smoke_reports_required_studio_screenshot_matrix() {
     let report = StudioPreviewSmokeReport::new();
     let summary = report.summary();
 
     assert!(report.pass(), "{summary}");
-    assert_eq!(report.scenarios.len(), 14);
+    assert_eq!(report.scenarios.len(), 16);
     assert_eq!(report.sizes.len(), report.scenarios.len());
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
     assert_preview_summary_has_scenarios(&summary);
@@ -91,6 +111,8 @@ fn assert_preview_summary_has_scenarios(summary: &str) {
     assert!(summary.contains("dark-dashboard"));
     assert!(summary.contains("dark-workflow"));
     assert!(summary.contains("light-workflow"));
+    assert!(summary.contains("dark-workflow-error"));
+    assert!(summary.contains("light-workflow-error"));
     assert!(summary.contains("dark-analysis"));
     assert!(summary.contains("light-analysis"));
     assert!(summary.contains("dark-plugins"));
@@ -122,6 +144,8 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
             "dark-dashboard",
             "light-workflow",
             "dark-workflow",
+            "light-workflow-error",
+            "dark-workflow-error",
             "light-analysis",
             "dark-analysis",
             "light-plugins",
@@ -136,7 +160,7 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
     );
 
     assert!(report.summary().contains(
-        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
     ));
 }
 
@@ -150,6 +174,7 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
     assert!(summary.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
+    assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
     assert!(summary
         .contains("pane_management=open|focus|close|restore|state-preserved|single-egui-viewport"));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));

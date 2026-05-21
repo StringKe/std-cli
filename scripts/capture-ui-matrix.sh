@@ -78,6 +78,8 @@ capture_studio light dashboard
 capture_studio dark dashboard
 capture_studio light workflow
 capture_studio dark workflow
+capture_studio light workflow-error
+capture_studio dark workflow-error
 capture_studio light analysis
 capture_studio dark analysis
 capture_studio light plugins

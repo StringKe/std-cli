@@ -7,6 +7,7 @@ use eframe::egui;
 use std::env;
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeMode;
+use std_orchestration::{ExecutionStatus, StepResult, WorkflowExecution};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewConfig {
@@ -192,7 +193,9 @@ fn required_capture_states(scenarios: &[String]) -> Vec<String> {
         "light-dashboard",
         "dark-dashboard",
         "light-workflow",
+        "light-workflow-error",
         "dark-workflow",
+        "dark-workflow-error",
         "light-analysis",
         "dark-analysis",
         "light-plugins",
@@ -216,7 +219,9 @@ fn required_capture_states_pass(states: &[String]) -> bool {
             "light-dashboard",
             "dark-dashboard",
             "light-workflow",
+            "light-workflow-error",
             "dark-workflow",
+            "dark-workflow-error",
             "light-analysis",
             "dark-analysis",
             "light-plugins",
@@ -237,6 +242,7 @@ pub(crate) fn studio_preview_window_title() -> &'static str {
 pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {
     match scenario {
         "workflow" => seed_workflow_preview(app),
+        "workflow-error" => seed_workflow_error_preview(app),
         "analysis" => seed_analysis_preview(app),
         "plugins" => seed_plugin_preview(app),
         "operations" => app.app.switch_pane(StudioPane::Operations),
@@ -296,6 +302,37 @@ pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
     app.app.open_execution_history_pane();
     app.layout.open_bottom_panel();
     app.status = "workflow preview seeded".to_string();
+}
+
+pub(crate) fn seed_workflow_error_preview(app: &mut StudioEguiApp) {
+    seed_workflow_preview(app);
+    let Some(workflow_path) = app.workflow_selected_path.clone() else {
+        app.status = "workflow error preview missing workflow".to_string();
+        return;
+    };
+    let now = chrono::Utc::now();
+    app.app.last_workflow_execution = Some(WorkflowExecution {
+        workflow_id: uuid::Uuid::new_v4(),
+        workflow_name: "Preview Failure".to_string(),
+        status: ExecutionStatus::Failed,
+        current_step: 1,
+        started_at: now,
+        finished_at: Some(now),
+        results: vec![StepResult {
+            step_id: uuid::Uuid::new_v4(),
+            step_name: "Fail preview step".to_string(),
+            status: ExecutionStatus::Failed,
+            output: serde_json::json!({
+                "error": "Preview workflow failure"
+            }),
+            started_at: now,
+            finished_at: now,
+        }],
+    });
+    app.app.open_workflow_builder(workflow_path);
+    app.layout.open_bottom_panel();
+    app.bottom_panel_tab = crate::bottom_panel::BottomPanelTab::Problems;
+    app.status = "workflow error preview seeded".to_string();
 }
 
 fn seed_panes_preview(app: &mut StudioEguiApp) {

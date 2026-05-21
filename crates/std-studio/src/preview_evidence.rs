@@ -8,20 +8,22 @@ use std_egui::tokens::{apply_theme, Color, ThemeMode};
 
 pub(crate) fn preview_matrix() -> Vec<String> {
     [
-        "dark-dashboard",
-        "dark-workflow",
-        "dark-analysis",
-        "dark-plugins",
-        "dark-operations",
-        "dark-settings",
-        "dark-panes",
         "light-dashboard",
+        "dark-dashboard",
         "light-workflow",
+        "dark-workflow",
+        "light-workflow-error",
+        "dark-workflow-error",
         "light-analysis",
+        "dark-analysis",
         "light-plugins",
+        "dark-plugins",
         "light-operations",
+        "dark-operations",
         "light-settings",
+        "dark-settings",
         "light-panes",
+        "dark-panes",
     ]
     .into_iter()
     .map(ToString::to_string)
@@ -38,12 +40,13 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_state_passes(&app, name)
         && preview_surface_passes(&surface, theme);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},pane_management={},{}",
+        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
         app.status,
         workflow_e2e_contract(&app, name),
+        workflow_error_contract(&app, name),
         pane_management_contract(&app, name),
         surface.summary()
     )
@@ -93,6 +96,17 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                 && app.app.workflow_debug.is_some()
                 && app.app.last_workflow_execution.is_some()
         }
+        "workflow-error" => {
+            app.app.active_pane == StudioPane::Workflows
+                && app.app.last_workflow_execution.is_some()
+                && app.bottom_panel_tab == crate::bottom_panel::BottomPanelTab::Problems
+                && app
+                    .app
+                    .last_workflow_execution
+                    .as_ref()
+                    .map(|execution| execution.status == std_orchestration::ExecutionStatus::Failed)
+                    .unwrap_or(false)
+        }
         "analysis" => {
             app.app.active_pane == StudioPane::Analysis && !app.analysis.coverage_output.is_empty()
         }
@@ -122,6 +136,30 @@ fn workflow_e2e_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
         "builder|dry-run|execution|trace|history-pane|bottom-panel"
     } else {
         "not-workflow"
+    }
+}
+
+fn workflow_error_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
+    if scenario == "workflow-error"
+        && app.app.active_pane == StudioPane::Workflows
+        && app.layout.bottom_panel_open
+        && app.bottom_panel_tab == crate::bottom_panel::BottomPanelTab::Problems
+        && app
+            .app
+            .last_workflow_execution
+            .as_ref()
+            .map(|execution| {
+                execution.status == std_orchestration::ExecutionStatus::Failed
+                    && execution
+                        .results
+                        .iter()
+                        .any(|step| step.status == std_orchestration::ExecutionStatus::Failed)
+            })
+            .unwrap_or(false)
+    {
+        "failed-execution|problems-panel|error-row"
+    } else {
+        "not-workflow-error"
     }
 }
 
