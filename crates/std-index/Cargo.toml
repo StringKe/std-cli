@@ -3,6 +3,7 @@ name = "std-index"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+build = "../../build.rs"
 
 [dependencies]
 chrono = { workspace = true }
