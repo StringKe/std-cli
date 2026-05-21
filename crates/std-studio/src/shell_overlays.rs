@@ -93,6 +93,13 @@ impl StudioEguiApp {
                     .hint_text(i18n::t("studio.shell.filter.hint"))
                     .desired_width(f32::INFINITY),
             );
+            response.widget_info(|| {
+                egui::WidgetInfo::labeled(
+                    egui::WidgetType::TextEdit,
+                    ui.is_enabled(),
+                    overlay_query_a11y_label(title, query),
+                )
+            });
             if response.changed() {
                 self.layout.overlay_selected = 0;
             }
@@ -208,4 +215,41 @@ fn render_host_overlay(
                     add_contents(ui);
                 });
         });
+}
+
+fn overlay_query_a11y_label(title: &str, query: &str) -> String {
+    let value = if query.trim().is_empty() {
+        "empty"
+    } else {
+        query.trim()
+    };
+    format!("{title}, text box, value {value}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn command_overlay_query_has_textbox_semantics() {
+        let source = include_str!("shell_overlays.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("overlay_query_a11y_label"));
+        assert!(implementation.contains("response.request_focus()"));
+        assert!(implementation.contains("std_egui::input::ime_composing(ctx)"));
+    }
+
+    #[test]
+    fn overlay_query_a11y_label_exposes_value() {
+        assert_eq!(
+            overlay_query_a11y_label("Command Palette", "settings"),
+            "Command Palette, text box, value settings"
+        );
+        assert_eq!(
+            overlay_query_a11y_label("Quick Open", " "),
+            "Quick Open, text box, value empty"
+        );
+    }
 }
