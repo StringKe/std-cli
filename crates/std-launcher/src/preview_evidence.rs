@@ -45,8 +45,9 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         && body >= 0.0
         && content_clearance >= 0.0;
     let panel_frame = launcher_panel_frame_contract(&state);
+    let search_surface = launcher_search_surface_contract(&state);
     format!(
-        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={}",
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={},search_surface={}",
         scenario.label(),
         if fits { "PASS" } else { "FAIL" },
         viewport.x.round() as u32,
@@ -56,7 +57,8 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         body.round() as u32,
         (viewport.y - rect.max.y).round() as i32,
         content_clearance.round() as i32,
-        panel_frame
+        panel_frame,
+        search_surface
     )
 }
 
@@ -65,6 +67,14 @@ fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
         "fills_viewport"
     } else {
         "carrier_background_visible"
+    }
+}
+
+fn launcher_search_surface_contract(state: &LauncherState) -> &'static str {
+    if ui_metrics::panel_is_expanded(state) {
+        "nested_search_surface"
+    } else {
+        "panel_as_search_surface"
     }
 }
 

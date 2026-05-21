@@ -120,6 +120,12 @@ fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
     assert!(report.summary().contains("preview_sizes=light-empty=PASS"));
     assert!(report.summary().contains("bottom_clearance=0"));
     assert!(report.summary().contains("panel_frame=fills_viewport"));
+    assert!(report
+        .summary()
+        .contains("search_surface=panel_as_search_surface"));
+    assert!(report
+        .summary()
+        .contains("search_surface=nested_search_surface"));
 }
 
 #[test]

@@ -98,7 +98,8 @@ pub(crate) fn render_launcher_panel(
             let padding = ui_metrics::panel_inner_padding_for_state(state);
             ui.set_min_height(panel_rect.height() - padding * 2.0);
             ui.set_width(panel_rect.width() - padding * 2.0);
-            render_search_bar(ui, state, &mut hide_requested);
+            let collapsed = !ui_metrics::panel_is_expanded(state);
+            render_search_bar(ui, state, collapsed, &mut hide_requested);
             if !ui_metrics::panel_is_expanded(state) {
                 return;
             }
@@ -113,53 +114,71 @@ pub(crate) fn render_launcher_panel(
     hide_requested
 }
 
-fn render_search_bar(ui: &mut egui::Ui, state: &mut LauncherState, hide_requested: &mut bool) {
+fn render_search_bar(
+    ui: &mut egui::Ui,
+    state: &mut LauncherState,
+    collapsed: bool,
+    hide_requested: &mut bool,
+) {
+    if collapsed {
+        render_search_bar_contents(ui, state, hide_requested);
+        return;
+    }
     let ctx = ui.ctx().clone();
-    let executing = state.view.phase == LauncherPhase::Executing;
-    let mut query_text = search_bar_text(state);
     egui::Frame::new()
         .fill(Color::bg_surface_1(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
         .corner_radius(egui::CornerRadius::same(Radius::lg()))
         .inner_margin(egui::Margin::symmetric(Space::md(), Space::sm()))
         .show(ui, |ui| {
-            ui.set_min_height(ui_metrics::search_bar_min_height());
-            ui.horizontal(|ui| {
-                render_search_icon(ui, &ctx);
-                let response = ui.add_sized(
-                    [
-                        ui_metrics::search_input_width(ui.available_width()),
-                        ui_metrics::search_input_height(),
-                    ],
-                    egui::TextEdit::singleline(&mut query_text)
-                        .hint_text(search_placeholder(state))
-                        .font(Text::headline())
-                        .interactive(!executing),
-                );
-                response.request_focus();
-                let a11y = AccessibilityContext::from_env();
-                response.widget_info(|| {
-                    egui::WidgetInfo::labeled(
-                        egui::WidgetType::TextEdit,
-                        ui.is_enabled(),
-                        a11y.launcher_search_label(&state.view.query),
-                    )
-                });
-                if state.keyboard_focus_visible(LauncherFocusSection::Search) {
-                    draw_focus_ring(
-                        ui,
-                        response.rect,
-                        Radius::lg(),
-                        ui_metrics::focus_ring_expand(),
-                        a11y.focus_ring_width(),
-                    );
-                }
-                if !executing && response.changed() {
-                    state.update_query(query_text);
-                }
-                render_mode_tag(ui, state);
-            });
+            render_search_bar_contents(ui, state, hide_requested)
         });
+}
+
+fn render_search_bar_contents(
+    ui: &mut egui::Ui,
+    state: &mut LauncherState,
+    hide_requested: &mut bool,
+) {
+    let ctx = ui.ctx().clone();
+    let executing = state.view.phase == LauncherPhase::Executing;
+    let mut query_text = search_bar_text(state);
+    ui.set_min_height(ui_metrics::search_bar_min_height());
+    ui.horizontal(|ui| {
+        render_search_icon(ui, &ctx);
+        let response = ui.add_sized(
+            [
+                ui_metrics::search_input_width(ui.available_width()),
+                ui_metrics::search_input_height(),
+            ],
+            egui::TextEdit::singleline(&mut query_text)
+                .hint_text(search_placeholder(state))
+                .font(Text::headline())
+                .interactive(!executing),
+        );
+        response.request_focus();
+        let a11y = AccessibilityContext::from_env();
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::TextEdit,
+                ui.is_enabled(),
+                a11y.launcher_search_label(&state.view.query),
+            )
+        });
+        if state.keyboard_focus_visible(LauncherFocusSection::Search) {
+            draw_focus_ring(
+                ui,
+                response.rect,
+                Radius::lg(),
+                ui_metrics::focus_ring_expand(),
+                a11y.focus_ring_width(),
+            );
+        }
+        if !executing && response.changed() {
+            state.update_query(query_text);
+        }
+        render_mode_tag(ui, state);
+    });
 
     if !executing {
         ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
@@ -325,6 +344,20 @@ mod tests {
         assert!(source.contains("ui.set_min_width(panel_rect.width())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)"));
+    }
+
+    #[test]
+    fn collapsed_launcher_does_not_nest_search_surface_inside_panel() {
+        let source = include_str!("ui.rs");
+        let collapsed_branch = source
+            .split("if collapsed")
+            .nth(1)
+            .and_then(|body| body.split("let ctx = ui.ctx().clone();").next())
+            .unwrap();
+
+        assert!(collapsed_branch.contains("render_search_bar_contents"));
+        assert!(!collapsed_branch.contains("egui::Frame::new()"));
+        assert!(source.contains("fn render_search_bar_contents"));
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
