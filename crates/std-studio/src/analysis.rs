@@ -1,4 +1,5 @@
 use crate::{
+    analysis_query_panel::{self, AnalysisQueryAction, AnalysisQueryPanelState},
     analysis_state::AnalysisFocusArea,
     analysis_tab_content::{self, AnalysisTabRenderState},
     ui, StudioEguiApp,
@@ -120,42 +121,22 @@ impl StudioEguiApp {
 
     fn render_analysis_query(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
+            let model = self.analysis_workbench_model();
+            match analysis_query_panel::render(
                 ui,
-                i18n::t("studio.analysis.query.title"),
-                i18n::t("studio.analysis.query.detail"),
-            );
-            let response = ui.add(
-                egui::TextEdit::singleline(&mut self.analysis.query)
-                    .id(AnalysisFocusArea::Query.focus_id()),
-            );
-            if self.analysis.focus_area == AnalysisFocusArea::Query {
-                response.request_focus();
+                AnalysisQueryPanelState {
+                    query: &mut self.analysis.query,
+                    answer: &self.analysis.answer,
+                    search_output: &self.analysis.search_output,
+                    model: &model,
+                    focus_area: self.analysis.focus_area,
+                },
+            ) {
+                AnalysisQueryAction::Ask => self.ask_analysis(),
+                AnalysisQueryAction::Search => self.search_analysis(),
+                AnalysisQueryAction::Inspect => self.inspect_analysis(),
+                AnalysisQueryAction::None => {}
             }
-            ui.horizontal(|ui| {
-                if ui::quiet_button(ui, i18n::t("studio.analysis.ask")).clicked() {
-                    self.ask_analysis();
-                }
-                if ui::quiet_button(ui, i18n::t("studio.analysis.search")).clicked() {
-                    self.search_analysis();
-                }
-                if ui::quiet_button(ui, i18n::t("studio.analysis.inspect")).clicked() {
-                    self.inspect_analysis();
-                }
-            });
-            ui.add_space(Space::XS as f32);
-            render_output(
-                ui,
-                i18n::t("studio.analysis.answer"),
-                &self.analysis.answer,
-                180.0,
-            );
-            render_output(
-                ui,
-                i18n::t("studio.analysis.search"),
-                &self.analysis.search_output,
-                180.0,
-            );
         });
     }
 

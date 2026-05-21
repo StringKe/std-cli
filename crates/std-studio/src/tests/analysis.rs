@@ -91,6 +91,21 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
 }
 
 #[test]
+fn analysis_query_panel_contract_surfaces_evidence_and_search_hits() {
+    let body = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("analysis_query_panel.rs"),
+    )
+    .unwrap();
+
+    assert!(body.contains("Evidence Sources"));
+    assert!(body.contains("model.answer_sources"));
+    assert!(body.contains("model.search_hits"));
+    assert!(body.contains("AnalysisQueryAction"));
+}
+
+#[test]
 fn analysis_workbench_tabs_have_stable_default_and_order() {
     assert_eq!(
         AnalysisWorkbenchTab::default(),
