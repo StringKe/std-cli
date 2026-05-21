@@ -181,11 +181,23 @@ pub(crate) fn execution_panel(
 }
 
 pub(crate) fn output_view(ui: &mut egui::Ui, output: &serde_json::Value) {
-    let mut body = output.to_string();
-    ui.add_sized(
+    let body = output.to_string();
+    let response = ui.add_sized(
         [ui.available_width(), 120.0],
-        egui::TextEdit::multiline(&mut body).interactive(false),
+        egui::Label::new(
+            egui::RichText::new(body)
+                .font(Text::code())
+                .color(ui::strong_text(ui.ctx())),
+        )
+        .selectable(true),
     );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            "Plugin runtime output",
+        )
+    });
 }
 
 pub(crate) fn status_row(
@@ -418,5 +430,17 @@ mod tests {
         assert_eq!(summary.actions, "3 actions");
         assert_eq!(summary.fs_scopes, "1 entry");
         assert_eq!(summary.network_hosts, "1 entry");
+    }
+
+    #[test]
+    fn plugin_runtime_output_uses_readonly_label_not_text_edit() {
+        let source = include_str!("plugin_rows.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("fn output_view"));
+        assert!(implementation.contains("WidgetType::Label"));
+        assert!(implementation.contains("Plugin runtime output"));
+        assert!(implementation.contains(".selectable(true)"));
+        assert!(!implementation.contains("TextEdit::multiline(&mut body).interactive(false)"));
     }
 }
