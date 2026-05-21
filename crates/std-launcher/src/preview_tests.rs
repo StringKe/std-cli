@@ -143,12 +143,11 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
 fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     let summary = report.summary();
 
-    assert!(summary.contains("preview_capture_contract=transparent-carrier,opt-in-only"));
+    assert!(summary.contains("preview_capture_contract=native-panel-surface,opt-in-only"));
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
-    assert!(summary.contains("panel-only"));
-    assert!(summary.contains("no-shadow-clip"));
+    assert!(summary.contains("no-carrier-background"));
 }
 
 #[test]
@@ -162,7 +161,7 @@ fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
     assert!(report.summary().contains("light-empty=PASS"));
     assert!(report
         .summary()
-        .contains("panel_frame=transparent_carrier_panel_only"));
+        .contains("panel_frame=native_panel_surface"));
     assert!(report
         .summary()
         .contains("search_surface=panel_as_search_surface"));
@@ -172,7 +171,7 @@ fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
 }
 
 #[test]
-fn ui_preview_uses_transparent_carrier_window() {
+fn ui_preview_uses_native_panel_surface_window() {
     let config = LauncherPreviewConfig {
         theme_mode: ThemeMode::Light,
         scenario: "empty".to_string(),
@@ -187,20 +186,20 @@ fn ui_preview_uses_transparent_carrier_window() {
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
         preview_capture_window_contract(&config),
-        "carrier=transparent,decorations=false,visible=true,size=848x588"
+        "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x460"
     );
 }
 
 #[test]
-fn preview_evidence_names_transparent_carrier_not_product_viewport() {
+fn preview_evidence_names_native_panel_surface_not_preview_viewport() {
     let surface = include_str!("surface_smoke.rs");
     let preview = include_str!("preview.rs");
 
-    assert!(surface.contains("capture_window=transparent_carrier,opt_in_only"));
-    assert!(surface.contains("capture_surface=panel_only_on_transparent_carrier"));
+    assert!(surface.contains("capture_window=panel_surface,opt_in_only"));
+    assert!(surface.contains("capture_surface=native_panel_surface"));
     assert!(!surface.contains("preview_viewport="));
-    assert!(preview.contains("transparent-carrier"));
-    assert!(preview.contains("no-shadow-clip"));
+    assert!(preview.contains("native-panel-surface"));
+    assert!(preview.contains("no-carrier-background"));
     assert!(!preview.contains("preview_viewport"));
     assert!(!preview.contains("preview_viewport_contract"));
 }

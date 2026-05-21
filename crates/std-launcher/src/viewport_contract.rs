@@ -10,7 +10,7 @@ pub fn transparent_visible_panel_contract(size: egui::Vec2) -> String {
 
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
-        "carrier=transparent,decorations=false,visible={visible},size={}x{}",
+        "native=panel-surface,transparent=true,decorations=false,visible={visible},size={}x{}",
         size.x as u32, size.y as u32
     )
 }
@@ -22,12 +22,12 @@ mod tests {
     #[test]
     fn launcher_viewport_contracts_name_transparency_and_size() {
         assert_eq!(
-            transparent_hidden_panel_contract(egui::vec2(848.0, 192.0)),
-            "carrier=transparent,decorations=false,visible=false,size=848x192"
+            transparent_hidden_panel_contract(egui::vec2(720.0, 64.0)),
+            "native=panel-surface,transparent=true,decorations=false,visible=false,size=720x64"
         );
         assert_eq!(
-            transparent_visible_panel_contract(egui::vec2(848.0, 448.0)),
-            "carrier=transparent,decorations=false,visible=true,size=848x448"
+            transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
+            "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x320"
         );
     }
 }

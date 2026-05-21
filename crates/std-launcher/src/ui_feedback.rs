@@ -364,16 +364,18 @@ mod tests {
     #[test]
     fn retry_click_uses_launcher_user_execution_path() {
         let source = include_str!("ui_feedback.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
 
-        assert!(source.contains("state.trigger_selected_by_user();"));
-        assert!(!source.contains("state.trigger_selected();"));
+        assert!(production_source.contains("state.trigger_selected_by_user();"));
+        assert!(!production_source.contains("state.trigger_selected();"));
     }
 
     #[test]
     fn copy_click_uses_shared_feedback_copy_model() {
         let source = include_str!("ui_feedback.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
 
-        assert!(source.contains("state.copy_feedback_to_clipboard_model()"));
-        assert!(!source.contains("ui.ctx().copy_text(feedback.summary())"));
+        assert!(production_source.contains("state.copy_feedback_to_clipboard_model()"));
+        assert!(!production_source.contains("ui.ctx().copy_text(feedback.summary())"));
     }
 }

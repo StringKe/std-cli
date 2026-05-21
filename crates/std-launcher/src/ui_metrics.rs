@@ -11,14 +11,13 @@ const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
-const CARRIER_MARGIN: f32 = 64.0;
 
 pub(crate) fn scale() -> UiScale {
     UiScale::from_env()
 }
 
 pub(crate) fn window_margin() -> f32 {
-    scale().f32(CARRIER_MARGIN)
+    0.0
 }
 
 pub(crate) fn panel_inner_padding() -> f32 {
@@ -212,10 +211,9 @@ pub(crate) fn initial_window_inner_size() -> egui::Vec2 {
 pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
     let scale = UiScale::from_env();
     let body_height = body_height_for_scale(state, DEFAULT_VIEWPORT_HEIGHT, scale);
-    let margin = scale.f32(CARRIER_MARGIN);
     egui::vec2(
-        scale.f32(PANEL_WIDTH) + margin * 2.0,
-        panel_height_for_scale(state, body_height, scale) + margin * 2.0,
+        scale.f32(PANEL_WIDTH),
+        panel_height_for_scale(state, body_height, scale),
     )
 }
 
@@ -253,10 +251,9 @@ pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
 }
 
 fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    let margin = scale.f32(CARRIER_MARGIN);
     egui::vec2(
-        scale.f32(PANEL_WIDTH) + margin * 2.0,
-        collapsed_panel_height_for_scale(scale) + margin * 2.0,
+        scale.f32(PANEL_WIDTH),
+        collapsed_panel_height_for_scale(scale),
     )
 }
 

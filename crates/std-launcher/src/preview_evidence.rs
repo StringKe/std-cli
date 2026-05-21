@@ -85,9 +85,9 @@ fn preview_content_clearance(
 
 fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
     if ui_metrics::panel_is_only_visible_surface(state) {
-        "transparent_carrier_panel_only"
+        "native_panel_surface"
     } else {
-        "carrier_background_visible_fail"
+        "native_background_visible_fail"
     }
 }
 
