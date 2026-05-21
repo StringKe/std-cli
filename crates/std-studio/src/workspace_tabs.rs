@@ -9,11 +9,11 @@ use std_studio::{WorkspacePane, WorkspacePaneId};
 const TAB_HEIGHT: f32 = 28.0;
 const TAB_MIN_WIDTH: f32 = 148.0;
 const TAB_MAX_WIDTH: f32 = 220.0;
-const TAB_CLOSE_WIDTH: f32 = Space::LG as f32;
+const TAB_CLOSE_HIT_SIZE: f32 = TAB_HEIGHT;
 const TAB_CLOSE_HOVER_INSET: f32 = Space::TWO_XS as f32;
 const TAB_CLOSE_GLYPH_HALF: f32 = Space::TWO_XS as f32;
 const TAB_CHAR_WIDTH: f32 = 7.0;
-const TAB_TEXT_RESERVED_WIDTH: f32 = Space::XL as f32 + TAB_CLOSE_WIDTH;
+const TAB_TEXT_RESERVED_WIDTH: f32 = Space::XL as f32 + TAB_CLOSE_HIT_SIZE;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorkspaceTabSpec {
@@ -131,7 +131,7 @@ fn workspace_tab_width(title: &str) -> f32 {
 
 fn workspace_tab_close_rect(rect: egui::Rect) -> egui::Rect {
     egui::Rect::from_min_max(
-        egui::pos2(rect.right() - TAB_CLOSE_WIDTH, rect.top()),
+        egui::pos2(rect.right() - TAB_CLOSE_HIT_SIZE, rect.top()),
         rect.right_bottom(),
     )
 }
@@ -154,7 +154,7 @@ fn paint_workspace_tab(ui: &egui::Ui, rect: egui::Rect, spec: &WorkspaceTabSpec,
     );
     let text_rect = rect
         .shrink2(egui::vec2(Space::XS as f32, 0.0))
-        .with_max_x(rect.right() - TAB_CLOSE_WIDTH);
+        .with_max_x(rect.right() - TAB_CLOSE_HIT_SIZE);
     ui.painter().text(
         text_rect.left_center(),
         egui::Align2::LEFT_CENTER,

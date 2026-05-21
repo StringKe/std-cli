@@ -78,7 +78,7 @@ fn workspace_tab_close_rect_uses_token_sized_hit_target() {
     let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(180.0, TAB_HEIGHT));
     let close = workspace_tab_close_rect(rect);
 
-    assert_eq!(close.width(), Space::LG as f32);
+    assert_eq!(close.width(), TAB_CLOSE_HIT_SIZE);
     assert_eq!(close.height(), TAB_HEIGHT);
     assert_eq!(close.right(), rect.right());
 }
