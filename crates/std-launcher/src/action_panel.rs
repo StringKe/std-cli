@@ -133,6 +133,7 @@ fn primary_command(action: &Action) -> Option<String> {
         ActionType::AppLaunch => action.examples.first().cloned(),
         ActionType::Command => action.examples.first().cloned(),
         ActionType::Workflow => action.examples.first().cloned(),
+        ActionType::Memory => action.examples.first().cloned(),
         ActionType::Skill => action.examples.first().cloned(),
         ActionType::Clipboard => Some(action.description.clone()),
         ActionType::Custom(kind) if kind == "file" => action.examples.first().cloned(),

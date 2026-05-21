@@ -210,7 +210,7 @@ mod tests {
             action_id: ActionId::default(),
             title: "Memory".to_string(),
             subtitle: "Pinned workspace memory".to_string(),
-            action_type: ActionType::Skill,
+            action_type: ActionType::Memory,
             primary_command: String::new(),
             metadata: Default::default(),
             examples: Vec::new(),
@@ -219,7 +219,7 @@ mod tests {
         assert_eq!(
             ActionBarPreviewSummary::from_preview(&preview),
             ActionBarPreviewSummary {
-                breadcrumb: "Skill > Memory".to_string(),
+                breadcrumb: "Memory > Memory".to_string(),
                 primary: "Pinned workspace memory".to_string()
             }
         );

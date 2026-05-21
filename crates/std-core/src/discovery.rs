@@ -57,7 +57,7 @@ pub(crate) fn discover_memory_actions(memories: &[MemoryRecord]) -> Vec<Registry
                 format!("Memory: {}", memory.title),
                 memory.body.clone(),
                 "When recalling saved personal context",
-                ActionType::Skill,
+                ActionType::Memory,
             );
             action
                 .examples

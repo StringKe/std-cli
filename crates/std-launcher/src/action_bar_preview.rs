@@ -36,6 +36,7 @@ fn action_type_label(action_type: &ActionType) -> &'static str {
         ActionType::AppLaunch => std_egui::i18n::t("launcher.results.kind.app"),
         ActionType::Workflow => std_egui::i18n::t("launcher.results.kind.workflow"),
         ActionType::Command => std_egui::i18n::t("launcher.results.kind.command"),
+        ActionType::Memory => std_egui::i18n::t("launcher.results.kind.memory"),
         ActionType::Skill => std_egui::i18n::t("launcher.results.kind.skill"),
         ActionType::Clipboard => std_egui::i18n::t("launcher.results.kind.clipboard"),
         ActionType::Custom(kind) if kind == "file" => {

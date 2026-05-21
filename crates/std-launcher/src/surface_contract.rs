@@ -49,8 +49,8 @@ impl LauncherSurfaceContract {
     pub fn pass(&self) -> bool {
         self.search_bar == "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=all,command,actions,ask"
             && self
-                .result_list
-                .contains("groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other")
+            .result_list
+                .contains("groups=Action / Workflow>App / File>Clipboard>Memory>Skill>Other")
             && self.result_list.contains("row_height=36")
             && self.result_list.contains("group_height=24")
             && self.result_list.contains("selected=accent-weak")
@@ -112,7 +112,7 @@ fn search_bar_contract() -> String {
 
 fn result_list_contract(result_count: usize, selected_type: &ActionType) -> String {
     format!(
-        "groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut={};virtualized=true",
+        "groups=Action / Workflow>App / File>Clipboard>Memory>Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut={};virtualized=true",
         action_type_name(selected_type),
         input::enter().label()
     )
@@ -244,6 +244,7 @@ fn action_type_name(action_type: &ActionType) -> &'static str {
         ActionType::AppLaunch => "app",
         ActionType::Workflow => "workflow",
         ActionType::Command => "command",
+        ActionType::Memory => "memory",
         ActionType::Skill => "skill",
         ActionType::Clipboard => "clipboard",
         ActionType::Custom(_) => "custom",

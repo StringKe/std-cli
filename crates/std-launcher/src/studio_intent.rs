@@ -76,7 +76,9 @@ fn studio_target_for_action(
 ) -> StudioLaunchTarget {
     match action_type {
         ActionType::Workflow => StudioLaunchTarget::Workflows,
-        ActionType::Skill | ActionType::Clipboard => StudioLaunchTarget::Memory,
+        ActionType::Skill | ActionType::Memory | ActionType::Clipboard => {
+            StudioLaunchTarget::Memory
+        }
         ActionType::Command if metadata.contains_key("plugin") => StudioLaunchTarget::Plugins,
         ActionType::Command => StudioLaunchTarget::Analysis,
         ActionType::AppLaunch => StudioLaunchTarget::Apps,

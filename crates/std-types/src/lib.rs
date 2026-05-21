@@ -60,6 +60,7 @@ pub enum ActionType {
     Workflow,
     Command,
     Skill,
+    Memory,
     Clipboard,
     Custom(String),
 }

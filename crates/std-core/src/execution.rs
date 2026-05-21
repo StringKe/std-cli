@@ -40,7 +40,7 @@ pub(crate) fn execute_registry_entry(
             }),
             now,
         )),
-        ActionType::Skill => Ok(completed_json(
+        ActionType::Skill | ActionType::Memory => Ok(completed_json(
             entry,
             entry.action.description.clone(),
             serde_json::json!({
@@ -254,7 +254,7 @@ fn primary_command(entry: &RegistryEntry) -> String {
             .cloned()
             .or_else(|| entry.action.examples.first().cloned())
             .unwrap_or_else(|| entry.action.name.clone()),
-        ActionType::Skill => entry
+        ActionType::Skill | ActionType::Memory => entry
             .action
             .examples
             .first()

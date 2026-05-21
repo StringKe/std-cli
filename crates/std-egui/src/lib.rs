@@ -145,8 +145,9 @@ mod tests {
                 ActionType::AppLaunch => 1,
                 ActionType::Custom(kind) if kind == "file" => 1,
                 ActionType::Clipboard => 2,
-                ActionType::Skill => 3,
-                ActionType::Custom(_) => 4,
+                ActionType::Memory => 3,
+                ActionType::Skill => 4,
+                ActionType::Custom(_) => 5,
             })
             .collect::<Vec<_>>();
 

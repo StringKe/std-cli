@@ -123,8 +123,9 @@ pub(crate) fn action_group(result: &SearchResult) -> String {
         ActionType::AppLaunch => i18n::t("launcher.results.group.app_file").to_string(),
         ActionType::Workflow => i18n::t("launcher.results.group.action_workflow").to_string(),
         ActionType::Command => i18n::t("launcher.results.group.action_workflow").to_string(),
-        ActionType::Skill => i18n::t("launcher.results.group.memory_skill").to_string(),
         ActionType::Clipboard => i18n::t("launcher.results.group.clipboard").to_string(),
+        ActionType::Memory => i18n::t("launcher.results.group.memory").to_string(),
+        ActionType::Skill => i18n::t("launcher.results.group.skill").to_string(),
         ActionType::Custom(kind) if kind == "file" => {
             i18n::t("launcher.results.group.app_file").to_string()
         }
@@ -137,6 +138,7 @@ pub(crate) fn action_kind(action_type: &ActionType) -> &str {
         ActionType::AppLaunch => i18n::t("launcher.results.kind.app"),
         ActionType::Workflow => i18n::t("launcher.results.kind.workflow"),
         ActionType::Command => i18n::t("launcher.results.kind.command"),
+        ActionType::Memory => i18n::t("launcher.results.kind.memory"),
         ActionType::Skill => i18n::t("launcher.results.kind.skill"),
         ActionType::Clipboard => i18n::t("launcher.results.kind.clipboard"),
         ActionType::Custom(kind) if kind == "file" => i18n::t("launcher.results.kind.file"),
@@ -149,6 +151,7 @@ pub(crate) fn action_icon_label(action_type: &ActionType) -> &str {
         ActionType::AppLaunch => "APP",
         ActionType::Workflow => "WF",
         ActionType::Command => "CMD",
+        ActionType::Memory => "MEM",
         ActionType::Skill => "SK",
         ActionType::Clipboard => "CLP",
         ActionType::Custom(kind) if kind == "file" => "FIL",

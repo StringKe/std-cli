@@ -377,6 +377,7 @@ fn launcher_state_registers_local_content_on_init() {
     let clipboard_preview = state.update_query("cargo test").unwrap();
 
     assert_eq!(memory_preview.title, "Memory: Launcher memory");
+    assert_eq!(memory_preview.action_type, ActionType::Memory);
     assert_eq!(clipboard_preview.title, "Clipboard: cargo test --workspace");
 }
 

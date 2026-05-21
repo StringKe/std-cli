@@ -207,6 +207,9 @@ fn core_registers_memory_and_clipboard_in_search() {
     assert!(memory_results
         .iter()
         .any(|result| result.action.name.contains("Memory: Workflow storage")));
+    assert!(memory_results
+        .iter()
+        .any(|result| result.action.action_type == ActionType::Memory));
     assert!(clipboard_results
         .iter()
         .any(|result| result.action.name.contains("Clipboard: cargo test")));
