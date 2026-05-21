@@ -8,6 +8,7 @@ mod analysis_workbench;
 mod apps;
 mod ops_evidence;
 mod ops_runbook;
+mod planned_workflow;
 pub mod plugin_security;
 pub mod plugin_status;
 mod trace;

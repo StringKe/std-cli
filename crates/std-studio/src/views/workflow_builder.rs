@@ -6,6 +6,7 @@ use crate::{
 use eframe::egui;
 use std::path::Path;
 use std_egui::{i18n, tokens::Space};
+use std_orchestration::WorkflowStep;
 
 const BUILDER_PANEL_GAP: f32 = Space::SM as f32;
 
@@ -133,6 +134,7 @@ impl StudioEguiApp {
         if response.clicked() {
             self.workflow_edit_index = index.to_string();
             self.workflow_step_name = name.to_string();
+            self.sync_selected_step_parameters(index);
         }
     }
 
@@ -143,6 +145,10 @@ impl StudioEguiApp {
                 i18n::t("studio.workflow_builder.properties.title"),
                 i18n::t("studio.workflow_builder.properties.detail"),
             );
+            if self.app.planned_workflow.is_some() && self.workflow_selected_path.is_none() {
+                self.render_planned_step_properties(ui);
+                return;
+            }
             let selected = self.workflow_selected_path.clone();
             let Some(path) = selected else {
                 ui::empty_state(ui, i18n::t("studio.workflow_builder.properties.empty"));
@@ -180,6 +186,45 @@ impl StudioEguiApp {
                     self.remove_selected_step(&path);
                 }
             });
+        });
+    }
+
+    fn render_planned_step_properties(&mut self, ui: &mut egui::Ui) {
+        let Some(index) = self.selected_step_index() else {
+            return;
+        };
+        let Some(step) = self.app.selected_planned_step(index).cloned() else {
+            ui::empty_state(ui, i18n::t("studio.workflow_builder.properties.empty"));
+            return;
+        };
+        render_step_identity(ui, index, &step);
+        ui.label(i18n::t("studio.workflow_builder.step_name"));
+        ui.text_edit_singleline(&mut self.workflow_step_name);
+        ui.label(i18n::t("studio.workflow_builder.parameters"));
+        ui.add_sized(
+            [ui.available_width(), 92.0],
+            egui::TextEdit::multiline(&mut self.workflow_step_parameters),
+        );
+        ui.horizontal(|ui| {
+            ui.label(i18n::t("studio.workflow_builder.index"));
+            ui.add_sized(
+                [48.0, 24.0],
+                egui::TextEdit::singleline(&mut self.workflow_edit_index),
+            );
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.update")).clicked() {
+                self.update_planned_step();
+            }
+        });
+        ui.horizontal_wrapped(|ui| {
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_up")).clicked() {
+                self.move_planned_step(-1);
+            }
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.move_down")).clicked() {
+                self.move_planned_step(1);
+            }
+            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.remove")).clicked() {
+                self.remove_planned_step();
+            }
         });
     }
 
@@ -336,6 +381,59 @@ impl StudioEguiApp {
         }
     }
 
+    pub(crate) fn update_planned_step(&mut self) {
+        let Some(index) = self.selected_step_index() else {
+            return;
+        };
+        let Ok(parameters) = serde_json::from_str(&self.workflow_step_parameters) else {
+            self.status = "invalid step parameters JSON".to_string();
+            return;
+        };
+        match self.app.update_planned_workflow_step(
+            index,
+            Some(&self.workflow_step_name),
+            Some(parameters),
+        ) {
+            Ok(step) => self.status = format!("updated planned step {}", step.name),
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    pub(crate) fn move_planned_step(&mut self, offset: isize) {
+        let Some(index) = self.selected_step_index() else {
+            return;
+        };
+        let target = index.saturating_add_signed(offset);
+        match self.app.move_planned_workflow_step(index, target) {
+            Ok(step) => {
+                self.workflow_edit_index = target.to_string();
+                self.workflow_step_name = step.name.clone();
+                self.workflow_step_parameters = step.parameters.to_string();
+                self.status = format!("moved planned step {}", step.name);
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    fn remove_planned_step(&mut self) {
+        let Some(index) = self.selected_step_index() else {
+            return;
+        };
+        match self.app.remove_planned_workflow_step(index) {
+            Ok(step) => {
+                self.workflow_edit_index = "0".to_string();
+                self.status = format!("removed planned step {}", step.name);
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    fn sync_selected_step_parameters(&mut self, index: usize) {
+        if let Some(step) = self.app.selected_planned_step(index) {
+            self.workflow_step_parameters = step.parameters.to_string();
+        }
+    }
+
     fn selected_step_index(&mut self) -> Option<usize> {
         match self.workflow_edit_index.trim().parse::<usize>() {
             Ok(index) => Some(index),
@@ -345,4 +443,14 @@ impl StudioEguiApp {
             }
         }
     }
+}
+
+fn render_step_identity(ui: &mut egui::Ui, index: usize, step: &WorkflowStep) {
+    workflow_rows::workflow_summary(ui, &step.name, &format!("{:?}", step.step_type), index + 1);
+    ui.label(
+        egui::RichText::new(step.parameters.to_string())
+            .font(std_egui::tokens::Text::caption())
+            .color(ui::muted_text(ui.ctx())),
+    );
+    ui.add_space(Space::XS as f32);
 }
