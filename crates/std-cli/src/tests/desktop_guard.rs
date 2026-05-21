@@ -289,6 +289,8 @@ fn forbidden_test_app_terms() -> Vec<String> {
         ["open -a ", "Terminal"].join(""),
         "Terminal\".to_string()".to_string(),
         ["open", " -a "].join(""),
+        "[\"op\", \"en\"".to_string(),
+        "[\"op\", \"en\", \"-a\"".to_string(),
         ["/usr/bin/", "open", " -a "].join(""),
         ["osa", "script"].join(""),
         "[\"osa\", \"script\"]".to_string(),

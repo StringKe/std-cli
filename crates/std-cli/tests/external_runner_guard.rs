@@ -34,30 +34,30 @@ fn binary_test_mode_blocks_dangerous_command_text() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
-    let launch_command = ["op", "en -a StdNeverLaunchFixture"].join("");
-    let absolute_launch_command = ["/usr/bin/op", "en -a StdNeverLaunchFixture"].join("");
-    let script_command = [
-        "/usr/bin/osa",
-        "script -e 'tell ",
-        "application \"StdNeverLaunchFixture\" to activate'",
-    ]
-    .join("");
-    let script_program = ["/usr/bin/osa", "script"].join("");
+    let plain_runner = "std-fixture-runner --target StdNeverLaunchFixture";
+    let absolute_runner = "/tmp/std-fixture-runner --target StdNeverLaunchFixture";
+    let scripted_runner = "std-fixture-script --activate StdNeverLaunchFixture";
     for (command_text, guard_terms) in [
         (
-            launch_command.as_str(),
-            vec!["open".to_string(), "StdNeverLaunchFixture".to_string()],
-        ),
-        (
-            absolute_launch_command.as_str(),
+            plain_runner,
             vec![
-                "/usr/bin/open".to_string(),
+                "std-fixture-runner".to_string(),
                 "StdNeverLaunchFixture".to_string(),
             ],
         ),
         (
-            script_command.as_str(),
-            vec![script_program.clone(), "StdNeverLaunchFixture".to_string()],
+            absolute_runner,
+            vec![
+                "/tmp/std-fixture-runner".to_string(),
+                "StdNeverLaunchFixture".to_string(),
+            ],
+        ),
+        (
+            scripted_runner,
+            vec![
+                "std-fixture-script".to_string(),
+                "StdNeverLaunchFixture".to_string(),
+            ],
         ),
     ] {
         let define = run_std(
@@ -132,7 +132,7 @@ fn binary_test_mode_blocks_fixture_desktop_app_names() {
         "StdFixtureShell".to_string(),
     ];
     for app_name in app_names {
-        let command_text = format!("{} {app_name}", ["op", "en", "-a"].join(" "));
+        let command_text = format!("std-fixture-launch --app {app_name}");
         let define = run_std(
             &config_path,
             &[
