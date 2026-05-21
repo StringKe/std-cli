@@ -209,6 +209,18 @@ mod tests {
         assert!(report
             .summary("launcher")
             .contains("launcher_theme_smoke PASS"));
+        assert!(report
+            .summary("launcher")
+            .contains("dark_accent_weak_alpha=46"));
+        assert!(report
+            .summary("launcher")
+            .contains("light_accent_weak_alpha=31"));
+        assert!(report
+            .summary("launcher")
+            .contains("high_contrast_dark_accent_weak_alpha=82"));
+        assert!(report
+            .summary("launcher")
+            .contains("high_contrast_light_accent_weak_alpha=56"));
     }
 
     #[test]

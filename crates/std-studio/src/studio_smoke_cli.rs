@@ -38,6 +38,18 @@ mod tests {
 
         assert!(report.pass());
         assert!(report.summary("studio").contains("studio_theme_smoke PASS"));
+        assert!(report
+            .summary("studio")
+            .contains("dark_accent_weak_alpha=46"));
+        assert!(report
+            .summary("studio")
+            .contains("light_accent_weak_alpha=31"));
+        assert!(report
+            .summary("studio")
+            .contains("high_contrast_dark_accent_weak_alpha=82"));
+        assert!(report
+            .summary("studio")
+            .contains("high_contrast_light_accent_weak_alpha=56"));
     }
 
     #[test]
