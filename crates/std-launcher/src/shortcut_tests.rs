@@ -81,6 +81,39 @@ fn mod_number_uses_safe_defer_path_without_user_external_opt_in() {
     );
 }
 
+#[test]
+fn mouse_double_click_result_uses_user_safe_launcher_path_in_tests() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.register_action(fixture_app_action(temp.path()))
+        .unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("StdNeverLaunchFixture");
+    let fixture_index = state
+        .view
+        .results
+        .iter()
+        .position(|result| result.action.name == "Open App: StdNeverLaunchFixture")
+        .unwrap();
+    let execution = state.trigger_result_by_user(fixture_index).unwrap();
+
+    assert_eq!(execution.action_name, "Open App: StdNeverLaunchFixture");
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .unwrap()
+            .get("deferred")
+            .and_then(|value| value.as_bool()),
+        Some(true)
+    );
+}
+
 fn fixture_app_action(root: &std::path::Path) -> RegistryEntry {
     let app = root.join("StdNeverLaunchFixture.app");
     RegistryEntry::from_action(

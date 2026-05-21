@@ -72,6 +72,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         return;
     }
     let mut clicked = None;
+    let mut double_clicked = None;
     let items = list_items(
         &state.view.results,
         state.view.preview.as_ref(),
@@ -105,7 +106,10 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                     match &items[index] {
                         LauncherResultListItem::Group { label } => group_header(ui, label),
                         LauncherResultListItem::Row(model) => {
-                            if result_row(ui, model).clicked() {
+                            let response = result_row(ui, model);
+                            if response.double_clicked() {
+                                double_clicked = Some(model.result_index);
+                            } else if response.clicked() {
                                 clicked = Some(model.result_index);
                             }
                         }
@@ -114,7 +118,9 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
             },
         );
 
-    if let Some(index) = clicked {
+    if let Some(index) = double_clicked {
+        state.trigger_result_by_user(index);
+    } else if let Some(index) = clicked {
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
     }
@@ -364,6 +370,15 @@ mod tests {
             result_row_keyboard_affordance(&row),
             ("Enter", i18n::t("launcher.action.run"))
         );
+    }
+
+    #[test]
+    fn result_rows_double_click_primary_action_without_changing_single_click_select() {
+        let source = include_str!("ui_results.rs");
+
+        assert!(source.contains("response.double_clicked()"));
+        assert!(source.contains("state.trigger_result_by_user(index)"));
+        assert!(source.contains("else if response.clicked()"));
     }
 
     #[test]
