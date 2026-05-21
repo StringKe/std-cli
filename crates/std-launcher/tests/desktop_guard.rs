@@ -33,27 +33,6 @@ fn launcher_gui_hotkey_smoke_blocks_child_process_desktop_automation() {
 }
 
 #[test]
-fn launcher_test_mode_overrides_inherited_desktop_automation_opt_in() {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_std-launcher"));
-    let output = command
-        .args(["--gui-hotkey-smoke", "Alt+Space", "10"])
-        .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW")
-        .env(["STD_ALLOW", "DESKTOP_AUTOMATION"].join("_"), "1")
-        .env(["STD_ALLOW", "UI_PREVIEW"].join("_"), "1")
-        .output()
-        .unwrap();
-
-    assert!(output.status.success(), "{}", stderr(&output));
-    let stdout = stdout(&output);
-    assert!(stdout.contains("launcher_gui_hotkey_smoke SKIP"));
-    assert!(stdout.contains("registered=false"));
-    assert!(stdout.contains("input_sent=false"));
-    assert!(stdout.contains("STD_TEST_MODE blocked GUI hotkey smoke"));
-}
-
-#[test]
 fn launcher_preview_test_mode_blocks_child_process_window_startup() {
     let output =
         run_launcher_in_desktop_safe_test_mode(&["--ui-preview", "light", "results", "10"]);

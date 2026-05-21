@@ -182,8 +182,12 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
     vec![
         ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
         ".env(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+        ".env([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
+        ".env([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+        "set_var([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
+        "set_var([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
     ]
 }
 
