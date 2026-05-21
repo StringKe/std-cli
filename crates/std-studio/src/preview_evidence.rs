@@ -38,12 +38,13 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_state_passes(&app, name)
         && preview_surface_passes(&surface, theme);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},{}",
+        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},pane_management={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
         app.status,
         workflow_e2e_contract(&app, name),
+        pane_management_contract(&app, name),
         surface.summary()
     )
 }
@@ -121,6 +122,24 @@ fn workflow_e2e_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
         "builder|dry-run|execution|trace|history-pane|bottom-panel"
     } else {
         "not-workflow"
+    }
+}
+
+fn pane_management_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
+    if scenario == "panes"
+        && app.status.contains("open=true")
+        && app.status.contains("focus=true")
+        && app.status.contains("close=true")
+        && app.status.contains("restore=true")
+        && app.status.contains("state_preserved=true")
+        && app.status.contains("history_visible=true")
+        && app.app.open_workspace_panes().count() >= 3
+        && !app.app.workspace_policy.allows_native_child_windows()
+        && !app.app.workspace_policy.allows_detached_panels()
+    {
+        "open|focus|close|restore|state-preserved|single-egui-viewport"
+    } else {
+        "not-panes"
     }
 }
 

@@ -242,9 +242,7 @@ pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &
         "operations" => app.app.switch_pane(StudioPane::Operations),
         "settings" => app.app.switch_pane(StudioPane::Settings),
         "panes" | "windows" | "viewports" => {
-            app.app.open_plugin_manager_pane();
-            app.app.open_memory_browser_pane();
-            app.app.open_execution_history_pane();
+            seed_panes_preview(app);
         }
         _ => app.app.switch_pane(StudioPane::Dashboard),
     }
@@ -298,6 +296,38 @@ pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
     app.app.open_execution_history_pane();
     app.layout.open_bottom_panel();
     app.status = "workflow preview seeded".to_string();
+}
+
+fn seed_panes_preview(app: &mut StudioEguiApp) {
+    let plugin = app.app.open_plugin_manager_pane();
+    let memory = app.app.open_memory_browser_pane();
+    let history = app.app.open_execution_history_pane();
+    let opened = app.app.open_workspace_panes().count() >= 3;
+    let focus = app.app.focus_workspace_pane(plugin) && app.app.focused_pane == Some(plugin);
+    let state_preserved = app
+        .app
+        .workspace_panes
+        .iter()
+        .find(|pane| pane.id == plugin)
+        .map(|pane| app.app.workspace_pane_content(&pane.kind))
+        .map(|content| {
+            content
+                .lines
+                .iter()
+                .any(|line| line.contains("manifest_check"))
+        })
+        .unwrap_or(false);
+    let closed = app.app.close_workspace_pane(memory)
+        && !app.app.open_workspace_panes().any(|pane| pane.id == memory);
+    let restored = app.app.open_memory_browser_pane() == memory
+        && app.app.open_workspace_panes().any(|pane| pane.id == memory);
+    let history_visible = app
+        .app
+        .open_workspace_panes()
+        .any(|pane| pane.id == history);
+    app.status = format!(
+        "panes preview seeded open={opened},focus={focus},close={closed},restore={restored},state_preserved={state_preserved},history_visible={history_visible}"
+    );
 }
 
 fn seed_analysis_preview(app: &mut StudioEguiApp) {
