@@ -16,6 +16,7 @@ mod indexing;
 pub mod planner;
 pub mod plugins;
 mod registry;
+pub mod shortcuts;
 pub mod storage;
 mod tooling;
 pub mod tools;

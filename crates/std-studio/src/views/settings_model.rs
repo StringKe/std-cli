@@ -61,6 +61,8 @@ pub(crate) struct SettingsContract {
     pub(crate) categories: Vec<&'static str>,
     pub(crate) surface: &'static str,
     pub(crate) navigation: &'static str,
+    pub(crate) hotkey_source: &'static str,
+    pub(crate) hotkey_reset: &'static str,
 }
 
 pub(crate) fn settings_contract() -> SettingsContract {
@@ -71,6 +73,8 @@ pub(crate) fn settings_contract() -> SettingsContract {
             .collect(),
         surface: "internal-workspace-pane",
         navigation: "left-category-rail",
+        hotkey_source: "default-or-user",
+        hotkey_reset: "reset-to-default",
     }
 }
 
@@ -96,5 +100,7 @@ mod tests {
         );
         assert_eq!(contract.surface, "internal-workspace-pane");
         assert_eq!(contract.navigation, "left-category-rail");
+        assert_eq!(contract.hotkey_source, "default-or-user");
+        assert_eq!(contract.hotkey_reset, "reset-to-default");
     }
 }

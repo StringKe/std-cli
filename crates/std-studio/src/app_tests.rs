@@ -273,6 +273,28 @@ fn studio_command_sources_use_real_app_state() {
     assert_eq!(app.app.focused_pane, Some(pane));
 }
 
+#[test]
+fn settings_hotkeys_render_registry_source_and_reset() {
+    let settings = include_str!("views/settings.rs");
+    let rows = include_str!("views/settings_rows.rs");
+    let registry = std_core::shortcuts::shortcut_registry(&StdConfig {
+        launcher_hotkey: "Cmd+Space".to_string(),
+        ..StdConfig::default()
+    });
+    let launcher = registry
+        .iter()
+        .find(|shortcut| shortcut.id == "launcher.global.toggle")
+        .unwrap();
+
+    assert_eq!(launcher.source.label(), "user");
+    assert!(launcher.resettable);
+    assert!(settings.contains("std_core::shortcuts::shortcut_registry"));
+    assert!(settings.contains("ShortcutRowEvent::Reset(\"launcher.global.toggle\")"));
+    assert!(rows.contains("shortcut.source.label()"));
+    assert!(rows.contains("shortcut.default_binding"));
+    assert!(rows.contains("shortcut_a11y_label"));
+}
+
 fn test_app() -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     let temp = tempfile::tempdir().unwrap();

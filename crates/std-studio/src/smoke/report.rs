@@ -138,6 +138,12 @@ impl StudioSmokeReport {
             && self
                 .pane_settings_contract
                 .contains("appearance|hotkeys|ai-provider|index|plugins|privacy|about")
+            && self
+                .pane_settings_contract
+                .contains("hotkey_source=default-or-user")
+            && self
+                .pane_settings_contract
+                .contains("hotkey_reset=reset-to-default")
             && !self.native_child_windows
             && !self.detached_panels
     }

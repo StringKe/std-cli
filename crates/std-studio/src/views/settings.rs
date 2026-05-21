@@ -106,6 +106,20 @@ impl StudioEguiApp {
                 i18n::t("studio.settings.hotkey.contract"),
                 ui::selected_bg(ui.ctx()),
             );
+            ui.add_space(Space::SM as f32);
+            ui::section_header(
+                ui,
+                i18n::t("studio.settings.hotkey.registry.title"),
+                i18n::t("studio.settings.hotkey.registry.detail"),
+            );
+            for shortcut in std_core::shortcuts::shortcut_registry(&self.app.core.config) {
+                if let settings_rows::ShortcutRowEvent::Reset("launcher.global.toggle") =
+                    settings_rows::shortcut_row(ui, &shortcut)
+                {
+                    self.settings_hotkey = shortcut.default_binding.to_string();
+                    self.save_setting("launcher_hotkey", self.settings_hotkey.clone());
+                }
+            }
         });
     }
 

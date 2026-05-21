@@ -62,10 +62,12 @@ pub(crate) fn run_workspace_pane_smoke(
     );
     let settings_contract = crate::views::settings_model::settings_contract();
     let settings_contract = format!(
-        "surface={},navigation={},categories={}",
+        "surface={},navigation={},categories={},hotkey_source={},hotkey_reset={}",
         settings_contract.surface,
         settings_contract.navigation,
-        settings_contract.categories.join("|")
+        settings_contract.categories.join("|"),
+        settings_contract.hotkey_source,
+        settings_contract.hotkey_reset
     );
     let host_policy =
         "single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"

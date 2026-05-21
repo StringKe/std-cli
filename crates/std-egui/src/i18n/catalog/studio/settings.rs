@@ -54,6 +54,16 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.hotkey.label") => Some("Launcher hotkey"),
         (Locale::ZhCn, "studio.settings.hotkey.save") => Some("保存快捷键"),
         (Locale::EnUs, "studio.settings.hotkey.save") => Some("Save Hotkey"),
+        (Locale::ZhCn, "studio.settings.hotkey.registry.title") => Some("快捷键列表"),
+        (Locale::EnUs, "studio.settings.hotkey.registry.title") => Some("Shortcut Registry"),
+        (Locale::ZhCn, "studio.settings.hotkey.registry.detail") => Some("来源与默认值可见"),
+        (Locale::EnUs, "studio.settings.hotkey.registry.detail") => {
+            Some("Source and defaults visible")
+        }
+        (Locale::ZhCn, "studio.settings.hotkey.reset") => Some("重置"),
+        (Locale::EnUs, "studio.settings.hotkey.reset") => Some("Reset"),
+        (Locale::ZhCn, "studio.settings.hotkey.row") => Some("快捷键"),
+        (Locale::EnUs, "studio.settings.hotkey.row") => Some("Shortcut"),
         (Locale::ZhCn, "studio.settings.ai.enable") => Some("启用 AI planner"),
         (Locale::EnUs, "studio.settings.ai.enable") => Some("Enable AI planner"),
         (Locale::ZhCn, "studio.settings.ai.save") => Some("保存 AI"),
@@ -132,6 +142,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.runtime.detail" => Some("Launcher and AI"),
         "studio.settings.hotkey.label" => Some("Launcher hotkey"),
         "studio.settings.hotkey.save" => Some("Save Hotkey"),
+        "studio.settings.hotkey.registry.title" => Some("Shortcut Registry"),
+        "studio.settings.hotkey.registry.detail" => Some("Source and defaults visible"),
+        "studio.settings.hotkey.reset" => Some("Reset"),
+        "studio.settings.hotkey.row" => Some("Shortcut"),
         "studio.settings.ai.enable" => Some("Enable AI planner"),
         "studio.settings.ai.save" => Some("Save AI"),
         "studio.settings.theme.label" => Some("Theme"),
