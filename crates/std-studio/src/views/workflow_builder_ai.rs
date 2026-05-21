@@ -57,10 +57,17 @@ pub(crate) fn render(ui: &mut egui::Ui, goal: &mut String) -> Option<WorkflowAiA
             i18n::t("studio.workflow_builder.ai.detail"),
         );
         ui.label(i18n::t("studio.workflow_builder.ai.prompt"));
-        ui.add_sized(
+        let response = ui.add_sized(
             super::workflow_builder_metrics::ai_input_size(ui.available_width()),
             egui::TextEdit::singleline(goal),
         );
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::TextEdit,
+                ui.is_enabled(),
+                workflow_ai_goal_a11y_label(goal),
+            )
+        });
         ui.add_space(Space::XS as f32);
         for (index, suggestion) in suggestions(goal).iter().enumerate() {
             if let Some(action) = suggestion_row(ui, index, suggestion) {
@@ -69,6 +76,15 @@ pub(crate) fn render(ui: &mut egui::Ui, goal: &mut String) -> Option<WorkflowAiA
         }
     });
     selected_action
+}
+
+fn workflow_ai_goal_a11y_label(goal: &str) -> String {
+    let value = if goal.trim().is_empty() {
+        "empty"
+    } else {
+        goal.trim()
+    };
+    format!("AI workflow goal, text box, value {value}")
 }
 
 fn suggestion_row(
@@ -129,5 +145,29 @@ mod tests {
         assert_eq!(WorkflowAiAction::Apply(0), WorkflowAiAction::Apply(0));
         assert_eq!(WorkflowAiAction::Insert(1), WorkflowAiAction::Insert(1));
         assert_eq!(WorkflowAiAction::Replace(2), WorkflowAiAction::Replace(2));
+    }
+
+    #[test]
+    fn workflow_ai_goal_input_has_textbox_accessibility_label() {
+        let source = include_str!("workflow_builder_ai.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("TextEdit::singleline(goal)"));
+        assert!(implementation.contains("response.widget_info"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("workflow_ai_goal_a11y_label(goal)"));
+        assert!(!implementation.contains("ui.text_edit_singleline"));
+    }
+
+    #[test]
+    fn workflow_ai_goal_accessibility_label_includes_value() {
+        assert_eq!(
+            workflow_ai_goal_a11y_label(""),
+            "AI workflow goal, text box, value empty"
+        );
+        assert_eq!(
+            workflow_ai_goal_a11y_label("  release build  "),
+            "AI workflow goal, text box, value release build"
+        );
     }
 }
