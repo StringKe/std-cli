@@ -7,6 +7,7 @@ use crate::{
 };
 use eframe::egui;
 use std::path::Path;
+use std_egui::i18n;
 use std_egui::tokens::{Color, Space};
 use std_types::SearchResult;
 
@@ -78,24 +79,28 @@ pub(crate) fn registered_app_row(ui: &mut egui::Ui, path: &Path) -> AppRowEvent 
 
 pub(crate) fn storage_row(ui: &mut egui::Ui, path: &Path) {
     let detail = path.display().to_string();
+    let title = storage_row_title();
     let (rect, response) = ui.allocate_exact_size(
         egui::vec2(ui.available_width(), row_metrics::APP_STORAGE_ROW_HEIGHT),
         egui::Sense::hover(),
     );
-    response.widget_info(|| {
-        egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), "storage")
-    });
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title));
     if ui.is_rect_visible(rect) {
         row_paint::paint_row_frame(ui, rect, response.hovered(), false, RowSurface::Base);
         row_paint::paint_inset_title_detail(
             ui,
             rect,
-            "storage",
+            title,
             &detail,
             row_metrics::COMPACT_TITLE_Y,
             row_metrics::PATH_DETAIL_Y,
         );
     }
+}
+
+fn storage_row_title() -> &'static str {
+    i18n::t("studio.apps.storage")
 }
 
 fn paint_search_chips(ui: &mut egui::Ui, rect: egui::Rect, result: &SearchResult) {
@@ -135,4 +140,23 @@ fn app_name(path: &Path) -> String {
         .and_then(|name| name.to_str())
         .unwrap_or("App")
         .to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn storage_row_title_uses_localized_copy() {
+        assert_eq!(storage_row_title(), i18n::t("studio.apps.storage"));
+        assert_ne!(storage_row_title(), "storage");
+    }
+
+    #[test]
+    fn storage_row_source_has_no_literal_storage_label() {
+        let body = include_str!("app_rows.rs");
+
+        assert!(body.contains("studio.apps.storage"));
+        assert!(!body.contains("\"storage\",\n            &detail"));
+    }
 }
