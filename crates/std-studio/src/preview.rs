@@ -265,14 +265,27 @@ fn preview_size_summary(scenario: &str) -> String {
         && host == "1280x800"
         && min == "1080x640";
     format!(
-        "{scenario}={}:host={},min={},workspace={},native_child_windows={},detached_panels={}",
+        "{scenario}={}:host={},min={},workspace={},native_child_windows={},detached_panels={},settings_surface={}",
         if valid { "PASS" } else { "FAIL" },
         host,
         min,
         app.app.open_workspace_panes().count(),
         app.app.workspace_policy.allows_native_child_windows(),
-        app.app.workspace_policy.allows_detached_panels()
+        app.app.workspace_policy.allows_detached_panels(),
+        settings_surface_policy(&app, name)
     )
+}
+
+fn settings_surface_policy(app: &StudioEguiApp, scenario: &str) -> &'static str {
+    if scenario == "settings"
+        && app.app.active_pane == StudioPane::Settings
+        && !app.app.workspace_policy.allows_native_child_windows()
+        && !app.app.workspace_policy.allows_detached_panels()
+    {
+        "internal-workspace-pane"
+    } else {
+        "not-settings"
+    }
 }
 
 fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {

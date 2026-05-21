@@ -222,7 +222,7 @@
 
 ## 10. Settings
 
-- 单独窗口（`Mod+,`）
+- v1 使用内部 workspace pane（`Mod+,` 打开或聚焦 Settings pane），不创建原生子窗口
 - 左 Sidebar 分类：Appearance / Hotkeys / AI Provider / Index / Plugins / Privacy / About
 - 右内容区表单
 - 任何 destructive 操作（重置全部 / 删除索引）有 modal 二次确认 + typed-confirm（输入「DELETE」）

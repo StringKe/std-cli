@@ -112,6 +112,9 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("preview_sizes=dark-dashboard=PASS"));
     assert!(summary.contains("host=1280x800,min=1080x640"));
     assert!(summary.contains("native_child_windows=false,detached_panels=false"));
+    assert!(summary.contains("dark-settings=PASS"));
+    assert!(summary.contains("light-settings=PASS"));
+    assert!(summary.contains("settings_surface=internal-workspace-pane"));
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
