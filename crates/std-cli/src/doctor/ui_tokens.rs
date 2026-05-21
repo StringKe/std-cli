@@ -2,7 +2,11 @@ use crate::CliError;
 use std::{fs, path::Path};
 
 pub(crate) fn check_ui_token_usage(root: &Path) -> Result<(), CliError> {
-    for crate_dir in ["crates/std-launcher/src", "crates/std-studio/src"] {
+    for crate_dir in [
+        "crates/std-egui/src",
+        "crates/std-launcher/src",
+        "crates/std-studio/src",
+    ] {
         scan_ui_token_usage(&root.join(crate_dir))?;
     }
     check_studio_row_helpers(root)?;
@@ -172,6 +176,9 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
     else {
         return false;
     };
+    if parent == "tokens" || path_has_component(path, "i18n") || file_name == "i18n.rs" {
+        return true;
+    }
     if file_name == "shell_icons.rs" {
         return true;
     }
@@ -188,6 +195,10 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
             | (_, "ui_parts.rs", "Color32::from_rgba(")
             | (_, "ui_parts.rs", "Color32::")
     )
+}
+
+fn path_has_component(path: &Path, component: &str) -> bool {
+    path.components().any(|part| part.as_os_str() == component)
 }
 
 fn check_studio_row_helpers(root: &Path) -> Result<(), CliError> {
@@ -242,6 +253,22 @@ mod tests {
         let root = super::super::workspace::find_workspace_root().unwrap();
 
         check_ui_token_usage(&root).unwrap();
+    }
+
+    #[test]
+    fn visual_token_gate_covers_shared_std_egui_sources() {
+        let root = super::super::workspace::find_workspace_root().unwrap();
+
+        check_ui_source_tokens(&root.join("crates/std-egui/src/dashboard.rs")).unwrap();
+        check_ui_source_tokens(&root.join("crates/std-egui/src/plugin.rs")).unwrap();
+        assert!(ui_token_exception(
+            &root.join("crates/std-egui/src/tokens/color.rs"),
+            "Color32::from_rgb("
+        ));
+        assert!(ui_token_exception(
+            &root.join("crates/std-egui/src/i18n/catalog/launcher.rs"),
+            ".size("
+        ));
     }
 
     #[test]
