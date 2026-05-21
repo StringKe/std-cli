@@ -163,6 +163,9 @@ impl StudioSmokeReport {
             && self
                 .pane_settings_contract
                 .contains("ai_control=token-toggle-row")
+            && self
+                .pane_settings_contract
+                .contains("storage_control=token-path-row")
             && !self.native_child_windows
             && !self.detached_panels
     }

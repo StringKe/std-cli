@@ -361,6 +361,20 @@ fn settings_ai_provider_uses_token_toggle_row() {
     assert!(toggle.contains("WidgetType::Checkbox"));
 }
 
+#[test]
+fn settings_storage_uses_token_path_row() {
+    let settings = include_str!("views/settings.rs");
+    let binding = include_str!("views/settings_binding.rs");
+
+    assert!(settings.contains("settings_binding::binding_editor_row"));
+    assert!(settings.contains("self.save_setting(\"data_dir\""));
+    assert!(!settings.contains("ui.text_edit_singleline(&mut self.settings_data_dir)"));
+    assert!(binding.contains("save_label"));
+    assert!(binding.contains("WidgetType::TextEdit"));
+    assert!(binding.contains("row_paint::paint_row_frame"));
+    assert!(binding.contains("Color::accent_weak"));
+}
+
 fn test_app() -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     let temp = tempfile::tempdir().unwrap();

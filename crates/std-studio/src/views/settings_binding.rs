@@ -3,10 +3,7 @@ use crate::views::{
     row_paint::{self, RowSurface},
 };
 use eframe::egui;
-use std_egui::{
-    i18n,
-    tokens::{Color, Radius, Space, Text},
-};
+use std_egui::tokens::{Color, Radius, Space, Text};
 
 const BINDING_CONTROL_HEIGHT: f32 = 32.0;
 const BINDING_CONTROL_HALF_HEIGHT: f32 = 16.0;
@@ -19,6 +16,7 @@ pub(crate) fn binding_editor_row(
     ui: &mut egui::Ui,
     label: &str,
     detail: &str,
+    save_label: &str,
     value: &mut String,
 ) -> BindingRowOutput {
     let (rect, response) = ui.allocate_exact_size(
@@ -58,7 +56,7 @@ pub(crate) fn binding_editor_row(
     let save_clicked = ui
         .put(
             save_rect,
-            egui::Button::new(i18n::t("studio.settings.hotkey.save"))
+            egui::Button::new(save_label)
                 .fill(Color::accent_weak(ui.ctx()))
                 .stroke(egui::Stroke::new(1.0, Color::accent_base(ui.ctx())))
                 .corner_radius(egui::CornerRadius::same(Radius::SM)),
@@ -106,6 +104,7 @@ mod tests {
         assert!(implementation.contains("row_paint::paint_row_frame"));
         assert!(implementation.contains("Color::accent_weak"));
         assert!(implementation.contains("TextEdit::singleline"));
+        assert!(implementation.contains("save_label"));
         assert!(!implementation.contains("ui.text_edit_singleline"));
     }
 }

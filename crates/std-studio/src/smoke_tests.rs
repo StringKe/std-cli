@@ -61,6 +61,7 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("theme_modes=system|dark|light"));
     assert!(summary.contains("theme_control=segmented-control"));
     assert!(summary.contains("ai_control=token-toggle-row"));
+    assert!(summary.contains("storage_control=token-path-row"));
 }
 
 fn assert_studio_open_intent_summary(summary: &str) {

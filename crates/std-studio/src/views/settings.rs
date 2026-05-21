@@ -115,6 +115,7 @@ impl StudioEguiApp {
                 ui,
                 i18n::t("studio.settings.hotkey.label"),
                 i18n::t("studio.settings.hotkey.contract"),
+                i18n::t("studio.settings.hotkey.save"),
                 &mut self.settings_hotkey,
             );
             if binding.save_clicked {
@@ -169,9 +170,14 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             self.render_category_header(ui, SettingsCategory::Plugins);
             settings_rows::config_path_row(ui, &self.app.config_path().display().to_string());
-            ui.label(i18n::t("studio.settings.data_dir.label"));
-            ui.text_edit_singleline(&mut self.settings_data_dir);
-            if ui::quiet_button(ui, i18n::t("studio.settings.data_dir.save")).clicked() {
+            let storage = settings_binding::binding_editor_row(
+                ui,
+                i18n::t("studio.settings.data_dir.label"),
+                i18n::t("studio.settings.storage.note"),
+                i18n::t("studio.settings.data_dir.save"),
+                &mut self.settings_data_dir,
+            );
+            if storage.save_clicked {
                 self.save_setting("data_dir", self.settings_data_dir.clone());
             }
             ui.add_space(Space::SM as f32);
