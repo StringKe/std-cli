@@ -127,6 +127,24 @@ fn ui_preview_uses_transparent_visible_chrome() {
 }
 
 #[test]
+fn ui_preview_window_size_matches_seeded_panel_state() {
+    for scenario in ["results", "defer", "error", "action-panel"] {
+        let config = LauncherPreviewConfig {
+            theme_mode: ThemeMode::Light,
+            scenario: scenario.to_string(),
+            timeout_ms: 8000,
+        };
+        let preview_size = preview_window_inner_size(&config);
+        let mut state = std_launcher::LauncherState::new();
+        apply_preview_scenario(&mut state, scenario);
+        let expected_size = ui::launcher_window_inner_size(&state);
+
+        assert!(preview_size.y > ui::launcher_initial_window_inner_size().y);
+        assert_eq!(preview_size, expected_size);
+    }
+}
+
+#[test]
 fn ui_preview_scenarios_seed_visible_launcher_states() {
     let mut state = std_launcher::LauncherState::new();
 

@@ -147,9 +147,10 @@ pub(crate) fn blocked_preview_summary(reason: &str) -> String {
 }
 
 pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
+    let native_options = preview_native_options_for_config(&config);
     eframe::run_native(
         preview_window_title(),
-        preview_native_options(),
+        native_options,
         Box::new(|_cc| Ok(Box::new(LauncherPreviewApp::new(config)))),
     )
 }
@@ -162,10 +163,27 @@ pub(crate) fn preview_window_title() -> &'static str {
     "std-cli Launcher"
 }
 
+#[cfg(test)]
 pub(crate) fn preview_native_options() -> eframe::NativeOptions {
+    preview_native_options_for_size(ui::launcher_initial_window_inner_size())
+}
+
+pub(crate) fn preview_native_options_for_config(
+    config: &LauncherPreviewConfig,
+) -> eframe::NativeOptions {
+    preview_native_options_for_size(preview_window_inner_size(config))
+}
+
+pub(crate) fn preview_window_inner_size(config: &LauncherPreviewConfig) -> egui::Vec2 {
+    let mut state = LauncherState::new();
+    apply_preview_scenario(&mut state, &config.scenario);
+    ui::launcher_window_inner_size(&state)
+}
+
+fn preview_native_options_for_size(size: egui::Vec2) -> eframe::NativeOptions {
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size(ui::launcher_initial_window_inner_size())
+            .with_inner_size(size)
             .with_decorations(false)
             .with_transparent(true)
             .with_visible(true),
