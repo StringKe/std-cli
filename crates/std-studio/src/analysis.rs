@@ -1,4 +1,5 @@
 use crate::{
+    analysis_state::AnalysisFocusArea,
     analysis_tab_content::{self, AnalysisTabRenderState},
     ui, StudioEguiApp,
 };
@@ -76,11 +77,15 @@ impl StudioEguiApp {
     fn render_analysis_toolbar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui.horizontal(|ui| {
-                ui.add_sized(
+                let response = ui.add_sized(
                     [ui.available_width() - 120.0, 28.0],
                     egui::TextEdit::singleline(&mut self.analysis.path)
+                        .id(AnalysisFocusArea::Target.focus_id())
                         .hint_text(i18n::t("studio.analysis.path.hint")),
                 );
+                if self.analysis.focus_area == AnalysisFocusArea::Target {
+                    response.request_focus();
+                }
                 if ui::quiet_button(ui, i18n::t("studio.analysis.analyze")).clicked() {
                     self.analyze_current_path();
                 }
@@ -102,7 +107,12 @@ impl StudioEguiApp {
             );
             ui.add_space(Space::XS as f32);
             let model = self.analysis_workbench_model();
-            render_analysis_tabs(ui, &model, &mut self.analysis.active_tab);
+            render_analysis_tabs(
+                ui,
+                &model,
+                &mut self.analysis.active_tab,
+                self.analysis.focus_area,
+            );
             ui.add_space(Space::XS as f32);
             analysis_tab_content::render_tab_content(ui, self.analysis_render_state(&model));
         });
@@ -115,7 +125,13 @@ impl StudioEguiApp {
                 i18n::t("studio.analysis.query.title"),
                 i18n::t("studio.analysis.query.detail"),
             );
-            ui.text_edit_singleline(&mut self.analysis.query);
+            let response = ui.add(
+                egui::TextEdit::singleline(&mut self.analysis.query)
+                    .id(AnalysisFocusArea::Query.focus_id()),
+            );
+            if self.analysis.focus_area == AnalysisFocusArea::Query {
+                response.request_focus();
+            }
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.analysis.ask")).clicked() {
                     self.ask_analysis();
@@ -272,6 +288,7 @@ fn render_analysis_tabs(
     ui: &mut egui::Ui,
     model: &AnalysisWorkbenchViewModel,
     active_tab: &mut AnalysisWorkbenchTab,
+    focus_area: AnalysisFocusArea,
 ) {
     ui.horizontal_wrapped(|ui| {
         for tab in &model.tabs {
@@ -284,6 +301,9 @@ fn render_analysis_tabs(
             };
             let response = ui.add(egui::Button::new(label.clone()).fill(fill));
             if selected {
+                if focus_area == AnalysisFocusArea::Tabs {
+                    response.request_focus();
+                }
                 response.widget_info(|| {
                     egui::WidgetInfo::labeled(
                         egui::WidgetType::Button,

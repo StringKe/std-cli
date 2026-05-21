@@ -19,6 +19,10 @@ impl AnalysisFocusArea {
         }
     }
 
+    pub(crate) fn focus_id(self) -> egui::Id {
+        egui::Id::new(("studio.analysis.focus", self.label()))
+    }
+
     fn all() -> [Self; 5] {
         [
             Self::Target,
@@ -127,5 +131,19 @@ mod tests {
         assert_eq!(state.focus_area, AnalysisFocusArea::Target);
         state.focus_previous();
         assert_eq!(state.focus_area, AnalysisFocusArea::Coverage);
+    }
+
+    #[test]
+    fn analysis_focus_areas_have_stable_egui_ids() {
+        let mut state = AnalysisUiState::initial();
+        let target = state.focus_area.focus_id();
+
+        assert_eq!(target, AnalysisFocusArea::Target.focus_id());
+        state.focus_next();
+        assert_eq!(
+            state.focus_area.focus_id(),
+            AnalysisFocusArea::Tabs.focus_id()
+        );
+        assert_ne!(target, state.focus_area.focus_id());
     }
 }
