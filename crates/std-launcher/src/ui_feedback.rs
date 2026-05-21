@@ -137,7 +137,9 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
             match action {
                 LauncherFeedbackAction::Copy => {
                     if feedback_button(ui, i18n::t("launcher.feedback.copy"), selected).clicked() {
-                        ui.ctx().copy_text(feedback.summary());
+                        if let Some(execution) = state.copy_feedback_to_clipboard_model() {
+                            ui.ctx().copy_text(execution.message);
+                        }
                     }
                 }
                 LauncherFeedbackAction::Retry => {
@@ -365,5 +367,13 @@ mod tests {
 
         assert!(source.contains("state.trigger_selected_by_user();"));
         assert!(!source.contains("state.trigger_selected();"));
+    }
+
+    #[test]
+    fn copy_click_uses_shared_feedback_copy_model() {
+        let source = include_str!("ui_feedback.rs");
+
+        assert!(source.contains("state.copy_feedback_to_clipboard_model()"));
+        assert!(!source.contains("ui.ctx().copy_text(feedback.summary())"));
     }
 }

@@ -235,7 +235,7 @@ impl LauncherState {
 
     pub fn trigger_feedback_action(&mut self) -> Option<std_types::ActionExecution> {
         match self.view.selected_feedback_action()? {
-            LauncherFeedbackAction::Copy => Some(self.complete_feedback_copy()),
+            LauncherFeedbackAction::Copy => self.copy_feedback_to_clipboard_model(),
             LauncherFeedbackAction::Retry => self.trigger_selected_by_user(),
             LauncherFeedbackAction::OpenStudio => {
                 self.open_studio_execution_history_from_feedback();
@@ -244,25 +244,28 @@ impl LauncherState {
         }
     }
 
-    fn complete_feedback_copy(&mut self) -> std_types::ActionExecution {
+    pub fn copy_feedback_to_clipboard_model(&mut self) -> Option<std_types::ActionExecution> {
+        let execution = self.complete_feedback_copy()?;
+        self.view.last_execution = Some(execution.clone());
+        self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
+        self.view.selected_feedback_action = 0;
+        Some(execution)
+    }
+
+    fn complete_feedback_copy(&self) -> Option<std_types::ActionExecution> {
         let feedback_summary = self
             .view
             .feedback
             .as_ref()
-            .map(std_egui::LauncherFeedback::summary)
-            .unwrap_or_else(|| "Launcher feedback".to_string());
-        let execution = std_types::ActionExecution {
+            .map(std_egui::LauncherFeedback::summary)?;
+        Some(std_types::ActionExecution {
             action_id: Default::default(),
             action_name: "Copy Feedback".to_string(),
             status: ActionExecutionStatus::Completed,
             message: feedback_summary.clone(),
             output: Some(serde_json::json!({ "copied": feedback_summary })),
             created_at: chrono::Utc::now(),
-        };
-        self.view.last_execution = Some(execution.clone());
-        self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
-        self.view.selected_feedback_action = 0;
-        execution
+        })
     }
 
     fn focus_next_section(&mut self) {

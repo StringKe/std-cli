@@ -171,6 +171,34 @@ fn feedback_actions_are_keyboard_reachable() {
     );
 }
 
+#[test]
+fn feedback_copy_updates_shared_model_for_mouse_and_keyboard_paths() {
+    let mut state = LauncherState::new();
+    state.view.feedback = Some(feedback(ActionExecutionStatus::Failed));
+    state.focus_section = LauncherFocusSection::Feedback;
+
+    let execution = state.copy_feedback_to_clipboard_model().unwrap();
+
+    assert_eq!(execution.action_name, "Copy Feedback");
+    assert_eq!(execution.status, ActionExecutionStatus::Completed);
+    assert_eq!(
+        state
+            .view
+            .last_execution
+            .as_ref()
+            .map(|execution| execution.action_name.as_str()),
+        Some("Copy Feedback")
+    );
+    assert_eq!(
+        state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.status.clone()),
+        Some(ActionExecutionStatus::Completed)
+    );
+}
+
 fn feedback(status: ActionExecutionStatus) -> LauncherFeedback {
     LauncherFeedback::from_execution(&ActionExecution {
         action_id: ActionId::default(),
