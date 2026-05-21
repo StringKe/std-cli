@@ -86,7 +86,13 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --surface-smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --preview-smoke",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
-        "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness\"",
+        "lines.push(format!(\"background_ui_acceptance={command}\"))",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke",
+        "--harness-pid <pid>",
+        "--window-id <window-id>",
+        "--bundle-id dev.std-cli.background-ui-harness",
+        "--window-title \\\"std-cli Background UI Harness\\\"",
     ] {
         check_text(&body, required)?;
     }
@@ -148,11 +154,11 @@ fn check_studio_keyboard_evidence(root: &std::path::Path) -> Result<(), CliError
     let evidence = format!("{keyboard}\n{keyboard_tests}");
     for required in [
         "studio_keyboard_smoke=PASS",
-        "Cmd+B:open>closed>open",
-        "Cmd+I:closed>open>closed",
-        "Cmd+J:closed>open>closed",
-        "Cmd+Shift+P|Cmd+/:closed>command",
-        "Cmd+P:command>quick-open",
+        "studio_sidebar_toggle_path={}:open>closed>open",
+        "studio_inspector_toggle_path={}:closed>open>closed",
+        "studio_bottom_panel_toggle_path={}:closed>open>closed",
+        "studio_command_palette_path={}|{}:closed>command",
+        "studio_quick_open_path={}:command>quick-open",
         "dashboard>plugins>settings>dashboard",
         "target>tabs>content>query>coverage>target",
         "?:coverage>query",
@@ -236,6 +242,15 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "selected_token=accent/weak",
         "bottom_clearance",
         "selected_token=accent/weak",
+        "required_capture_states",
+        "light-results",
+        "dark-results",
+        "light-no-results",
+        "dark-no-results",
+        "light-defer",
+        "dark-defer",
+        "light-error",
+        "dark-error",
     ] {
         let launcher_evidence =
             read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;
@@ -298,7 +313,8 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     check_text(&cli_ui, "STD_TEST_MODE blocks background UI automation")?;
     check_text(&cli_ui, "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required")?;
     check_text(&cli_ui, "isolated_background_ui_harness_only")?;
-    check_text(&cli_ui, "AX_or_CGEvent_postToPid_after_explicit_opt_in")?;
+    check_text(&cli_ui, "target_identity=fixed_bundle_pid_window_title_quadruple")?;
+    check_text(&cli_ui, "event_route=postToPid_target_pid_only")?;
     check_text(
         &cli_ui,
         "event_tap_then_appkit_defined_primer_then_center_primer",

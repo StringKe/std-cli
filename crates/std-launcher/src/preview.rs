@@ -27,6 +27,7 @@ pub(crate) struct LauncherPreviewSmokeReport {
     pub(crate) commands: Vec<String>,
     pub(crate) states: Vec<String>,
     pub(crate) sizes: Vec<String>,
+    pub(crate) required_capture_states: Vec<String>,
     pub(crate) capture_contract: &'static str,
 }
 
@@ -40,6 +41,7 @@ impl LauncherPreviewSmokeReport {
                 .collect(),
             states: scenarios.iter().map(preview_state_summary).collect(),
             sizes: scenarios.iter().map(preview_size_summary).collect(),
+            required_capture_states: required_capture_states(&scenarios),
             scenarios,
             capture_contract: preview_capture_contract(),
         }
@@ -50,12 +52,14 @@ impl LauncherPreviewSmokeReport {
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
             && self.sizes.iter().all(|size| size.contains("PASS"))
+            && self.required_capture_states == required_capture_states(&self.scenarios)
+            && required_capture_states_pass(&self.required_capture_states)
             && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\npreview_capture_contract={}",
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios
                 .iter()
@@ -65,6 +69,7 @@ impl LauncherPreviewSmokeReport {
             self.commands.join(";"),
             self.states.join(";"),
             self.sizes.join(";"),
+            self.required_capture_states.join(","),
             self.capture_contract
         )
     }
@@ -157,6 +162,41 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 
 fn preview_capture_contract() -> &'static str {
     "capture-window,opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,no-product-viewport"
+}
+
+fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {
+    [
+        "light-results",
+        "dark-results",
+        "light-no-results",
+        "dark-no-results",
+        "light-defer",
+        "dark-defer",
+        "light-error",
+        "dark-error",
+    ]
+    .into_iter()
+    .filter(|required| {
+        scenarios
+            .iter()
+            .any(|scenario| scenario.label() == *required)
+    })
+    .map(str::to_string)
+    .collect()
+}
+
+fn required_capture_states_pass(states: &[String]) -> bool {
+    states
+        == [
+            "light-results",
+            "dark-results",
+            "light-no-results",
+            "dark-no-results",
+            "light-defer",
+            "dark-defer",
+            "light-error",
+            "dark-error",
+        ]
 }
 
 pub(crate) fn preview_window_title() -> &'static str {

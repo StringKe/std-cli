@@ -56,6 +56,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert_preview_state_matrix(&report);
     assert_preview_theme_tokens(&report);
     assert_preview_affordance_contract(&report);
+    assert_required_capture_state_contract(&report);
     assert_preview_capture_contract(&report);
 }
 
@@ -114,6 +115,27 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
     assert!(summary.contains("action_panel_actions=Review first,Defer,Open in Studio,Copy command"));
+}
+
+fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
+    assert_eq!(
+        report.required_capture_states,
+        [
+            "light-results",
+            "dark-results",
+            "light-no-results",
+            "dark-no-results",
+            "light-defer",
+            "dark-defer",
+            "light-error",
+            "dark-error",
+        ]
+    );
+
+    let summary = report.summary();
+    assert!(summary.contains(
+        "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error"
+    ));
 }
 
 fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {

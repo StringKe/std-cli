@@ -268,6 +268,7 @@ mod tests {
             "light-empty",
             "dark-results",
             "light-no-results",
+            "dark-no-results",
             "dark-searching",
             "light-loading",
             "dark-loading",
@@ -277,6 +278,7 @@ mod tests {
             "light-error",
             "dark-action-panel",
             "STD_ALLOW_UI_PREVIEW=1",
+            "required_capture_states=light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
         ] {
             assert!(summary.contains(expected), "{expected}");
         }
