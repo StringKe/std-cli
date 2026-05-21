@@ -63,6 +63,28 @@ fn test_binary_spawns_are_forced_into_test_mode() {
 }
 
 #[test]
+fn test_sources_must_not_clear_test_mode() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let mut violations = Vec::new();
+
+    scan_rs_files(
+        &root.join("crates"),
+        &forbidden_test_mode_clear_terms(),
+        &mut violations,
+    );
+
+    assert!(
+        violations.is_empty(),
+        "test sources must not clear STD_TEST_MODE: {}",
+        violations.join(", ")
+    );
+}
+
+#[test]
 fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -251,6 +273,13 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
         ".env(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\"".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\"".to_string(),
+    ]
+}
+
+fn forbidden_test_mode_clear_terms() -> Vec<String> {
+    vec![
+        ".env_remove(\"STD_TEST_MODE\")".to_string(),
+        "remove_var(\"STD_TEST_MODE\")".to_string(),
     ]
 }
 

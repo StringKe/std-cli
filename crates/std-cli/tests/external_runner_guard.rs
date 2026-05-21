@@ -163,7 +163,7 @@ fn binary_blocks_external_runner_without_desktop_opt_in() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());
 
-    let define = run_std_without_test_mode(
+    let define = run_std(
         &config_path,
         &[
             "command",
@@ -175,7 +175,7 @@ fn binary_blocks_external_runner_without_desktop_opt_in() {
     );
     assert!(define.status.success(), "{}", command_stderr(&define));
 
-    let trigger = run_std_without_test_mode(
+    let trigger = run_std(
         &config_path,
         &["trigger", "Opt In External Guard", "--allow-external"],
     );
@@ -206,17 +206,6 @@ fn run_std(config_path: &Path, args: &[&str]) -> std::process::Output {
         .args(args)
         .env("STDCLI_CONFIG", config_path)
         .env("STD_TEST_MODE", "1")
-        .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
-        .env_remove("STD_ALLOW_UI_PREVIEW");
-    command.output().unwrap()
-}
-
-fn run_std_without_test_mode(config_path: &Path, args: &[&str]) -> std::process::Output {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_std"));
-    command
-        .args(args)
-        .env("STDCLI_CONFIG", config_path)
-        .env_remove("STD_TEST_MODE")
         .env_remove("STD_ALLOW_DESKTOP_AUTOMATION")
         .env_remove("STD_ALLOW_UI_PREVIEW");
     command.output().unwrap()
