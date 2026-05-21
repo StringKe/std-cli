@@ -177,6 +177,7 @@ fn background_ui_smoke_documents_safe_background_event_route() {
         "window-center-primer",
         "postToPid-target-pid-input",
         "tap_order=install_previous_and_target_taps_before_primer",
+        "tap_failure=fail_before_any_primer_or_input",
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
         "event_route=postToPid_target_pid_only",
@@ -216,6 +217,26 @@ fn mise_background_ui_tasks_are_manual_harness_only() {
     assert!(!quality.contains("ui-background-harness"));
     assert!(!quality.contains("ui-background-smoke"));
     assert!(!quality.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
+}
+
+#[test]
+fn background_ui_runner_fails_when_event_taps_are_unavailable() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("scripts/background-ui-smoke.swift")).unwrap();
+
+    assert!(
+        body.contains("guard session.start() else"),
+        "background UI runner must require event taps before primer or input"
+    );
+    assert!(
+        body.contains("fail(\"event tap install failed\")"),
+        "background UI runner must hard fail when event taps cannot be installed"
+    );
+    assert_order(
+        &body,
+        "guard session.start() else",
+        "sendAppKitActivation(to: config.harnessPid",
+    );
 }
 
 #[test]

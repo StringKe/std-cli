@@ -111,6 +111,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "harness_origin=spawned_by_scripts_background_ui_harness_only".to_string(),
         "target_identity=fixed_bundle_pid_window_title_quadruple".to_string(),
         "tap_order=install_previous_and_target_taps_before_primer".to_string(),
+        "tap_failure=fail_before_any_primer_or_input".to_string(),
         "activation=event_tap_then_appkit_defined_primer_then_center_primer".to_string(),
         "event_route=postToPid_target_pid_only".to_string(),
         "frontmost_policy=previous_app_never_targeted".to_string(),

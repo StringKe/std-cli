@@ -92,6 +92,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置
 - driver 只能使用 `postToPid` 定向投递到 harness pid，不能使用全局 HID、System Events、前台点击或用户当前 frontmost app
 - 激活前先安装 previous 和 target 两个 per-process event tap，然后再发 appKitDefined primer 和 center primer
+- previous 和 target 任一 event tap 安装失败时必须直接 `FAIL`，禁止继续发送 primer、点击或键盘事件
 - per-process event tap 只订阅 raw value 13、19、20 三类 focus message，只允许拦截 previous app deactivation，target activation 必须放行
 - activation start 使用 `appKitDefined` subtype 1 `applicationActivated`，结束使用 subtype 2 `applicationDeactivated`
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为

@@ -43,7 +43,9 @@ guard previousPid != config.harnessPid else {
     fail("harness is frontmost; refusing to target active user window")
 }
 var session = BackgroundActivationSession(previousPid: previousPid, targetPid: config.harnessPid)
-session.start()
+guard session.start() else {
+    fail("event tap install failed")
+}
 sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 1)
 postCenterPrimer(to: config.harnessPid, windowId: config.windowId, window: window)
 postKeySmoke(to: config.harnessPid, windowId: config.windowId)
@@ -69,9 +71,10 @@ final class BackgroundActivationSession {
         self.targetPid = targetPid
     }
 
-    func start() {
+    func start() -> Bool {
         previousTap = createTap(pid: previousPid, dropFocusMessages: true)
         targetTap = createTap(pid: targetPid, dropFocusMessages: false)
+        return previousTap != nil && targetTap != nil
     }
 
     func stop() {
