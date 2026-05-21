@@ -24,6 +24,16 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.plugins.status.detail") => {
             Some("manifest, preview, runtime, permission, boundary")
         }
+        (Locale::ZhCn, "studio.plugins.status.no_preview") => Some("未选择预览"),
+        (Locale::EnUs, "studio.plugins.status.no_preview") => Some("No preview"),
+        (Locale::ZhCn, "studio.plugins.status.no_run") => Some("尚未运行"),
+        (Locale::EnUs, "studio.plugins.status.no_run") => Some("No run"),
+        (Locale::ZhCn, "studio.plugins.runtime.completed") => Some("已完成"),
+        (Locale::EnUs, "studio.plugins.runtime.completed") => Some("Completed"),
+        (Locale::ZhCn, "studio.plugins.runtime.failed") => Some("无法执行"),
+        (Locale::EnUs, "studio.plugins.runtime.failed") => Some("Unable to run"),
+        (Locale::ZhCn, "studio.plugins.runtime.deferred") => Some("需要确认"),
+        (Locale::EnUs, "studio.plugins.runtime.deferred") => Some("Needs review"),
         (Locale::ZhCn, "studio.plugins.manifests.title") => Some("Manifests"),
         (Locale::EnUs, "studio.plugins.manifests.title") => Some("Manifests"),
         (Locale::ZhCn, "studio.plugins.manifests.detail") => Some("已发现 plugin.json"),
@@ -68,6 +78,11 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.plugins.run" => Some("Run"),
         "studio.plugins.status.title" => Some("Runtime Status"),
         "studio.plugins.status.detail" => Some("manifest, preview, runtime, permission, boundary"),
+        "studio.plugins.status.no_preview" => Some("No preview"),
+        "studio.plugins.status.no_run" => Some("No run"),
+        "studio.plugins.runtime.completed" => Some("Completed"),
+        "studio.plugins.runtime.failed" => Some("Unable to run"),
+        "studio.plugins.runtime.deferred" => Some("Needs review"),
         "studio.plugins.manifests.title" => Some("Manifests"),
         "studio.plugins.manifests.detail" => Some("discovered plugin.json"),
         "studio.plugins.manifests.empty" => Some("No plugin manifests"),

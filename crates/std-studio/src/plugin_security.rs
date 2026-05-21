@@ -1,4 +1,5 @@
 use std_core::{plugins::PluginPermission, PluginCheckReport};
+use std_egui::i18n;
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,11 +45,19 @@ pub fn runtime_summary(
         .unwrap_or("deferred")
         .to_string();
     PluginRuntimeSummary {
-        status: format!("{status:?}"),
+        status: runtime_status_label(status).to_string(),
         exit_code: number_field(output, "exit_code"),
         duration: duration_field(output),
         boundary: runtime_boundary(status, &runtime),
         runtime,
+    }
+}
+
+fn runtime_status_label(status: &ActionExecutionStatus) -> &'static str {
+    match status {
+        ActionExecutionStatus::Completed => i18n::t("studio.plugins.runtime.completed"),
+        ActionExecutionStatus::Failed => i18n::t("studio.plugins.runtime.failed"),
+        ActionExecutionStatus::NeedsExternalRunner => i18n::t("studio.plugins.runtime.deferred"),
     }
 }
 
@@ -133,7 +142,7 @@ mod tests {
 
         let summary = runtime_summary(&ActionExecutionStatus::Completed, Some(&output));
 
-        assert_eq!(summary.status, "Completed");
+        assert_eq!(summary.status, i18n::t("studio.plugins.runtime.completed"));
         assert_eq!(summary.runtime, "deno_core");
         assert_eq!(summary.exit_code, "0");
         assert_eq!(summary.duration, "12 ms");

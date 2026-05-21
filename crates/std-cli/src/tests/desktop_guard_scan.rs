@@ -108,15 +108,37 @@ pub(crate) fn scan_rs_files_for_binary_spawns(dir: &Path, violations: &mut Vec<S
         if !body.contains("CARGO_BIN_EXE_") {
             continue;
         }
+        scan_binary_spawn_blocks(&path, &body, violations);
+    }
+}
+
+fn scan_binary_spawn_blocks(path: &Path, body: &str, violations: &mut Vec<String>) {
+    let mut rest = body;
+    let mut offset = 0;
+    while let Some(index) = rest.find("Command::new(env!(\"CARGO_BIN_EXE_") {
+        let start = offset + index;
+        let after_start = &body[start..];
+        let end = after_start
+            .find(".output()")
+            .map(|end| start + end)
+            .unwrap_or(body.len());
+        let block = &body[start..end];
         for required in [
             ".env(\"STD_TEST_MODE\", \"1\")",
             ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")",
             ".env_remove(\"STD_ALLOW_UI_PREVIEW\")",
         ] {
-            if !body.contains(required) {
-                violations.push(format!("{} missing {}", path.display(), required));
+            if !block.contains(required) {
+                violations.push(format!(
+                    "{} spawn at byte {} missing {}",
+                    path.display(),
+                    start,
+                    required
+                ));
             }
         }
+        offset = start + "Command::new(env!(\"CARGO_BIN_EXE_".len();
+        rest = &body[offset..];
     }
 }
 

@@ -1,5 +1,6 @@
 use crate::plugin_security::{boundary_summary, runtime_summary};
 use std_core::PluginCheckReport;
+use std_egui::i18n;
 use std_types::{ActionExecution, ActionPreview, SearchResult};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -39,7 +40,7 @@ fn manifest_status(reports: &[PluginCheckReport]) -> String {
 fn preview_status(preview: Option<&ActionPreview>) -> String {
     preview
         .map(|preview| format!("{:?}", preview.action_type))
-        .unwrap_or_else(|| "No preview".to_string())
+        .unwrap_or_else(|| i18n::t("studio.plugins.status.no_preview").to_string())
 }
 
 fn runtime_status(last_execution: Option<&ActionExecution>) -> String {
@@ -48,7 +49,7 @@ fn runtime_status(last_execution: Option<&ActionExecution>) -> String {
             let summary = runtime_summary(&execution.status, execution.output.as_ref());
             format!("{} {}", summary.status, summary.runtime)
         })
-        .unwrap_or_else(|| "No run".to_string())
+        .unwrap_or_else(|| i18n::t("studio.plugins.status.no_run").to_string())
 }
 
 fn permission_status(reports: &[PluginCheckReport]) -> String {
@@ -119,8 +120,14 @@ mod tests {
 
         assert_eq!(summary.manifest_status, "1/1 PASS");
         assert_eq!(summary.action_status, "1 actions");
-        assert_eq!(summary.preview_status, "No preview");
-        assert_eq!(summary.runtime_status, "Completed deno_core");
+        assert_eq!(
+            summary.preview_status,
+            i18n::t("studio.plugins.status.no_preview")
+        );
+        assert_eq!(
+            summary.runtime_status,
+            format!("{} deno_core", i18n::t("studio.plugins.runtime.completed"))
+        );
         assert_eq!(summary.permission_status, "Code");
         assert_eq!(summary.boundary_status, "fs=1 network=1");
     }
