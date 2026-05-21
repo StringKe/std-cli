@@ -405,61 +405,13 @@ impl StudioEguiApp {
         }
     }
 
-    pub(crate) fn apply_workflow_ai_action(
-        &mut self,
-        action: workflow_builder_ai::WorkflowAiAction,
-    ) {
-        let suggestions = workflow_builder_ai::suggestions(&self.workflow_goal);
-        let (mode, index) = match action {
-            workflow_builder_ai::WorkflowAiAction::Apply(index) => ("applied", index),
-            workflow_builder_ai::WorkflowAiAction::Insert(index) => ("inserted", index),
-            workflow_builder_ai::WorkflowAiAction::Replace(index) => ("replaced", index),
-        };
-        let Some(suggestion) = suggestions.get(index) else {
-            self.status = "missing AI suggestion".to_string();
-            return;
-        };
-        self.app.ensure_planned_workflow("AI assisted workflow");
-        let result = match action {
-            workflow_builder_ai::WorkflowAiAction::Apply(_) => self
-                .app
-                .append_planned_workflow_step(suggestion.step_name, suggestion.parameters.clone()),
-            workflow_builder_ai::WorkflowAiAction::Insert(_) => {
-                let index = self.selected_step_index().unwrap_or_default();
-                self.app.insert_planned_workflow_step(
-                    index,
-                    suggestion.step_name,
-                    suggestion.parameters.clone(),
-                )
-            }
-            workflow_builder_ai::WorkflowAiAction::Replace(_) => {
-                let Some(index) = self.selected_step_index() else {
-                    return;
-                };
-                self.app.update_planned_workflow_step(
-                    index,
-                    Some(suggestion.step_name),
-                    Some(suggestion.parameters.clone()),
-                )
-            }
-        };
-        match result {
-            Ok(step) => {
-                self.workflow_step_name = step.name.clone();
-                self.workflow_step_parameters = step.parameters.to_string();
-                self.status = format!("AI {mode} step {}", step.name);
-            }
-            Err(error) => self.status = error.to_string(),
-        }
-    }
-
     fn sync_selected_step_parameters(&mut self, index: usize) {
         if let Some(step) = self.app.selected_planned_step(index) {
             self.workflow_step_parameters = step.parameters.to_string();
         }
     }
 
-    fn selected_step_index(&mut self) -> Option<usize> {
+    pub(crate) fn selected_step_index(&mut self) -> Option<usize> {
         match self.workflow_edit_index.trim().parse::<usize>() {
             Ok(index) => Some(index),
             Err(_) => {
