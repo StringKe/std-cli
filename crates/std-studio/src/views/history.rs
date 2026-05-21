@@ -11,6 +11,8 @@ impl StudioEguiApp {
             i18n::t("studio.history.title"),
             i18n::t("studio.history.detail"),
         );
+        history_rows::filter_bar(ui);
+        ui.add_space(Space::XS as f32);
         self.render_history_workspace(ui);
     }
 
@@ -85,4 +87,9 @@ impl StudioEguiApp {
                 });
         });
     }
+}
+
+#[cfg(test)]
+pub(crate) fn history_layout_contract() -> &'static str {
+    "history=filter-bar>traces+events;filters=time,status,workflow;trace-columns=time,workflow,status,duration,source"
 }

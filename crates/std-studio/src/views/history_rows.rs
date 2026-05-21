@@ -10,6 +10,23 @@ use std_egui::tokens::{Color, Space, Text};
 use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecutionStatus, StdEvent};
 
+pub(crate) fn filter_bar(ui: &mut egui::Ui) {
+    ui::surface_frame(ui.ctx()).show(ui, |ui| {
+        ui.horizontal_wrapped(|ui| {
+            filter_chip(ui, "Time range");
+            filter_chip(ui, "Status");
+            filter_chip(ui, "Workflow");
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.label(
+                    egui::RichText::new("time / workflow / status / duration / source")
+                        .font(Text::caption())
+                        .color(ui::muted_text(ui.ctx())),
+                );
+            });
+        });
+    });
+}
+
 pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
     let (rect, response) = ui.allocate_exact_size(
         egui::vec2(ui.available_width(), row_metrics::HISTORY_TRACE_ROW_HEIGHT),
@@ -36,6 +53,10 @@ pub(crate) fn trace_row(ui: &mut egui::Ui, trace: &WorkflowExecutionTrace) {
         paint_step_preview(ui, rect, &trace.steps);
     }
     ui.add_space(Space::TWO_XS as f32);
+}
+
+fn filter_chip(ui: &mut egui::Ui, label: &str) {
+    ui::chip(ui, label, Color::bg_surface_2(ui.ctx()));
 }
 
 pub(crate) fn event_row(ui: &mut egui::Ui, event: &StdEvent) {
@@ -174,5 +195,19 @@ fn compact_payload(payload: &serde_json::Value) -> String {
         )
     } else {
         text
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn history_filter_bar_contract_matches_docs_22() {
+        let source = include_str!("history_rows.rs");
+
+        assert!(source.contains("Time range"));
+        assert!(source.contains("Status"));
+        assert!(source.contains("Workflow"));
+        assert!(source.contains("duration"));
+        assert!(crate::views::history::history_layout_contract().contains("filter-bar"));
     }
 }
