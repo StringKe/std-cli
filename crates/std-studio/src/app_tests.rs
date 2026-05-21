@@ -327,6 +327,20 @@ fn settings_hotkeys_render_registry_source_and_reset() {
     assert!(rows.contains("shortcut_a11y_label"));
 }
 
+#[test]
+fn settings_theme_control_uses_tokens_and_saves_theme_modes() {
+    let settings = include_str!("views/settings.rs");
+    let rows = include_str!("views/settings_rows.rs");
+
+    assert!(settings.contains("settings_rows::theme_mode_control"));
+    assert!(settings.contains("self.save_setting(\"theme\", self.settings_theme.clone())"));
+    assert!(settings.contains("self.render_theme_profile(ui)"));
+    assert!(!settings.contains("ui.text_edit_singleline(&mut self.settings_theme)"));
+    assert!(rows.contains("[\"system\", \"dark\", \"light\"]"));
+    assert!(rows.contains("Color::accent_weak"));
+    assert!(rows.contains("Color::accent_base"));
+}
+
 fn test_app() -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     let temp = tempfile::tempdir().unwrap();

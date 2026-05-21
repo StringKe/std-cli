@@ -79,8 +79,8 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             self.render_category_header(ui, SettingsCategory::Appearance);
             ui.label(i18n::t("studio.settings.theme.label"));
-            ui.text_edit_singleline(&mut self.settings_theme);
-            if ui::quiet_button(ui, i18n::t("studio.settings.theme.save")).clicked() {
+            if let Some(theme) = settings_rows::theme_mode_control(ui, &self.settings_theme) {
+                self.settings_theme = theme.to_string();
                 self.save_setting("theme", self.settings_theme.clone());
             }
             ui.add_space(Space::SM as f32);
@@ -89,7 +89,21 @@ impl StudioEguiApp {
                 i18n::t("studio.settings.theme.contract"),
                 ui::selected_bg(ui.ctx()),
             );
+            ui.add_space(Space::SM as f32);
+            self.render_theme_profile(ui);
         });
+    }
+
+    fn render_theme_profile(&self, ui: &mut egui::Ui) {
+        let Some(profile) = self.theme_profile else {
+            return;
+        };
+        ui.label(format!(
+            "{} {:?} / {:?}",
+            i18n::t("studio.settings.theme.active"),
+            profile.requested,
+            profile.effective
+        ));
     }
 
     fn render_hotkey_settings(&mut self, ui: &mut egui::Ui) {

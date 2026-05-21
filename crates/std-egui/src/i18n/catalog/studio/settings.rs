@@ -1,6 +1,10 @@
 use crate::i18n::Locale;
 
 pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
+    translate_primary(locale, key).or_else(|| translate_storage(locale, key))
+}
+
+fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
     match (locale, key) {
         (Locale::ZhCn, "studio.settings.title") => Some("设置"),
         (Locale::EnUs, "studio.settings.title") => Some("Settings"),
@@ -72,6 +76,14 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.theme.label") => Some("Theme"),
         (Locale::ZhCn, "studio.settings.theme.save") => Some("保存主题"),
         (Locale::EnUs, "studio.settings.theme.save") => Some("Save Theme"),
+        (Locale::ZhCn, "studio.settings.theme.system") => Some("跟随系统"),
+        (Locale::EnUs, "studio.settings.theme.system") => Some("System"),
+        (Locale::ZhCn, "studio.settings.theme.dark") => Some("深色"),
+        (Locale::EnUs, "studio.settings.theme.dark") => Some("Dark"),
+        (Locale::ZhCn, "studio.settings.theme.light") => Some("浅色"),
+        (Locale::EnUs, "studio.settings.theme.light") => Some("Light"),
+        (Locale::ZhCn, "studio.settings.theme.active") => Some("当前主题"),
+        (Locale::EnUs, "studio.settings.theme.active") => Some("Active theme"),
         (Locale::ZhCn, "studio.settings.theme.contract") => {
             Some("light / dark / system 使用同一套 token")
         }
@@ -84,6 +96,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.hotkey.contract") => {
             Some("Focus and IME first, hotkeys register by explicit opt-in")
         }
+        _ => None,
+    }
+}
+
+fn translate_storage(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
         (Locale::ZhCn, "studio.settings.storage.title") => Some("存储"),
         (Locale::EnUs, "studio.settings.storage.title") => Some("Storage"),
         (Locale::ZhCn, "studio.settings.storage.detail") => Some("配置路径与数据根目录"),
@@ -150,6 +168,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.ai.save" => Some("Save AI"),
         "studio.settings.theme.label" => Some("Theme"),
         "studio.settings.theme.save" => Some("Save Theme"),
+        "studio.settings.theme.system" => Some("System"),
+        "studio.settings.theme.dark" => Some("Dark"),
+        "studio.settings.theme.light" => Some("Light"),
+        "studio.settings.theme.active" => Some("Active theme"),
         "studio.settings.theme.contract" => Some("light / dark / system share one token set"),
         "studio.settings.hotkey.contract" => {
             Some("Focus and IME first, hotkeys register by explicit opt-in")

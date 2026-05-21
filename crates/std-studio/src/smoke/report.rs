@@ -151,6 +151,12 @@ impl StudioSmokeReport {
             && self
                 .pane_settings_contract
                 .contains("hotkey_reset=reset-to-default")
+            && self
+                .pane_settings_contract
+                .contains("theme_modes=system|dark|light")
+            && self
+                .pane_settings_contract
+                .contains("theme_control=segmented-control")
             && !self.native_child_windows
             && !self.detached_panels
     }
