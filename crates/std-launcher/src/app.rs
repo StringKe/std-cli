@@ -36,14 +36,15 @@ impl eframe::App for LauncherApp {
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.apply_theme_profile(ctx);
-        let viewport_size = ui::launcher_window_inner_size(&self.state);
         if ctx.input(|input| input.viewport().close_requested()) && !self.allow_close {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
+            let commands = self.state.handle_escape_hide();
+            self.apply_window_commands_for_current_state(ctx, &commands);
         }
 
         if self.take_hotkey_toggle() {
-            apply_window_commands(ctx, &self.state.handle_hotkey_toggle(), viewport_size);
+            let commands = self.state.handle_hotkey_toggle();
+            self.apply_window_commands_for_current_state(ctx, &commands);
         }
         if let Some(command) = self
             .resident_entry
@@ -52,20 +53,23 @@ impl eframe::App for LauncherApp {
         {
             match command {
                 ResidentCommand::Show => {
-                    apply_window_commands(ctx, &self.state.handle_show(), viewport_size);
+                    let commands = self.state.handle_show();
+                    self.apply_window_commands_for_current_state(ctx, &commands);
                 }
                 ResidentCommand::Hide => {
-                    apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
+                    let commands = self.state.handle_escape_hide();
+                    self.apply_window_commands_for_current_state(ctx, &commands);
                 }
                 ResidentCommand::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             }
         }
 
         if !input::ime_composing(ctx) && input::escape().pressed(ctx) {
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
+            let commands = self.state.handle_escape_hide();
+            self.apply_window_commands_for_current_state(ctx, &commands);
         }
 
-        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
+        self.sync_viewport_size(ctx);
         if !self.state.controller.visible {
             ctx.request_repaint_after(Duration::from_millis(50));
             return;
@@ -78,7 +82,10 @@ impl eframe::App for LauncherApp {
             &self.resident_status,
             &mut self.voice_transcript,
         ) {
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
+            let commands = self.state.handle_escape_hide();
+            self.apply_window_commands_for_current_state(ctx, &commands);
+        } else {
+            self.sync_viewport_size(ctx);
         }
     }
 }
@@ -143,6 +150,20 @@ impl LauncherApp {
     fn take_hotkey_toggle(&self) -> bool {
         self.hotkey_runtime.poll_toggle_event()
     }
+
+    fn apply_window_commands_for_current_state(
+        &self,
+        ctx: &egui::Context,
+        commands: &[std_launcher::LauncherWindowCommand],
+    ) {
+        apply_window_commands(ctx, commands, ui::launcher_window_inner_size(&self.state));
+    }
+
+    fn sync_viewport_size(&self, ctx: &egui::Context) {
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(
+            ui::launcher_window_inner_size(&self.state),
+        ));
+    }
 }
 
 #[cfg(test)]
@@ -186,11 +207,20 @@ mod tests {
     #[test]
     fn launcher_app_syncs_native_size_before_hidden_return() {
         let source = include_str!("app.rs");
-        let size_sync = source
-            .find("ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));")
-            .unwrap();
+        let size_sync = source.find("self.sync_viewport_size(ctx);").unwrap();
         let hidden_return = source.find("if !self.state.controller.visible").unwrap();
 
         assert!(size_sync < hidden_return);
+    }
+
+    #[test]
+    fn launcher_window_commands_use_current_state_size() {
+        let source = include_str!("app.rs");
+        let stale_viewport_binding =
+            ["let viewport_size = ", "ui::launcher_window_inner_size"].concat();
+
+        assert!(source.contains("apply_window_commands_for_current_state"));
+        assert!(!source.contains(&stale_viewport_binding));
+        assert!(source.contains("ui::launcher_window_inner_size(&self.state)"));
     }
 }
