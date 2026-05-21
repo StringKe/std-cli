@@ -117,7 +117,7 @@ impl StudioEguiApp {
             ui::section_header(
                 ui,
                 i18n::t("studio.plugins.actions.title"),
-                i18n::t("studio.plugins.actions.detail"),
+                i18n::t("studio.plugins.list.detail"),
             );
             if self.app.plugin_manager.plugin_actions.is_empty() {
                 ui::empty_state(ui, i18n::t("studio.plugins.actions.empty"));
@@ -130,9 +130,13 @@ impl StudioEguiApp {
                     for (index, result) in self.app.plugin_manager.plugin_actions.iter().enumerate()
                     {
                         let selected = index == self.app.plugin_manager.selected;
-                        if let PluginActionRowEvent::Select(index) =
-                            plugin_rows::action_row(ui, index, result, selected)
-                        {
+                        if let PluginActionRowEvent::Select(index) = plugin_rows::action_row(
+                            ui,
+                            index,
+                            result,
+                            &self.app.plugin_manager.check_reports,
+                            selected,
+                        ) {
                             clicked_plugin = Some(index);
                         }
                     }

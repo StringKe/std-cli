@@ -44,6 +44,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.plugins.actions.title") => Some("Actions"),
         (Locale::ZhCn, "studio.plugins.actions.detail") => Some("执行前预览"),
         (Locale::EnUs, "studio.plugins.actions.detail") => Some("preview before execution"),
+        (Locale::ZhCn, "studio.plugins.list.detail") => {
+            Some("name / version / status / source / enable")
+        }
+        (Locale::EnUs, "studio.plugins.list.detail") => {
+            Some("name / version / status / source / enable")
+        }
         (Locale::ZhCn, "studio.plugins.actions.empty") => Some("没有 plugin action"),
         (Locale::EnUs, "studio.plugins.actions.empty") => Some("No plugin actions"),
         (Locale::ZhCn, "studio.plugins.checks.title") => Some("Checks"),
@@ -94,6 +100,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.plugins.manifests.empty" => Some("No plugin manifests"),
         "studio.plugins.actions.title" => Some("Actions"),
         "studio.plugins.actions.detail" => Some("preview before execution"),
+        "studio.plugins.list.detail" => Some("name / version / status / source / enable"),
         "studio.plugins.actions.empty" => Some("No plugin actions"),
         "studio.plugins.checks.title" => Some("Checks"),
         "studio.plugins.checks.detail" => Some("permissions and scopes"),

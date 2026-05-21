@@ -1,6 +1,7 @@
 use crate::{
     ui,
     views::{
+        plugin_list_model::PluginListRowModel,
         row_metrics,
         row_paint::{self, RowSurface},
     },
@@ -51,29 +52,28 @@ pub(crate) fn action_row(
     ui: &mut egui::Ui,
     index: usize,
     result: &SearchResult,
+    reports: &[std_core::PluginCheckReport],
     selected: bool,
 ) -> PluginActionRowEvent {
+    let model = PluginListRowModel::from_result(result, reports);
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), row_metrics::PLUGIN_ACTION_ROW_HEIGHT),
+        egui::vec2(ui.available_width(), row_metrics::PLUGIN_LIST_ROW_HEIGHT),
         egui::Sense::click(),
     );
     response.widget_info(|| {
-        egui::WidgetInfo::labeled(
-            egui::WidgetType::Button,
-            ui.is_enabled(),
-            &result.action.name,
-        )
+        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), &model.name)
     });
     if ui.is_rect_visible(rect) {
         row_paint::paint_row_frame(ui, rect, response.hovered(), selected, RowSurface::Base);
         row_paint::paint_title_detail(
             ui,
             rect,
-            &result.action.name,
-            &result.action.description,
-            row_metrics::PLUGIN_ACTION_TITLE_Y,
-            row_metrics::PLUGIN_ACTION_DETAIL_Y,
+            &model.name,
+            &model.detail,
+            row_metrics::PLUGIN_LIST_TITLE_Y,
+            row_metrics::PLUGIN_LIST_DETAIL_Y,
         );
+        paint_plugin_list_chips(ui, rect, &model);
         paint_match_chips(ui, rect, &result.matched_fields);
     }
     ui.add_space(Space::TWO_XS as f32);
@@ -308,6 +308,31 @@ fn count_label(count: usize) -> String {
         0 => "none".to_string(),
         1 => "1 entry".to_string(),
         count => format!("{count} entries"),
+    }
+}
+
+fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginListRowModel) {
+    let chips = [
+        format!("v{}", model.version),
+        model.status.clone(),
+        model.source.clone(),
+        model.enable.clone(),
+    ];
+    let mut x = rect.left() + Space::SM as f32;
+    let y = rect.bottom() - row_metrics::MATCH_CHIP_BOTTOM_INSET;
+    for chip in chips {
+        let width = (chip.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
+            + row_metrics::MATCH_CHIP_TEXT_PAD)
+            .clamp(
+                row_metrics::MATCH_CHIP_MIN_WIDTH,
+                row_metrics::MATCH_CHIP_MAX_WIDTH,
+            );
+        let chip_rect = egui::Rect::from_min_size(
+            egui::pos2(x, y),
+            egui::vec2(width, row_metrics::MATCH_CHIP_HEIGHT),
+        );
+        row_paint::paint_chip(ui, chip_rect, &chip, Color::bg_surface_2(ui.ctx()));
+        x += width + row_metrics::CHIP_GAP;
     }
 }
 
