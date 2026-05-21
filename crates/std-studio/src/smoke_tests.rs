@@ -160,6 +160,10 @@ fn assert_plugin_manager_summary(summary: &str) {
     assert!(summary.contains("plugin_preview_kind=Command"));
     assert!(summary.contains("plugin_js_runtime=deno_core"));
     assert!(summary.contains("plugin_ts_runtime=deno_core"));
+    assert!(summary.contains("plugin_visual_contract=list=name|version|status|source|enable"));
+    assert!(summary.contains("inspector=description|permissions|commands|audit-log"));
+    assert!(summary.contains("commands=2"));
+    assert!(summary.contains("runtime=js:deno_core|ts:deno_core"));
 }
 
 fn assert_analysis_workbench_summary(summary: &str) {
