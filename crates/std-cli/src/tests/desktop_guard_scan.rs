@@ -60,6 +60,12 @@ pub(crate) fn workspace_blocks_desktop_opt_ins(body: &str) -> bool {
         && body.contains("STD_ALLOW_UI_PREVIEW = \"0\"")
 }
 
+pub(crate) fn command_sets_desktop_safe_env(line: &str) -> bool {
+    line.contains("STD_TEST_MODE=1")
+        && line.contains("STD_ALLOW_DESKTOP_AUTOMATION=0")
+        && line.contains("STD_ALLOW_UI_PREVIEW=0")
+}
+
 fn task_has_env(body: &str, task: &str, key: &str, value: &str) -> bool {
     let header = format!("[tasks.{task}]");
     let Some(start) = body.find(&header) else {

@@ -1,10 +1,11 @@
 use std::{fs, path::Path};
 
 use super::desktop_guard_scan::{
-    assert_order, forbidden_test_app_terms, forbidden_test_mode_clear_terms, scan_rs_files,
-    scan_rs_files_for_binary_spawns, scan_rs_files_for_desktop_process_commands,
-    scan_rs_files_for_unsafe_opt_ins, source_section, task_blocks_desktop_opt_ins,
-    task_has_std_test_mode, task_inherits_workspace_test_mode, workspace_blocks_desktop_opt_ins,
+    assert_order, command_sets_desktop_safe_env, forbidden_test_app_terms,
+    forbidden_test_mode_clear_terms, scan_rs_files, scan_rs_files_for_binary_spawns,
+    scan_rs_files_for_desktop_process_commands, scan_rs_files_for_unsafe_opt_ins, source_section,
+    task_blocks_desktop_opt_ins, task_has_std_test_mode, task_inherits_workspace_test_mode,
+    workspace_blocks_desktop_opt_ins,
 };
 
 #[test]
@@ -213,12 +214,6 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
         "release quality report must document real desktop acceptance as manual only"
     );
     let smoke_commands = source_section(&body, "const SMOKE_COMMANDS", "const MANUAL_DESKTOP");
-    for forbidden in ["STD_ALLOW_DESKTOP_AUTOMATION", "STD_ALLOW_UI_PREVIEW"] {
-        assert!(
-            !smoke_commands.contains(forbidden),
-            "release default quality gates must not include desktop opt-in: {forbidden}"
-        );
-    }
     for forbidden in [
         "--ui-preview",
         "gui-hotkey-smoke",
@@ -236,8 +231,8 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
         .filter(|line| line.contains("\"STD_"))
     {
         assert!(
-            line.contains("STD_TEST_MODE=1"),
-            "release default smoke command must force STD_TEST_MODE=1: {line}"
+            command_sets_desktop_safe_env(line),
+            "release default smoke command must force safe desktop env: {line}"
         );
     }
     let quality_commands = source_section(&body, "const QUALITY_COMMANDS", "const SMOKE_COMMANDS");
@@ -246,8 +241,16 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
         .filter(|line| line.contains("\"cargo"))
     {
         assert!(
-            line.contains("STD_TEST_MODE=1") || line.contains("cargo deny") || line.contains("cargo machete"),
-            "release default cargo command must force STD_TEST_MODE=1 unless it is static dependency analysis: {line}"
+            command_sets_desktop_safe_env(line)
+                || line.contains("cargo deny")
+                || line.contains("cargo machete"),
+            "release default cargo command must force safe desktop env unless it is static dependency analysis: {line}"
+        );
+    }
+    for forbidden in ["STD_ALLOW_DESKTOP_AUTOMATION=1", "STD_ALLOW_UI_PREVIEW=1"] {
+        assert!(
+            !quality_commands.contains(forbidden) && !smoke_commands.contains(forbidden),
+            "release default quality gates must not include desktop opt-in: {forbidden}"
         );
     }
 }

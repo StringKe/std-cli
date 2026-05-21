@@ -51,10 +51,10 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
         assert!(!report.contains(forbidden), "{forbidden}");
     }
     for required in [
-        "command=STD_TEST_MODE=1 cargo test --workspace -- --test-threads=1",
-        "smoke=STD_TEST_MODE=1 std-launcher --preview-smoke",
-        "smoke=STD_TEST_MODE=1 std-studio --surface-smoke",
-        "smoke=STD_TEST_MODE=1 std-studio --preview-smoke",
+        "command=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 cargo test --workspace -- --test-threads=1",
+        "smoke=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-launcher --preview-smoke",
+        "smoke=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --surface-smoke",
+        "smoke=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 std-studio --preview-smoke",
     ] {
         assert!(report.contains(required), "{required}");
     }
