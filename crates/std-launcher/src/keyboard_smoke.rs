@@ -60,6 +60,10 @@ impl LauncherState {
             action_panel_focus_path,
             completed_query,
             token_delete_query,
+            model_contract:
+                "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
+            real_interaction_contract:
+                "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION",
         }
     }
 }

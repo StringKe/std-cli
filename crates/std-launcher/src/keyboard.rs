@@ -64,6 +64,8 @@ pub struct LauncherKeyboardReport {
     pub action_panel_focus_path: String,
     pub completed_query: String,
     pub token_delete_query: String,
+    pub model_contract: &'static str,
+    pub real_interaction_contract: &'static str,
 }
 
 impl LauncherState {
@@ -374,11 +376,15 @@ impl LauncherKeyboardReport {
             && self.action_panel_focus_path == "ActionPanel>Search"
             && self.completed_query == "rebuild index"
             && self.token_delete_query == "open terminal"
+            && self.model_contract
+                == "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+            && self.real_interaction_contract
+                == "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -418,7 +424,9 @@ impl LauncherKeyboardReport {
             self.focus_path,
             self.action_panel_focus_path,
             self.completed_query,
-            self.token_delete_query
+            self.token_delete_query,
+            self.model_contract,
+            self.real_interaction_contract
         )
     }
 }

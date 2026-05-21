@@ -12,6 +12,7 @@ fn launcher_keyboard_smoke_validates_navigation_trigger_escape_and_ime_guard() {
     assert_ime_guard(&report, &summary);
     assert_empty_suggestions(&report, &summary);
     assert_focus_and_editing(&report, &summary);
+    assert_interaction_boundary(&report, &summary);
     assert!(summary.contains("launcher_keyboard_smoke PASS"));
 }
 
@@ -123,4 +124,21 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
     assert!(summary.contains("completed_query=rebuild index"));
     assert!(summary.contains("token_delete_query=open terminal"));
     assert!(summary.contains("navigation_boundary_path=top:0->0;bottom:"));
+}
+
+fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
+    assert_eq!(
+        report.model_contract,
+        "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+    );
+    assert_eq!(
+        report.real_interaction_contract,
+        "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
+    );
+    assert!(summary.contains(
+        "model_contract=model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+    ));
+    assert!(summary.contains(
+        "real_interaction_contract=real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
+    ));
 }
