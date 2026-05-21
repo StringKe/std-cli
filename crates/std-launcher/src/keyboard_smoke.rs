@@ -53,6 +53,7 @@ impl LauncherState {
             ime_action_panel_selection_unchanged: ime.action_panel_selection_unchanged,
             ime_trigger_blocked: ime.trigger_blocked,
             ime_escape_blocked: ime.escape_blocked,
+            ime_enter_owned_by_ime: ime.enter_owned_by_ime,
             ime_composition_path: ime.composition_path,
             ime_preedit_query_unchanged: ime.preedit_query_unchanged,
             ime_commit_query: ime.commit_query,
@@ -66,6 +67,8 @@ impl LauncherState {
             token_delete_query,
             enter_window,
             ui_handler_contract: "ui-handler=cancel-before-ime,ime-before-enter",
+            ime_visible_state_contract:
+                "ime-visible-state=search-preedit-visible,enter-owned-by-ime",
             model_contract:
                 "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
             real_interaction_contract:
@@ -121,6 +124,7 @@ struct ImeEvidence {
     action_panel_selection_unchanged: bool,
     trigger_blocked: bool,
     escape_blocked: bool,
+    enter_owned_by_ime: bool,
     composition_path: String,
     preedit_query_unchanged: bool,
     commit_query: String,
@@ -141,6 +145,7 @@ fn ime_evidence(state: &mut LauncherState) -> ImeEvidence {
         .handle_keyboard_input(LauncherKey::Enter, true)
         .is_none()
         && state.view.feedback.is_none();
+    let enter_owned_by_ime = trigger_blocked;
     state.handle_keyboard_input(LauncherKey::Escape, true);
     let escape_blocked = state.controller.visible;
     let mut commit_state = LauncherState::new();
@@ -160,6 +165,7 @@ fn ime_evidence(state: &mut LauncherState) -> ImeEvidence {
         action_panel_selection_unchanged,
         trigger_blocked,
         escape_blocked,
+        enter_owned_by_ime,
         composition_path,
         preedit_query_unchanged,
         commit_query,

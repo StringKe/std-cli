@@ -57,6 +57,7 @@ pub struct LauncherKeyboardReport {
     pub ime_action_panel_selection_unchanged: bool,
     pub ime_trigger_blocked: bool,
     pub ime_escape_blocked: bool,
+    pub ime_enter_owned_by_ime: bool,
     pub ime_composition_path: String,
     pub ime_preedit_query_unchanged: bool,
     pub ime_commit_query: String,
@@ -70,6 +71,7 @@ pub struct LauncherKeyboardReport {
     pub token_delete_query: String,
     pub enter_window: LauncherEnterWindowReport,
     pub ui_handler_contract: &'static str,
+    pub ime_visible_state_contract: &'static str,
     pub model_contract: &'static str,
     pub real_interaction_contract: &'static str,
 }

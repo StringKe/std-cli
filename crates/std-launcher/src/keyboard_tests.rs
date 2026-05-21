@@ -120,6 +120,7 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
     assert!(report.ime_action_panel_selection_unchanged);
     assert!(report.ime_trigger_blocked);
     assert!(report.ime_escape_blocked);
+    assert!(report.ime_enter_owned_by_ime);
     assert!(report.ime_preedit_query_unchanged);
     assert_eq!(report.ime_commit_query, "rebuild index");
     assert_eq!(
@@ -131,6 +132,7 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
         Some(ActionExecutionStatus::Completed)
     );
     assert!(summary.contains("ime_action_panel_selection_unchanged=true"));
+    assert!(summary.contains("ime_enter_owned_by_ime=true"));
     assert!(summary.contains("ime_preedit_query_unchanged=true"));
     assert!(summary.contains("ime_commit_query=rebuild index"));
     assert!(summary
@@ -160,10 +162,17 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
         "ui-handler=cancel-before-ime,ime-before-enter"
     );
     assert_eq!(
+        report.ime_visible_state_contract,
+        "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+    );
+    assert_eq!(
         report.real_interaction_contract,
         "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
     );
     assert!(summary.contains("ui_handler_contract=ui-handler=cancel-before-ime,ime-before-enter"));
+    assert!(summary.contains(
+        "ime_visible_state_contract=ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+    ));
     assert!(summary.contains(
         "model_contract=model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
     ));

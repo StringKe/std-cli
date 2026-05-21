@@ -207,6 +207,11 @@ fn render_executing_indicator(ui: &mut egui::Ui, ctx: &egui::Context) {
 }
 
 #[cfg(test)]
+fn search_ime_visible_state_contract() -> &'static str {
+    "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -287,6 +292,14 @@ mod tests {
         assert!(source.contains("launcher.results.executing.title"));
         assert!(source.contains("Color::accent_weak"));
         assert!(source.contains("circle_stroke"));
+    }
+
+    #[test]
+    fn search_ui_contract_requires_visible_ime_state() {
+        assert_eq!(
+            search_ime_visible_state_contract(),
+            "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+        );
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {

@@ -21,6 +21,7 @@ impl LauncherKeyboardReport {
             && self.ime_action_panel_selection_unchanged
             && self.ime_trigger_blocked
             && self.ime_escape_blocked
+            && self.ime_enter_owned_by_ime
             && self.ime_preedit_query_unchanged
             && self.ime_commit_query == "rebuild index"
             && self.ime_composition_path == "zh-preedit(index)>blocked>commit(rebuild index)>enter"
@@ -34,6 +35,8 @@ impl LauncherKeyboardReport {
             && self.token_delete_query == "open terminal"
             && self.enter_window.pass()
             && self.ui_handler_contract == "ui-handler=cancel-before-ime,ime-before-enter"
+            && self.ime_visible_state_contract
+                == "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
             && self.model_contract
                 == "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
             && self.real_interaction_contract
@@ -42,7 +45,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nenter_window={}\nui_handler_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -60,6 +63,7 @@ impl LauncherKeyboardReport {
             self.ime_action_panel_selection_unchanged,
             self.ime_trigger_blocked,
             self.ime_escape_blocked,
+            self.ime_enter_owned_by_ime,
             self.ime_composition_path,
             self.ime_preedit_query_unchanged,
             self.ime_commit_query,
@@ -73,6 +77,7 @@ impl LauncherKeyboardReport {
             self.token_delete_query,
             self.enter_window.summary(),
             self.ui_handler_contract,
+            self.ime_visible_state_contract,
             self.model_contract,
             self.real_interaction_contract
         )
