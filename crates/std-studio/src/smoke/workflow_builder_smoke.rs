@@ -1,3 +1,4 @@
+use crate::views::workflow_builder_trace;
 use std_studio::StudioApp;
 
 pub(crate) struct WorkflowBuilderSmoke {
@@ -17,6 +18,7 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) side_effect_model: String,
     pub(crate) next_action: String,
     pub(crate) bottom_panel_contract: String,
+    pub(crate) debug_panel_contract: String,
 }
 
 pub(crate) fn run_workflow_builder_smoke(
@@ -57,6 +59,11 @@ pub(crate) fn run_workflow_builder_smoke(
         .map(|trace| format!("{:?}", trace.execution.status))
         .unwrap_or_else(|| "Missing".to_string());
 
+    let debug_panel_contract = workflow_builder_trace::builder_debug_contract(
+        studio.workflow_debug.as_ref(),
+        studio.last_workflow_execution.as_ref(),
+    );
+
     Ok(WorkflowBuilderSmoke {
         created,
         added_step,
@@ -77,5 +84,6 @@ pub(crate) fn run_workflow_builder_smoke(
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),
         next_action: "complete".to_string(),
         bottom_panel_contract: "batch-debug-open".to_string(),
+        debug_panel_contract,
     })
 }

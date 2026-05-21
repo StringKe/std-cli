@@ -105,6 +105,14 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
     assert!(summary.contains("builder_next_action=complete"));
     assert!(summary.contains("builder_bottom_panel_contract=batch-debug-open"));
+    assert!(summary.contains(
+        "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
+    ));
+    assert!(summary.contains("success>success>success>success"));
+    assert_plugin_manager_summary(summary);
+}
+
+fn assert_plugin_manager_summary(summary: &str) {
     assert!(summary.contains("plugin_js_status=Completed"));
     assert!(summary.contains("plugin_ts_status=Completed"));
     assert!(summary.contains("plugin_manifest_checks=1"));

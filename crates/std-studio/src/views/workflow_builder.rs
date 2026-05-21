@@ -2,7 +2,7 @@ use crate::{
     ui,
     views::{
         workflow_builder_metrics, workflow_builder_properties, workflow_builder_status,
-        workflow_builder_toolbar, workflow_rows,
+        workflow_builder_toolbar, workflow_builder_trace, workflow_rows,
     },
     StudioEguiApp,
 };
@@ -23,6 +23,8 @@ impl StudioEguiApp {
             workflow_builder_status::render(ui, self);
             ui.add_space(Space::XS as f32);
             self.render_builder_workspace(ui);
+            ui.add_space(Space::XS as f32);
+            workflow_builder_trace::render(ui, self);
             ui.add_space(Space::XS as f32);
             self.render_ai_assist_panel(ui);
         });

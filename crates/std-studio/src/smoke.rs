@@ -21,6 +21,24 @@ use std_studio::StudioApp;
 use workflow_builder_smoke::run_workflow_builder_smoke;
 use workspace_smoke::run_workspace_pane_smoke;
 
+struct SmokeInputs {
+    layout: StudioLayoutSmoke,
+    workflow_path: std::path::PathBuf,
+    workflow_status: String,
+    history_count: usize,
+    builder: workflow_builder_smoke::WorkflowBuilderSmoke,
+    batch_status: String,
+    memory_count: usize,
+    project_dir: std::path::PathBuf,
+    analysis_name: String,
+    coverage: std_index::IndexCoverageReport,
+    analysis: analysis_smoke::AnalysisWorkbenchSmoke,
+    keyboard: StudioKeyboardSmoke,
+    plugin: plugin_smoke::PluginManagerSmoke,
+    operations: OperationsSmoke,
+    open_smoke: StudioOpenSmokeReport,
+}
+
 pub(crate) struct StudioSmokeReport {
     workspace_panes: usize,
     focused_pane: u64,
@@ -71,6 +89,7 @@ pub(crate) struct StudioSmokeReport {
     builder_side_effect_model: String,
     builder_next_action: String,
     builder_bottom_panel_contract: String,
+    builder_debug_panel_contract: String,
     batch_status: String,
     analysis_name: String,
     analysis_coverage_complete: usize,
@@ -152,6 +171,7 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             builder_side_effect_model: "FAIL".to_string(),
             builder_next_action: "FAIL".to_string(),
             builder_bottom_panel_contract: "FAIL".to_string(),
+            builder_debug_panel_contract: "FAIL".to_string(),
             batch_status: "FAIL".to_string(),
             analysis_name: "FAIL".to_string(),
             analysis_coverage_complete: 0,
@@ -186,8 +206,25 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         ..StdConfig::default()
     });
     let mut studio = StudioApp::with_core(core);
-    let layout = StudioLayoutSmoke::from_default_layout();
+    let inputs = collect_smoke_inputs(&mut studio, temp.path())?;
 
+    studio.open_workspace_pane(StudioPane::Dashboard);
+    studio.open_workflow_builder(inputs.workflow_path.clone());
+    studio.open_analysis_workbench(inputs.project_dir.clone());
+    studio.open_plugin_manager_pane();
+    studio.open_app_manager_pane();
+    let memory = studio.open_memory_browser_pane();
+    studio.open_execution_history_pane();
+    let pane_smoke = run_workspace_pane_smoke(&mut studio, memory);
+    studio.open_workspace_pane(StudioPane::Operations);
+
+    Ok(report_from_inputs(&studio, pane_smoke, inputs))
+}
+
+fn collect_smoke_inputs(
+    studio: &mut StudioApp,
+    temp: &std::path::Path,
+) -> Result<SmokeInputs, Box<dyn std::error::Error>> {
     let workflow_path = studio.create_workflow("Studio Smoke", "Headless Studio smoke")?;
     studio.add_workflow_step(
         &workflow_path,
@@ -196,7 +233,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
     )?;
     let workflow_status = format!("{:?}", studio.run_workflow_path(&workflow_path)?.status);
     let history_count = studio.recent_workflow_executions(10)?.len();
-    let builder_smoke = run_workflow_builder_smoke(&mut studio)?;
+    let builder = run_workflow_builder_smoke(studio)?;
     let batch_status = format!("{:?}", studio.run_batch_json(&default_batch_json())?.status);
 
     studio.remember_from_studio(
@@ -207,7 +244,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
     )?;
     let memory_count = studio.search_memory("smoke").len();
 
-    let project_dir = temp.path().join("project");
+    let project_dir = temp.join("project");
     std::fs::create_dir_all(project_dir.join("src"))?;
     std::fs::write(
         project_dir.join("src").join("main.rs"),
@@ -215,24 +252,35 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
     )?;
     let analysis_name = studio.analyze_entity(&project_dir)?.overview.name.clone();
     let coverage = studio.analysis_coverage_report()?;
-    let analysis_smoke = run_analysis_workbench_smoke(&studio, "StudioSmoke", "project")?;
-    let keyboard_smoke = StudioKeyboardSmoke::run(&mut studio);
+    let analysis = run_analysis_workbench_smoke(studio, "StudioSmoke", "project")?;
+    let keyboard = StudioKeyboardSmoke::run(studio);
+    let plugin = run_plugin_manager_smoke(studio)?;
 
-    let plugin_smoke = run_plugin_manager_smoke(&mut studio)?;
-    let operations_smoke = OperationsSmoke::new();
-    let open_smoke = StudioOpenSmokeReport::new();
+    Ok(SmokeInputs {
+        layout: StudioLayoutSmoke::from_default_layout(),
+        workflow_path,
+        workflow_status,
+        history_count,
+        builder,
+        batch_status,
+        memory_count,
+        project_dir,
+        analysis_name,
+        coverage,
+        analysis,
+        keyboard,
+        plugin,
+        operations: OperationsSmoke::new(),
+        open_smoke: StudioOpenSmokeReport::new(),
+    })
+}
 
-    studio.open_workspace_pane(StudioPane::Dashboard);
-    studio.open_workflow_builder(workflow_path);
-    studio.open_analysis_workbench(project_dir);
-    studio.open_plugin_manager_pane();
-    studio.open_app_manager_pane();
-    let memory = studio.open_memory_browser_pane();
-    studio.open_execution_history_pane();
-    let pane_smoke = run_workspace_pane_smoke(&mut studio, memory);
-    studio.open_workspace_pane(StudioPane::Operations);
-
-    Ok(StudioSmokeReport {
+fn report_from_inputs(
+    studio: &StudioApp,
+    pane_smoke: workspace_smoke::WorkspacePaneSmoke,
+    inputs: SmokeInputs,
+) -> StudioSmokeReport {
+    StudioSmokeReport {
         workspace_panes: studio.open_workspace_panes().count(),
         focused_pane: studio.focused_pane.map(|id| id.value()).unwrap_or_default(),
         pane_opened: pane_smoke.opened,
@@ -253,57 +301,58 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         pane_close_restore_path: pane_smoke.close_restore_path,
         native_child_windows: studio.workspace_policy.allows_native_child_windows(),
         detached_panels: studio.workspace_policy.allows_detached_panels(),
-        host_window_size: layout.host_window_size,
-        min_window_size: layout.min_window_size,
-        host_chrome_height: layout.host_chrome_height,
-        status_bar_height: layout.status_bar_height,
-        sidebar_width: layout.sidebar_width,
-        collapsed_sidebar_width: layout.collapsed_sidebar_width,
-        inspector_width: layout.inspector_width,
-        inspector_default_open: layout.inspector_default_open,
-        bottom_panel_height: layout.bottom_panel_height,
-        bottom_panel_default_open: layout.bottom_panel_default_open,
-        canvas_surface: layout.canvas_surface,
-        canvas_content_route: layout.canvas_content_route,
-        workflow_status,
-        builder_created: builder_smoke.created,
-        builder_added_step: builder_smoke.added_step,
-        builder_updated_step: builder_smoke.updated_step,
-        builder_moved_step: builder_smoke.moved_step,
-        builder_simulated: builder_smoke.simulated,
-        builder_run_status: builder_smoke.run_status,
-        builder_planned_run_status: builder_smoke.planned_run_status,
-        builder_trace_steps: builder_smoke.trace_steps,
-        builder_trace_events: builder_smoke.trace_events,
-        builder_interaction_sequence: builder_smoke.interaction_sequence,
-        builder_keyboard_move_path: builder_smoke.keyboard_move_path,
-        builder_selected_step: builder_smoke.selected_step_title,
-        builder_trace_status: builder_smoke.trace_status,
-        builder_side_effect_model: builder_smoke.side_effect_model,
-        builder_next_action: builder_smoke.next_action,
-        builder_bottom_panel_contract: builder_smoke.bottom_panel_contract,
-        batch_status,
-        analysis_name,
-        analysis_coverage_complete: coverage.complete,
-        analysis_coverage_layers: analysis_smoke.coverage_layers,
-        analysis_search_hits: analysis_smoke.search_hits,
-        analysis_answer_sources: analysis_smoke.answer_sources,
-        analysis_inspect_components: analysis_smoke.inspect_components,
-        analysis_inspect_relations: analysis_smoke.inspect_relations,
-        analysis_inspect_history: analysis_smoke.inspect_history,
-        analysis_answer_has_evidence: analysis_smoke.answer_has_evidence,
-        memory_count,
-        plugin_js_status: plugin_smoke.js_status,
-        plugin_ts_status: plugin_smoke.ts_status,
-        plugin_manifest_checks: plugin_smoke.manifest_checks,
-        plugin_permissions: plugin_smoke.permissions,
-        plugin_action_count: plugin_smoke.action_count,
-        plugin_preview_kind: plugin_smoke.preview_kind,
-        plugin_js_runtime: plugin_smoke.js_runtime,
-        plugin_ts_runtime: plugin_smoke.ts_runtime,
-        history_count,
-        keyboard_summary: keyboard_smoke.summary(),
-        operations_summary: operations_smoke.summary(),
-        open_intent_summary: open_smoke.summary().replace('\n', ";"),
-    })
+        host_window_size: inputs.layout.host_window_size,
+        min_window_size: inputs.layout.min_window_size,
+        host_chrome_height: inputs.layout.host_chrome_height,
+        status_bar_height: inputs.layout.status_bar_height,
+        sidebar_width: inputs.layout.sidebar_width,
+        collapsed_sidebar_width: inputs.layout.collapsed_sidebar_width,
+        inspector_width: inputs.layout.inspector_width,
+        inspector_default_open: inputs.layout.inspector_default_open,
+        bottom_panel_height: inputs.layout.bottom_panel_height,
+        bottom_panel_default_open: inputs.layout.bottom_panel_default_open,
+        canvas_surface: inputs.layout.canvas_surface,
+        canvas_content_route: inputs.layout.canvas_content_route,
+        workflow_status: inputs.workflow_status,
+        builder_created: inputs.builder.created,
+        builder_added_step: inputs.builder.added_step,
+        builder_updated_step: inputs.builder.updated_step,
+        builder_moved_step: inputs.builder.moved_step,
+        builder_simulated: inputs.builder.simulated,
+        builder_run_status: inputs.builder.run_status,
+        builder_planned_run_status: inputs.builder.planned_run_status,
+        builder_trace_steps: inputs.builder.trace_steps,
+        builder_trace_events: inputs.builder.trace_events,
+        builder_interaction_sequence: inputs.builder.interaction_sequence,
+        builder_keyboard_move_path: inputs.builder.keyboard_move_path,
+        builder_selected_step: inputs.builder.selected_step_title,
+        builder_trace_status: inputs.builder.trace_status,
+        builder_side_effect_model: inputs.builder.side_effect_model,
+        builder_next_action: inputs.builder.next_action,
+        builder_bottom_panel_contract: inputs.builder.bottom_panel_contract,
+        builder_debug_panel_contract: inputs.builder.debug_panel_contract,
+        batch_status: inputs.batch_status,
+        analysis_name: inputs.analysis_name,
+        analysis_coverage_complete: inputs.coverage.complete,
+        analysis_coverage_layers: inputs.analysis.coverage_layers,
+        analysis_search_hits: inputs.analysis.search_hits,
+        analysis_answer_sources: inputs.analysis.answer_sources,
+        analysis_inspect_components: inputs.analysis.inspect_components,
+        analysis_inspect_relations: inputs.analysis.inspect_relations,
+        analysis_inspect_history: inputs.analysis.inspect_history,
+        analysis_answer_has_evidence: inputs.analysis.answer_has_evidence,
+        memory_count: inputs.memory_count,
+        plugin_js_status: inputs.plugin.js_status,
+        plugin_ts_status: inputs.plugin.ts_status,
+        plugin_manifest_checks: inputs.plugin.manifest_checks,
+        plugin_permissions: inputs.plugin.permissions,
+        plugin_action_count: inputs.plugin.action_count,
+        plugin_preview_kind: inputs.plugin.preview_kind,
+        plugin_js_runtime: inputs.plugin.js_runtime,
+        plugin_ts_runtime: inputs.plugin.ts_runtime,
+        history_count: inputs.history_count,
+        keyboard_summary: inputs.keyboard.summary(),
+        operations_summary: inputs.operations.summary(),
+        open_intent_summary: inputs.open_smoke.summary().replace('\n', ";"),
+    }
 }

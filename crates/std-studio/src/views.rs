@@ -17,6 +17,7 @@ mod workflow_builder_metrics;
 mod workflow_builder_properties;
 mod workflow_builder_status;
 mod workflow_builder_toolbar;
+pub(crate) mod workflow_builder_trace;
 mod workflow_rows;
 mod workflows;
 
