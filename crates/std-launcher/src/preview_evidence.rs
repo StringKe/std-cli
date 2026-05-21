@@ -44,7 +44,7 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         && viewport.x >= rect.width()
         && body >= 0.0
         && content_clearance >= 0.0;
-    let panel_frame = launcher_panel_frame_contract();
+    let panel_frame = launcher_panel_frame_contract(&state);
     format!(
         "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={}",
         scenario.label(),
@@ -60,15 +60,11 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     )
 }
 
-fn launcher_panel_frame_contract() -> &'static str {
-    let source = include_str!("ui.rs");
-    if source.contains("ui.set_min_width(panel_rect.width())")
-        && source.contains("ui.set_min_height(panel_rect.height())")
-        && source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)")
-    {
+fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
+    if ui_metrics::panel_frame_fills_viewport(state) {
         "fills_viewport"
     } else {
-        "natural_content_height"
+        "carrier_background_visible"
     }
 }
 

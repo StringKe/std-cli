@@ -181,6 +181,7 @@ fn native_viewport_is_the_launcher_panel_not_a_carrier() {
     assert_eq!(rect.max.x, available.right());
     assert_eq!(rect.min.y, 0.0);
     assert_eq!(rect.max.y, available.bottom());
+    assert!(panel_frame_fills_viewport(&state));
 }
 
 #[test]
@@ -208,4 +209,23 @@ fn body_height_counts_virtual_group_header_slots() {
             - crate::ui_results::group_count(&state.view.results).min(slots) as f32 * 12.0
             + 12.0
     );
+}
+
+#[test]
+fn all_preview_visible_states_fill_the_native_viewport() {
+    for scenario in [
+        "empty",
+        "results",
+        "no-results",
+        "defer",
+        "error",
+        "searching",
+        "executing",
+        "action-panel",
+    ] {
+        let mut state = LauncherState::new();
+        crate::preview::apply_preview_scenario(&mut state, scenario);
+
+        assert!(panel_frame_fills_viewport(&state), "{scenario}");
+    }
 }
