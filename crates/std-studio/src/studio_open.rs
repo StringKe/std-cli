@@ -8,6 +8,7 @@ pub(crate) enum StudioOpenRequest {
     History,
     Memory,
     Plugins,
+    Settings,
     Workflows,
 }
 
@@ -19,6 +20,7 @@ impl StudioOpenRequest {
             Self::History => "history",
             Self::Memory => "memory",
             Self::Plugins => "plugins",
+            Self::Settings => "settings",
             Self::Workflows => "workflows",
         }
     }
@@ -34,6 +36,7 @@ pub(crate) fn studio_open_request_from_args(args: &[String]) -> Option<StudioOpe
         Some("history") => Some(StudioOpenRequest::History),
         Some("memory") => Some(StudioOpenRequest::Memory),
         Some("plugins") => Some(StudioOpenRequest::Plugins),
+        Some("settings") => Some(StudioOpenRequest::Settings),
         Some("workflows") => Some(StudioOpenRequest::Workflows),
         _ => None,
     }
@@ -61,6 +64,10 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
         }
         StudioOpenRequest::Plugins => {
             let id = app.app.open_plugin_manager_pane();
+            app.pending_workspace_focus = Some(id);
+        }
+        StudioOpenRequest::Settings => {
+            let id = app.app.open_settings_pane();
             app.pending_workspace_focus = Some(id);
         }
         StudioOpenRequest::Workflows => {
@@ -104,6 +111,7 @@ fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
         StudioOpenRequest::Apps => Some(StudioPane::Apps),
         StudioOpenRequest::Memory => Some(StudioPane::Memory),
         StudioOpenRequest::Plugins => Some(StudioPane::Plugins),
+        StudioOpenRequest::Settings => Some(StudioPane::Settings),
         StudioOpenRequest::Workflows => Some(StudioPane::Workflows),
         StudioOpenRequest::History => None,
     }
@@ -121,6 +129,7 @@ mod tests {
             ("history", StudioOpenRequest::History),
             ("memory", StudioOpenRequest::Memory),
             ("plugins", StudioOpenRequest::Plugins),
+            ("settings", StudioOpenRequest::Settings),
             ("workflows", StudioOpenRequest::Workflows),
         ] {
             let args = open_args(target);
@@ -136,6 +145,7 @@ mod tests {
             StudioOpenRequest::History,
             StudioOpenRequest::Memory,
             StudioOpenRequest::Plugins,
+            StudioOpenRequest::Settings,
             StudioOpenRequest::Workflows,
         ] {
             let app = crate::app_for_open_request(request);
@@ -148,14 +158,26 @@ mod tests {
     }
 
     #[test]
+    fn settings_request_uses_internal_workspace_pane() {
+        let app = crate::app_for_open_request(StudioOpenRequest::Settings);
+        let spec = crate::workspace_panes::focused_workspace_spec(&app.app).unwrap();
+
+        assert_eq!(app.app.active_pane, StudioPane::Settings);
+        assert_eq!(spec.content_key, "settings");
+        assert_eq!(spec.heading, "Settings");
+        assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
+        assert!(app.status.contains("opened studio settings"));
+    }
+
+    #[test]
     fn blocked_summary_keeps_test_mode_from_opening_native_window() {
         let summary = studio_open_blocked_summary(
-            StudioOpenRequest::History,
+            StudioOpenRequest::Settings,
             "studio_native_app SKIP reason=STD_TEST_MODE blocked native app startup",
         );
 
         assert!(summary.contains("studio_open SKIP"));
-        assert!(summary.contains("target=history"));
+        assert!(summary.contains("target=settings"));
         assert!(summary.contains("workspace_panes=1"));
         assert!(summary.contains("STD_TEST_MODE blocked native app startup"));
     }
