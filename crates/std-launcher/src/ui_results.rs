@@ -85,6 +85,10 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         .max_height(max_height)
         .auto_shrink([false, false])
         .show_viewport(ui, |ui, viewport| {
+            if state.view.phase == std_egui::LauncherPhase::Searching {
+                render_loading_progress_bar(ui, &ui.ctx().clone());
+                ui.add_space(Space::xs() as f32);
+            }
             let total_height = ui_results_virtual::total_height(&items);
             ui.set_min_height(total_height);
             let (start, end, mut y) =
@@ -168,8 +172,6 @@ fn render_overflow_hint(ui: &mut egui::Ui, view: &std_egui::LauncherViewModel) {
 
 fn render_progress(ui: &mut egui::Ui, label: &str) {
     let ctx = ui.ctx().clone();
-    render_loading_progress_bar(ui, &ctx);
-    ui.add_space(Space::md() as f32);
     ui.horizontal(|ui| {
         ui.spinner();
         ui.label(
@@ -274,5 +276,24 @@ mod tests {
 
         assert_eq!(state.focus_section, LauncherFocusSection::Results);
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
+    }
+
+    #[test]
+    fn searching_progress_bar_is_pinned_above_results() {
+        let source = include_str!("ui_results.rs");
+        let viewport_body = source
+            .split(".show_viewport(ui, |ui, viewport| {")
+            .nth(1)
+            .and_then(|body| body.split("let total_height").next())
+            .unwrap();
+        let progress_body = source
+            .split("fn render_progress")
+            .nth(1)
+            .and_then(|body| body.split("fn render_loading_progress_bar").next())
+            .unwrap();
+
+        assert!(viewport_body.contains("LauncherPhase::Searching"));
+        assert!(viewport_body.contains("render_loading_progress_bar"));
+        assert!(!progress_body.contains("render_loading_progress_bar"));
     }
 }
