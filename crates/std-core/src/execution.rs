@@ -1,6 +1,13 @@
 use crate::{CoreError, StdCore};
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType, RegistryEntry};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ExternalExecutionMode {
+    Disabled,
+    DesktopAutomation,
+    LauncherUser,
+}
+
 pub(crate) fn action_preview(entry: &RegistryEntry) -> ActionPreview {
     ActionPreview {
         action_id: entry.action.id,
@@ -16,7 +23,7 @@ pub(crate) fn action_preview(entry: &RegistryEntry) -> ActionPreview {
 pub(crate) fn execute_registry_entry(
     core: &StdCore,
     entry: &RegistryEntry,
-    allow_external_runner: bool,
+    external_mode: ExternalExecutionMode,
 ) -> Result<ActionExecution, CoreError> {
     let now = chrono::Utc::now();
     match &entry.action.action_type {
@@ -45,13 +52,13 @@ pub(crate) fn execute_registry_entry(
         ActionType::Command if entry.action.name == "Rebuild Index" => {
             rebuild_current_index(core, entry, now)
         }
-        ActionType::Command => execute_command_action(core, entry, allow_external_runner, now),
-        ActionType::AppLaunch if user_desktop_open_allowed(allow_external_runner) => {
+        ActionType::Command => execute_command_action(core, entry, external_mode, now),
+        ActionType::AppLaunch if user_desktop_open_allowed(external_mode) => {
             execute_app_launch(core, entry, now)
         }
         ActionType::AppLaunch => Ok(needs_external_runner(entry, now)),
         ActionType::Custom(kind) if kind == "file" => match entry.metadata.get("path") {
-            Some(path) if user_desktop_open_allowed(allow_external_runner) => {
+            Some(path) if user_desktop_open_allowed(external_mode) => {
                 Ok(run_open_path(core, entry, path, now))
             }
             Some(_) => Ok(needs_external_runner(entry, now)),
@@ -64,11 +71,11 @@ pub(crate) fn execute_registry_entry(
 fn execute_command_action(
     core: &StdCore,
     entry: &RegistryEntry,
-    allow_external_runner: bool,
+    external_mode: ExternalExecutionMode,
     created_at: chrono::DateTime<chrono::Utc>,
 ) -> Result<ActionExecution, CoreError> {
     match entry.metadata.get("command") {
-        Some(_) if !external_runner_allowed(allow_external_runner) => {
+        Some(_) if !external_runner_allowed(external_mode) => {
             Ok(needs_external_runner(entry, created_at))
         }
         Some(command) => Ok(run_shell_command(core, entry, command, created_at)),
@@ -76,12 +83,15 @@ fn execute_command_action(
     }
 }
 
-fn external_runner_allowed(allow_external_runner: bool) -> bool {
-    allow_external_runner && crate::desktop_automation_allowed()
+fn external_runner_allowed(external_mode: ExternalExecutionMode) -> bool {
+    matches!(external_mode, ExternalExecutionMode::DesktopAutomation)
 }
 
-fn user_desktop_open_allowed(allow_external_runner: bool) -> bool {
-    allow_external_runner && !crate::std_test_mode_enabled()
+fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool {
+    matches!(
+        external_mode,
+        ExternalExecutionMode::DesktopAutomation | ExternalExecutionMode::LauncherUser
+    ) && !crate::std_test_mode_enabled()
 }
 
 fn execute_echo(

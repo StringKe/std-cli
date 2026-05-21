@@ -282,10 +282,12 @@ impl LauncherState {
             let preview = self.core.preview_action(result.action.id).ok()?;
             self.trigger_workflow_action(&result.action.name, preview.metadata.get("path"))
                 .ok()?
-        } else {
+        } else if allow_external_runner {
             self.core
-                .execute_action_with_external_runner(result.action.id, allow_external_runner)
+                .execute_action_from_launcher_user(result.action.id)
                 .ok()?
+        } else {
+            self.core.execute_action(result.action.id).ok()?
         };
         self.view.telemetry.last_trigger_ms = started_at.elapsed().as_millis();
         self.view.last_triggered = Some(result.action.name);

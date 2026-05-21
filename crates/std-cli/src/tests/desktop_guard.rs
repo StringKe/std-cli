@@ -191,21 +191,23 @@ fn std_core_external_runner_requires_desktop_opt_in() {
         .unwrap()
         .parent()
         .unwrap();
-    let body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
+    let execution_body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
+    let actions_body = fs::read_to_string(root.join("crates/std-core/src/actions.rs")).unwrap();
 
     assert!(
-        body.contains("allow_external_runner && crate::desktop_automation_allowed()"),
-        "external runners must require CLI opt-in and STD_ALLOW_DESKTOP_AUTOMATION"
-    );
-    let external_runner_gate = source_section(
-        &body,
-        "fn external_runner_allowed(allow_external_runner: bool) -> bool",
-        "fn user_desktop_open_allowed",
+        execution_body.contains("ExternalExecutionMode::DesktopAutomation"),
+        "external runners must resolve to a desktop automation execution mode"
     );
     assert!(
-        !external_runner_gate.contains("!crate::std_test_mode_enabled()"),
-        "STD_TEST_MODE alone is not enough to guard external runners"
+        actions_body.contains("allow_external_runner && crate::desktop_automation_allowed()"),
+        "CLI external runners must require CLI opt-in and STD_ALLOW_DESKTOP_AUTOMATION"
     );
+    let external_runner_gate = source_section(
+        &execution_body,
+        "fn external_runner_allowed(external_mode: ExternalExecutionMode) -> bool",
+        "fn user_desktop_open_allowed",
+    );
+    assert!(!external_runner_gate.contains("std_test_mode_enabled"));
 }
 
 #[test]
@@ -218,12 +220,16 @@ fn std_core_app_open_allows_launcher_user_enter_outside_test_mode() {
     let body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
 
     assert!(
-        body.contains("fn user_desktop_open_allowed(allow_external_runner: bool) -> bool"),
+        body.contains("fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool"),
         "app and file open must have a distinct user-enter permission gate"
     );
     assert!(
-        body.contains("allow_external_runner && !crate::std_test_mode_enabled()"),
-        "Launcher user Enter should open apps outside STD_TEST_MODE without shell automation opt-in"
+        body.contains("ExternalExecutionMode::LauncherUser"),
+        "Launcher user Enter should use a distinct app/file open mode"
+    );
+    assert!(
+        body.contains(") && !crate::std_test_mode_enabled()"),
+        "Launcher user Enter must stay blocked in STD_TEST_MODE"
     );
     assert!(
         body.contains("ActionType::Command => execute_command_action"),

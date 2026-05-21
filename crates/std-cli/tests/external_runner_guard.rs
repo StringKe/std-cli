@@ -187,6 +187,36 @@ fn binary_blocks_external_runner_without_desktop_opt_in() {
     assert!(!stdout.contains("\"status\": \"Completed\""));
 }
 
+#[test]
+fn binary_blocks_registered_app_even_with_allow_external_without_desktop_opt_in() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+    let app_path = temp.path().join("StdNeverLaunchFixture.app");
+    fs::create_dir_all(app_path.join("Contents").join("MacOS")).unwrap();
+    fs::write(
+        app_path.join("Contents").join("MacOS").join("fixture"),
+        "bin",
+    )
+    .unwrap();
+
+    let register = run_std(
+        &config_path,
+        &["app", "register", app_path.to_str().unwrap()],
+    );
+    assert!(register.status.success(), "{}", command_stderr(&register));
+
+    let trigger = run_std(
+        &config_path,
+        &["trigger", "StdNeverLaunchFixture", "--allow-external"],
+    );
+    assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+    let stdout = command_stdout(&trigger);
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(stdout.contains("StdNeverLaunchFixture.app"));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
 fn write_config(root: &Path) -> std::path::PathBuf {
     let config_path = root.join("std-cli.json");
     fs::write(

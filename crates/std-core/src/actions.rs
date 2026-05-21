@@ -1,6 +1,6 @@
 use crate::{
     events::EventBus,
-    execution::{action_preview, execute_registry_entry},
+    execution::{action_preview, execute_registry_entry, ExternalExecutionMode},
     CoreError, StdCore,
 };
 use std_types::{
@@ -53,13 +53,33 @@ impl StdCore {
     }
 
     pub fn execute_action(&self, id: ActionId) -> Result<ActionExecution, CoreError> {
-        self.execute_action_with_external_runner(id, false)
+        self.execute_action_with_mode(id, ExternalExecutionMode::Disabled)
     }
 
     pub fn execute_action_with_external_runner(
         &self,
         id: ActionId,
         allow_external_runner: bool,
+    ) -> Result<ActionExecution, CoreError> {
+        let mode = if allow_external_runner && crate::desktop_automation_allowed() {
+            ExternalExecutionMode::DesktopAutomation
+        } else {
+            ExternalExecutionMode::Disabled
+        };
+        self.execute_action_with_mode(id, mode)
+    }
+
+    pub fn execute_action_from_launcher_user(
+        &self,
+        id: ActionId,
+    ) -> Result<ActionExecution, CoreError> {
+        self.execute_action_with_mode(id, ExternalExecutionMode::LauncherUser)
+    }
+
+    fn execute_action_with_mode(
+        &self,
+        id: ActionId,
+        external_mode: ExternalExecutionMode,
     ) -> Result<ActionExecution, CoreError> {
         let entry = self
             .registry
@@ -68,7 +88,7 @@ impl StdCore {
             .get(id)
             .cloned()
             .ok_or(CoreError::ActionNotFound(id))?;
-        let execution = execute_registry_entry(self, &entry, allow_external_runner)?;
+        let execution = execute_registry_entry(self, &entry, external_mode)?;
         self.publish(StdEvent::new(
             StdEventType::ActionExecuted,
             "std-core",
