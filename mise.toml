@@ -70,3 +70,13 @@ run = "cargo run -p std-cli -- release package --version 1.0.0 --from target/rel
 description = "Verify release artifacts"
 env = { STD_TEST_MODE = "1" }
 run = "cargo run -p std-cli -- release verify --dist dist/1.0.0-current"
+
+[tasks.install-run]
+description = "Install packaged binaries into the local install-check prefix"
+env = { STD_TEST_MODE = "1" }
+run = "cargo run -p std-cli -- install run --prefix .std-cli/install-check --from dist/1.0.0-current/bin"
+
+[tasks.install-verify]
+description = "Verify installed binaries and app bundles"
+env = { STD_TEST_MODE = "1" }
+run = "cargo run -p std-cli -- install verify --prefix .std-cli/install-check"

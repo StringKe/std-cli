@@ -110,6 +110,8 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         "release-build",
         "release-package",
         "release-verify",
+        "install-run",
+        "install-verify",
     ] {
         assert!(
             task_has_std_test_mode(&body, task) || task_inherits_workspace_test_mode(&body, task),
