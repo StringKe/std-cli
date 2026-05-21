@@ -9,6 +9,7 @@ pub(crate) struct WorkspacePaneSmoke {
     pub(crate) content_keys: String,
     pub(crate) focused_title: String,
     pub(crate) restored_title: String,
+    pub(crate) settings_kind: String,
     pub(crate) closed_removed: bool,
     pub(crate) state_preserved_after_focus: bool,
     pub(crate) focus_label: String,
@@ -24,11 +25,13 @@ pub(crate) fn run_workspace_pane_smoke(
 ) -> WorkspacePaneSmoke {
     let settings = studio.open_settings_pane();
     let opened = studio.focused_pane == Some(settings);
-    let settings_title = pane_title(studio, settings);
+    let settings_kind = pane_kind_label(studio, settings);
+    let settings_key = pane_content_key(studio, settings);
     let duplicate_settings = studio.open_settings_pane();
     let plugin = studio.open_plugin_manager_pane();
     let focus_switched = studio.focused_pane == Some(plugin);
     let focused_title = pane_title(studio, plugin);
+    let focused_key = pane_content_key(studio, plugin);
     let content_keys = workspace_content_keys(studio);
     let state_preserved_after_focus = pane_lines(studio, plugin)
         .iter()
@@ -49,7 +52,8 @@ pub(crate) fn run_workspace_pane_smoke(
         && studio.focused_pane == Some(plugin)
         && plugin_refocused;
     let restored_title = pane_title(studio, plugin);
-    let focus_switch_path = format!("{}>{}>{}", settings_title, focused_title, restored_title);
+    let restored_key = pane_content_key(studio, plugin);
+    let focus_switch_path = format!("{}>{}>{}", settings_key, focused_key, restored_key);
     let close_restore_path = format!(
         "close:{}>restore:{}",
         close_target.value(),
@@ -75,6 +79,7 @@ pub(crate) fn run_workspace_pane_smoke(
         content_keys,
         focused_title,
         restored_title,
+        settings_kind,
         closed_removed,
         state_preserved_after_focus,
         focus_label,
@@ -120,6 +125,22 @@ fn pane_title(studio: &StudioApp, id: WorkspacePaneId) -> String {
         .find(|pane| pane.id == id)
         .map(|pane| pane.title.clone())
         .unwrap_or_else(|| "UNKNOWN".to_string())
+}
+
+fn pane_kind_label(studio: &StudioApp, id: WorkspacePaneId) -> String {
+    studio
+        .open_workspace_panes()
+        .find(|pane| pane.id == id)
+        .map(|pane| format!("{:?}", pane.kind))
+        .unwrap_or_else(|| "UNKNOWN".to_string())
+}
+
+fn pane_content_key(studio: &StudioApp, id: WorkspacePaneId) -> &'static str {
+    studio
+        .open_workspace_panes()
+        .find(|pane| pane.id == id)
+        .map(|pane| pane.kind.content_key())
+        .unwrap_or("UNKNOWN")
 }
 
 fn pane_lines(studio: &StudioApp, id: WorkspacePaneId) -> Vec<String> {

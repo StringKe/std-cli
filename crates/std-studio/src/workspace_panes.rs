@@ -53,6 +53,7 @@ impl StudioWorkspaceSpec {
             WorkspacePaneKind::MemoryBrowser => StudioPane::Memory,
             WorkspacePaneKind::ExecutionHistory => StudioPane::History,
             WorkspacePaneKind::PluginManager => StudioPane::Plugins,
+            WorkspacePaneKind::Settings => StudioPane::Settings,
         };
         Self {
             id: pane.id,

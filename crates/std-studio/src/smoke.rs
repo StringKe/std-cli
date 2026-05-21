@@ -30,6 +30,7 @@ pub(crate) struct StudioSmokeReport {
     pane_content_keys: String,
     pane_focused_title: String,
     pane_restored_title: String,
+    pane_settings_kind: String,
     pane_closed_removed: bool,
     pane_state_preserved: bool,
     pane_focus_label: String,
@@ -93,7 +94,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -104,6 +105,7 @@ impl StudioSmokeReport {
             self.pane_content_keys,
             self.pane_focused_title,
             self.pane_restored_title,
+            self.pane_settings_kind,
             self.pane_closed_removed,
             self.pane_state_preserved,
             self.pane_focus_label,
@@ -175,6 +177,7 @@ impl StudioSmokeReport {
             && self.pane_content_keys.contains("settings")
             && self.pane_focused_title == "Plugin Manager"
             && self.pane_restored_title == "Plugin Manager"
+            && self.pane_settings_kind == "Settings"
             && self.pane_closed_removed
             && self.pane_state_preserved
             && self
@@ -194,7 +197,7 @@ impl StudioSmokeReport {
             && self.pane_host_policy.contains("native-child-windows=false")
             && self.pane_host_policy.contains("detached-panels=false")
             && self.pane_management_sequence == "open>dedupe>focus>switch>close>reopen>restore"
-            && self.pane_focus_switch_path == "Settings>Plugin Manager>Plugin Manager"
+            && self.pane_focus_switch_path == "settings>plugins>plugins"
             && self.pane_close_restore_path.starts_with("close:")
             && !self.native_child_windows
             && !self.detached_panels
@@ -298,6 +301,7 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             pane_content_keys: "FAIL".to_string(),
             pane_focused_title: "FAIL".to_string(),
             pane_restored_title: "FAIL".to_string(),
+            pane_settings_kind: "FAIL".to_string(),
             pane_closed_removed: false,
             pane_state_preserved: false,
             pane_focus_label: "FAIL".to_string(),
@@ -422,6 +426,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         pane_content_keys: pane_smoke.content_keys,
         pane_focused_title: pane_smoke.focused_title,
         pane_restored_title: pane_smoke.restored_title,
+        pane_settings_kind: pane_smoke.settings_kind,
         pane_closed_removed: pane_smoke.closed_removed,
         pane_state_preserved: pane_smoke.state_preserved_after_focus,
         pane_focus_label: pane_smoke.focus_label,

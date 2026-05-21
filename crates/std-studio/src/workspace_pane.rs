@@ -23,6 +23,7 @@ pub enum WorkspacePaneKind {
     MemoryBrowser,
     ExecutionHistory,
     PluginManager,
+    Settings,
 }
 
 impl WorkspacePaneKind {
@@ -55,6 +56,7 @@ impl WorkspacePaneKind {
             WorkspacePaneKind::PluginManager => {
                 i18n::t("studio.workspace_panes.plugin_manager").to_string()
             }
+            WorkspacePaneKind::Settings => i18n::t("studio.settings.title").to_string(),
         }
     }
 
@@ -67,6 +69,7 @@ impl WorkspacePaneKind {
             WorkspacePaneKind::MemoryBrowser => "memory",
             WorkspacePaneKind::ExecutionHistory => "history",
             WorkspacePaneKind::PluginManager => "plugins",
+            WorkspacePaneKind::Settings => "settings",
         }
     }
 }
@@ -151,6 +154,7 @@ impl StudioApp {
             WorkspacePaneKind::MemoryBrowser => self.pane_content(StudioPane::Memory),
             WorkspacePaneKind::ExecutionHistory => self.pane_content(StudioPane::History),
             WorkspacePaneKind::PluginManager => self.pane_content(StudioPane::Plugins),
+            WorkspacePaneKind::Settings => self.pane_content(StudioPane::Settings),
         }
     }
 

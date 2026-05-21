@@ -88,7 +88,7 @@ fn studio_pane_titles_reflect_pane_kind() {
     assert!(titles.contains(&(analysis, "Analysis Workbench: std-cli")));
     assert!(titles.contains(&(apps, "App Manager")));
     assert!(titles.contains(&(memory, "Memory Browser")));
-    assert!(titles.contains(&(settings, "Settings")));
+    assert!(titles.contains(&(settings, std_egui::i18n::t("studio.settings.title"))));
 }
 
 #[test]
@@ -119,6 +119,27 @@ fn studio_pane_kinds_map_to_real_pane_content() {
     assert!(content.contains(&(history, "history")));
     assert!(content.contains(&(plugins, "plugins")));
     assert!(content.contains(&(settings, "settings")));
+}
+
+#[test]
+fn settings_uses_explicit_internal_workspace_pane() {
+    let mut studio = test_studio();
+    let settings = studio.open_settings_pane();
+    let duplicate = studio.open_settings_pane();
+    let pane = studio
+        .workspace_panes
+        .iter()
+        .find(|pane| pane.id == settings)
+        .unwrap();
+
+    assert_eq!(settings, duplicate);
+    assert_eq!(studio.focused_pane, Some(settings));
+    assert_eq!(pane.kind, WorkspacePaneKind::Settings);
+    assert_eq!(pane.kind.content_key(), "settings");
+    assert_eq!(
+        studio.workspace_pane_content(&pane.kind).content_key,
+        "settings"
+    );
 }
 
 #[test]
@@ -194,7 +215,7 @@ fn workspace_panes_cover_interactive_workbench_surfaces() {
         WorkspacePaneKind::MemoryBrowser,
         WorkspacePaneKind::ExecutionHistory,
         WorkspacePaneKind::PluginManager,
-        WorkspacePaneKind::Pane(StudioPane::Settings),
+        WorkspacePaneKind::Settings,
         WorkspacePaneKind::Pane(StudioPane::Operations),
     ];
 
@@ -231,9 +252,9 @@ fn studio_ui_uses_workspace_pane_language_not_window_language() {
     assert!(pane_source.contains("memory.request_focus"));
     assert!(pane_source.contains("response.widget_info"));
     assert!(pane_source.contains("workspace_pane_a11y_label"));
+    assert!(pane_source.contains("studio.workspace_panes.close"));
     assert!(tabs_source.contains("workspace_tab_a11y_label"));
     assert!(tabs_source.contains("workspace_tab_close_a11y_label"));
-    assert!(tabs_source.contains("studio.workspace_panes.close"));
 }
 
 #[test]

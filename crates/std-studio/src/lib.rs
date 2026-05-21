@@ -208,7 +208,7 @@ impl StudioApp {
     }
 
     pub fn open_settings_pane(&mut self) -> WorkspacePaneId {
-        self.open_pane(WorkspacePaneKind::Pane(StudioPane::Settings))
+        self.open_pane(WorkspacePaneKind::Settings)
     }
 
     pub fn focus_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
