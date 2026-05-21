@@ -1,4 +1,5 @@
 mod analysis_smoke;
+mod keyboard_smoke;
 mod layout_smoke;
 mod operations_smoke;
 mod plugin_smoke;
@@ -9,6 +10,7 @@ mod workspace_smoke;
 
 use crate::{default_batch_json, StudioPane};
 use analysis_smoke::run_analysis_workbench_smoke;
+use keyboard_smoke::StudioKeyboardSmoke;
 use layout_smoke::StudioLayoutSmoke;
 use operations_smoke::OperationsSmoke;
 use plugin_smoke::run_plugin_manager_smoke;
@@ -77,6 +79,7 @@ pub(crate) struct StudioSmokeReport {
     plugin_js_runtime: String,
     plugin_ts_runtime: String,
     history_count: usize,
+    keyboard_summary: String,
     operations_summary: String,
 }
 
@@ -84,7 +87,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -144,6 +147,7 @@ impl StudioSmokeReport {
             self.plugin_js_runtime,
             self.plugin_ts_runtime,
             self.history_count,
+            self.keyboard_summary,
             self.operations_summary
         )
     }
@@ -225,6 +229,16 @@ impl StudioSmokeReport {
             && self.plugin_js_runtime == "deno_core"
             && self.plugin_ts_runtime == "deno_core"
             && self.history_count >= 1
+            && self.keyboard_summary.contains("studio_keyboard_smoke=PASS")
+            && self
+                .keyboard_summary
+                .contains("studio_workspace_focus_path=dashboard>plugins>settings>dashboard")
+            && self
+                .keyboard_summary
+                .contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target")
+            && self
+                .keyboard_summary
+                .contains("studio_keyboard_contract=docs/20#studio-shortcuts")
             && self.operations_summary.contains("operations_smoke=PASS")
             && self
                 .operations_summary
@@ -307,6 +321,7 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             plugin_js_runtime: "FAIL".to_string(),
             plugin_ts_runtime: "FAIL".to_string(),
             history_count: 0,
+            keyboard_summary: "studio_keyboard_smoke=FAIL".to_string(),
             operations_summary: "operations_smoke=FAIL".to_string(),
         }),
     }
@@ -349,6 +364,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
     let analysis_name = studio.analyze_entity(&project_dir)?.overview.name.clone();
     let coverage = studio.analysis_coverage_report()?;
     let analysis_smoke = run_analysis_workbench_smoke(&studio, "StudioSmoke", "project")?;
+    let keyboard_smoke = StudioKeyboardSmoke::run(&mut studio);
 
     let plugin_smoke = run_plugin_manager_smoke(&mut studio)?;
     let operations_smoke = OperationsSmoke::new();
@@ -423,6 +439,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         plugin_js_runtime: plugin_smoke.js_runtime,
         plugin_ts_runtime: plugin_smoke.ts_runtime,
         history_count,
+        keyboard_summary: keyboard_smoke.summary(),
         operations_summary: operations_smoke.summary(),
     })
 }

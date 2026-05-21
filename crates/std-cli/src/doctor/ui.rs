@@ -44,6 +44,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_ui_docs(&root)?;
     check_quality_report_gates(&root)?;
     check_runtime_theme_profiles(&root)?;
+    check_studio_keyboard_evidence(&root)?;
     check_studio_operations_evidence(&root)?;
     check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
@@ -130,6 +131,31 @@ fn check_studio_operations_evidence(root: &std::path::Path) -> Result<(), CliErr
     }
     let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
     check_text(&studio_smoke, "operations_smoke=PASS")?;
+    Ok(())
+}
+
+fn check_studio_keyboard_evidence(root: &std::path::Path) -> Result<(), CliError> {
+    let keyboard = read_required(&root.join("crates/std-studio/src/smoke/keyboard_smoke.rs"))?;
+    for required in [
+        "studio_keyboard_smoke=PASS",
+        "Cmd+B:open>closed>open",
+        "Cmd+I:closed>open>closed",
+        "Cmd+J:closed>open>closed",
+        "Cmd+Shift+P|Cmd+/:closed>command",
+        "Cmd+P:command>quick-open",
+        "dashboard>plugins>settings>dashboard",
+        "target>tabs>content>query>coverage>target",
+        "?:coverage>query",
+        "docs/20#studio-shortcuts",
+    ] {
+        check_text(&keyboard, required)?;
+    }
+    let studio_smoke = read_required(&root.join("crates/std-studio/src/smoke.rs"))?;
+    check_text(&studio_smoke, "StudioKeyboardSmoke::run")?;
+    check_text(
+        &studio_smoke,
+        "studio_keyboard_contract=docs/20#studio-shortcuts",
+    )?;
     Ok(())
 }
 

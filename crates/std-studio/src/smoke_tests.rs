@@ -10,6 +10,7 @@ fn studio_smoke_reports_internal_workspace_pane_management() {
     assert_shell_layout_summary(&summary);
     assert_workflow_builder_summary(&summary);
     assert_analysis_workbench_summary(&summary);
+    assert_keyboard_summary(&summary);
     assert_operations_summary(&summary);
 }
 
@@ -104,4 +105,19 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_release_output=manifest="));
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
+}
+
+fn assert_keyboard_summary(summary: &str) {
+    assert!(summary.contains("studio_keyboard_smoke=PASS"));
+    assert!(summary.contains("studio_sidebar_toggle_path=Cmd+B:open>closed>open"));
+    assert!(summary.contains("studio_inspector_toggle_path=Cmd+I:closed>open>closed"));
+    assert!(summary.contains("studio_bottom_panel_toggle_path=Cmd+J:closed>open>closed"));
+    assert!(summary.contains("studio_command_palette_path=Cmd+Shift+P|Cmd+/:closed>command"));
+    assert!(summary.contains("studio_quick_open_path=Cmd+P:command>quick-open"));
+    assert!(summary.contains("studio_workspace_focus_path=dashboard>plugins>settings>dashboard"));
+    assert!(
+        summary.contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target")
+    );
+    assert!(summary.contains("studio_analysis_qa_focus=?:coverage>query"));
+    assert!(summary.contains("studio_keyboard_contract=docs/20#studio-shortcuts"));
 }
