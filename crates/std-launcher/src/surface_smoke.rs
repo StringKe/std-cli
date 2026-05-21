@@ -12,7 +12,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub panel_opaque: bool,
     pub panel_radius: u8,
     pub native_viewport_contract: String,
-    pub preview_carrier_contract: String,
+    pub preview_viewport_contract: String,
     pub panel_inner_padding: i8,
     pub dark_search_surface_layer: String,
     pub light_search_surface_layer: String,
@@ -38,7 +38,7 @@ impl LauncherSurfaceSmokeReport {
                 && Color::bg_surface_0(&light).a() == 255,
             panel_radius: Radius::xl(),
             native_viewport_contract: native_viewport_contract(),
-            preview_carrier_contract: preview_carrier_contract(),
+            preview_viewport_contract: preview_viewport_contract(),
             panel_inner_padding: Space::md(),
             dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
             light_search_surface_layer: layer("light_search", "bg/surface-1", &light),
@@ -61,8 +61,8 @@ impl LauncherSurfaceSmokeReport {
             && self.panel_radius == 16
             && self.native_viewport_contract
                 == "native_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel"
-            && self.preview_carrier_contract
-                == "preview_carrier=explicit_ui_preview_only,centered_panel_for_screenshot"
+            && self.preview_viewport_contract
+                == "preview_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel"
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -79,14 +79,14 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_carrier_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
             self.panel_opaque,
             self.panel_radius,
             self.native_viewport_contract,
-            self.preview_carrier_contract,
+            self.preview_viewport_contract,
             self.panel_inner_padding,
             self.dark_search_surface_layer,
             self.light_search_surface_layer,
@@ -126,14 +126,15 @@ fn native_viewport_contract() -> String {
     "native_viewport=FAIL".to_string()
 }
 
-fn preview_carrier_contract() -> String {
-    let carrier_width = 1000.0;
-    let panel_width = crate::panel_width_for_available(carrier_width, 0.0, 1.0);
-    if panel_width < carrier_width && panel_width == 550.0 {
-        return "preview_carrier=explicit_ui_preview_only,centered_panel_for_screenshot"
+fn preview_viewport_contract() -> String {
+    let preview_width = PANEL_WIDTH;
+    let panel_width = crate::panel_width_for_available(preview_width, 0.0, 1.0);
+    let transparent = true;
+    if transparent && panel_width == preview_width {
+        return "preview_viewport=transparent,no_carrier,width_matches_panel,height_matches_panel"
             .to_string();
     }
-    "preview_carrier=FAIL".to_string()
+    "preview_viewport=FAIL".to_string()
 }
 
 fn layer(name: &str, token: &str, ctx: &egui::Context) -> String {

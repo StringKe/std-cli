@@ -19,17 +19,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn width_uses_full_carrier_when_native_window_is_tight() {
+    fn width_uses_full_viewport_when_native_window_matches_panel() {
         assert_eq!(panel_width_for_available(720.0, 0.0, 1.0), 720.0);
     }
 
     #[test]
-    fn width_uses_docs_ratio_on_medium_carrier() {
+    fn width_uses_docs_ratio_on_medium_available_region() {
         assert_eq!(panel_width_for_available(1000.0, 0.0, 1.0), 550.0);
     }
 
     #[test]
-    fn width_caps_at_docs_max_on_wide_carrier() {
+    fn width_caps_at_docs_max_on_wide_available_region() {
         assert_eq!(panel_width_for_available(1440.0, 0.0, 1.0), 720.0);
     }
 }

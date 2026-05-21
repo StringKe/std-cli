@@ -345,14 +345,14 @@ mod tests {
     }
 
     #[test]
-    fn panel_width_uses_docs_viewport_ratio_on_large_carriers() {
+    fn panel_width_caps_at_docs_max_on_large_available_region() {
         let width = panel_width_for_available(1440.0, window_margin());
 
         assert_eq!(width, 720.0);
     }
 
     #[test]
-    fn panel_width_does_not_fill_medium_carrier() {
+    fn panel_width_uses_docs_ratio_on_medium_available_region() {
         let width = panel_width_for_available(1000.0, window_margin());
 
         assert_eq!(width, 550.0);
@@ -383,7 +383,7 @@ mod tests {
     }
 
     #[test]
-    fn panel_rect_uses_centered_panel_inside_preview_carrier() {
+    fn panel_rect_centers_inside_wide_available_region() {
         let mut state = LauncherState::new();
         state.update_query("index");
         let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1000.0, 900.0));

@@ -224,7 +224,7 @@ mod tests {
         assert!(report.summary().contains("native_viewport=transparent"));
         assert!(report
             .summary()
-            .contains("preview_carrier=explicit_ui_preview_only"));
+            .contains("preview_viewport=transparent,no_carrier"));
     }
 
     #[test]
