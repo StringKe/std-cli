@@ -61,5 +61,8 @@ mod tests {
         assert!(report.output().contains("studio_surface_smoke PASS"));
         assert!(report.output().contains("light_canvas_surface_layer"));
         assert!(report.output().contains("dark_selected_surface_layer"));
+        assert!(report.output().contains("standard_modal_enter_ms=220"));
+        assert!(report.output().contains("reduced_modal_enter_ms=0"));
+        assert!(report.output().contains("reduced_focus_ring_ms=0"));
     }
 }

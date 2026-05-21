@@ -15,7 +15,7 @@ enum LauncherCliSmoke {
     ActionPanel(LauncherActionPanelSmokeReport),
     Close(LauncherCloseSmokeReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
-    Surface(LauncherSurfaceSmokeReport),
+    Surface(Box<LauncherSurfaceSmokeReport>),
     Preview(LauncherPreviewSmokeReport),
     GuiHotkey(GuiHotkeySmokeConfig),
     Theme(ThemeSmokeReport),
@@ -122,9 +122,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 LauncherState::ui_semantics_smoke(query),
             )))
         }
-        Some("--surface-smoke") => {
-            Some(LauncherCliSmoke::Surface(LauncherSurfaceSmokeReport::new()))
-        }
+        Some("--surface-smoke") => Some(LauncherCliSmoke::Surface(Box::new(
+            LauncherSurfaceSmokeReport::new(),
+        ))),
         Some("--preview-smoke") => {
             Some(LauncherCliSmoke::Preview(LauncherPreviewSmokeReport::new()))
         }
@@ -225,6 +225,10 @@ mod tests {
         assert!(report
             .summary()
             .contains("preview_viewport=transparent,no_carrier"));
+        assert!(report.summary().contains("standard_launcher_enter_ms=320"));
+        assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
+        assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
+        assert!(report.summary().contains("reduced_focus_ring_ms=0"));
     }
 
     #[test]

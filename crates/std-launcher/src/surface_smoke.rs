@@ -1,5 +1,6 @@
 use crate::PANEL_WIDTH;
 use std_egui::{
+    motion::MotionContext,
     tokens::{apply_theme, Color, Radius, Space, ThemeMode},
     LauncherFeedback,
 };
@@ -25,12 +26,19 @@ pub struct LauncherSurfaceSmokeReport {
     pub no_match_state: String,
     pub defer_feedback: String,
     pub error_feedback: String,
+    pub standard_launcher_enter_ms: u128,
+    pub reduced_launcher_enter_ms: u128,
+    pub reduced_launcher_exit_ms: u128,
+    pub reduced_focus_ring_ms: u128,
+    pub reduce_motion_contract: String,
 }
 
 impl LauncherSurfaceSmokeReport {
     pub fn new() -> Self {
         let dark = themed_context(ThemeMode::Dark);
         let light = themed_context(ThemeMode::Light);
+        let standard_motion = MotionContext::standard();
+        let reduced_motion = MotionContext::reduced();
         Self {
             dark_panel_fill: color_hex(Color::bg_surface_0(&dark)),
             light_panel_fill: color_hex(Color::bg_surface_0(&light)),
@@ -51,6 +59,12 @@ impl LauncherSurfaceSmokeReport {
             no_match_state: "no_matches=icon,title,detail,ask_ai_enter".to_string(),
             defer_feedback: feedback_state(deferred_execution()),
             error_feedback: feedback_state(failed_execution()),
+            standard_launcher_enter_ms: standard_motion.launcher_enter().as_millis(),
+            reduced_launcher_enter_ms: reduced_motion.launcher_enter().as_millis(),
+            reduced_launcher_exit_ms: reduced_motion.launcher_exit().as_millis(),
+            reduced_focus_ring_ms: reduced_motion.focus_ring().as_millis(),
+            reduce_motion_contract:
+                "STD_REDUCE_MOTION=1 collapses launcher enter, exit, focus ring".to_string(),
         }
     }
 
@@ -75,11 +89,16 @@ impl LauncherSurfaceSmokeReport {
             && self.no_match_state.contains("ask_ai_enter")
             && self.defer_feedback == "Needs external runner:Open Terminal"
             && self.error_feedback == "Failed:Plugin Crash"
+            && self.standard_launcher_enter_ms == 320
+            && self.reduced_launcher_enter_ms == 0
+            && self.reduced_launcher_exit_ms == 0
+            && self.reduced_focus_ring_ms == 0
+            && self.reduce_motion_contract.contains("STD_REDUCE_MOTION=1")
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -98,7 +117,12 @@ impl LauncherSurfaceSmokeReport {
             self.matches_state,
             self.no_match_state,
             self.defer_feedback,
-            self.error_feedback
+            self.error_feedback,
+            self.standard_launcher_enter_ms,
+            self.reduced_launcher_enter_ms,
+            self.reduced_launcher_exit_ms,
+            self.reduced_focus_ring_ms,
+            self.reduce_motion_contract
         )
     }
 }
@@ -190,4 +214,22 @@ fn color_hex_alpha(color: egui::Color32) -> String {
         color.b(),
         color.a()
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn launcher_surface_smoke_reports_reduce_motion_contract() {
+        let report = LauncherSurfaceSmokeReport::new();
+        let summary = report.summary();
+
+        assert!(report.pass(), "{summary}");
+        assert!(summary.contains("standard_launcher_enter_ms=320"));
+        assert!(summary.contains("reduced_launcher_enter_ms=0"));
+        assert!(summary.contains("reduced_launcher_exit_ms=0"));
+        assert!(summary.contains("reduced_focus_ring_ms=0"));
+        assert!(summary.contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
+    }
 }

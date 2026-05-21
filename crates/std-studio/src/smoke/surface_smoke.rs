@@ -1,4 +1,4 @@
-use std_egui::tokens::ThemeSmokeReport;
+use std_egui::{motion::MotionContext, tokens::ThemeSmokeReport};
 
 pub(crate) struct StudioSurfaceSmoke {
     dark_canvas_surface_layer: String,
@@ -13,6 +13,10 @@ pub(crate) struct StudioSurfaceSmoke {
     light_status_surface_layer: String,
     dark_selected_surface_layer: String,
     light_selected_surface_layer: String,
+    standard_modal_enter_ms: u128,
+    reduced_modal_enter_ms: u128,
+    reduced_focus_ring_ms: u128,
+    reduce_motion_contract: String,
     surface_contract: String,
     doc_reference: String,
 }
@@ -20,6 +24,8 @@ pub(crate) struct StudioSurfaceSmoke {
 impl StudioSurfaceSmoke {
     pub(crate) fn new() -> Self {
         let theme = ThemeSmokeReport::new();
+        let standard_motion = MotionContext::standard();
+        let reduced_motion = MotionContext::reduced();
         Self {
             dark_canvas_surface_layer: surface("dark_canvas", "bg/surface-0", theme.dark_surface_0),
             light_canvas_surface_layer: surface(
@@ -73,6 +79,11 @@ impl StudioSurfaceSmoke {
                 "accent/weak",
                 theme.light_selection,
             ),
+            standard_modal_enter_ms: standard_motion.modal_enter().as_millis(),
+            reduced_modal_enter_ms: reduced_motion.modal_enter().as_millis(),
+            reduced_focus_ring_ms: reduced_motion.focus_ring().as_millis(),
+            reduce_motion_contract: "STD_REDUCE_MOTION=1 collapses modal enter and focus ring"
+                .to_string(),
             surface_contract: "canvas:L1,sidebar:L2,inspector:L2,bottom:L2,status:L2,selected:L4"
                 .to_string(),
             doc_reference: "docs/22#03-main-window-layout".to_string(),
@@ -102,6 +113,10 @@ impl StudioSurfaceSmoke {
             && self.light_status_surface_layer.contains("bg/surface-1")
             && self.dark_selected_surface_layer.contains("#4E9CFF@46")
             && self.light_selected_surface_layer.contains("#0A6BFF@31")
+            && self.standard_modal_enter_ms == 220
+            && self.reduced_modal_enter_ms == 0
+            && self.reduced_focus_ring_ms == 0
+            && self.reduce_motion_contract.contains("STD_REDUCE_MOTION=1")
             && self.surface_contract.contains("canvas:L1")
             && self.surface_contract.contains("selected:L4")
             && self.doc_reference == "docs/22#03-main-window-layout"
@@ -110,7 +125,7 @@ impl StudioSurfaceSmoke {
     pub(crate) fn output(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nsurface_contract={}\ndoc_reference={}",
+            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
             self.dark_canvas_surface_layer,
             self.light_canvas_surface_layer,
             self.dark_sidebar_surface_layer,
@@ -123,6 +138,10 @@ impl StudioSurfaceSmoke {
             self.light_status_surface_layer,
             self.dark_selected_surface_layer,
             self.light_selected_surface_layer,
+            self.standard_modal_enter_ms,
+            self.reduced_modal_enter_ms,
+            self.reduced_focus_ring_ms,
+            self.reduce_motion_contract,
             self.surface_contract,
             self.doc_reference
         )
@@ -153,6 +172,12 @@ mod tests {
         assert!(report.output().contains("studio_surface_smoke PASS"));
         assert!(report.output().contains("dark_canvas_surface_layer"));
         assert!(report.output().contains("light_canvas_surface_layer"));
+        assert!(report.output().contains("standard_modal_enter_ms=220"));
+        assert!(report.output().contains("reduced_modal_enter_ms=0"));
+        assert!(report.output().contains("reduced_focus_ring_ms=0"));
+        assert!(report
+            .output()
+            .contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
         assert!(report.output().contains("surface_contract=canvas:L1"));
     }
 }
