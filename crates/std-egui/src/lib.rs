@@ -156,7 +156,7 @@ mod tests {
     }
 
     #[test]
-    fn launcher_exact_alias_results_beat_lower_relevance_group_order() {
+    fn launcher_exact_alias_results_remain_available_inside_documented_group_order() {
         let core = test_core();
         core.register_action(std_types::RegistryEntry::from_action(
             std_types::Action::new(
@@ -176,8 +176,17 @@ mod tests {
 
         model.update_query(&core, "weixin");
 
-        assert_eq!(model.preview.as_ref().unwrap().title, "Open App: WeChat");
-        assert_eq!(model.results[0].matched_fields, vec!["tags".to_string()]);
+        assert_eq!(
+            model.results[0].action.action_type,
+            ActionType::Command,
+            "docs/21 keeps Action / Workflow before App / File"
+        );
+        let wechat = model
+            .results
+            .iter()
+            .find(|result| result.action.name == "Open App: WeChat")
+            .unwrap();
+        assert_eq!(wechat.matched_fields, vec!["tags".to_string()]);
     }
 
     #[test]

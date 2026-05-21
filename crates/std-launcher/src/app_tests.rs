@@ -93,10 +93,21 @@ fn launcher_searches_wechat_by_macos_multilingual_names_without_launching() {
 
     let mut action_ids = Vec::new();
     for query in queries {
-        let preview = state.update_query(query).unwrap();
-        assert_eq!(preview.title, "Open App: WeChat");
-        action_ids.push(preview.action_id);
+        state.update_query(query).unwrap();
+        let wechat = state
+            .view
+            .results
+            .iter()
+            .find(|result| result.action.name == "Open App: WeChat")
+            .unwrap();
+        action_ids.push(wechat.action.id);
     }
+    state.view.selected = state
+        .view
+        .results
+        .iter()
+        .position(|result| result.action.id == action_ids[0])
+        .unwrap();
     let execution = state
         .handle_keyboard_input_by_user(LauncherKey::Enter, false)
         .unwrap();
