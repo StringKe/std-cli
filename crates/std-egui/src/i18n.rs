@@ -101,6 +101,14 @@ mod tests {
             translate(Locale::EnUs, "studio.settings.storage.note"),
             "StdConfig writes and reloads shared core state"
         );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.settings.motion.reduce"),
+            "Reduce motion"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.settings.motion.reduce"),
+            "减少动效"
+        );
     }
 
     #[test]

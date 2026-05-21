@@ -365,6 +365,22 @@ fn settings_theme_control_uses_tokens_and_saves_theme_modes() {
 }
 
 #[test]
+fn settings_appearance_exposes_reduce_motion_toggle() {
+    let settings = include_str!("views/settings.rs");
+    let model = include_str!("views/settings_model.rs");
+
+    assert!(settings.contains("studio.settings.motion.reduce"));
+    assert!(settings.contains("studio.settings.motion.reduce.detail"));
+    assert!(settings.contains("self.settings_reduce_motion"));
+    assert!(settings.contains("settings_toggle::toggle_row"));
+    assert!(settings.contains("studio.settings.motion.reduced_on"));
+    assert!(settings.contains("studio.settings.motion.reduced_off"));
+    assert!(!settings.contains("self.save_setting(\"reduce_motion\""));
+    assert!(!settings.contains("ui.checkbox("));
+    assert!(model.contains("motion_control: \"token-toggle-row\""));
+}
+
+#[test]
 fn settings_ai_provider_uses_token_toggle_row() {
     let settings = include_str!("views/settings.rs");
     let toggle = include_str!("views/settings_toggle.rs");

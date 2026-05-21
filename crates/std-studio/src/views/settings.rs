@@ -93,6 +93,20 @@ impl StudioEguiApp {
             );
             ui.add_space(Space::SM as f32);
             self.render_theme_profile(ui);
+            ui.add_space(Space::SM as f32);
+            if let ToggleRowEvent::Toggle(enabled) = settings_toggle::toggle_row(
+                ui,
+                i18n::t("studio.settings.motion.reduce"),
+                i18n::t("studio.settings.motion.reduce.detail"),
+                self.settings_reduce_motion,
+            ) {
+                self.settings_reduce_motion = enabled;
+                self.status = if enabled {
+                    i18n::t("studio.settings.motion.reduced_on").to_string()
+                } else {
+                    i18n::t("studio.settings.motion.reduced_off").to_string()
+                };
+            }
         });
     }
 
