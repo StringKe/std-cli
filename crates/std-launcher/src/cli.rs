@@ -254,36 +254,53 @@ mod tests {
         };
 
         assert!(report.pass(), "{}", report.summary());
-        assert!(report.summary().contains("launcher_preview_smoke PASS"));
-        assert!(report.summary().contains("light-empty"));
-        assert!(report.summary().contains("dark-results"));
-        assert!(report.summary().contains("light-no-results"));
-        assert!(report.summary().contains("dark-searching"));
-        assert!(report.summary().contains("light-loading"));
-        assert!(report.summary().contains("dark-loading"));
-        assert!(report.summary().contains("light-executing"));
-        assert!(report.summary().contains("light-defer"));
-        assert!(report.summary().contains("dark-defer"));
-        assert!(report.summary().contains("light-error"));
-        assert!(report.summary().contains("dark-action-panel"));
-        assert!(report.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
-        assert!(report
-            .summary()
-            .contains("panel_token=bg/surface-0:#FAFBFD"));
-        assert!(report
-            .summary()
-            .contains("panel_token=bg/surface-0:#1C1E22"));
-        assert!(report
-            .summary()
-            .contains("search_token=bg/surface-1:#F2F5F8"));
-        assert!(report
-            .summary()
-            .contains("search_token=bg/surface-1:#24272C"));
-        assert!(report
-            .summary()
-            .contains("selected_token=accent/weak:#0A6BFF@31"));
-        assert!(report
-            .summary()
-            .contains("selected_token=accent/weak:#4E9CFF@46"));
+        assert_preview_summary_has_required_states(&report.summary());
+        assert_preview_summary_has_theme_tokens(&report.summary());
+        assert_preview_summary_has_state_surfaces(&report.summary());
+    }
+
+    fn assert_preview_summary_has_required_states(summary: &str) {
+        for expected in [
+            "launcher_preview_smoke PASS",
+            "light-empty",
+            "dark-results",
+            "light-no-results",
+            "dark-searching",
+            "light-loading",
+            "dark-loading",
+            "light-executing",
+            "light-defer",
+            "dark-defer",
+            "light-error",
+            "dark-action-panel",
+            "STD_ALLOW_UI_PREVIEW=1",
+        ] {
+            assert!(summary.contains(expected), "{expected}");
+        }
+    }
+
+    fn assert_preview_summary_has_theme_tokens(summary: &str) {
+        for expected in [
+            "panel_token=bg/surface-0:#FAFBFD",
+            "panel_token=bg/surface-0:#1C1E22",
+            "search_token=bg/surface-1:#F2F5F8",
+            "search_token=bg/surface-1:#24272C",
+            "selected_token=accent/weak:#0A6BFF@31",
+            "selected_token=accent/weak:#4E9CFF@46",
+        ] {
+            assert!(summary.contains(expected), "{expected}");
+        }
+    }
+
+    fn assert_preview_summary_has_state_surfaces(summary: &str) {
+        for expected in [
+            "state_surface=fills_panel:true,search:panel-as-search-surface",
+            "body:loading-progress-token-surface",
+            "feedback:status-warning-weak",
+            "feedback:status-danger-weak",
+            "popover:bg/surface-1+elev/2",
+        ] {
+            assert!(summary.contains(expected), "{expected}");
+        }
     }
 }

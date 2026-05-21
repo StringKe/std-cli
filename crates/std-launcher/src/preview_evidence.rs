@@ -14,11 +14,13 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     let theme = ThemeMode::resolve(scenario.theme);
     let surface = preview_surface_summary(theme);
     let affordance = LauncherAffordanceSummary::for_scenario(scenario.state);
+    let state_surface = PreviewStateSurface::for_state(&state, scenario.state);
     let passes = valid
         && preview_surface_passes(&surface, scenario.theme)
-        && affordance.passes(scenario.state);
+        && affordance.passes(scenario.state)
+        && state_surface.passes(scenario.state);
     format!(
-        "{}={}:phase={:?},results={},feedback={},{},{}",
+        "{}={}:phase={:?},results={},feedback={},{},{},{}",
         scenario.label(),
         if passes { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -30,6 +32,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .map(|feedback| feedback.title.as_str())
             .unwrap_or("none"),
         affordance.summary(),
+        state_surface.summary(),
         surface.summary()
     )
 }
@@ -151,6 +154,51 @@ struct PreviewSurfaceSummary {
     selected: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewStateSurface {
+    fills_panel: bool,
+    search_bar: &'static str,
+    body: &'static str,
+    action_bar: &'static str,
+    feedback: &'static str,
+    popover: &'static str,
+}
+
+impl PreviewStateSurface {
+    fn for_state(state: &LauncherState, state_name: &str) -> Self {
+        Self {
+            fills_panel: ui_metrics::panel_frame_fills_viewport(state),
+            search_bar: search_surface_for_state(state_name),
+            body: body_surface_for_state(state_name),
+            action_bar: action_bar_surface_for_state(state_name),
+            feedback: feedback_surface_for_state(state_name),
+            popover: popover_surface_for_state(state_name),
+        }
+    }
+
+    fn passes(&self, state_name: &str) -> bool {
+        self.fills_panel
+            && self.search_bar != "carrier"
+            && self.body != "carrier"
+            && self.action_bar != "carrier"
+            && self.feedback != "carrier"
+            && self.popover != "carrier"
+            && state_surface_contract_matches(state_name, self)
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "state_surface=fills_panel:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
+            self.fills_panel,
+            self.search_bar,
+            self.body,
+            self.action_bar,
+            self.feedback,
+            self.popover
+        )
+    }
+}
+
 impl PreviewSurfaceSummary {
     fn summary(&self) -> String {
         format!(
@@ -175,6 +223,62 @@ fn preview_surface_passes(surface: &PreviewSurfaceSummary, theme: &str) -> bool 
                 && surface.selected == "#0A6BFF@31"
         }
         _ => false,
+    }
+}
+
+fn search_surface_for_state(state_name: &str) -> &'static str {
+    match state_name {
+        "collapsed" => "panel-as-search-surface",
+        _ => "bg/surface-1",
+    }
+}
+
+fn body_surface_for_state(state_name: &str) -> &'static str {
+    match state_name {
+        "collapsed" => "not-rendered",
+        "no-results" => "empty-state-token-surface",
+        "loading" | "searching" => "loading-progress-token-surface",
+        "defer" | "error" => "feedback-token-surface",
+        "action-panel" => "results-token-surface",
+        _ => "results-token-surface",
+    }
+}
+
+fn action_bar_surface_for_state(state_name: &str) -> &'static str {
+    match state_name {
+        "collapsed" => "not-rendered",
+        _ => "bg/surface-1",
+    }
+}
+
+fn feedback_surface_for_state(state_name: &str) -> &'static str {
+    match state_name {
+        "defer" => "status-warning-weak",
+        "error" => "status-danger-weak",
+        _ => "not-rendered",
+    }
+}
+
+fn popover_surface_for_state(state_name: &str) -> &'static str {
+    match state_name {
+        "action-panel" => "bg/surface-1+elev/2",
+        _ => "not-rendered",
+    }
+}
+
+fn state_surface_contract_matches(state_name: &str, surface: &PreviewStateSurface) -> bool {
+    match state_name {
+        "collapsed" => {
+            surface.search_bar == "panel-as-search-surface"
+                && surface.body == "not-rendered"
+                && surface.action_bar == "not-rendered"
+        }
+        "defer" => surface.feedback == "status-warning-weak",
+        "error" => surface.feedback == "status-danger-weak",
+        "action-panel" => surface.popover == "bg/surface-1+elev/2",
+        "no-results" => surface.body == "empty-state-token-surface",
+        "loading" | "searching" => surface.body == "loading-progress-token-surface",
+        _ => surface.body == "results-token-surface",
     }
 }
 
