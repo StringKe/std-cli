@@ -131,7 +131,8 @@ fn assert_workflow_builder_controls_summary(summary: &str) {
     assert!(summary.contains("control=token-toolbar-buttons"));
     assert!(summary.contains("primary=plan|test"));
     assert!(summary.contains("shortcuts=save|simulate|test|history"));
-    assert!(summary.contains("a11y=button-label-shortcut-purpose"));
+    assert!(summary.contains("a11y=textbox-goal-value,button-label-shortcut-purpose"));
+    assert!(summary.contains("focus-default=steps-list"));
     assert!(summary.contains("builder_properties_contract=properties=token-field-rows"));
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("primary=add|update"));

@@ -254,6 +254,10 @@ impl StudioSmokeReport {
             && self
                 .builder_toolbar_contract
                 .contains("a11y=button-label-shortcut-purpose")
+            && self.builder_toolbar_contract.contains("textbox-goal-value")
+            && self
+                .builder_toolbar_contract
+                .contains("focus-default=steps-list")
             && self
                 .builder_properties_contract
                 .contains("properties=token-field-rows")

@@ -35,11 +35,18 @@ pub(crate) fn render(
     let mut response = WorkflowToolbarResponse::new();
     ui.horizontal_wrapped(|ui| {
         ui.set_min_height(super::workflow_builder_metrics::BUILDER_TOOLBAR_HEIGHT);
-        ui.add_sized(
+        let goal_response = ui.add_sized(
             super::workflow_builder_metrics::goal_input_size(ui.available_width()),
             egui::TextEdit::singleline(workflow_goal)
                 .hint_text(i18n::t("studio.workflow_builder.goal.hint")),
         );
+        goal_response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::TextEdit,
+                ui.is_enabled(),
+                workflow_goal_a11y_label(workflow_goal),
+            )
+        });
         render_primary_actions(ui, &mut response, can_cancel);
         render_secondary_contract(ui);
     });
@@ -189,7 +196,16 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
 }
 
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=button-label-shortcut-purpose;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+}
+
+fn workflow_goal_a11y_label(goal: &str) -> String {
+    let value = if goal.trim().is_empty() {
+        "empty"
+    } else {
+        goal.trim()
+    };
+    format!("Workflow goal, text box, value {value}")
 }
 
 fn toolbar_button_a11y_label(label: &str, shortcut: Option<&str>) -> String {
@@ -207,7 +223,7 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=button-label-shortcut-purpose;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
         );
     }
 
@@ -225,6 +241,8 @@ mod tests {
         assert!(implementation.contains("toolbar_button_with_shortcut"));
         assert!(implementation.contains("input::studio_workflow_test().label()"));
         assert!(implementation.contains("input::studio_workflow_simulate().label()"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("workflow_goal_a11y_label"));
         assert!(implementation.contains("Color::accent_weak"));
         assert!(implementation.contains("Color::bg_surface_1"));
         assert!(implementation.contains("WidgetType::Button"));
@@ -241,6 +259,18 @@ mod tests {
         assert_eq!(
             toolbar_button_a11y_label("Plan", None),
             "Plan, toolbar button"
+        );
+    }
+
+    #[test]
+    fn workflow_goal_a11y_label_exposes_textbox_value() {
+        assert_eq!(
+            workflow_goal_a11y_label("ship ui"),
+            "Workflow goal, text box, value ship ui"
+        );
+        assert_eq!(
+            workflow_goal_a11y_label("   "),
+            "Workflow goal, text box, value empty"
         );
     }
 }
