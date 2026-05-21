@@ -7,6 +7,8 @@ pub(crate) struct PluginListRowModel {
     pub(crate) status: String,
     pub(crate) source: String,
     pub(crate) enable: String,
+    pub(crate) enable_state: String,
+    pub(crate) review_prompt: String,
     pub(crate) detail: String,
 }
 
@@ -26,12 +28,15 @@ impl PluginListRowModel {
             .find(|report| plugin_result_matches_report(result, report))
             .map(|report| report.status.to_string())
             .unwrap_or_else(|| "UNKNOWN".to_string());
+        let enable_state = enable_state(&status, &result.action.action_type);
         Self {
             name,
             version: "0.1.0".to_string(),
-            status,
+            status: status.clone(),
             source: source_label(result),
             enable: enable_label(&result.action.action_type),
+            review_prompt: review_prompt(&status, &enable_state),
+            enable_state,
             detail: result.action.description.clone(),
         }
     }
@@ -39,8 +44,14 @@ impl PluginListRowModel {
     #[cfg(test)]
     pub(crate) fn contract(&self) -> String {
         format!(
-            "name={};version={};status={};source={};enable={}",
-            self.name, self.version, self.status, self.source, self.enable
+            "name={};version={};status={};source={};enable={};enable_state={};review_prompt={}",
+            self.name,
+            self.version,
+            self.status,
+            self.source,
+            self.enable,
+            self.enable_state,
+            self.review_prompt
         )
     }
 }
@@ -96,6 +107,25 @@ fn enable_label(action_type: &ActionType) -> String {
     }
 }
 
+fn enable_state(status: &str, action_type: &ActionType) -> String {
+    if !matches!(action_type, ActionType::Command) {
+        return "disabled".to_string();
+    }
+    if status == "PASS" {
+        "enabled".to_string()
+    } else {
+        "review_required".to_string()
+    }
+}
+
+fn review_prompt(status: &str, enable_state: &str) -> String {
+    if enable_state == "review_required" {
+        format!("review permissions before enable: manifest {status}")
+    } else {
+        "none".to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,8 +162,33 @@ mod tests {
 
         assert_eq!(
             row.contract(),
-            "name=Studio TS Smoke;version=0.1.0;status=PASS;source=local-path;enable=enabled"
+            "name=Studio TS Smoke;version=0.1.0;status=PASS;source=local-path;enable=enabled;enable_state=enabled;review_prompt=none"
         );
         assert!(row.detail.contains("Run studio-smoke TypeScript plugin"));
+    }
+
+    #[test]
+    fn plugin_list_row_requires_review_before_enabling_unchecked_plugin() {
+        let action = Action::new(
+            "Plugin Unchecked",
+            "Unchecked plugin",
+            "When validating review prompt",
+            ActionType::Command,
+        );
+        let result = SearchResult {
+            action,
+            score: 1.0,
+            matched_fields: vec!["name".to_string()],
+        };
+
+        let row = PluginListRowModel::from_result(&result, &[]);
+
+        assert_eq!(row.status, "UNKNOWN");
+        assert_eq!(row.enable, "enabled");
+        assert_eq!(row.enable_state, "review_required");
+        assert_eq!(
+            row.review_prompt,
+            "review permissions before enable: manifest UNKNOWN"
+        );
     }
 }

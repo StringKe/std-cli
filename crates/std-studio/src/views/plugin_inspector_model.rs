@@ -5,6 +5,8 @@ pub(crate) struct PluginInspectorModel {
     pub(crate) description: String,
     pub(crate) permissions: Vec<String>,
     pub(crate) commands: Vec<String>,
+    pub(crate) enable_state: String,
+    pub(crate) review_prompt: String,
     pub(crate) audit_log: String,
 }
 
@@ -25,6 +27,12 @@ impl PluginInspectorModel {
                 .map(|result| selected_permissions(result, reports))
                 .unwrap_or_default(),
             commands,
+            enable_state: selected
+                .map(|result| selected_enable_state(result, reports))
+                .unwrap_or_else(|| "disabled".to_string()),
+            review_prompt: selected
+                .map(|result| selected_review_prompt(result, reports))
+                .unwrap_or_else(|| "none".to_string()),
             audit_log: execution
                 .map(|execution| format!("{}:{:?}", execution.action_name, execution.status))
                 .unwrap_or_else(|| "missing".to_string()),
@@ -33,10 +41,12 @@ impl PluginInspectorModel {
 
     pub(crate) fn contract(&self) -> String {
         format!(
-            "description={};permissions={};commands={};audit_log={}",
+            "description={};permissions={};commands={};enable_state={};review_prompt={};audit_log={}",
             presence(&self.description),
             self.permissions.len(),
             self.commands.len(),
+            self.enable_state,
+            presence(&self.review_prompt),
             presence(&self.audit_log)
         )
     }
@@ -57,6 +67,38 @@ fn selected_permissions(
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn selected_enable_state(result: &SearchResult, reports: &[std_core::PluginCheckReport]) -> String {
+    let status = selected_report_status(result, reports);
+    if status == "PASS" {
+        "enabled".to_string()
+    } else {
+        "review_required".to_string()
+    }
+}
+
+fn selected_review_prompt(
+    result: &SearchResult,
+    reports: &[std_core::PluginCheckReport],
+) -> String {
+    let status = selected_report_status(result, reports);
+    if status == "PASS" {
+        "none".to_string()
+    } else {
+        format!("review permissions before enable: manifest {status}")
+    }
+}
+
+fn selected_report_status(
+    result: &SearchResult,
+    reports: &[std_core::PluginCheckReport],
+) -> String {
+    reports
+        .iter()
+        .find(|report| plugin_result_matches_report(result, report))
+        .map(|report| report.status.to_string())
+        .unwrap_or_else(|| "UNKNOWN".to_string())
 }
 
 fn plugin_result_matches_report(
@@ -136,9 +178,11 @@ mod tests {
             PluginInspectorModel::from_selection(Some(&result), &[report], Some(&execution));
 
         assert_eq!(model.permissions, vec!["Code"]);
+        assert_eq!(model.enable_state, "enabled");
+        assert_eq!(model.review_prompt, "none");
         assert_eq!(
             model.contract(),
-            "description=visible;permissions=1;commands=1;audit_log=visible"
+            "description=visible;permissions=1;commands=1;enable_state=enabled;review_prompt=visible;audit_log=visible"
         );
     }
 
@@ -170,5 +214,27 @@ mod tests {
         let model = PluginInspectorModel::from_selection(Some(&result), &[report], None);
 
         assert_eq!(model.permissions, vec!["Code"]);
+    }
+
+    #[test]
+    fn inspector_model_surfaces_review_required_enable_prompt() {
+        let result = SearchResult {
+            action: Action::new(
+                "Plugin Unchecked",
+                "Unchecked plugin",
+                "When validating plugin review prompt",
+                ActionType::Command,
+            ),
+            score: 1.0,
+            matched_fields: vec!["name".to_string()],
+        };
+
+        let model = PluginInspectorModel::from_selection(Some(&result), &[], None);
+
+        assert_eq!(model.enable_state, "review_required");
+        assert_eq!(
+            model.review_prompt,
+            "review permissions before enable: manifest UNKNOWN"
+        );
     }
 }

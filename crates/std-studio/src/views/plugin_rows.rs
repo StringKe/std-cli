@@ -137,6 +137,8 @@ pub(crate) fn inspector_context_panel(ui: &mut egui::Ui, model: &PluginInspector
     );
     runtime_row(ui, "permissions", &model.permissions.join(","));
     runtime_row(ui, "commands", &model.commands.join(","));
+    runtime_row(ui, "enable", &model.enable_state);
+    runtime_row(ui, "review", &model.review_prompt);
     runtime_row(ui, "audit log", &model.audit_log);
 }
 
@@ -331,6 +333,7 @@ fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginLi
         model.status.clone(),
         model.source.clone(),
         model.enable.clone(),
+        model.enable_state.clone(),
     ];
     let mut x = rect.left() + Space::SM as f32;
     let y = rect.bottom() - row_metrics::MATCH_CHIP_BOTTOM_INSET;
