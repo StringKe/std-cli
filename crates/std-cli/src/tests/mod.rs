@@ -4,6 +4,7 @@ mod config;
 mod desktop_guard;
 mod desktop_guard_runtime;
 mod desktop_guard_scan;
+mod desktop_manual_ui_guard;
 mod index;
 mod local_content;
 mod plugin;

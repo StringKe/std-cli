@@ -77,7 +77,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 
 未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 返回 `SKIP`，不创建可见窗口。
 
-后台 UI 自动化验收可以使用 macOS AX / CGEvent / postToPid 方案，但只能作为人工 UI 验收 runner。推荐模型是先装 per-process event tap，再发送 appKitDefined primer 和 center primer，然后只向目标 PID 投递点击或键盘事件。该 runner 必须同时满足：
+后台 UI 自动化验收可以使用 macOS AX / CGEvent / postToPid 方案，但只能作为人工 UI 验收 runner。推荐模型是先装 per-process event tap，再发送 appKitDefined primer 和 center primer，然后只向目标 PID 投递点击或键盘事件。该方案只用于隔离测试窗口，禁止把用户已经打开的真实 App 当成验收目标。该 runner 必须同时满足：
 
 - `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1`
 - `STD_TEST_MODE` 未启用
@@ -95,6 +95,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为
 - CGEvent 必须写入 `windowUnderMouse`、`windowThatCanHandle` 和 field 51/58，事件路由必须保持 window id 与 harness 匹配
 - 不向用户当前 frontmost app、Terminal、1Password、WeChat 或系统设置发送事件
+- 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件，harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
 
 当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `std ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1` 和 `STD_TEST_MODE`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。

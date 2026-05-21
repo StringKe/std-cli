@@ -1,11 +1,11 @@
 use std::{fs, path::Path};
 
 use super::desktop_guard_scan::{
-    assert_order, command_sets_desktop_safe_env, forbidden_test_app_terms,
-    forbidden_test_mode_clear_terms, scan_rs_files, scan_rs_files_for_binary_spawns,
-    scan_rs_files_for_desktop_process_commands, scan_rs_files_for_raw_process_spawns,
-    scan_rs_files_for_unsafe_opt_ins, source_section, task_blocks_desktop_opt_ins,
-    task_has_std_test_mode, task_inherits_workspace_test_mode, workspace_blocks_desktop_opt_ins,
+    command_sets_desktop_safe_env, forbidden_test_app_terms, forbidden_test_mode_clear_terms,
+    scan_rs_files, scan_rs_files_for_binary_spawns, scan_rs_files_for_desktop_process_commands,
+    scan_rs_files_for_raw_process_spawns, scan_rs_files_for_unsafe_opt_ins, source_section,
+    task_blocks_desktop_opt_ins, task_has_std_test_mode, task_inherits_workspace_test_mode,
+    workspace_blocks_desktop_opt_ins,
 };
 
 #[test]
@@ -273,136 +273,4 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
             "release default quality gates must not include desktop opt-in: {forbidden}"
         );
     }
-}
-
-#[test]
-fn background_ui_smoke_contract_requires_isolated_harness() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap();
-    let cli_ui = fs::read_to_string(root.join("crates/std-cli/src/ui.rs")).unwrap();
-    let quality_doc = fs::read_to_string(root.join("docs/14_Code_Quality.md")).unwrap();
-
-    for required in [
-        "STD_TEST_MODE blocks background UI automation",
-        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
-        "isolated_background_ui_harness_only",
-        "HARNESS_BUNDLE_ID",
-        "HARNESS_WINDOW_TITLE",
-        "BACKGROUND_RUNNER",
-        "scripts/background-ui-smoke.swift",
-        "scripts/background-ui-harness.sh",
-        "required_bundle_id=",
-        "required_window_title=",
-        "harness_pid required",
-        "window_id required",
-        "/usr/bin/swift",
-        "driver_sequence=",
-        "per-process-event-tap",
-        "appKitDefined-activation-primer",
-        "window-center-primer",
-        "postToPid-target-pid-input",
-        "cursor_visual=floating_cursor_not_required_for_event_delivery",
-        "tap_order=install_previous_and_target_taps_before_primer",
-        "event_tap_then_appkit_defined_primer_then_center_primer",
-        "event_route=postToPid_target_pid_only",
-        "focus_guard=drop_previous_app_deactivation",
-        "focus_policy=allow_target_activation_only",
-        "focus_messages=raw_13_19_20",
-        "primer_start=appKitDefined_subtype_1_applicationActivated",
-        "primer_end=appKitDefined_subtype_2_applicationDeactivated",
-        "center_primer=window_center_activation_only_no_user_action",
-        "window_addressing=windowUnderMouse_windowThatCanHandle_fields_51_58",
-        "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
-        "fallback=never_frontmost_desktop_click",
-    ] {
-        assert!(
-            cli_ui.contains(required),
-            "background-smoke must keep isolated opt-in boundary: {required}"
-        );
-    }
-    for required in [
-        "per-process event tap",
-        "浮动光标不是输入机制",
-        "先安装 previous 和 target",
-        "appKitDefined primer",
-        "center primer",
-        "raw value 13、19、20",
-        "applicationActivated",
-        "applicationDeactivated",
-        "windowUnderMouse",
-        "windowThatCanHandle",
-        "field 51/58",
-        "隔离 harness",
-        "window title 白名单",
-        "scripts/background-ui-harness.sh",
-        "open -g",
-        "dev.std-cli.background-ui-harness",
-        "postToPid",
-        "用户当前 frontmost app",
-    ] {
-        assert!(
-            quality_doc.contains(required),
-            "background UI acceptance docs must describe safe harness boundary: {required}"
-        );
-    }
-
-    let runner = fs::read_to_string(root.join("scripts/background-ui-smoke.swift")).unwrap();
-    for required in [
-        "STD_TEST_MODE blocks background UI automation",
-        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
-        "CGEvent.tapCreateForPid",
-        ".headInsertEventTap",
-        "NSEvent.otherEvent",
-        "appKitDefined",
-        "NSRunningApplication(processIdentifier: config.harnessPid)",
-        "pid bundle_id outside whitelist",
-        "postToPid",
-        "mouseEventWindowUnderMousePointer",
-        "mouseEventWindowUnderMousePointerThatCanHandleThisEvent",
-        "CGEventField(rawValue: 51)",
-        "CGEventField(rawValue: 58)",
-        "requiredBundleId",
-        "requiredWindowTitle",
-    ] {
-        assert!(
-            runner.contains(required),
-            "background runner must implement isolated per-process delivery: {required}"
-        );
-    }
-}
-
-#[test]
-fn screenshot_capture_script_requires_ui_preview_opt_in() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap();
-    let body = fs::read_to_string(root.join("scripts/capture-window.sh")).unwrap();
-
-    assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
-    assert!(body.contains("capture-window SKIP"));
-    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cg-capture-window.swift");
-}
-
-#[test]
-fn screenshot_matrix_script_requires_ui_preview_opt_in() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap();
-    let body = fs::read_to_string(root.join("scripts/capture-ui-matrix.sh")).unwrap();
-
-    assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
-    assert!(body.contains("STD_TEST_MODE blocks UI preview"));
-    assert!(body.contains("std-launcher -- --ui-preview"));
-    assert!(body.contains("std-studio -- --ui-preview"));
-    assert!(body.contains("scripts/capture-window.sh"));
-    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher");
-    assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher");
-    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
 }
