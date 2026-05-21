@@ -38,6 +38,29 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
 }
 
 #[test]
+fn workspace_panes_dedupe_workflow_and_analysis_by_lexical_identity() {
+    let mut studio = test_studio();
+    let workflow = studio.open_workflow_builder(std::path::PathBuf::from("daily/workflow.json"));
+    let workflow_alias =
+        studio.open_workflow_builder(std::path::PathBuf::from("./daily/./workflow.json"));
+    let analysis = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli/src/../src"));
+    let analysis_alias = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli/src"));
+    let workflow_kind = WorkspacePaneKind::WorkflowBuilder {
+        workflow_path: std::path::PathBuf::from("./daily/./workflow.json"),
+    };
+    let analysis_kind = WorkspacePaneKind::AnalysisWorkbench {
+        entity_path: std::path::PathBuf::from("std-cli/src/../src"),
+    };
+
+    assert_eq!(workflow, workflow_alias);
+    assert_eq!(analysis, analysis_alias);
+    assert_eq!(workflow_kind.identity_key(), "workflow:daily/workflow.json");
+    assert_eq!(analysis_kind.identity_key(), "analysis:std-cli/src");
+    assert_eq!(studio.open_workspace_panes().count(), 2);
+    assert_eq!(studio.focused_pane, Some(analysis));
+}
+
+#[test]
 fn studio_cycles_workspace_pane_focus_without_losing_state() {
     let mut studio = test_studio();
     let dashboard = studio.open_workspace_pane(StudioPane::Dashboard);

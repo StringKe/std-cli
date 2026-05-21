@@ -29,6 +29,15 @@ pub(crate) fn run_workspace_pane_smoke(
     let settings_kind = pane_kind_label(studio, settings);
     let settings_key = pane_content_key(studio, settings);
     let duplicate_settings = studio.open_settings_pane();
+    let alias_workflow = studio.open_workflow_builder(std::path::PathBuf::from(
+        "./workspace-smoke/./workflow.json",
+    ));
+    let alias_workflow_duplicate =
+        studio.open_workflow_builder(std::path::PathBuf::from("workspace-smoke/workflow.json"));
+    let alias_analysis =
+        studio.open_analysis_workbench(std::path::PathBuf::from("workspace-smoke/src/../src"));
+    let alias_analysis_duplicate =
+        studio.open_analysis_workbench(std::path::PathBuf::from("workspace-smoke/src"));
     let plugin = studio.open_plugin_manager_pane();
     let focus_switched = studio.focused_pane == Some(plugin);
     let focused_title = pane_title(studio, plugin);
@@ -85,7 +94,9 @@ pub(crate) fn run_workspace_pane_smoke(
         focus_switched,
         closed,
         focus_restored,
-        deduplicated: settings == duplicate_settings,
+        deduplicated: settings == duplicate_settings
+            && alias_workflow == alias_workflow_duplicate
+            && alias_analysis == alias_analysis_duplicate,
         content_keys,
         focused_title,
         restored_title,

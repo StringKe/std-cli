@@ -27,6 +27,23 @@ pub enum WorkspacePaneKind {
 }
 
 impl WorkspacePaneKind {
+    pub fn identity_key(&self) -> String {
+        match self {
+            WorkspacePaneKind::Pane(pane) => format!("pane:{}", pane.content_key()),
+            WorkspacePaneKind::WorkflowBuilder { workflow_path } => {
+                format!("workflow:{}", lexical_path_key(workflow_path))
+            }
+            WorkspacePaneKind::AnalysisWorkbench { entity_path } => {
+                format!("analysis:{}", lexical_path_key(entity_path))
+            }
+            WorkspacePaneKind::AppManager => "singleton:apps".to_string(),
+            WorkspacePaneKind::MemoryBrowser => "singleton:memory".to_string(),
+            WorkspacePaneKind::ExecutionHistory => "singleton:history".to_string(),
+            WorkspacePaneKind::PluginManager => "singleton:plugins".to_string(),
+            WorkspacePaneKind::Settings => "singleton:settings".to_string(),
+        }
+    }
+
     pub fn title(&self) -> String {
         match self {
             WorkspacePaneKind::Pane(pane) => pane.label().to_string(),
@@ -115,6 +132,40 @@ fn display_name(path: &std::path::Path) -> String {
         .and_then(|name| name.to_str())
         .map(ToString::to_string)
         .unwrap_or_else(|| path.display().to_string())
+}
+
+fn lexical_path_key(path: &std::path::Path) -> String {
+    let mut parts = Vec::new();
+    let mut prefix = String::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::Prefix(value) => {
+                prefix = value.as_os_str().to_string_lossy().into()
+            }
+            std::path::Component::RootDir => prefix.push('/'),
+            std::path::Component::CurDir => {}
+            std::path::Component::ParentDir => {
+                if parts.last().is_some_and(|part| part != "..") {
+                    parts.pop();
+                } else {
+                    parts.push("..".to_string());
+                }
+            }
+            std::path::Component::Normal(value) => parts.push(value.to_string_lossy().into()),
+        }
+    }
+    if parts.is_empty() {
+        return if prefix.is_empty() {
+            ".".to_string()
+        } else {
+            prefix
+        };
+    }
+    if prefix.is_empty() || prefix == "/" {
+        format!("{prefix}{}", parts.join("/"))
+    } else {
+        format!("{prefix}/{}", parts.join("/"))
+    }
 }
 
 impl StudioApp {

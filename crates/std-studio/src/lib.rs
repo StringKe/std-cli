@@ -272,10 +272,11 @@ impl StudioApp {
     }
 
     fn open_pane(&mut self, kind: WorkspacePaneKind) -> WorkspacePaneId {
+        let identity_key = kind.identity_key();
         if let Some(index) = self
             .workspace_panes
             .iter()
-            .position(|pane| pane.kind == kind)
+            .position(|pane| pane.kind.identity_key() == identity_key)
         {
             let serial = self.next_focus_serial();
             let existing = &mut self.workspace_panes[index];
