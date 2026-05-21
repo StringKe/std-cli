@@ -273,6 +273,24 @@ fn launcher_hotkey_registration_requires_desktop_opt_in() {
     );
 }
 
+#[test]
+fn std_test_mode_overrides_inherited_desktop_opt_ins() {
+    let previous_test_mode = std::env::var("STD_TEST_MODE").ok();
+    let previous_desktop = std::env::var("STD_ALLOW_DESKTOP_AUTOMATION").ok();
+    let previous_preview = std::env::var("STD_ALLOW_UI_PREVIEW").ok();
+
+    std::env::set_var("STD_TEST_MODE", "1");
+    std::env::set_var("STD_ALLOW_DESKTOP_AUTOMATION", "1");
+    std::env::set_var("STD_ALLOW_UI_PREVIEW", "1");
+
+    assert!(!std_core::desktop_automation_allowed());
+    assert!(std_core::std_test_mode_enabled());
+
+    restore_env("STD_TEST_MODE", previous_test_mode);
+    restore_env("STD_ALLOW_DESKTOP_AUTOMATION", previous_desktop);
+    restore_env("STD_ALLOW_UI_PREVIEW", previous_preview);
+}
+
 fn assert_order(body: &str, first: &str, second: &str) {
     let first_index = body.find(first).unwrap();
     let second_index = body.find(second).unwrap();
@@ -280,6 +298,13 @@ fn assert_order(body: &str, first: &str, second: &str) {
         first_index < second_index,
         "{first} must appear before {second}"
     );
+}
+
+fn restore_env(key: &str, value: Option<String>) {
+    match value {
+        Some(value) => std::env::set_var(key, value),
+        None => std::env::remove_var(key),
+    }
 }
 
 fn forbidden_test_app_terms() -> Vec<String> {
