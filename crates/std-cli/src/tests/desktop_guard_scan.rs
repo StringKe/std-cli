@@ -276,6 +276,9 @@ pub(crate) fn scan_rs_files_for_desktop_process_commands(dir: &Path, violations:
 
 fn forbidden_desktop_process_terms() -> Vec<String> {
     vec![
+        "Command::new(\"op\")".to_string(),
+        "Command::new(\"/usr/local/bin/op\")".to_string(),
+        "Command::new(\"/opt/homebrew/bin/op\")".to_string(),
         "Command::new(\"open\")".to_string(),
         "Command::new(\"/usr/bin/open\")".to_string(),
         "Command::new(\"osascript\")".to_string(),

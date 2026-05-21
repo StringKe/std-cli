@@ -233,6 +233,28 @@ fn test_mode_blocks_named_sensitive_desktop_targets_before_runner() {
 }
 
 #[test]
+fn test_mode_blocks_vault_cli_before_runner() {
+    let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
+    let recorded = Arc::clone(&commands);
+    let core =
+        StdCore::with_config_and_command_runner(StdConfig::default(), move |program, args| {
+            recorded
+                .lock()
+                .unwrap()
+                .push((program.to_string(), args.to_vec()));
+            Err(std::io::Error::other("runner must not execute vault CLI"))
+        });
+
+    for program in ["op", "/usr/local/bin/op", "/opt/homebrew/bin/op"] {
+        let args = vec!["item".to_string(), "list".to_string()];
+        let output = core.run_external_command(program, &args);
+        assert!(output.is_err(), "{program}");
+        assert!(output.unwrap_err().to_string().contains(program));
+    }
+    assert!(commands.lock().unwrap().is_empty());
+}
+
+#[test]
 fn launcher_user_gate_allows_app_open_outside_test_mode() {
     assert!(user_desktop_open_allowed_for_test_mode(
         ExternalExecutionMode::LauncherUser,

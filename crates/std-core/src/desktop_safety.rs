@@ -36,6 +36,9 @@ fn blocked_program_terms() -> Vec<String> {
     vec![
         ["op", "en"].concat(),
         ["/usr/bin/", "op", "en"].concat(),
+        "op".to_string(),
+        "/usr/local/bin/op".to_string(),
+        "/opt/homebrew/bin/op".to_string(),
         ["osa", "script"].concat(),
         ["/usr/bin/", "osa", "script"].concat(),
         "screencapture".to_string(),
