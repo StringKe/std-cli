@@ -6,6 +6,46 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.title") => Some("Settings"),
         (Locale::ZhCn, "studio.settings.detail") => Some("共享配置与解析路径"),
         (Locale::EnUs, "studio.settings.detail") => Some("Shared configuration and resolved paths"),
+        (Locale::ZhCn, "studio.settings.nav.title") => Some("分类"),
+        (Locale::EnUs, "studio.settings.nav.title") => Some("Categories"),
+        (Locale::ZhCn, "studio.settings.nav.detail") => Some("内部工作区"),
+        (Locale::EnUs, "studio.settings.nav.detail") => Some("Workspace pane"),
+        (Locale::ZhCn, "studio.settings.category.appearance") => Some("外观"),
+        (Locale::EnUs, "studio.settings.category.appearance") => Some("Appearance"),
+        (Locale::ZhCn, "studio.settings.category.appearance.detail") => Some("主题与视觉 token"),
+        (Locale::EnUs, "studio.settings.category.appearance.detail") => {
+            Some("Theme and visual tokens")
+        }
+        (Locale::ZhCn, "studio.settings.category.hotkeys") => Some("快捷键"),
+        (Locale::EnUs, "studio.settings.category.hotkeys") => Some("Hotkeys"),
+        (Locale::ZhCn, "studio.settings.category.hotkeys.detail") => {
+            Some("Launcher 与 Studio 输入")
+        }
+        (Locale::EnUs, "studio.settings.category.hotkeys.detail") => {
+            Some("Launcher and Studio input")
+        }
+        (Locale::ZhCn, "studio.settings.category.ai_provider") => Some("AI Provider"),
+        (Locale::EnUs, "studio.settings.category.ai_provider") => Some("AI Provider"),
+        (Locale::ZhCn, "studio.settings.category.ai_provider.detail") => Some("Planner 与辅助能力"),
+        (Locale::EnUs, "studio.settings.category.ai_provider.detail") => Some("Planner and assist"),
+        (Locale::ZhCn, "studio.settings.category.index") => Some("Index"),
+        (Locale::EnUs, "studio.settings.category.index") => Some("Index"),
+        (Locale::ZhCn, "studio.settings.category.index.detail") => Some("四层索引路径"),
+        (Locale::EnUs, "studio.settings.category.index.detail") => Some("Four-layer index paths"),
+        (Locale::ZhCn, "studio.settings.category.plugins") => Some("Plugins"),
+        (Locale::EnUs, "studio.settings.category.plugins") => Some("Plugins"),
+        (Locale::ZhCn, "studio.settings.category.plugins.detail") => Some("插件与本地存储"),
+        (Locale::EnUs, "studio.settings.category.plugins.detail") => {
+            Some("Plugins and local storage")
+        }
+        (Locale::ZhCn, "studio.settings.category.privacy") => Some("Privacy"),
+        (Locale::EnUs, "studio.settings.category.privacy") => Some("Privacy"),
+        (Locale::ZhCn, "studio.settings.category.privacy.detail") => Some("本地优先边界"),
+        (Locale::EnUs, "studio.settings.category.privacy.detail") => Some("Local-first boundary"),
+        (Locale::ZhCn, "studio.settings.category.about") => Some("About"),
+        (Locale::EnUs, "studio.settings.category.about") => Some("About"),
+        (Locale::ZhCn, "studio.settings.category.about.detail") => Some("产品与宿主策略"),
+        (Locale::EnUs, "studio.settings.category.about.detail") => Some("Product and host policy"),
         (Locale::ZhCn, "studio.settings.runtime.title") => Some("运行时"),
         (Locale::EnUs, "studio.settings.runtime.title") => Some("Runtime"),
         (Locale::ZhCn, "studio.settings.runtime.detail") => Some("Launcher 与 AI"),
@@ -22,6 +62,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.theme.label") => Some("Theme"),
         (Locale::ZhCn, "studio.settings.theme.save") => Some("保存主题"),
         (Locale::EnUs, "studio.settings.theme.save") => Some("Save Theme"),
+        (Locale::ZhCn, "studio.settings.theme.contract") => {
+            Some("light / dark / system 使用同一套 token")
+        }
+        (Locale::EnUs, "studio.settings.theme.contract") => {
+            Some("light / dark / system share one token set")
+        }
+        (Locale::ZhCn, "studio.settings.hotkey.contract") => {
+            Some("焦点与 IME 优先，热键只显式注册")
+        }
+        (Locale::EnUs, "studio.settings.hotkey.contract") => {
+            Some("Focus and IME first, hotkeys register by explicit opt-in")
+        }
         (Locale::ZhCn, "studio.settings.storage.title") => Some("存储"),
         (Locale::EnUs, "studio.settings.storage.title") => Some("Storage"),
         (Locale::ZhCn, "studio.settings.storage.detail") => Some("配置路径与数据根目录"),
@@ -42,6 +94,16 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.paths.detail") => Some("Current storage layout"),
         (Locale::ZhCn, "studio.settings.saved") => Some("已保存"),
         (Locale::EnUs, "studio.settings.saved") => Some("saved"),
+        (Locale::ZhCn, "studio.settings.privacy.contract") => {
+            Some("默认 smoke 不启动 App、Terminal、截图或外部 runner")
+        }
+        (Locale::EnUs, "studio.settings.privacy.contract") => {
+            Some("Default smoke never starts apps, Terminal, screenshots, or external runners")
+        }
+        (Locale::ZhCn, "studio.settings.about.product") => Some("std-cli Studio"),
+        (Locale::EnUs, "studio.settings.about.product") => Some("std-cli Studio"),
+        (Locale::ZhCn, "studio.settings.about.surface") => Some("单宿主 egui workspace pane"),
+        (Locale::EnUs, "studio.settings.about.surface") => Some("Single-host egui workspace pane"),
         _ => None,
     }
 }
@@ -50,6 +112,22 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
     match key {
         "studio.settings.title" => Some("Settings"),
         "studio.settings.detail" => Some("Shared configuration and resolved paths"),
+        "studio.settings.nav.title" => Some("Categories"),
+        "studio.settings.nav.detail" => Some("Workspace pane"),
+        "studio.settings.category.appearance" => Some("Appearance"),
+        "studio.settings.category.appearance.detail" => Some("Theme and visual tokens"),
+        "studio.settings.category.hotkeys" => Some("Hotkeys"),
+        "studio.settings.category.hotkeys.detail" => Some("Launcher and Studio input"),
+        "studio.settings.category.ai_provider" => Some("AI Provider"),
+        "studio.settings.category.ai_provider.detail" => Some("Planner and assist"),
+        "studio.settings.category.index" => Some("Index"),
+        "studio.settings.category.index.detail" => Some("Four-layer index paths"),
+        "studio.settings.category.plugins" => Some("Plugins"),
+        "studio.settings.category.plugins.detail" => Some("Plugins and local storage"),
+        "studio.settings.category.privacy" => Some("Privacy"),
+        "studio.settings.category.privacy.detail" => Some("Local-first boundary"),
+        "studio.settings.category.about" => Some("About"),
+        "studio.settings.category.about.detail" => Some("Product and host policy"),
         "studio.settings.runtime.title" => Some("Runtime"),
         "studio.settings.runtime.detail" => Some("Launcher and AI"),
         "studio.settings.hotkey.label" => Some("Launcher hotkey"),
@@ -58,6 +136,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.ai.save" => Some("Save AI"),
         "studio.settings.theme.label" => Some("Theme"),
         "studio.settings.theme.save" => Some("Save Theme"),
+        "studio.settings.theme.contract" => Some("light / dark / system share one token set"),
+        "studio.settings.hotkey.contract" => {
+            Some("Focus and IME first, hotkeys register by explicit opt-in")
+        }
         "studio.settings.storage.title" => Some("Storage"),
         "studio.settings.storage.detail" => Some("Config path and data root"),
         "studio.settings.data_dir.label" => Some("Data dir"),
@@ -66,6 +148,11 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.paths.title" => Some("Resolved Paths"),
         "studio.settings.paths.detail" => Some("Current storage layout"),
         "studio.settings.saved" => Some("saved"),
+        "studio.settings.privacy.contract" => {
+            Some("Default smoke never starts apps, Terminal, screenshots, or external runners")
+        }
+        "studio.settings.about.product" => Some("std-cli Studio"),
+        "studio.settings.about.surface" => Some("Single-host egui workspace pane"),
         _ => None,
     }
 }

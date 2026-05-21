@@ -11,6 +11,7 @@ mod plugins;
 pub(crate) mod row_metrics;
 pub(crate) mod row_paint;
 mod settings;
+pub(crate) mod settings_model;
 mod settings_rows;
 mod workflow_builder;
 mod workflow_builder_actions;

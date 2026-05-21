@@ -1,8 +1,16 @@
-use crate::{ui, views::settings_rows, StudioEguiApp};
+use crate::{
+    ui,
+    views::{
+        settings_model::SettingsCategory,
+        settings_rows::{self, SettingsCategoryEvent},
+    },
+    StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 
-const SETTINGS_PANEL_GAP: f32 = Space::SM as f32;
+const SETTINGS_NAV_WIDTH: f32 = 240.0;
+const SETTINGS_PANEL_GAP: f32 = Space::MD as f32;
 
 impl StudioEguiApp {
     pub(crate) fn render_settings(&mut self, ui: &mut egui::Ui) {
@@ -16,49 +24,94 @@ impl StudioEguiApp {
 
     fn render_settings_workspace(&mut self, ui: &mut egui::Ui) {
         let available_width = ui.available_width();
-        if available_width < 900.0 {
-            self.render_runtime_settings(ui);
-            ui.add_space(SETTINGS_PANEL_GAP);
-            self.render_storage_settings(ui);
-            ui.add_space(SETTINGS_PANEL_GAP);
-            self.render_resolved_paths(ui);
+        if available_width < 760.0 {
+            self.render_settings_category_rail(ui);
+            ui.add_space(Space::SM as f32);
+            self.render_selected_settings_category(ui);
             return;
         }
-        let column_width = (available_width - SETTINGS_PANEL_GAP * 2.0) / 3.0;
+        let content_width = (available_width - SETTINGS_NAV_WIDTH - SETTINGS_PANEL_GAP).max(360.0);
         ui.horizontal_top(|ui| {
             ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
+                egui::vec2(SETTINGS_NAV_WIDTH, 0.0),
                 egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_runtime_settings(ui),
+                |ui| self.render_settings_category_rail(ui),
             );
             ui.add_space(SETTINGS_PANEL_GAP);
             ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
+                egui::vec2(content_width, 0.0),
                 egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_storage_settings(ui),
-            );
-            ui.add_space(SETTINGS_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_resolved_paths(ui),
+                |ui| self.render_selected_settings_category(ui),
             );
         });
     }
 
-    fn render_runtime_settings(&mut self, ui: &mut egui::Ui) {
+    fn render_settings_category_rail(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
-                i18n::t("studio.settings.runtime.title"),
-                i18n::t("studio.settings.runtime.detail"),
+                i18n::t("studio.settings.nav.title"),
+                i18n::t("studio.settings.nav.detail"),
             );
+            for category in SettingsCategory::ALL {
+                if let SettingsCategoryEvent::Select(category) =
+                    settings_rows::category_row(ui, category, category == self.settings_category)
+                {
+                    self.settings_category = category;
+                }
+            }
+        });
+    }
+
+    fn render_selected_settings_category(&mut self, ui: &mut egui::Ui) {
+        match self.settings_category {
+            SettingsCategory::Appearance => self.render_appearance_settings(ui),
+            SettingsCategory::Hotkeys => self.render_hotkey_settings(ui),
+            SettingsCategory::AiProvider => self.render_ai_settings(ui),
+            SettingsCategory::Index => self.render_index_settings(ui),
+            SettingsCategory::Plugins => self.render_plugin_settings(ui),
+            SettingsCategory::Privacy => self.render_privacy_settings(ui),
+            SettingsCategory::About => self.render_about_settings(ui),
+        }
+    }
+
+    fn render_appearance_settings(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            self.render_category_header(ui, SettingsCategory::Appearance);
+            ui.label(i18n::t("studio.settings.theme.label"));
+            ui.text_edit_singleline(&mut self.settings_theme);
+            if ui::quiet_button(ui, i18n::t("studio.settings.theme.save")).clicked() {
+                self.save_setting("theme", self.settings_theme.clone());
+            }
+            ui.add_space(Space::SM as f32);
+            ui::chip(
+                ui,
+                i18n::t("studio.settings.theme.contract"),
+                ui::selected_bg(ui.ctx()),
+            );
+        });
+    }
+
+    fn render_hotkey_settings(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            self.render_category_header(ui, SettingsCategory::Hotkeys);
             ui.label(i18n::t("studio.settings.hotkey.label"));
             ui.text_edit_singleline(&mut self.settings_hotkey);
             if ui::quiet_button(ui, i18n::t("studio.settings.hotkey.save")).clicked() {
                 self.save_setting("launcher_hotkey", self.settings_hotkey.clone());
             }
-            ui.add_space(Space::XS as f32);
+            ui.add_space(Space::SM as f32);
+            ui::chip(
+                ui,
+                i18n::t("studio.settings.hotkey.contract"),
+                ui::selected_bg(ui.ctx()),
+            );
+        });
+    }
+
+    fn render_ai_settings(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            self.render_category_header(ui, SettingsCategory::AiProvider);
             ui.checkbox(
                 &mut self.settings_enable_ai,
                 i18n::t("studio.settings.ai.enable"),
@@ -66,29 +119,26 @@ impl StudioEguiApp {
             if ui::quiet_button(ui, i18n::t("studio.settings.ai.save")).clicked() {
                 self.save_setting("enable_ai", self.settings_enable_ai.to_string());
             }
-            ui.add_space(Space::XS as f32);
-            ui.label(i18n::t("studio.settings.theme.label"));
-            ui.text_edit_singleline(&mut self.settings_theme);
-            if ui::quiet_button(ui, i18n::t("studio.settings.theme.save")).clicked() {
-                self.save_setting("theme", self.settings_theme.clone());
-            }
         });
     }
 
-    fn render_storage_settings(&mut self, ui: &mut egui::Ui) {
+    fn render_index_settings(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.settings.storage.title"),
-                i18n::t("studio.settings.storage.detail"),
-            );
+            self.render_category_header(ui, SettingsCategory::Index);
+            self.render_resolved_paths(ui);
+        });
+    }
+
+    fn render_plugin_settings(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            self.render_category_header(ui, SettingsCategory::Plugins);
             settings_rows::config_path_row(ui, &self.app.config_path().display().to_string());
             ui.label(i18n::t("studio.settings.data_dir.label"));
             ui.text_edit_singleline(&mut self.settings_data_dir);
             if ui::quiet_button(ui, i18n::t("studio.settings.data_dir.save")).clicked() {
                 self.save_setting("data_dir", self.settings_data_dir.clone());
             }
-            ui.add_space(Space::XS as f32);
+            ui.add_space(Space::SM as f32);
             ui::chip(
                 ui,
                 i18n::t("studio.settings.storage.note"),
@@ -97,17 +147,37 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_resolved_paths(&self, ui: &mut egui::Ui) {
+    fn render_privacy_settings(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
+            self.render_category_header(ui, SettingsCategory::Privacy);
+            ui::chip(
                 ui,
-                i18n::t("studio.settings.paths.title"),
-                i18n::t("studio.settings.paths.detail"),
+                i18n::t("studio.settings.privacy.contract"),
+                ui::selected_bg(ui.ctx()),
             );
-            for (key, value) in self.resolved_paths() {
-                settings_rows::resolved_path_row(ui, key, &value);
-            }
         });
+    }
+
+    fn render_about_settings(&self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            self.render_category_header(ui, SettingsCategory::About);
+            ui.label(i18n::t("studio.settings.about.product"));
+            ui.label(i18n::t("studio.settings.about.surface"));
+        });
+    }
+
+    fn render_category_header(&self, ui: &mut egui::Ui, category: SettingsCategory) {
+        ui::section_header(
+            ui,
+            i18n::t(category.title_key()),
+            i18n::t(category.detail_key()),
+        );
+    }
+
+    fn render_resolved_paths(&self, ui: &mut egui::Ui) {
+        for (key, value) in self.resolved_paths() {
+            settings_rows::resolved_path_row(ui, key, &value);
+        }
     }
 
     fn resolved_paths(&self) -> Vec<(&'static str, String)> {

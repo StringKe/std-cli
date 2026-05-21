@@ -17,6 +17,7 @@ pub(crate) struct WorkspacePaneSmoke {
     pub(crate) management_sequence: String,
     pub(crate) focus_switch_path: String,
     pub(crate) close_restore_path: String,
+    pub(crate) settings_contract: String,
 }
 
 pub(crate) fn run_workspace_pane_smoke(
@@ -59,6 +60,13 @@ pub(crate) fn run_workspace_pane_smoke(
         close_target.value(),
         studio.focused_pane.map(|id| id.value()).unwrap_or_default()
     );
+    let settings_contract = crate::views::settings_model::settings_contract();
+    let settings_contract = format!(
+        "surface={},navigation={},categories={}",
+        settings_contract.surface,
+        settings_contract.navigation,
+        settings_contract.categories.join("|")
+    );
     let host_policy =
         "single-borderless-egui-viewport;native-child-windows=false;detached-panels=false"
             .to_string();
@@ -87,6 +95,7 @@ pub(crate) fn run_workspace_pane_smoke(
         management_sequence,
         focus_switch_path,
         close_restore_path,
+        settings_contract,
     }
 }
 

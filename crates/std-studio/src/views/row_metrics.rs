@@ -24,6 +24,7 @@ pub(crate) const MEMORY_META_ROW_HEIGHT: f32 = 52.0;
 pub(crate) const MEMORY_LAST_ROW_HEIGHT: f32 = 36.0;
 pub(crate) const SETTINGS_PATH_ROW_HEIGHT: f32 = 52.0;
 pub(crate) const SETTINGS_CONFIG_ROW_HEIGHT: f32 = 40.0;
+pub(crate) const SETTINGS_CATEGORY_ROW_HEIGHT: f32 = 48.0;
 pub(crate) const OPS_GATE_ROW_HEIGHT: f32 = 58.0;
 pub(crate) const TEXT_INSET_X: f32 = Space::SM as f32;
 pub(crate) const CLIP_INSET_X: f32 = Space::TWO_XS as f32;
