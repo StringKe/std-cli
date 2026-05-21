@@ -84,6 +84,8 @@ pub(crate) fn render_launcher_panel(
     let mut hide_requested = false;
     let ctx = ui.ctx().clone();
     let panel_rect = ui.max_rect();
+    ui.set_min_width(panel_rect.width());
+    ui.set_min_height(panel_rect.height());
     egui::Frame::new()
         .fill(Color::bg_surface_0(&ctx))
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
@@ -92,6 +94,7 @@ pub(crate) fn render_launcher_panel(
         .inner_margin(egui::Margin::same(ui_metrics::panel_inner_padding() as i8))
         .show(ui, |ui| {
             let padding = ui_metrics::panel_inner_padding();
+            ui.set_min_height(panel_rect.height() - padding * 2.0);
             ui.set_width(panel_rect.width() - padding * 2.0);
             render_search_bar(ui, state, &mut hide_requested);
             if !ui_metrics::panel_is_expanded(state) {
@@ -309,6 +312,15 @@ mod tests {
 
         assert_eq!(frame.fill, egui::Color32::TRANSPARENT);
         assert_eq!(frame.stroke, egui::Stroke::NONE);
+    }
+
+    #[test]
+    fn launcher_panel_forces_frame_to_computed_viewport_size() {
+        let source = include_str!("ui.rs");
+
+        assert!(source.contains("ui.set_min_width(panel_rect.width())"));
+        assert!(source.contains("ui.set_min_height(panel_rect.height())"));
+        assert!(source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)"));
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {

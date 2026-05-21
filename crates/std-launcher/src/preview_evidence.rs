@@ -43,8 +43,9 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         && viewport.x >= rect.width()
         && body >= 0.0
         && content_clearance >= 0.0;
+    let panel_frame = launcher_panel_frame_contract();
     format!(
-        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={}",
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={}",
         scenario.label(),
         if fits { "PASS" } else { "FAIL" },
         viewport.x.round() as u32,
@@ -53,8 +54,21 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         rect.height().round() as u32,
         body.round() as u32,
         (viewport.y - rect.max.y).round() as i32,
-        content_clearance.round() as i32
+        content_clearance.round() as i32,
+        panel_frame
     )
+}
+
+fn launcher_panel_frame_contract() -> &'static str {
+    let source = include_str!("ui.rs");
+    if source.contains("ui.set_min_width(panel_rect.width())")
+        && source.contains("ui.set_min_height(panel_rect.height())")
+        && source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)")
+    {
+        "fills_viewport"
+    } else {
+        "natural_content_height"
+    }
 }
 
 fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {

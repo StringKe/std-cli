@@ -66,8 +66,6 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
         .sizes
         .iter()
         .any(|size| size.starts_with("dark-error=PASS")));
-    assert!(report.summary().contains("preview_sizes=light-empty=PASS"));
-    assert!(report.summary().contains("bottom_clearance=0"));
     assert!(report
         .states
         .iter()
@@ -110,6 +108,16 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert!(report.summary().contains("blocked-in-STD_TEST_MODE"));
     assert!(report.summary().contains("no-default-window"));
     assert!(report.summary().contains("no-product-viewport"));
+}
+
+#[test]
+fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
+    let report = LauncherPreviewSmokeReport::new();
+
+    assert!(report.pass(), "{}", report.summary());
+    assert!(report.summary().contains("preview_sizes=light-empty=PASS"));
+    assert!(report.summary().contains("bottom_clearance=0"));
+    assert!(report.summary().contains("panel_frame=fills_viewport"));
 }
 
 #[test]
