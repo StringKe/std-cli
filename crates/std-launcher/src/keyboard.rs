@@ -210,7 +210,7 @@ impl LauncherState {
     fn handle_escape_key(&mut self) -> Option<std_types::ActionExecution> {
         if self.action_panel.open {
             self.close_action_panel();
-            self.focus_section = LauncherFocusSection::Results;
+            self.focus_section = LauncherFocusSection::Search;
         } else if self.focus_section == LauncherFocusSection::Feedback {
             self.focus_section = LauncherFocusSection::Search;
         } else if !self.view.query.is_empty() {

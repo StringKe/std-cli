@@ -60,7 +60,8 @@ fn escape_closes_action_panel_before_clearing_query() {
     assert!(!state.action_panel.open);
     assert_eq!(state.view.query, "open");
     assert!(state.controller.visible);
-    assert_eq!(state.focus_section, LauncherFocusSection::Results);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
 }
 
 #[test]
