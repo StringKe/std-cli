@@ -1,4 +1,5 @@
 use crate::{
+    layout::{HOST_CHROME_HEIGHT, STATUS_BAR_HEIGHT, STATUS_DIVIDER_HEIGHT, STATUS_DIVIDER_WIDTH},
     shell_parts::{panel_frame, path_label},
     ui, StudioEguiApp,
 };
@@ -10,7 +11,7 @@ impl StudioEguiApp {
     pub(crate) fn render_shell(&mut self, ctx: &egui::Context) {
         self.handle_overlay_keyboard(ctx);
         egui::TopBottomPanel::top("studio_app_chrome")
-            .exact_height(52.0)
+            .exact_height(HOST_CHROME_HEIGHT)
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
             .show(ctx, |ui| self.render_app_chrome(ui));
         egui::SidePanel::left("studio_nav")
@@ -33,7 +34,7 @@ impl StudioEguiApp {
                 .show(ctx, |ui| self.render_bottom_panel(ui));
         }
         egui::TopBottomPanel::bottom("studio_status")
-            .exact_height(24.0)
+            .exact_height(STATUS_BAR_HEIGHT)
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_1(ctx)))
             .show(ctx, |ui| self.render_status_bar(ui));
         egui::CentralPanel::default()
@@ -116,52 +117,100 @@ impl StudioEguiApp {
     }
 
     fn render_status_bar(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal_wrapped(|ui| {
-            ui.label(
-                egui::RichText::new(self.app.active_pane.content_key())
-                    .color(ui::muted_text(ui.ctx())),
+        ui.set_height(STATUS_BAR_HEIGHT);
+        ui.horizontal(|ui| {
+            status_text(ui, self.app.active_pane.content_key());
+            status_divider(ui);
+            status_text(
+                ui,
+                &format!(
+                    "{} {}",
+                    self.app.open_workspace_panes().count(),
+                    i18n::t("studio.shell.panes")
+                ),
             );
-            ui.separator();
-            ui.label(format!(
-                "{} {}",
-                self.app.open_workspace_panes().count(),
-                i18n::t("studio.shell.panes")
-            ));
-            ui.separator();
-            ui.label(
-                egui::RichText::new(self.app.workspace_policy.summary())
-                    .color(ui::muted_text(ui.ctx())),
+            status_divider(ui);
+            status_text(ui, self.app.workspace_policy.summary());
+            status_divider(ui);
+            status_text(
+                ui,
+                if self.layout.inspector_open {
+                    i18n::t("studio.shell.inspector")
+                } else {
+                    i18n::t("studio.shell.inspector_hidden")
+                },
             );
-            ui.separator();
-            ui.label(if self.layout.inspector_open {
-                i18n::t("studio.shell.inspector")
-            } else {
-                i18n::t("studio.shell.inspector_hidden")
-            });
-            ui.separator();
-            ui.label(if self.layout.bottom_panel_open {
-                i18n::t("studio.shell.bottom_panel")
-            } else {
-                i18n::t("studio.shell.bottom_hidden")
-            });
-            ui.separator();
-            ui.label(format!(
-                "{} {}",
-                self.app.plugin_manager.manifest_paths.len(),
-                i18n::t("studio.shell.plugins")
-            ));
-            ui.separator();
-            ui.label(format!(
-                "{} {}",
-                self.app.memory_browser.memories.len(),
-                i18n::t("studio.shell.memories")
-            ));
+            status_divider(ui);
+            status_text(
+                ui,
+                if self.layout.bottom_panel_open {
+                    i18n::t("studio.shell.bottom_panel")
+                } else {
+                    i18n::t("studio.shell.bottom_hidden")
+                },
+            );
+            status_divider(ui);
+            status_text(
+                ui,
+                &format!(
+                    "{} {}",
+                    self.app.plugin_manager.manifest_paths.len(),
+                    i18n::t("studio.shell.plugins")
+                ),
+            );
+            status_divider(ui);
+            status_text(
+                ui,
+                &format!(
+                    "{} {}",
+                    self.app.memory_browser.memories.len(),
+                    i18n::t("studio.shell.memories")
+                ),
+            );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.label(
-                    egui::RichText::new(i18n::t("studio.shell.external_deferred"))
-                        .color(ui::muted_text(ui.ctx())),
-                );
+                status_text(ui, i18n::t("studio.shell.external_deferred"));
             });
         });
+    }
+}
+
+fn status_text(ui: &mut egui::Ui, text: &str) {
+    ui.label(
+        egui::RichText::new(text)
+            .font(std_egui::tokens::Text::caption())
+            .color(ui::muted_text(ui.ctx())),
+    );
+}
+
+fn status_divider(ui: &mut egui::Ui) {
+    let ctx = ui.ctx().clone();
+    let (rect, _response) = ui.allocate_exact_size(
+        egui::Vec2::new(STATUS_DIVIDER_WIDTH, STATUS_DIVIDER_HEIGHT),
+        egui::Sense::hover(),
+    );
+    ui.painter().line_segment(
+        [rect.center_top(), rect.center_bottom()],
+        egui::Stroke::new(1.0, std_egui::tokens::Color::stroke_divider(&ctx)),
+    );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn studio_shell_uses_documented_host_and_status_heights() {
+        assert_eq!(HOST_CHROME_HEIGHT, 52.0);
+        assert_eq!(STATUS_BAR_HEIGHT, 24.0);
+    }
+
+    #[test]
+    fn status_bar_renderer_uses_tokenized_caption_text_and_custom_dividers() {
+        let source = include_str!("shell.rs");
+
+        assert!(source.contains("status_text(ui, self.app.active_pane.content_key())"));
+        assert!(source.contains("Text::caption()"));
+        assert!(source.contains("status_divider(ui)"));
+        assert!(!source.contains("ui.separator()"));
     }
 }

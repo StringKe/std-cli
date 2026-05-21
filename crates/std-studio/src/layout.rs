@@ -1,5 +1,20 @@
 use eframe::egui;
 
+pub(crate) const HOST_CHROME_HEIGHT: f32 = 52.0;
+pub(crate) const STATUS_BAR_HEIGHT: f32 = 24.0;
+pub(crate) const STATUS_DIVIDER_WIDTH: f32 = 1.0;
+pub(crate) const STATUS_DIVIDER_HEIGHT: f32 = 16.0;
+pub(crate) const SIDEBAR_DEFAULT_WIDTH: f32 = 240.0;
+pub(crate) const SIDEBAR_MIN_WIDTH: f32 = 200.0;
+pub(crate) const SIDEBAR_MAX_WIDTH: f32 = 360.0;
+pub(crate) const SIDEBAR_COLLAPSED_WIDTH: f32 = 48.0;
+pub(crate) const INSPECTOR_DEFAULT_WIDTH: f32 = 320.0;
+pub(crate) const INSPECTOR_MIN_WIDTH: f32 = 280.0;
+pub(crate) const INSPECTOR_MAX_WIDTH: f32 = 480.0;
+pub(crate) const BOTTOM_PANEL_DEFAULT_HEIGHT: f32 = 240.0;
+pub(crate) const BOTTOM_PANEL_MIN_HEIGHT: f32 = 160.0;
+pub(crate) const BOTTOM_PANEL_MAX_HEIGHT: f32 = 480.0;
+
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct StudioLayoutState {
     pub sidebar_open: bool,
@@ -26,9 +41,9 @@ impl Default for StudioLayoutState {
             command_query: String::new(),
             quick_open_query: String::new(),
             overlay_selected: 0,
-            sidebar_width: 240.0,
-            inspector_width: 320.0,
-            bottom_panel_height: 240.0,
+            sidebar_width: SIDEBAR_DEFAULT_WIDTH,
+            inspector_width: INSPECTOR_DEFAULT_WIDTH,
+            bottom_panel_height: BOTTOM_PANEL_DEFAULT_HEIGHT,
         }
     }
 }
@@ -91,18 +106,21 @@ impl StudioLayoutState {
 
     pub(crate) fn sidebar_width(&self) -> f32 {
         if self.sidebar_open {
-            self.sidebar_width.clamp(200.0, 360.0)
+            self.sidebar_width
+                .clamp(SIDEBAR_MIN_WIDTH, SIDEBAR_MAX_WIDTH)
         } else {
-            48.0
+            SIDEBAR_COLLAPSED_WIDTH
         }
     }
 
     pub(crate) fn inspector_width(&self) -> f32 {
-        self.inspector_width.clamp(280.0, 480.0)
+        self.inspector_width
+            .clamp(INSPECTOR_MIN_WIDTH, INSPECTOR_MAX_WIDTH)
     }
 
     pub(crate) fn bottom_panel_height(&self) -> f32 {
-        self.bottom_panel_height.clamp(160.0, 480.0)
+        self.bottom_panel_height
+            .clamp(BOTTOM_PANEL_MIN_HEIGHT, BOTTOM_PANEL_MAX_HEIGHT)
     }
 }
 
@@ -125,6 +143,9 @@ mod tests {
         assert_eq!(layout.sidebar_width(), 240.0);
         assert_eq!(layout.inspector_width(), 320.0);
         assert_eq!(layout.bottom_panel_height(), 240.0);
+        assert_eq!(HOST_CHROME_HEIGHT, 52.0);
+        assert_eq!(STATUS_BAR_HEIGHT, 24.0);
+        assert_eq!(STATUS_DIVIDER_HEIGHT, 16.0);
     }
 
     #[test]
