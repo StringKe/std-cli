@@ -106,6 +106,28 @@ fn ime_composition_blocks_focus_section_shortcuts() {
 }
 
 #[test]
+fn ime_composition_blocks_launcher_action_navigation_and_escape() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    let selected_before = state.view.selected;
+    let action_panel_before = state.action_panel.selected;
+
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, true);
+    state.handle_keyboard_input(LauncherKey::ArrowDown, true);
+    state.handle_keyboard_input(LauncherKey::Escape, true);
+
+    assert!(execution.is_none());
+    assert!(state.controller.visible);
+    assert!(state.action_panel.open);
+    assert_eq!(state.view.query, "terminal");
+    assert_eq!(state.view.selected, selected_before);
+    assert_eq!(state.action_panel.selected, action_panel_before);
+    assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+}
+
+#[test]
 fn no_match_enter_uses_ask_ai_fallback() {
     let mut state = LauncherState::new();
     state.update_query("missing launcher item");
