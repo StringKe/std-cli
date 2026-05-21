@@ -1,6 +1,7 @@
 use crate::{
     ui,
     views::{
+        settings_binding,
         settings_model::SettingsCategory,
         settings_rows::{self, SettingsCategoryEvent},
         settings_toggle::{self, ToggleRowEvent},
@@ -110,9 +111,13 @@ impl StudioEguiApp {
     fn render_hotkey_settings(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             self.render_category_header(ui, SettingsCategory::Hotkeys);
-            ui.label(i18n::t("studio.settings.hotkey.label"));
-            ui.text_edit_singleline(&mut self.settings_hotkey);
-            if ui::quiet_button(ui, i18n::t("studio.settings.hotkey.save")).clicked() {
+            let binding = settings_binding::binding_editor_row(
+                ui,
+                i18n::t("studio.settings.hotkey.label"),
+                i18n::t("studio.settings.hotkey.contract"),
+                &mut self.settings_hotkey,
+            );
+            if binding.save_clicked {
                 self.save_setting("launcher_hotkey", self.settings_hotkey.clone());
             }
             ui.add_space(Space::SM as f32);

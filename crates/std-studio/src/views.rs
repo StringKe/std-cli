@@ -11,6 +11,7 @@ mod plugins;
 pub(crate) mod row_metrics;
 pub(crate) mod row_paint;
 mod settings;
+mod settings_binding;
 pub(crate) mod settings_model;
 mod settings_rows;
 mod settings_toggle;

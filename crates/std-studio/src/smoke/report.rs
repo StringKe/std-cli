@@ -153,6 +153,9 @@ impl StudioSmokeReport {
                 .contains("hotkey_reset=reset-to-default")
             && self
                 .pane_settings_contract
+                .contains("hotkey_control=token-binding-row")
+            && self
+                .pane_settings_contract
                 .contains("theme_modes=system|dark|light")
             && self
                 .pane_settings_contract

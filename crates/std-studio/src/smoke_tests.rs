@@ -57,6 +57,7 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("pane_close_restore_path=close:"));
     assert!(summary.contains("hotkey_source=default-or-user"));
     assert!(summary.contains("hotkey_reset=reset-to-default"));
+    assert!(summary.contains("hotkey_control=token-binding-row"));
     assert!(summary.contains("theme_modes=system|dark|light"));
     assert!(summary.contains("theme_control=segmented-control"));
     assert!(summary.contains("ai_control=token-toggle-row"));

@@ -63,6 +63,7 @@ pub(crate) struct SettingsContract {
     pub(crate) navigation: &'static str,
     pub(crate) hotkey_source: &'static str,
     pub(crate) hotkey_reset: &'static str,
+    pub(crate) hotkey_control: &'static str,
     pub(crate) theme_modes: Vec<&'static str>,
     pub(crate) theme_control: &'static str,
     pub(crate) ai_control: &'static str,
@@ -78,6 +79,7 @@ pub(crate) fn settings_contract() -> SettingsContract {
         navigation: "left-category-rail",
         hotkey_source: "default-or-user",
         hotkey_reset: "reset-to-default",
+        hotkey_control: "token-binding-row",
         theme_modes: vec!["system", "dark", "light"],
         theme_control: "segmented-control",
         ai_control: "token-toggle-row",
@@ -108,6 +110,7 @@ mod tests {
         assert_eq!(contract.navigation, "left-category-rail");
         assert_eq!(contract.hotkey_source, "default-or-user");
         assert_eq!(contract.hotkey_reset, "reset-to-default");
+        assert_eq!(contract.hotkey_control, "token-binding-row");
         assert_eq!(contract.theme_modes, vec!["system", "dark", "light"]);
         assert_eq!(contract.theme_control, "segmented-control");
         assert_eq!(contract.ai_control, "token-toggle-row");

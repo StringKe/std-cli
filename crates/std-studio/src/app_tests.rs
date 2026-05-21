@@ -309,6 +309,7 @@ fn studio_command_sources_use_real_app_state() {
 fn settings_hotkeys_render_registry_source_and_reset() {
     let settings = include_str!("views/settings.rs");
     let rows = include_str!("views/settings_rows.rs");
+    let binding = include_str!("views/settings_binding.rs");
     let registry = std_core::shortcuts::shortcut_registry(&StdConfig {
         launcher_hotkey: "Cmd+Space".to_string(),
         ..StdConfig::default()
@@ -321,7 +322,13 @@ fn settings_hotkeys_render_registry_source_and_reset() {
     assert_eq!(launcher.source.label(), "user");
     assert!(launcher.resettable);
     assert!(settings.contains("std_core::shortcuts::shortcut_registry"));
+    assert!(settings.contains("settings_binding::binding_editor_row"));
+    assert!(settings.contains("self.save_setting(\"launcher_hotkey\""));
     assert!(settings.contains("ShortcutRowEvent::Reset(\"launcher.global.toggle\")"));
+    assert!(!settings.contains("ui.text_edit_singleline(&mut self.settings_hotkey)"));
+    assert!(binding.contains("WidgetType::TextEdit"));
+    assert!(binding.contains("row_paint::paint_row_frame"));
+    assert!(binding.contains("Color::accent_weak"));
     assert!(rows.contains("shortcut.source.label()"));
     assert!(rows.contains("shortcut.default_binding"));
     assert!(rows.contains("shortcut_a11y_label"));

@@ -71,12 +71,13 @@ pub(crate) fn run_workspace_pane_smoke(
     );
     let settings_contract = crate::views::settings_model::settings_contract();
     let settings_contract = format!(
-        "surface={},navigation={},categories={},hotkey_source={},hotkey_reset={},theme_modes={},theme_control={},ai_control={}",
+        "surface={},navigation={},categories={},hotkey_source={},hotkey_reset={},hotkey_control={},theme_modes={},theme_control={},ai_control={}",
         settings_contract.surface,
         settings_contract.navigation,
         settings_contract.categories.join("|"),
         settings_contract.hotkey_source,
         settings_contract.hotkey_reset,
+        settings_contract.hotkey_control,
         settings_contract.theme_modes.join("|"),
         settings_contract.theme_control,
         settings_contract.ai_control
