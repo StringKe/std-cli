@@ -168,12 +168,6 @@ fn execute_app_launch(
 ) -> Result<ActionExecution, CoreError> {
     match entry.metadata.get("path") {
         Some(path) => Ok(run_open_path(core, entry, path, created_at)),
-        None if entry.action.name == "Open Terminal" => Ok(run_shell_command(
-            core,
-            entry,
-            "open -a Terminal",
-            created_at,
-        )),
         None => Ok(needs_external_runner(entry, created_at)),
     }
 }

@@ -69,6 +69,14 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
 
     assert!(report.pass(), "{summary}");
     assert_eq!(report.scenarios.len(), 14);
+    assert_eq!(report.sizes.len(), report.scenarios.len());
+    assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
+    assert_preview_summary_has_scenarios(&summary);
+    assert_preview_summary_has_surfaces(&summary);
+    assert_preview_summary_has_viewport_policy(&summary);
+}
+
+fn assert_preview_summary_has_scenarios(summary: &str) {
     assert!(summary.contains("studio_preview_smoke PASS"));
     assert!(summary.contains("dark-dashboard"));
     assert!(summary.contains("dark-workflow"));
@@ -83,6 +91,19 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     assert!(summary.contains("light-settings"));
     assert!(summary.contains("dark-panes"));
     assert!(summary.contains("light-panes"));
+}
+
+fn assert_preview_summary_has_surfaces(summary: &str) {
+    assert!(summary.contains("canvas=#1C1E22,panel=#24272C"));
+    assert!(summary.contains("canvas=#FAFBFD,panel=#F2F5F8"));
+    assert!(summary.contains("selected=#4E9CFF@46"));
+    assert!(summary.contains("selected=#0A6BFF@31"));
+}
+
+fn assert_preview_summary_has_viewport_policy(summary: &str) {
+    assert!(summary.contains("preview_sizes=dark-dashboard=PASS"));
+    assert!(summary.contains("host=1280x800,min=1080x640"));
+    assert!(summary.contains("native_child_windows=false,detached_panels=false"));
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));

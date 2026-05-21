@@ -120,6 +120,23 @@ fn binary_test_mode_blocks_registered_app_launch() {
 }
 
 #[test]
+fn binary_test_mode_blocks_builtin_terminal_action() {
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = write_config(temp.path());
+
+    let trigger = run_std(
+        &config_path,
+        &["trigger", "Open Terminal", "--allow-external"],
+    );
+    assert!(trigger.status.success(), "{}", command_stderr(&trigger));
+
+    let stdout = command_stdout(&trigger);
+    assert!(stdout.contains("\"action_name\": \"Open Terminal\""));
+    assert!(stdout.contains("\"status\": \"NeedsExternalRunner\""));
+    assert!(!stdout.contains("\"status\": \"Completed\""));
+}
+
+#[test]
 fn binary_test_mode_blocks_fixture_desktop_app_names() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = write_config(temp.path());

@@ -209,7 +209,14 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "bottom_clearance",
         "selected=",
     ] {
-        check_text(&launcher, required)?;
+        let launcher_evidence =
+            read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;
+        if launcher.contains(required) || launcher_evidence.contains(required) {
+            continue;
+        }
+        return Err(CliError::Doctor(format!(
+            "required text missing: {required}"
+        )));
     }
     let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
     for required in [
@@ -221,6 +228,10 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "light-operations",
         "dark-settings",
         "light-panes",
+        "preview_size_summary",
+        "canvas={},panel={},selected={}",
+        "host={},min={},workspace={}",
+        "native_child_windows={},detached_panels={}",
     ] {
         check_text(&studio, required)?;
     }

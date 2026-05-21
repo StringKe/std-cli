@@ -1,8 +1,11 @@
-use crate::{viewport::studio_native_options, StudioEguiApp, StudioPane};
+use crate::{
+    viewport::{studio_native_options, STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
+    StudioEguiApp, StudioPane,
+};
 use eframe::egui;
 use std::env;
 use std_core::{StdConfig, StdCore};
-use std_egui::tokens::ThemeMode;
+use std_egui::tokens::{apply_theme, Color, ThemeMode};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewConfig {
@@ -22,6 +25,7 @@ pub(crate) struct StudioPreviewSmokeReport {
     pub(crate) scenarios: Vec<String>,
     pub(crate) commands: Vec<String>,
     pub(crate) states: Vec<String>,
+    pub(crate) sizes: Vec<String>,
     pub(crate) capture_contract: &'static str,
 }
 
@@ -40,6 +44,10 @@ impl StudioPreviewSmokeReport {
                 .iter()
                 .map(|scenario| preview_state_summary(scenario))
                 .collect(),
+            sizes: scenarios
+                .iter()
+                .map(|scenario| preview_size_summary(scenario))
+                .collect(),
             scenarios,
             capture_contract: preview_capture_contract(),
         }
@@ -49,16 +57,18 @@ impl StudioPreviewSmokeReport {
         self.scenarios == preview_matrix()
             && self.commands.len() == self.scenarios.len()
             && self.states.iter().all(|state| state.contains("PASS"))
+            && self.sizes.iter().all(|size| size.contains("PASS"))
             && self.capture_contract == preview_capture_contract()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_capture_contract={}",
+            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\npreview_capture_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios.join(","),
             self.commands.join(";"),
             self.states.join(";"),
+            self.sizes.join(";"),
             self.capture_contract
         )
     }
@@ -232,11 +242,35 @@ fn preview_state_summary(scenario: &str) -> String {
     let app = seeded_preview_app(theme, name);
     let valid = matches!(theme, "dark" | "light") && preview_state_passes(&app, name);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={}",
+        "{scenario}={}:pane={:?},workspace={},status={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
-        app.status
+        app.status,
+        preview_surface_summary(theme)
+    )
+}
+
+fn preview_size_summary(scenario: &str) -> String {
+    let Some((theme, name)) = scenario.split_once('-') else {
+        return format!("{scenario}=FAIL");
+    };
+    let app = seeded_preview_app(theme, name);
+    let host = format_window_size(STUDIO_WINDOW_SIZE);
+    let min = format_window_size(STUDIO_MIN_WINDOW_SIZE);
+    let valid = matches!(theme, "dark" | "light")
+        && !app.app.workspace_policy.allows_native_child_windows()
+        && !app.app.workspace_policy.allows_detached_panels()
+        && host == "1280x800"
+        && min == "1080x640";
+    format!(
+        "{scenario}={}:host={},min={},workspace={},native_child_windows={},detached_panels={}",
+        if valid { "PASS" } else { "FAIL" },
+        host,
+        min,
+        app.app.open_workspace_panes().count(),
+        app.app.workspace_policy.allows_native_child_windows(),
+        app.app.workspace_policy.allows_detached_panels()
     )
 }
 
@@ -264,6 +298,35 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
         }
         _ => false,
     }
+}
+
+fn preview_surface_summary(theme: &str) -> String {
+    let ctx = egui::Context::default();
+    apply_theme(&ctx, ThemeMode::resolve(theme));
+    format!(
+        "canvas={},panel={},selected={}",
+        color_hex(Color::bg_surface_0(&ctx)),
+        color_hex(Color::bg_surface_1(&ctx)),
+        color_hex_alpha(Color::accent_weak(&ctx))
+    )
+}
+
+fn format_window_size(size: [f32; 2]) -> String {
+    format!("{}x{}", size[0] as u32, size[1] as u32)
+}
+
+fn color_hex(color: egui::Color32) -> String {
+    format!("#{:02X}{:02X}{:02X}", color.r(), color.g(), color.b())
+}
+
+fn color_hex_alpha(color: egui::Color32) -> String {
+    format!(
+        "#{:02X}{:02X}{:02X}@{}",
+        color.r(),
+        color.g(),
+        color.b(),
+        color.a()
+    )
 }
 
 pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
