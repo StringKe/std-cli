@@ -16,6 +16,7 @@ mod workflow_builder_actions;
 mod workflow_builder_metrics;
 mod workflow_builder_properties;
 mod workflow_builder_status;
+mod workflow_builder_toolbar;
 mod workflow_rows;
 mod workflows;
 

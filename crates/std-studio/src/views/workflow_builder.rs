@@ -2,7 +2,7 @@ use crate::{
     ui,
     views::{
         workflow_builder_metrics, workflow_builder_properties, workflow_builder_status,
-        workflow_rows,
+        workflow_builder_toolbar, workflow_rows,
     },
     StudioEguiApp,
 };
@@ -55,26 +55,23 @@ impl StudioEguiApp {
     }
 
     fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal_wrapped(|ui| {
-            ui.set_min_height(workflow_builder_metrics::BUILDER_TOOLBAR_HEIGHT);
-            ui.add_sized(
-                workflow_builder_metrics::goal_input_size(ui.available_width()),
-                egui::TextEdit::singleline(&mut self.workflow_goal)
-                    .hint_text(i18n::t("studio.workflow_builder.goal.hint")),
-            );
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.plan")).clicked() {
-                self.plan_workflow_from_goal();
+        let response = workflow_builder_toolbar::render(ui, &mut self.workflow_goal);
+        for action in response.actions {
+            match action {
+                workflow_builder_toolbar::WorkflowToolbarAction::Plan => {
+                    self.plan_workflow_from_goal();
+                }
+                workflow_builder_toolbar::WorkflowToolbarAction::Save => {
+                    self.save_planned_workflow();
+                }
+                workflow_builder_toolbar::WorkflowToolbarAction::Simulate => {
+                    self.preview_active_workflow();
+                }
+                workflow_builder_toolbar::WorkflowToolbarAction::Test => {
+                    self.run_active_workflow();
+                }
             }
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.simulate")).clicked() {
-                self.preview_active_workflow();
-            }
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.run")).clicked() {
-                self.run_active_workflow();
-            }
-            if ui::quiet_button(ui, i18n::t("studio.workflow_builder.save")).clicked() {
-                self.save_planned_workflow();
-            }
-        });
+        }
     }
 
     fn render_builder_steps(&mut self, ui: &mut egui::Ui) {
