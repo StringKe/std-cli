@@ -146,4 +146,22 @@ mod tests {
         );
         assert_ne!(target, state.focus_area.focus_id());
     }
+
+    #[test]
+    fn analysis_focus_area_ids_cover_all_regions() {
+        let ids = AnalysisFocusArea::all().map(AnalysisFocusArea::focus_id);
+
+        assert_eq!(ids.len(), 5);
+        for (index, id) in ids.iter().enumerate() {
+            assert!(
+                !ids[index + 1..].iter().any(|next| next == id),
+                "focus id must be unique for {:?}",
+                AnalysisFocusArea::all()[index]
+            );
+        }
+        assert_ne!(
+            AnalysisFocusArea::Content.focus_id(),
+            AnalysisFocusArea::Coverage.focus_id()
+        );
+    }
 }

@@ -1,4 +1,4 @@
-use crate::{analysis_rows, ui};
+use crate::{analysis_rows, analysis_state::AnalysisFocusArea, ui};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 use std_index::{IndexCoverageReport, IndexDocument};
@@ -12,9 +12,16 @@ pub(crate) struct AnalysisTabRenderState<'a> {
     pub(crate) answer: &'a str,
     pub(crate) search_output: &'a str,
     pub(crate) relations_graph_mode: bool,
+    pub(crate) focus_area: AnalysisFocusArea,
 }
 
 pub(crate) fn render_tab_content(ui: &mut egui::Ui, state: AnalysisTabRenderState<'_>) {
+    focus_sentinel(
+        ui,
+        AnalysisFocusArea::Content,
+        "Analysis content region",
+        state.focus_area,
+    );
     match state.active_tab {
         AnalysisWorkbenchTab::Overview => render_overview(ui, state.model, state.document),
         AnalysisWorkbenchTab::Components => render_components(ui, state.document),
@@ -25,6 +32,12 @@ pub(crate) fn render_tab_content(ui: &mut egui::Ui, state: AnalysisTabRenderStat
         AnalysisWorkbenchTab::Qa => render_qa(ui, state.model, state.answer),
     }
     ui.add_space(Space::XS as f32);
+    focus_sentinel(
+        ui,
+        AnalysisFocusArea::Coverage,
+        "Analysis coverage region",
+        state.focus_area,
+    );
     render_coverage_layers(ui, state.model);
     if let Some(coverage) = state.coverage {
         render_coverage_report(ui, coverage);
@@ -108,6 +121,24 @@ fn render_overview_cards(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) 
             });
         }
     });
+}
+
+fn focus_sentinel(
+    ui: &mut egui::Ui,
+    area: AnalysisFocusArea,
+    label: &'static str,
+    focus_area: AnalysisFocusArea,
+) {
+    let response = ui.interact(
+        egui::Rect::from_min_size(ui.cursor().min, egui::Vec2::ZERO),
+        area.focus_id(),
+        egui::Sense::focusable_noninteractive(),
+    );
+    if focus_area == area {
+        response.request_focus();
+    }
+    response
+        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), label));
 }
 
 fn render_coverage_layers(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {

@@ -215,6 +215,7 @@ impl StudioEguiApp {
             answer: &self.analysis.answer,
             search_output: &self.analysis.search_output,
             relations_graph_mode: self.analysis.relations_graph_mode,
+            focus_area: self.analysis.focus_area,
         }
     }
 
