@@ -61,7 +61,7 @@ impl eframe::App for LauncherApp {
             }
         }
 
-        if input::escape().pressed(ctx) {
+        if !input::ime_composing(ctx) && input::escape().pressed(ctx) {
             apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
         }
 
@@ -174,5 +174,12 @@ mod tests {
         let profile = app.theme_profile.unwrap();
         assert_eq!(profile.requested, ThemeMode::Light);
         assert_eq!(profile.effective, std_egui::tokens::EffectiveTheme::Light);
+    }
+
+    #[test]
+    fn launcher_app_global_escape_respects_ime_composition() {
+        let source = include_str!("app.rs");
+
+        assert!(source.contains("!input::ime_composing(ctx) && input::escape().pressed(ctx)"));
     }
 }
