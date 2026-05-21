@@ -51,6 +51,10 @@ impl LauncherFeedback {
             ],
         }
     }
+
+    pub fn status_label(&self) -> &str {
+        self.title.as_str()
+    }
 }
 
 fn feedback_title(status: &ActionExecutionStatus) -> String {

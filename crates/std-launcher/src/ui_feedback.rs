@@ -136,20 +136,39 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                 && state.view.selected_feedback_action == index;
             match action {
                 LauncherFeedbackAction::Copy => {
-                    if feedback_button(ui, i18n::t("launcher.feedback.copy"), selected).clicked() {
+                    if feedback_button(
+                        ui,
+                        i18n::t("launcher.feedback.copy"),
+                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::Copy),
+                        selected,
+                    )
+                    .clicked()
+                    {
                         if let Some(execution) = state.copy_feedback_to_clipboard_model() {
                             ui.ctx().copy_text(execution.message);
                         }
                     }
                 }
                 LauncherFeedbackAction::Retry => {
-                    if feedback_button(ui, i18n::t("launcher.feedback.retry"), selected).clicked() {
+                    if feedback_button(
+                        ui,
+                        i18n::t("launcher.feedback.retry"),
+                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::Retry),
+                        selected,
+                    )
+                    .clicked()
+                    {
                         state.trigger_selected_by_user();
                     }
                 }
                 LauncherFeedbackAction::OpenStudio => {
-                    if feedback_button(ui, i18n::t("launcher.feedback.open_studio"), selected)
-                        .clicked()
+                    if feedback_button(
+                        ui,
+                        i18n::t("launcher.feedback.open_studio"),
+                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::OpenStudio),
+                        selected,
+                    )
+                    .clicked()
                     {
                         state.open_studio_execution_history_from_feedback();
                     }
@@ -159,7 +178,12 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
     });
 }
 
-fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
+fn feedback_button(
+    ui: &mut egui::Ui,
+    label: &str,
+    a11y_label: String,
+    selected: bool,
+) -> egui::Response {
     let ctx = ui.ctx().clone();
     let fill = if selected {
         Color::accent_weak(&ctx)
@@ -192,6 +216,13 @@ fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Resp
         })
         .response
         .interact(egui::Sense::click());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            a11y_label.clone(),
+        )
+    });
     if selected {
         return response.on_hover_text(input::enter().label());
     }
@@ -220,6 +251,22 @@ fn feedback_icon_label(feedback: &LauncherFeedback) -> &'static str {
         FeedbackKind::Failed => i18n::t("launcher.feedback.icon.failed"),
         FeedbackKind::Deferred => i18n::t("launcher.feedback.icon.deferred"),
     }
+}
+
+fn feedback_action_a11y_label(
+    feedback: &LauncherFeedback,
+    action: LauncherFeedbackAction,
+) -> String {
+    let label = match action {
+        LauncherFeedbackAction::Copy => i18n::t("launcher.feedback.copy"),
+        LauncherFeedbackAction::Retry => i18n::t("launcher.feedback.retry"),
+        LauncherFeedbackAction::OpenStudio => i18n::t("launcher.feedback.open_studio"),
+    };
+    format!(
+        "{label}, feedback action for {}, {}, press Enter",
+        feedback.action_name,
+        feedback.status_label()
+    )
 }
 
 fn clamped_feedback_detail(feedback: &LauncherFeedback) -> String {
@@ -359,6 +406,34 @@ mod tests {
         assert!(source.contains("launcher.feedback.icon.deferred"));
         assert!(source.contains("launcher.feedback.icon.failed"));
         assert!(source.contains("render_status_icon(ui, ctx, feedback);"));
+    }
+
+    #[test]
+    fn feedback_actions_expose_a11y_name_action_status_and_enter_hint() {
+        let feedback = feedback(ActionExecutionStatus::Failed, "plugin crashed");
+
+        assert_eq!(
+            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Copy),
+            "Copy, feedback action for StdFixtureTerminal, Unable to run, press Enter"
+        );
+        assert_eq!(
+            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Retry),
+            "Retry, feedback action for StdFixtureTerminal, Unable to run, press Enter"
+        );
+        assert_eq!(
+            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::OpenStudio),
+            "Open Studio, feedback action for StdFixtureTerminal, Unable to run, press Enter"
+        );
+    }
+
+    #[test]
+    fn feedback_buttons_register_accessibility_widget_info() {
+        let source = include_str!("ui_feedback.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("feedback_action_a11y_label"));
+        assert!(production_source.contains("WidgetType::Button"));
+        assert!(production_source.contains("press Enter"));
     }
 
     #[test]
