@@ -1,4 +1,8 @@
-use crate::{ui, views::history_rows, StudioEguiApp};
+use crate::{
+    ui,
+    views::{history_rows, history_timeline},
+    StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 
@@ -56,8 +60,12 @@ impl StudioEguiApp {
                     egui::ScrollArea::vertical()
                         .max_height(620.0)
                         .show(ui, |ui| {
-                            for trace in filtered {
+                            for (index, trace) in filtered.into_iter().enumerate() {
                                 history_rows::trace_row(ui, &trace);
+                                if index == 0 {
+                                    history_timeline::render(ui, &trace);
+                                    ui.add_space(HISTORY_PANEL_GAP);
+                                }
                             }
                         });
                 }
@@ -92,7 +100,7 @@ impl StudioEguiApp {
 
 #[cfg(test)]
 pub(crate) fn history_layout_contract() -> &'static str {
-    "history=filter-bar>traces+events;filters=time,status-input,workflow-input;trace-columns=time,workflow,status,duration,source"
+    "history=filter-bar>traces+timeline+events;filters=time,status-input,workflow-input;trace-columns=time,workflow,status,duration,source;timeline=step,status,started,finished,payload"
 }
 
 fn filtered_traces(
@@ -139,5 +147,13 @@ mod tests {
         assert_eq!(filtered_traces(&traces, "terminal").len(), 1);
         assert_eq!(filtered_traces(&traces, "completed").len(), 1);
         assert!(filtered_traces(&traces, "missing").is_empty());
+    }
+
+    #[test]
+    fn history_layout_contract_includes_expanded_timeline() {
+        let contract = history_layout_contract();
+
+        assert!(contract.contains("traces+timeline+events"));
+        assert!(contract.contains("started,finished,payload"));
     }
 }

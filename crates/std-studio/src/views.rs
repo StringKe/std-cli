@@ -2,6 +2,7 @@ mod dashboard;
 mod dashboard_rows;
 mod history;
 mod history_rows;
+pub(crate) mod history_timeline;
 mod memory;
 mod memory_rows;
 mod plugin_rows;

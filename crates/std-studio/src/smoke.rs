@@ -10,6 +10,7 @@ pub(crate) mod workspace_policy_smoke;
 mod workspace_smoke;
 
 use crate::studio_open::StudioOpenSmokeReport;
+use crate::views::history_timeline;
 use crate::{default_batch_json, StudioPane};
 use analysis_smoke::run_analysis_workbench_smoke;
 use keyboard_smoke::StudioKeyboardSmoke;
@@ -26,6 +27,9 @@ struct SmokeInputs {
     workflow_path: std::path::PathBuf,
     workflow_status: String,
     history_count: usize,
+    history_timeline_contract: String,
+    history_trace_steps: usize,
+    history_payload_visible: bool,
     builder: workflow_builder_smoke::WorkflowBuilderSmoke,
     batch_status: String,
     memory_count: usize,
@@ -110,6 +114,9 @@ pub(crate) struct StudioSmokeReport {
     plugin_js_runtime: String,
     plugin_ts_runtime: String,
     history_count: usize,
+    history_timeline_contract: String,
+    history_trace_steps: usize,
+    history_payload_visible: bool,
     keyboard_summary: String,
     operations_summary: String,
     open_intent_summary: String,
@@ -192,6 +199,9 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             plugin_js_runtime: "FAIL".to_string(),
             plugin_ts_runtime: "FAIL".to_string(),
             history_count: 0,
+            history_timeline_contract: "FAIL".to_string(),
+            history_trace_steps: 0,
+            history_payload_visible: false,
             keyboard_summary: "studio_keyboard_smoke=FAIL".to_string(),
             operations_summary: "operations_smoke=FAIL".to_string(),
             open_intent_summary: "studio_open_smoke FAIL".to_string(),
@@ -232,7 +242,26 @@ fn collect_smoke_inputs(
         serde_json::json!({"ok": true}),
     )?;
     let workflow_status = format!("{:?}", studio.run_workflow_path(&workflow_path)?.status);
-    let history_count = studio.recent_workflow_executions(10)?.len();
+    let traces = studio.recent_workflow_traces(10)?;
+    let history_count = traces.len();
+    let history_timeline_contract = traces
+        .first()
+        .map(history_timeline::history_timeline_contract)
+        .unwrap_or_else(|| "timeline=missing".to_string());
+    let history_trace_steps = traces
+        .first()
+        .map(|trace| trace.execution.results.len())
+        .unwrap_or_default();
+    let history_payload_visible = traces
+        .first()
+        .map(|trace| {
+            trace
+                .execution
+                .results
+                .iter()
+                .any(|step| !step.output.is_null())
+        })
+        .unwrap_or(false);
     let builder = run_workflow_builder_smoke(studio)?;
     let batch_status = format!("{:?}", studio.run_batch_json(&default_batch_json())?.status);
 
@@ -261,6 +290,9 @@ fn collect_smoke_inputs(
         workflow_path,
         workflow_status,
         history_count,
+        history_timeline_contract,
+        history_trace_steps,
+        history_payload_visible,
         builder,
         batch_status,
         memory_count,
@@ -351,6 +383,9 @@ fn report_from_inputs(
         plugin_js_runtime: inputs.plugin.js_runtime,
         plugin_ts_runtime: inputs.plugin.ts_runtime,
         history_count: inputs.history_count,
+        history_timeline_contract: inputs.history_timeline_contract,
+        history_trace_steps: inputs.history_trace_steps,
+        history_payload_visible: inputs.history_payload_visible,
         keyboard_summary: inputs.keyboard.summary(),
         operations_summary: inputs.operations.summary(),
         open_intent_summary: inputs.open_smoke.summary().replace('\n', ";"),

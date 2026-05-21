@@ -4,7 +4,7 @@ impl StudioSmokeReport {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\n{}\n{}\n{}",
+            "studio_smoke {status}\nworkspace_panes={}\nfocused_pane={}\npane_opened={}\npane_focus_switched={}\npane_closed={}\npane_focus_restored={}\npane_deduplicated={}\npane_content_keys={}\npane_focused_title={}\npane_restored_title={}\npane_settings_kind={}\npane_closed_removed={}\npane_state_preserved={}\npane_focus_label={}\npane_host_policy={}\npane_management_sequence={}\npane_focus_switch_path={}\npane_close_restore_path={}\nnative_child_windows={}\ndetached_panels={}\nhost_window_size={}\nmin_window_size={}\nhost_chrome_height={}\nstatus_bar_height={}\nsidebar_width={}\ncollapsed_sidebar_width={}\ninspector_width={}\ninspector_default_open={}\nbottom_panel_height={}\nbottom_panel_default_open={}\ncanvas_surface={}\ncanvas_content_route={}\nworkflow_status={}\nbuilder_created={}\nbuilder_added_step={}\nbuilder_updated_step={}\nbuilder_moved_step={}\nbuilder_simulated={}\nbuilder_run_status={}\nbuilder_planned_run_status={}\nbuilder_trace_steps={}\nbuilder_trace_events={}\nbuilder_interaction_sequence={}\nbuilder_keyboard_move_path={}\nbuilder_selected_step={}\nbuilder_trace_status={}\nbuilder_side_effect_model={}\nbuilder_next_action={}\nbuilder_bottom_panel_contract={}\nbuilder_debug_panel_contract={}\nbatch_status={}\nanalysis={}\nanalysis_coverage_complete={}\nanalysis_coverage_layers={}\nanalysis_search_hits={}\nanalysis_answer_sources={}\nanalysis_inspect_components={}\nanalysis_inspect_relations={}\nanalysis_inspect_history={}\nanalysis_answer_has_evidence={}\nmemory_count={}\nplugin_js_status={}\nplugin_ts_status={}\nplugin_manifest_checks={}\nplugin_permissions={}\nplugin_action_count={}\nplugin_preview_kind={}\nplugin_js_runtime={}\nplugin_ts_runtime={}\nhistory_count={}\nhistory_timeline_contract={}\nhistory_trace_steps={}\nhistory_payload_visible={}\n{}\n{}\n{}",
             self.workspace_panes,
             self.focused_pane,
             self.pane_opened,
@@ -75,6 +75,9 @@ impl StudioSmokeReport {
             self.plugin_js_runtime,
             self.plugin_ts_runtime,
             self.history_count,
+            self.history_timeline_contract,
+            self.history_trace_steps,
+            self.history_payload_visible,
             self.keyboard_summary,
             self.operations_summary,
             self.open_intent_summary
@@ -181,6 +184,12 @@ impl StudioSmokeReport {
             && self.batch_status == "NeedsExternalRunner"
             && self.memory_count >= 1
             && self.history_count >= 1
+            && self.history_timeline_contract.contains("timeline=expanded")
+            && self
+                .history_timeline_contract
+                .contains("columns=step,status,started,finished,payload")
+            && self.history_trace_steps >= 1
+            && self.history_payload_visible
     }
 
     fn analysis_contract_pass(&self) -> bool {

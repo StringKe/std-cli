@@ -105,6 +105,10 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
     assert!(summary.contains("builder_next_action=complete"));
     assert!(summary.contains("builder_bottom_panel_contract=batch-debug-open"));
+    assert!(summary.contains("history_timeline_contract=timeline=expanded"));
+    assert!(summary.contains("columns=step,status,started,finished,payload"));
+    assert!(summary.contains("history_trace_steps=1"));
+    assert!(summary.contains("history_payload_visible=true"));
     assert!(summary.contains(
         "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
     ));
