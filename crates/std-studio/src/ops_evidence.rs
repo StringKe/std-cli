@@ -3,6 +3,8 @@ use std::{
     time::UNIX_EPOCH,
 };
 
+use crate::ops_runbook;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpsEvidence {
     pub qa: OpsGate,
@@ -16,6 +18,7 @@ pub struct OpsEvidence {
 pub struct OpsGate {
     pub title: &'static str,
     pub command: String,
+    pub runbook: String,
     pub status: OpsStatus,
     pub evidence: String,
     pub result: String,
@@ -50,6 +53,7 @@ impl OpsEvidence {
             qa: OpsGate {
                 title: "QA",
                 command: "mise run quality".to_string(),
+                runbook: ops_runbook::quality_runbook(),
                 status: quality_status(&root),
                 evidence: "mise.toml, .github/workflows/quality.yml, crates/file_too_long"
                     .to_string(),
@@ -61,6 +65,7 @@ impl OpsEvidence {
             doctor: OpsGate {
                 title: "Doctor",
                 command: "std doctor".to_string(),
+                runbook: ops_runbook::doctor_runbook(),
                 status: doctor_status(&root),
                 evidence: "StdConfig, storage, registry, workspace quality".to_string(),
                 result: doctor_result(&root),
@@ -74,6 +79,7 @@ impl OpsEvidence {
             release: OpsGate {
                 title: "Release",
                 command: format!("std release verify --dist {}", release_dir.display()),
+                runbook: ops_runbook::release_runbook(&release_dir),
                 status: release_status(&release_dir),
                 evidence: release_dir.display().to_string(),
                 result: release_result(&release_dir),
@@ -87,6 +93,7 @@ impl OpsEvidence {
             install: OpsGate {
                 title: "Install",
                 command: format!("std install verify --prefix {}", install_prefix.display()),
+                runbook: ops_runbook::install_runbook(&install_prefix, &release_dir),
                 status: install_status(&install_prefix),
                 evidence: install_prefix.display().to_string(),
                 result: install_result(&install_prefix),
@@ -97,6 +104,7 @@ impl OpsEvidence {
             runtime: OpsGate {
                 title: "Runtime",
                 command: "std-launcher --gui-hotkey-smoke Alt+Space 5000".to_string(),
+                runbook: ops_runbook::runtime_runbook(),
                 status: OpsStatus::Manual,
                 evidence: "explicit opt-in desktop smoke".to_string(),
                 result: "manual desktop opt-in required".to_string(),
@@ -118,10 +126,11 @@ impl OpsEvidence {
         .into_iter()
         .map(|gate| {
             format!(
-                "{}={} command={} evidence={} result={} artifact={} output={}",
+                "{}={} command={} runbook={} evidence={} result={} artifact={} output={}",
                 gate.title.to_ascii_lowercase(),
                 gate.status.label(),
                 gate.command,
+                gate.runbook,
                 gate.evidence,
                 gate.result,
                 gate.artifact,

@@ -88,6 +88,12 @@ impl StudioEguiApp {
             );
             operations_rows::gate_row(
                 ui,
+                i18n::t("studio.operations.runbook"),
+                &gate.runbook,
+                i18n::t("studio.operations.current_workspace"),
+            );
+            operations_rows::gate_row(
+                ui,
                 i18n::t("studio.operations.evidence"),
                 &gate.evidence,
                 i18n::t("studio.operations.current_workspace"),
