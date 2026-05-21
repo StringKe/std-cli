@@ -20,12 +20,20 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) {
         return;
     };
     let ctx = ui.ctx().clone();
-    egui::Frame::new()
+    let response = egui::Frame::new()
         .fill(feedback_fill(&ctx, &feedback))
         .stroke(egui::Stroke::new(1.0, feedback_stroke(&ctx, &feedback)))
         .corner_radius(egui::CornerRadius::same(Radius::md()))
         .inner_margin(egui::Margin::symmetric(Space::sm(), Space::xs()))
-        .show(ui, |ui| render_contents(ui, state, &feedback));
+        .show(ui, |ui| render_contents(ui, state, &feedback))
+        .response;
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            feedback_panel_a11y_label(&feedback),
+        )
+    });
 }
 
 fn render_contents(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
@@ -269,6 +277,29 @@ fn feedback_action_a11y_label(
     )
 }
 
+fn feedback_panel_a11y_label(feedback: &LauncherFeedback) -> String {
+    let actions = feedback
+        .actions()
+        .into_iter()
+        .map(feedback_action_label)
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!(
+        "Execution feedback, {}, action {}, available actions {}",
+        feedback.status_label(),
+        feedback.action_name,
+        actions
+    )
+}
+
+fn feedback_action_label(action: LauncherFeedbackAction) -> &'static str {
+    match action {
+        LauncherFeedbackAction::Copy => i18n::t("launcher.feedback.copy"),
+        LauncherFeedbackAction::Retry => i18n::t("launcher.feedback.retry"),
+        LauncherFeedbackAction::OpenStudio => i18n::t("launcher.feedback.open_studio"),
+    }
+}
+
 fn clamped_feedback_detail(feedback: &LauncherFeedback) -> String {
     feedback
         .detail
@@ -295,162 +326,5 @@ fn feedback_stroke(ctx: &egui::Context, feedback: &LauncherFeedback) -> egui::Co
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use chrono::Utc;
-    use std_types::{ActionExecution, ActionId};
-
-    fn feedback(status: ActionExecutionStatus, message: &str) -> LauncherFeedback {
-        LauncherFeedback::from_execution(&ActionExecution {
-            action_id: ActionId::default(),
-            action_name: "StdFixtureTerminal".to_string(),
-            status,
-            message: message.to_string(),
-            output: None,
-            created_at: Utc::now(),
-        })
-    }
-
-    #[test]
-    fn failed_feedback_exposes_copy_retry_and_studio_actions() {
-        let feedback = feedback(ActionExecutionStatus::Failed, "plugin crashed");
-
-        assert_eq!(feedback_kind(&feedback), FeedbackKind::Failed);
-        assert_eq!(
-            feedback.actions(),
-            vec![
-                LauncherFeedbackAction::Copy,
-                LauncherFeedbackAction::Retry,
-                LauncherFeedbackAction::OpenStudio
-            ]
-        );
-    }
-
-    #[test]
-    fn open_studio_action_creates_history_intent_without_launching() {
-        let core = std_core::StdCore::with_config(std_core::StdConfig::default());
-        let mut state = LauncherState::with_core(core);
-        let feedback = feedback(ActionExecutionStatus::Failed, "plugin crashed");
-        state.view.feedback = Some(feedback);
-
-        let intent = state.open_studio_execution_history_from_feedback();
-
-        assert_eq!(intent.command, "studio-pane://history");
-        assert_eq!(
-            intent.target,
-            std_launcher::StudioLaunchTarget::ExecutionHistory
-        );
-        assert_eq!(intent.source_action, "StdFixtureTerminal");
-        assert_eq!(state.studio_intent, Some(intent));
-    }
-
-    #[test]
-    fn deferred_feedback_exposes_copy_and_retry_only() {
-        let feedback = feedback(
-            ActionExecutionStatus::NeedsExternalRunner,
-            "external runner",
-        );
-
-        assert_eq!(feedback_kind(&feedback), FeedbackKind::Deferred);
-        assert_eq!(
-            feedback.actions(),
-            vec![LauncherFeedbackAction::Copy, LauncherFeedbackAction::Retry]
-        );
-    }
-
-    #[test]
-    fn feedback_detail_is_limited_to_two_lines() {
-        let feedback = feedback(ActionExecutionStatus::Failed, "one\ntwo\nthree");
-
-        assert_eq!(clamped_feedback_detail(&feedback), "one two");
-    }
-
-    #[test]
-    fn feedback_surface_hides_performance_metrics_from_user_copy() {
-        let source = include_str!("ui_feedback.rs");
-        let old_metric_label = ["{}ms", " search"].join("");
-
-        assert!(!source.contains(&old_metric_label));
-    }
-
-    #[test]
-    fn feedback_surface_stacks_text_above_actions() {
-        let source = include_str!("ui_feedback.rs");
-        let render_contents = source
-            .split("fn render_contents")
-            .nth(1)
-            .and_then(|body| body.split("fn render_text").next())
-            .unwrap();
-
-        assert!(render_contents.contains("render_text(ui, &ctx, feedback);"));
-        assert!(render_contents.contains("render_actions(ui, state, feedback);"));
-        assert!(source.contains("ui.horizontal_wrapped"));
-        assert!(!render_contents.contains("right_to_left"));
-    }
-
-    #[test]
-    fn selected_feedback_action_shows_enter_keycap() {
-        let source = include_str!("ui_feedback.rs");
-
-        assert!(source.contains("keycap(ui, &input::enter().label())"));
-        assert!(source.contains("return response.on_hover_text(input::enter().label())"));
-    }
-
-    #[test]
-    fn feedback_status_uses_icon_and_text_not_color_only() {
-        let source = include_str!("ui_feedback.rs");
-
-        assert!(source.contains("fn render_status_icon"));
-        assert!(source.contains("feedback_icon_label"));
-        assert!(source.contains("launcher.feedback.icon.completed"));
-        assert!(source.contains("launcher.feedback.icon.deferred"));
-        assert!(source.contains("launcher.feedback.icon.failed"));
-        assert!(source.contains("render_status_icon(ui, ctx, feedback);"));
-    }
-
-    #[test]
-    fn feedback_actions_expose_a11y_name_action_status_and_enter_hint() {
-        let feedback = feedback(ActionExecutionStatus::Failed, "plugin crashed");
-
-        assert_eq!(
-            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Copy),
-            "Copy, feedback action for StdFixtureTerminal, Unable to run, press Enter"
-        );
-        assert_eq!(
-            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Retry),
-            "Retry, feedback action for StdFixtureTerminal, Unable to run, press Enter"
-        );
-        assert_eq!(
-            feedback_action_a11y_label(&feedback, LauncherFeedbackAction::OpenStudio),
-            "Open Studio, feedback action for StdFixtureTerminal, Unable to run, press Enter"
-        );
-    }
-
-    #[test]
-    fn feedback_buttons_register_accessibility_widget_info() {
-        let source = include_str!("ui_feedback.rs");
-        let production_source = source.split("#[cfg(test)]").next().unwrap();
-
-        assert!(production_source.contains("feedback_action_a11y_label"));
-        assert!(production_source.contains("WidgetType::Button"));
-        assert!(production_source.contains("press Enter"));
-    }
-
-    #[test]
-    fn retry_click_uses_launcher_user_execution_path() {
-        let source = include_str!("ui_feedback.rs");
-        let production_source = source.split("#[cfg(test)]").next().unwrap();
-
-        assert!(production_source.contains("state.trigger_selected_by_user();"));
-        assert!(!production_source.contains("state.trigger_selected();"));
-    }
-
-    #[test]
-    fn copy_click_uses_shared_feedback_copy_model() {
-        let source = include_str!("ui_feedback.rs");
-        let production_source = source.split("#[cfg(test)]").next().unwrap();
-
-        assert!(production_source.contains("state.copy_feedback_to_clipboard_model()"));
-        assert!(!production_source.contains("ui.ctx().copy_text(feedback.summary())"));
-    }
-}
+#[path = "ui_feedback_tests.rs"]
+mod ui_feedback_tests;
