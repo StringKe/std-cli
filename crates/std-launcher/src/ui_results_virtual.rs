@@ -1,0 +1,93 @@
+use crate::{ui_metrics, ui_result_model::LauncherResultListItem};
+
+pub(crate) fn total_height(items: &[LauncherResultListItem]) -> f32 {
+    items.iter().map(item_height).sum()
+}
+
+pub(crate) fn item_height(item: &LauncherResultListItem) -> f32 {
+    match item {
+        LauncherResultListItem::Group { .. } => ui_metrics::group_header_slot_height(),
+        LauncherResultListItem::Row(_) => ui_metrics::result_list_slot_height(),
+    }
+}
+
+pub(crate) fn visible_range(
+    items: &[LauncherResultListItem],
+    clip_min_y: f32,
+    clip_max_y: f32,
+) -> (usize, usize, f32) {
+    let mut y = 0.0;
+    let mut start = 0;
+    for (index, item) in items.iter().enumerate() {
+        let next_y = y + item_height(item);
+        if next_y >= clip_min_y {
+            start = index;
+            break;
+        }
+        y = next_y;
+        start = index + 1;
+    }
+
+    let mut end = start;
+    let mut row_y = y;
+    for item in &items[start..] {
+        if row_y > clip_max_y {
+            break;
+        }
+        row_y += item_height(item);
+        end += 1;
+    }
+    (start, end.max(start), y)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ui_result_model::LauncherResultRowModel;
+
+    #[test]
+    fn virtual_results_measure_group_headers_at_spec_height() {
+        let items = vec![
+            LauncherResultListItem::Group {
+                label: "Action / Workflow".to_string(),
+            },
+            LauncherResultListItem::Row(row("Index", 0)),
+            LauncherResultListItem::Row(row("Terminal", 1)),
+        ];
+
+        assert_eq!(item_height(&items[0]), 24.0);
+        assert_eq!(item_height(&items[1]), 36.0);
+        assert_eq!(total_height(&items), 96.0);
+    }
+
+    #[test]
+    fn virtual_results_find_visible_slice_with_variable_heights() {
+        let items = vec![
+            LauncherResultListItem::Group {
+                label: "Action / Workflow".to_string(),
+            },
+            LauncherResultListItem::Row(row("Index", 0)),
+            LauncherResultListItem::Group {
+                label: "App / File".to_string(),
+            },
+            LauncherResultListItem::Row(row("Studio", 1)),
+        ];
+
+        assert_eq!(visible_range(&items, 30.0, 84.0), (1, 4, 24.0));
+    }
+
+    fn row(title: &str, result_index: usize) -> LauncherResultRowModel {
+        LauncherResultRowModel {
+            title: title.to_string(),
+            subtitle: "Test row".to_string(),
+            kind: "Command".to_string(),
+            icon_label: "CMD".to_string(),
+            group: "Action / Workflow".to_string(),
+            position: format!("{} of 2", result_index + 1),
+            shortcut: None,
+            action_hint: None,
+            action_label: "Run".to_string(),
+            result_index,
+        }
+    }
+}

@@ -6,7 +6,7 @@ use crate::{
         group_count as model_group_count, group_header_label, list_items, LauncherResultListItem,
         LauncherResultRowModel,
     },
-    ui_result_nl,
+    ui_result_nl, ui_results_virtual,
 };
 use eframe::egui;
 use std_egui::{
@@ -84,28 +84,36 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         .id_salt("launcher_results")
         .max_height(max_height)
         .auto_shrink([false, false])
-        .show_rows(
-            ui,
-            ui_metrics::result_list_slot_height(),
-            items.len(),
-            |ui, row_range| {
-                if state.view.results.is_empty() {
-                    if state.view.phase == std_egui::LauncherPhase::Searching {
-                        render_progress(ui, i18n::t("launcher.results.searching"));
-                        return;
-                    }
-                    if let Some(EmptyAction::AskAi(query)) =
-                        ui_empty::render_no_results(ui, &state.view.query)
-                    {
-                        state.update_query(query);
-                    }
+        .show_viewport(ui, |ui, viewport| {
+            let total_height = ui_results_virtual::total_height(&items);
+            ui.set_min_height(total_height);
+            let (start, end, mut y) =
+                ui_results_virtual::visible_range(&items, viewport.min.y, viewport.max.y);
+            ui.add_space(y);
+            if state.view.results.is_empty() {
+                if state.view.phase == std_egui::LauncherPhase::Searching {
+                    render_progress(ui, i18n::t("launcher.results.searching"));
                     return;
                 }
-                if row_range.start == 0 {
-                    render_overflow_hint(ui, &state.view);
+                if let Some(EmptyAction::AskAi(query)) =
+                    ui_empty::render_no_results(ui, &state.view.query)
+                {
+                    state.update_query(query);
                 }
-                for index in row_range {
-                    match &items[index] {
+                return;
+            }
+            if start == 0 {
+                render_overflow_hint(ui, &state.view);
+            }
+            for item in &items[start..end] {
+                let item_height = ui_results_virtual::item_height(item);
+                let item_rect = egui::Rect::from_min_size(
+                    egui::pos2(ui.min_rect().left(), y),
+                    egui::vec2(ui.available_width(), item_height),
+                );
+                ui.scope_builder(
+                    egui::UiBuilder::new().max_rect(item_rect),
+                    |ui| match item {
                         LauncherResultListItem::Group { label } => group_header(ui, label),
                         LauncherResultListItem::Row(model) => {
                             let response = result_row(ui, model);
@@ -115,10 +123,11 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                                 clicked = Some(model.result_index);
                             }
                         }
-                    }
-                }
-            },
-        );
+                    },
+                );
+                y += item_height;
+            }
+        });
 
     if let Some(index) = double_clicked {
         return trigger_result_from_row(state, index);
@@ -334,7 +343,7 @@ fn action_hint_label(ui: &mut egui::Ui, label: &str) {
 fn group_header(ui: &mut egui::Ui, group: &str) {
     let ctx = ui.ctx().clone();
     let (slot, _response) = ui.allocate_exact_size(
-        ui_metrics::result_row_size(ui.available_width()),
+        egui::vec2(ui.available_width(), ui_metrics::group_header_slot_height()),
         egui::Sense::hover(),
     );
     let divider = ui_metrics::group_divider_rect(slot.width(), slot.min);

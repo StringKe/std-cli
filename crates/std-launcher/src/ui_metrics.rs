@@ -7,6 +7,7 @@ use std_launcher::PANEL_WIDTH;
 const SEARCH_HEIGHT: f32 = 64.0;
 const ACTION_BAR_HEIGHT: f32 = 36.0;
 const RESULT_ROW_HEIGHT: f32 = 36.0;
+const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
@@ -70,6 +71,10 @@ pub(crate) fn result_icon_text_offset_y() -> egui::Vec2 {
 
 pub(crate) fn result_list_slot_height() -> f32 {
     scale().f32(RESULT_ROW_HEIGHT)
+}
+
+pub(crate) fn group_header_slot_height() -> f32 {
+    scale().f32(GROUP_HEADER_ROW_HEIGHT)
 }
 
 pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
@@ -242,13 +247,22 @@ fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiS
     if !panel_is_expanded(state) {
         return 0.0;
     }
-    let visible_slots = result_list_slot_count(state).clamp(1, MAX_RESULT_ROWS as usize) as f32;
-    let desired = visible_slots * scale.f32(RESULT_ROW_HEIGHT) + scale.f32(Space::SM as f32);
+    let visible_height = result_list_visible_height(state, scale);
+    let desired = visible_height + scale.f32(Space::SM as f32);
     desired.clamp(scale.f32(128.0), viewport_height * 0.6)
 }
 
+#[cfg(test)]
 fn result_list_slot_count(state: &LauncherState) -> usize {
     state.view.results.len() + crate::ui_results::group_count(&state.view.results)
+}
+
+fn result_list_visible_height(state: &LauncherState, scale: UiScale) -> f32 {
+    let row_count = state.view.results.len().min(MAX_RESULT_ROWS as usize);
+    let group_count = crate::ui_results::group_count(&state.view.results).min(row_count);
+    let group_height = group_count as f32 * scale.f32(GROUP_HEADER_ROW_HEIGHT);
+    let row_height = row_count as f32 * scale.f32(RESULT_ROW_HEIGHT);
+    group_height + row_height
 }
 
 fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
@@ -267,9 +281,10 @@ fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
 }
 
 #[cfg(test)]
-fn row_metrics_for_scale(scale: UiScale) -> (f32, f32, f32, f32) {
+fn row_metrics_for_scale(scale: UiScale) -> (f32, f32, f32, f32, f32) {
     (
         scale.f32(RESULT_ROW_HEIGHT),
+        scale.f32(GROUP_HEADER_ROW_HEIGHT),
         scale.f32(34.0),
         scale.f32(24.0),
         scale.f32(18.0),

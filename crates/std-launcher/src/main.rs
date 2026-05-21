@@ -25,6 +25,7 @@ mod ui_parts;
 mod ui_result_model;
 mod ui_result_nl;
 mod ui_results;
+mod ui_results_virtual;
 mod window;
 
 use app::LauncherApp;

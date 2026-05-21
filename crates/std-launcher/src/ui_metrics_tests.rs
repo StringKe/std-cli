@@ -23,7 +23,7 @@ fn expanded_window_size_scales_with_ui_zoom() {
 fn row_metrics_scale_with_ui_zoom() {
     assert_eq!(
         row_metrics_for_scale(UiScale::new(1.5)),
-        (54.0, 51.0, 36.0, 27.0)
+        (54.0, 36.0, 51.0, 36.0, 27.0)
     );
 }
 
@@ -71,7 +71,7 @@ fn group_header_divider_scales_with_ui_zoom() {
 fn group_header_uses_stable_virtual_list_slot_height() {
     assert_eq!(
         crate::ui_metrics_results::group_header_slot_metrics_for_scale(UiScale::new(1.5), 600.0),
-        (600.0, 54.0, 6.0)
+        (600.0, 36.0, 6.0)
     );
 }
 
@@ -204,6 +204,8 @@ fn body_height_counts_virtual_group_header_slots() {
     assert!(slots > state.view.results.len());
     assert_eq!(
         body,
-        slots.min(MAX_RESULT_ROWS as usize) as f32 * 36.0 + 12.0
+        slots.min(MAX_RESULT_ROWS as usize) as f32 * 36.0
+            - crate::ui_results::group_count(&state.view.results).min(slots) as f32 * 12.0
+            + 12.0
     );
 }

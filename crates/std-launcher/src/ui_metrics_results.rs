@@ -118,7 +118,7 @@ pub(crate) fn group_header_slot_metrics_for_scale(
     scale: UiScale,
     available_width: f32,
 ) -> (f32, f32, f32) {
-    let slot = result_row_size(scale, available_width);
+    let slot = egui::vec2(available_width, scale.f32(24.0));
     (slot.x, slot.y, group_header_label_offset_y(scale))
 }
 
