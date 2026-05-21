@@ -86,7 +86,7 @@ pub(crate) fn metric(ui: &mut egui::Ui, title: &str, value: impl ToString, detai
     });
 }
 
-pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) {
+pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) -> egui::Response {
     let ctx = ui.ctx().clone();
     egui::Frame::new()
         .fill(fill)
@@ -98,7 +98,8 @@ pub(crate) fn chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) {
                     .font(Text::caption())
                     .color(strong_text(&ctx)),
             );
-        });
+        })
+        .response
 }
 
 pub(crate) fn quiet_button(ui: &mut egui::Ui, label: &str) -> egui::Response {

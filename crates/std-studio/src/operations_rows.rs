@@ -48,11 +48,11 @@ pub(crate) fn gate_row_a11y_label(label: &str, value: &str, detail: &str) -> Str
 }
 
 pub(crate) fn operations_gate_visual_contract() -> &'static str {
-    "gate=title|status|command|steps|runbook|evidence|result|artifact|output|record-evidence"
+    "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"
 }
 
 pub(crate) fn operations_gate_a11y_contract() -> &'static str {
-    "a11y=row-label-includes-label-value-detail"
+    "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
 }
 
 #[cfg(test)]
@@ -64,5 +64,12 @@ mod tests {
         let label = gate_row_a11y_label("Command", "mise run quality", "docs/14");
 
         assert_eq!(label, "Command: mise run quality; docs/14");
+    }
+
+    #[test]
+    fn operations_contract_requires_status_icon_text_and_result() {
+        assert!(operations_gate_visual_contract().contains("status-icon"));
+        assert!(operations_gate_visual_contract().contains("status-text"));
+        assert!(operations_gate_a11y_contract().contains("status-chip-includes-icon-text-result"));
     }
 }

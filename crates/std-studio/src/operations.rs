@@ -69,19 +69,7 @@ impl StudioEguiApp {
     fn render_evidence_gate(&mut self, ui: &mut egui::Ui, gate: &OpsGate) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(ui, gate.title, gate.status.label());
-            if gate.title == "QA" {
-                ui.horizontal_wrapped(|ui| {
-                    for tool in QUALITY_TOOLS {
-                        ui::chip(ui, tool, ui::panel_alt(ui.ctx()));
-                    }
-                });
-            } else {
-                ui::chip(
-                    ui,
-                    gate.status.label(),
-                    gate_status_fill(ui.ctx(), gate.status),
-                );
-            }
+            render_gate_status(ui, gate);
             operations_rows::gate_row(
                 ui,
                 i18n::t("studio.operations.command"),
@@ -154,6 +142,43 @@ impl StudioEguiApp {
             ui.label(i18n::t("studio.operations.completion.note"));
         });
     }
+}
+
+fn render_gate_status(ui: &mut egui::Ui, gate: &OpsGate) {
+    let icon = gate_status_icon(gate.status);
+    let label = format!("{icon} {}", gate.status.label());
+    let response = ui::chip(ui, &label, gate_status_fill(ui.ctx(), gate.status));
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            gate_status_a11y_label(gate),
+        )
+    });
+    if gate.title == "QA" {
+        ui.horizontal_wrapped(|ui| {
+            for tool in QUALITY_TOOLS {
+                ui::chip(ui, tool, ui::panel_alt(ui.ctx()));
+            }
+        });
+    }
+}
+
+fn gate_status_icon(status: OpsStatus) -> &'static str {
+    match status {
+        OpsStatus::Pass => "PASS",
+        OpsStatus::Missing => "MISSING",
+        OpsStatus::Manual => "MANUAL",
+    }
+}
+
+fn gate_status_a11y_label(gate: &OpsGate) -> String {
+    format!(
+        "{} gate status, {}, {}",
+        gate.title,
+        gate.status.label(),
+        gate.result
+    )
 }
 
 fn gate_status_fill(ctx: &egui::Context, status: OpsStatus) -> egui::Color32 {
