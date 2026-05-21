@@ -49,7 +49,10 @@ const SMOKE_COMMANDS: [&str; 18] = [
 
 const MANUAL_DESKTOP_ACCEPTANCE: [&str; 1] =
     ["STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space"];
-const BACKGROUND_UI_ACCEPTANCE: [&str; 1] = ["STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness\""];
+const BACKGROUND_UI_ACCEPTANCE: [&str; 2] = [
+    "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh",
+    "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness\"",
+];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
     fs::create_dir_all(quality_dir)?;

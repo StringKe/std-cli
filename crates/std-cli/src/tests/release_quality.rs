@@ -41,6 +41,9 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space"
     ));
     assert!(report.contains(
+        "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh"
+    ));
+    assert!(report.contains(
         "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness\""
     ));
     for forbidden in [

@@ -84,6 +84,7 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - 目标进程限定为测试命令启动的隔离 harness，不复用用户已打开的真实窗口
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
 - runner 必须用 pid 反查真实 bundle identifier，不能只信任命令行传入的 bundle id 字符串
+- 启动 harness 使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh`，该脚本只创建 `dev.std-cli.background-ui-harness` 测试 app，并用 `open -g` 避免抢占前台
 - 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - `std ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
 - 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置
@@ -97,6 +98,14 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
 
 当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `std ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1` 和 `STD_TEST_MODE`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。
+
+完整人工验收流程：
+
+```bash
+cargo build -p std-launcher
+STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh
+STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 std ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"
+```
 
 该路径不能进入 `mise run quality`、release smoke gate 或默认测试。它只用于后续真实截图、键盘焦点、窗口或面板管理验收。
 

@@ -1,0 +1,131 @@
+use crate::app::LauncherApp;
+use eframe::egui;
+use std::env;
+use std::time::{Duration, Instant};
+
+const HARNESS_TITLE: &str = "std-cli Background UI Harness";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum BackgroundHarnessRequest {
+    Run(u64),
+    Blocked(String),
+}
+
+struct BackgroundHarnessApp {
+    app: LauncherApp,
+    started_at: Instant,
+    timeout_ms: u64,
+}
+
+impl BackgroundHarnessApp {
+    fn new(timeout_ms: u64) -> Self {
+        let mut app = LauncherApp::default();
+        app.state.update_query("index");
+        Self {
+            app,
+            started_at: Instant::now(),
+            timeout_ms,
+        }
+    }
+}
+
+impl eframe::App for BackgroundHarnessApp {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        self.app.update(ctx, frame);
+        if self.started_at.elapsed() >= Duration::from_millis(self.timeout_ms) {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        } else {
+            ctx.request_repaint_after(Duration::from_millis(100));
+        }
+    }
+}
+
+pub(crate) fn background_harness_request_from_args(
+    args: &[String],
+) -> Option<BackgroundHarnessRequest> {
+    if args.get(1).map(String::as_str) != Some("--background-ui-harness") {
+        return None;
+    }
+    if !background_harness_allowed() {
+        return Some(BackgroundHarnessRequest::Blocked(
+            background_harness_blocked_reason(),
+        ));
+    }
+    Some(BackgroundHarnessRequest::Run(
+        args.get(2)
+            .and_then(|value| value.parse::<u64>().ok())
+            .unwrap_or(30_000),
+    ))
+}
+
+fn background_harness_allowed() -> bool {
+    !std_core::std_test_mode_enabled()
+        && env::var("STD_ALLOW_BACKGROUND_UI_AUTOMATION")
+            .map(|value| value == "1")
+            .unwrap_or(false)
+}
+
+fn background_harness_blocked_reason() -> String {
+    if std_core::std_test_mode_enabled() {
+        "STD_TEST_MODE blocked background UI harness startup".to_string()
+    } else {
+        "background UI harness requires STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 explicit opt-in"
+            .to_string()
+    }
+}
+
+pub(crate) fn blocked_background_harness_summary(reason: &str) -> String {
+    format!("launcher_background_ui_harness SKIP\nreason={reason}")
+}
+
+pub(crate) fn run_background_harness(timeout_ms: u64) -> eframe::Result<()> {
+    eframe::run_native(
+        HARNESS_TITLE,
+        background_harness_native_options(),
+        Box::new(|_cc| Ok(Box::new(BackgroundHarnessApp::new(timeout_ms)))),
+    )
+}
+
+fn background_harness_native_options() -> eframe::NativeOptions {
+    eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default()
+            .with_inner_size(egui::vec2(720.0, 360.0))
+            .with_decorations(false)
+            .with_transparent(true)
+            .with_visible(true),
+        ..Default::default()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn background_harness_is_blocked_in_test_mode() {
+        let args = vec![
+            "std-launcher".to_string(),
+            "--background-ui-harness".to_string(),
+        ];
+
+        let request = background_harness_request_from_args(&args).unwrap();
+
+        assert_eq!(
+            request,
+            BackgroundHarnessRequest::Blocked(
+                "STD_TEST_MODE blocked background UI harness startup".to_string()
+            )
+        );
+    }
+
+    #[test]
+    fn background_harness_uses_whitelisted_window_title() {
+        let options = background_harness_native_options();
+        let description = format!("{:?}", options.viewport);
+
+        assert_eq!(HARNESS_TITLE, "std-cli Background UI Harness");
+        assert!(description.contains("transparent: Some(true)"));
+        assert!(description.contains("decorations: Some(false)"));
+        assert!(description.contains("visible: Some(true)"));
+    }
+}

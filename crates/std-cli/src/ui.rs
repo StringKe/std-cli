@@ -2,6 +2,7 @@ use clap::Subcommand;
 
 const HARNESS_BUNDLE_ID: &str = "dev.std-cli.background-ui-harness";
 const HARNESS_WINDOW_TITLE: &str = "std-cli Background UI Harness";
+const BACKGROUND_HARNESS_HELPER: &str = "scripts/background-ui-harness.sh";
 const BACKGROUND_RUNNER: &str = "scripts/background-ui-smoke.swift";
 const BACKGROUND_DRIVER: [&str; 4] = [
     "per-process-event-tap",
@@ -100,6 +101,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "target=isolated_background_ui_harness_only".to_string(),
         format!("required_bundle_id={HARNESS_BUNDLE_ID}"),
         format!("required_window_title={HARNESS_WINDOW_TITLE}"),
+        format!("harness_helper={BACKGROUND_HARNESS_HELPER}"),
         format!("harness_pid={}", opt_u32(config.harness_pid)),
         format!("window_id={}", opt_u32(config.window_id)),
         format!("bundle_id={}", opt_str(config.bundle_id.as_deref())),

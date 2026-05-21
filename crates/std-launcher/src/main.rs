@@ -3,6 +3,7 @@
 //! Extremely restrained global hotkey launcher with Workflow support.
 
 mod app;
+mod background_harness;
 mod cli;
 mod gui_smoke;
 mod preview;
@@ -33,6 +34,10 @@ mod ui_shortcut_help;
 mod window;
 
 use app::LauncherApp;
+use background_harness::{
+    background_harness_request_from_args, blocked_background_harness_summary,
+    run_background_harness, BackgroundHarnessRequest,
+};
 use eframe::egui;
 use preview::{
     blocked_preview_summary, preview_request_from_args, run_preview, LauncherPreviewRequest,
@@ -41,6 +46,15 @@ use preview::{
 fn main() -> eframe::Result<()> {
     std_core::sanitize_desktop_opt_ins_for_test_mode();
     let args = std::env::args().collect::<Vec<_>>();
+    if let Some(request) = background_harness_request_from_args(&args) {
+        match request {
+            BackgroundHarnessRequest::Run(timeout_ms) => return run_background_harness(timeout_ms),
+            BackgroundHarnessRequest::Blocked(reason) => {
+                println!("{}", blocked_background_harness_summary(&reason));
+                return Ok(());
+            }
+        }
+    }
     if let Some(request) = preview_request_from_args(&args) {
         match request {
             LauncherPreviewRequest::Run(config) => return run_preview(config),
