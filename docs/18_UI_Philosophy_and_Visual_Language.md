@@ -79,17 +79,17 @@
 
 | Token | dark | light | 用途 |
 | --- | --- | --- | --- |
-| `bg/surface-0` | #0E0F11 | #FAFBFD | Launcher 浮层底、Studio 窗口底 |
-| `bg/surface-1` | #16181B | #F2F5F8 | 默认面板背景 |
-| `bg/surface-2` | #1E2126 | #E8ECF1 | 嵌套面板、Hover 行 |
-| `bg/surface-3` | #262A30 | #DBE1E8 | Selected 行、Inspector 区分 |
+| `bg/surface-0` | #1C1E22 | #FAFBFD | Launcher 浮层底、Studio 窗口底 |
+| `bg/surface-1` | #24272C | #F2F5F8 | 默认面板背景 |
+| `bg/surface-2` | #2D3138 | #E8ECF1 | 嵌套面板、Hover 行 |
+| `bg/surface-3` | #373C44 | #DBE1E8 | Selected 行、Inspector 区分 |
 | `bg/overlay` | rgba(0,0,0,0.36) | rgba(0,0,0,0.18) | Modal 遮罩 |
 | `fg/primary` | #ECEEF1 | #1A1C20 | 主文字 |
 | `fg/secondary` | #B5BAC1 | #4B5057 | 次要文字 |
 | `fg/tertiary` | #7A8089 | #7A8089 | 辅助文字、占位 |
 | `fg/disabled` | #4A4F56 | #B8BCC2 | 禁用态 |
 | `stroke/divider` | #262A30 | #E3E6EA | 分隔线 |
-| `stroke/border` | #34393F | #D0D4D9 | 输入框、卡片边 |
+| `stroke/border` | #484E57 | #D0D4D9 | 输入框、卡片边 |
 
 **Accent**（单一品牌色，跟随 dark/light 微调）：
 

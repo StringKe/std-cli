@@ -13,9 +13,12 @@ pub struct LauncherSurfaceSmokeReport {
     pub panel_radius: u8,
     pub panel_does_not_fill_viewport: bool,
     pub panel_inner_padding: i8,
-    pub search_surface_layer: String,
-    pub result_surface_layer: String,
-    pub selected_surface_layer: String,
+    pub dark_search_surface_layer: String,
+    pub light_search_surface_layer: String,
+    pub dark_result_surface_layer: String,
+    pub light_result_surface_layer: String,
+    pub dark_selected_surface_layer: String,
+    pub light_selected_surface_layer: String,
     pub empty_state: String,
     pub matches_state: String,
     pub no_match_state: String,
@@ -35,9 +38,12 @@ impl LauncherSurfaceSmokeReport {
             panel_radius: Radius::xl(),
             panel_does_not_fill_viewport: panel_does_not_fill_viewport(),
             panel_inner_padding: Space::md(),
-            search_surface_layer: layer("search", "bg/surface-1", &dark),
-            result_surface_layer: layer("results", "bg/surface-1", &dark),
-            selected_surface_layer: layer("selected", "accent/weak", &dark),
+            dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
+            light_search_surface_layer: layer("light_search", "bg/surface-1", &light),
+            dark_result_surface_layer: layer("dark_results", "bg/surface-1", &dark),
+            light_result_surface_layer: layer("light_results", "bg/surface-1", &light),
+            dark_selected_surface_layer: layer("dark_selected", "accent/weak", &dark),
+            light_selected_surface_layer: layer("light_selected", "accent/weak", &light),
             empty_state: "empty=query,recent_or_suggested,footnote".to_string(),
             matches_state: "matches=grouped,selected,preview,action_bar".to_string(),
             no_match_state: "no_matches=icon,title,detail,ask_ai_enter".to_string(),
@@ -53,9 +59,12 @@ impl LauncherSurfaceSmokeReport {
             && self.panel_radius == 16
             && self.panel_does_not_fill_viewport
             && self.panel_inner_padding == 16
-            && self.search_surface_layer == "search=bg/surface-1:#24272C"
-            && self.result_surface_layer == "results=bg/surface-1:#24272C"
-            && self.selected_surface_layer == "selected=accent/weak:#4E9CFF@46"
+            && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
+            && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
+            && self.dark_result_surface_layer == "dark_results=bg/surface-1:#24272C"
+            && self.light_result_surface_layer == "light_results=bg/surface-1:#F2F5F8"
+            && self.dark_selected_surface_layer == "dark_selected=accent/weak:#4E9CFF@46"
+            && self.light_selected_surface_layer == "light_selected=accent/weak:#0A6BFF@31"
             && self.empty_state.contains("recent_or_suggested")
             && self.matches_state.contains("grouped")
             && self.no_match_state.contains("ask_ai_enter")
@@ -65,7 +74,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\npanel_does_not_fill_viewport={}\npanel_inner_padding={}\nsearch_surface_layer={}\nresult_surface_layer={}\nselected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\npanel_does_not_fill_viewport={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -73,9 +82,12 @@ impl LauncherSurfaceSmokeReport {
             self.panel_radius,
             self.panel_does_not_fill_viewport,
             self.panel_inner_padding,
-            self.search_surface_layer,
-            self.result_surface_layer,
-            self.selected_surface_layer,
+            self.dark_search_surface_layer,
+            self.light_search_surface_layer,
+            self.dark_result_surface_layer,
+            self.light_result_surface_layer,
+            self.dark_selected_surface_layer,
+            self.light_selected_surface_layer,
             self.empty_state,
             self.matches_state,
             self.no_match_state,
