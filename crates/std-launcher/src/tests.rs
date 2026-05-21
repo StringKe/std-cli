@@ -235,7 +235,7 @@ fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     assert!(report.action_panel_actions.contains("Open in Studio"));
     assert!(report
         .action_panel_open_studio_command
-        .starts_with("std-studio --open "));
+        .starts_with("studio-pane://"));
     assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
     assert!(summary.contains("result_phase=WithResults"));
     assert!(summary.contains("selected_keycap=Mod+1"));
@@ -271,10 +271,7 @@ fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) 
         .contains(std_egui::i18n::t("launcher.feedback.failed")));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
     assert_eq!(report.error_open_studio_target, "ExecutionHistory");
-    assert_eq!(
-        report.error_open_studio_command,
-        "std-studio --open history"
-    );
+    assert_eq!(report.error_open_studio_command, "studio-pane://history");
     assert!(summary.contains(&format!(
         "failed_feedback_label={}",
         std_egui::i18n::t("launcher.feedback.failed")

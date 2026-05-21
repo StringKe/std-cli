@@ -68,7 +68,7 @@ fn action_panel_open_in_studio_records_intent_without_launching() {
 
     assert!(execution.is_none());
     let intent = state.studio_intent.unwrap();
-    assert_eq!(intent.command, "std-studio --open analysis");
+    assert_eq!(intent.command, "studio-pane://analysis");
     assert_eq!(intent.source_action, "Rebuild Index");
 }
 

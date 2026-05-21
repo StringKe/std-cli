@@ -153,7 +153,7 @@ fn feedback_actions_are_keyboard_reachable() {
             .studio_intent
             .as_ref()
             .map(|intent| intent.command.as_str()),
-        Some("std-studio --open history")
+        Some("studio-pane://history")
     );
 }
 

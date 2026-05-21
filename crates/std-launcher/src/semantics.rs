@@ -351,7 +351,7 @@ impl LauncherUiSemanticsReport {
             && self.action_panel_actions.contains("Open in Studio")
             && self
                 .action_panel_open_studio_command
-                .starts_with("std-studio --open ")
+                .starts_with("studio-pane://")
             && self.no_results_label == "No matches"
             && self.no_results_detail.contains("Try a different keyword")
             && self.no_results_fallback.contains("Ask AI about")
@@ -379,9 +379,9 @@ impl LauncherUiSemanticsReport {
             && self.error_actions == "Copy,Retry,Open Studio"
             && self
                 .feedback_keyboard_path
-                .contains("ArrowDown:Retry>ArrowDown:OpenStudio>Enter:std-studio --open history")
+                .contains("ArrowDown:Retry>ArrowDown:OpenStudio>Enter:studio-pane://history")
             && self.error_open_studio_target == "ExecutionHistory"
-            && self.error_open_studio_command == "std-studio --open history"
+            && self.error_open_studio_command == "studio-pane://history"
             && (!self.reduce_motion || self.launcher_enter_ms == 0)
     }
 

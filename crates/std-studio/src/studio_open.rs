@@ -42,6 +42,13 @@ pub(crate) fn studio_open_request_from_args(args: &[String]) -> Option<StudioOpe
     }
 }
 
+pub(crate) fn studio_open_smoke_from_args(args: &[String]) -> Option<StudioOpenSmokeReport> {
+    if args.get(1).map(String::as_str) != Some("--open-smoke") {
+        return None;
+    }
+    Some(StudioOpenSmokeReport::new())
+}
+
 pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: StudioOpenRequest) {
     match request {
         StudioOpenRequest::Analysis => {
@@ -83,6 +90,70 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
     app.status = format!("opened studio {}", request.target());
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct StudioOpenSmokeReport {
+    pub targets: usize,
+    pub route: &'static str,
+    pub internal_panes: usize,
+    pub native_child_windows: bool,
+    pub detached_panels: bool,
+    pub focus_restored: bool,
+    pub content_keys: String,
+}
+
+impl StudioOpenSmokeReport {
+    pub(crate) fn new() -> Self {
+        let requests = all_open_requests();
+        let mut keys = Vec::new();
+        let mut focus_restored = true;
+        for request in requests {
+            let app = app_for_open_request(request);
+            let Some(spec) = crate::workspace_panes::focused_workspace_spec(&app.app) else {
+                focus_restored = false;
+                continue;
+            };
+            focus_restored &= app.pending_workspace_focus == Some(spec.id);
+            keys.push(spec.content_key.to_string());
+        }
+        keys.sort();
+        keys.dedup();
+        let policy = std_studio::StudioApp::default().workspace_policy;
+        Self {
+            targets: all_open_requests().len(),
+            route: "internal-egui-workspace-pane-intent",
+            internal_panes: keys.len(),
+            native_child_windows: policy.allows_native_child_windows(),
+            detached_panels: policy.allows_detached_panels(),
+            focus_restored,
+            content_keys: keys.join(","),
+        }
+    }
+
+    pub(crate) fn pass(&self) -> bool {
+        self.targets == 7
+            && self.route == "internal-egui-workspace-pane-intent"
+            && self.internal_panes == 7
+            && !self.native_child_windows
+            && !self.detached_panels
+            && self.focus_restored
+            && self.content_keys == "analysis,apps,history,memory,plugins,settings,workflows"
+    }
+
+    pub(crate) fn summary(&self) -> String {
+        format!(
+            "studio_open_smoke {}\nroute={}\ntargets={}\ninternal_panes={}\nnative_child_windows={}\ndetached_panels={}\nfocus_restored={}\ncontent_keys={}",
+            if self.pass() { "PASS" } else { "FAIL" },
+            self.route,
+            self.targets,
+            self.internal_panes,
+            self.native_child_windows,
+            self.detached_panels,
+            self.focus_restored,
+            self.content_keys
+        )
+    }
+}
+
 pub(crate) fn studio_open_blocked_summary(request: StudioOpenRequest, reason: &str) -> String {
     let mut app = StudioEguiApp::default();
     apply_studio_open_request(&mut app, request);
@@ -119,6 +190,18 @@ fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
     }
 }
 
+fn all_open_requests() -> [StudioOpenRequest; 7] {
+    [
+        StudioOpenRequest::Analysis,
+        StudioOpenRequest::Apps,
+        StudioOpenRequest::History,
+        StudioOpenRequest::Memory,
+        StudioOpenRequest::Plugins,
+        StudioOpenRequest::Settings,
+        StudioOpenRequest::Workflows,
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -141,15 +224,7 @@ mod tests {
 
     #[test]
     fn applies_open_requests_to_internal_workspace_panes() {
-        for request in [
-            StudioOpenRequest::Analysis,
-            StudioOpenRequest::Apps,
-            StudioOpenRequest::History,
-            StudioOpenRequest::Memory,
-            StudioOpenRequest::Plugins,
-            StudioOpenRequest::Settings,
-            StudioOpenRequest::Workflows,
-        ] {
+        for request in all_open_requests() {
             let app = app_for_open_request(request);
 
             assert_eq!(app.app.open_workspace_panes().count(), 1);
@@ -157,6 +232,20 @@ mod tests {
             assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
             assert!(app.status.contains(request.target()));
         }
+    }
+
+    #[test]
+    fn open_smoke_reports_internal_pane_intents_without_native_windows() {
+        let args = vec!["std-studio".to_string(), "--open-smoke".to_string()];
+        let report = studio_open_smoke_from_args(&args).unwrap();
+
+        assert!(report.pass(), "{}", report.summary());
+        assert!(report.summary().contains("studio_open_smoke PASS"));
+        assert!(report
+            .summary()
+            .contains("route=internal-egui-workspace-pane-intent"));
+        assert!(report.summary().contains("native_child_windows=false"));
+        assert!(report.summary().contains("detached_panels=false"));
     }
 
     #[test]

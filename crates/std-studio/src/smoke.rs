@@ -9,6 +9,7 @@ mod workflow_builder_smoke;
 pub(crate) mod workspace_policy_smoke;
 mod workspace_smoke;
 
+use crate::studio_open::StudioOpenSmokeReport;
 use crate::{default_batch_json, StudioPane};
 use analysis_smoke::run_analysis_workbench_smoke;
 use keyboard_smoke::StudioKeyboardSmoke;
@@ -92,6 +93,7 @@ pub(crate) struct StudioSmokeReport {
     history_count: usize,
     keyboard_summary: String,
     operations_summary: String,
+    open_intent_summary: String,
 }
 
 pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
@@ -172,6 +174,7 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             history_count: 0,
             keyboard_summary: "studio_keyboard_smoke=FAIL".to_string(),
             operations_summary: "operations_smoke=FAIL".to_string(),
+            open_intent_summary: "studio_open_smoke FAIL".to_string(),
         }),
     }
 }
@@ -217,6 +220,7 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
 
     let plugin_smoke = run_plugin_manager_smoke(&mut studio)?;
     let operations_smoke = OperationsSmoke::new();
+    let open_smoke = StudioOpenSmokeReport::new();
 
     studio.open_workspace_pane(StudioPane::Dashboard);
     studio.open_workflow_builder(workflow_path);
@@ -300,5 +304,6 @@ pub(crate) fn run_studio_smoke() -> Result<StudioSmokeReport, Box<dyn std::error
         history_count,
         keyboard_summary: keyboard_smoke.summary(),
         operations_summary: operations_smoke.summary(),
+        open_intent_summary: open_smoke.summary().replace('\n', ";"),
     })
 }

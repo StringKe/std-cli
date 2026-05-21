@@ -37,6 +37,7 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("reopened_internal=true"));
     assert_workspace_forbidden_policy_summary(summary);
     assert_workspace_pane_lifecycle_summary(summary);
+    assert_studio_open_intent_summary(summary);
 }
 
 fn assert_workspace_forbidden_policy_summary(summary: &str) {
@@ -54,6 +55,14 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     );
     assert!(summary.contains("pane_focus_switch_path=settings>plugins>plugins"));
     assert!(summary.contains("pane_close_restore_path=close:"));
+}
+
+fn assert_studio_open_intent_summary(summary: &str) {
+    assert!(summary.contains("studio_open_smoke PASS"));
+    assert!(summary.contains("route=internal-egui-workspace-pane-intent"));
+    assert!(summary.contains("targets=7"));
+    assert!(summary.contains("internal_panes=7"));
+    assert!(summary.contains("focus_restored=true"));
 }
 
 fn assert_shell_layout_summary(summary: &str) {

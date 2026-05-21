@@ -49,6 +49,7 @@ use std_egui::tokens::ThemeProfile;
 use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 use studio_open::{
     run_studio_open_request, studio_open_blocked_summary, studio_open_request_from_args,
+    studio_open_smoke_from_args,
 };
 use studio_smoke_cli::{
     surface_smoke_from_args, theme_smoke_from_args, workspace_policy_smoke_from_args,
@@ -234,6 +235,10 @@ fn main() -> eframe::Result<()> {
     }
     if let Some(report) = surface_smoke_from_args(&args) {
         println!("{}", report.output());
+        return Ok(());
+    }
+    if let Some(report) = studio_open_smoke_from_args(&args) {
+        println!("{}", report.summary());
         return Ok(());
     }
     if let Some(request) = studio_open_request_from_args(&args) {

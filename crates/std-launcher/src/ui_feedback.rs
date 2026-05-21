@@ -188,7 +188,7 @@ mod tests {
 
         let intent = state.open_studio_execution_history_from_feedback();
 
-        assert_eq!(intent.command, "std-studio --open history");
+        assert_eq!(intent.command, "studio-pane://history");
         assert_eq!(
             intent.target,
             std_launcher::StudioLaunchTarget::ExecutionHistory

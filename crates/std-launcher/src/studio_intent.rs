@@ -22,12 +22,12 @@ pub enum StudioLaunchTarget {
 impl StudioLaunchTarget {
     fn command(self) -> &'static str {
         match self {
-            Self::ExecutionHistory => "std-studio --open history",
-            Self::Workflows => "std-studio --open workflows",
-            Self::Memory => "std-studio --open memory",
-            Self::Plugins => "std-studio --open plugins",
-            Self::Analysis => "std-studio --open analysis",
-            Self::Apps => "std-studio --open apps",
+            Self::ExecutionHistory => "studio-pane://history",
+            Self::Workflows => "studio-pane://workflows",
+            Self::Memory => "studio-pane://memory",
+            Self::Plugins => "studio-pane://plugins",
+            Self::Analysis => "studio-pane://analysis",
+            Self::Apps => "studio-pane://apps",
         }
     }
 }
