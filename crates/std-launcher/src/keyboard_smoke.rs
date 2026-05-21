@@ -65,6 +65,7 @@ impl LauncherState {
             completed_query,
             token_delete_query,
             enter_window,
+            ui_handler_contract: "ui-handler=cancel-before-ime,ime-before-enter",
             model_contract:
                 "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
             real_interaction_contract:

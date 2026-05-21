@@ -11,6 +11,7 @@ mod controller;
 mod hotkey;
 mod keyboard;
 mod keyboard_enter_window;
+mod keyboard_report;
 mod keyboard_smoke;
 mod layout_contract;
 mod query_completion;

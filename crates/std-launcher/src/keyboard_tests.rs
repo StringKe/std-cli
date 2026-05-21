@@ -156,9 +156,14 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
         "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
     );
     assert_eq!(
+        report.ui_handler_contract,
+        "ui-handler=cancel-before-ime,ime-before-enter"
+    );
+    assert_eq!(
         report.real_interaction_contract,
         "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
     );
+    assert!(summary.contains("ui_handler_contract=ui-handler=cancel-before-ime,ime-before-enter"));
     assert!(summary.contains(
         "model_contract=model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
     ));
