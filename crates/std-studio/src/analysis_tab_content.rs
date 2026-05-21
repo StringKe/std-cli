@@ -11,6 +11,7 @@ pub(crate) struct AnalysisTabRenderState<'a> {
     pub(crate) coverage: Option<&'a IndexCoverageReport>,
     pub(crate) answer: &'a str,
     pub(crate) search_output: &'a str,
+    pub(crate) relations_graph_mode: bool,
 }
 
 pub(crate) fn render_tab_content(ui: &mut egui::Ui, state: AnalysisTabRenderState<'_>) {
@@ -18,7 +19,9 @@ pub(crate) fn render_tab_content(ui: &mut egui::Ui, state: AnalysisTabRenderStat
         AnalysisWorkbenchTab::Overview => render_overview(ui, state.model, state.document),
         AnalysisWorkbenchTab::Components => render_components(ui, state.document),
         AnalysisWorkbenchTab::Symbols => render_symbols(ui, state.model, state.search_output),
-        AnalysisWorkbenchTab::Relations => render_relations(ui, state.document, state.model),
+        AnalysisWorkbenchTab::Relations => {
+            render_relations(ui, state.document, state.model, state.relations_graph_mode)
+        }
         AnalysisWorkbenchTab::Qa => render_qa(ui, state.model, state.answer),
     }
     ui.add_space(Space::XS as f32);
@@ -66,7 +69,18 @@ fn render_relations(
     ui: &mut egui::Ui,
     document: Option<&IndexDocument>,
     model: &AnalysisWorkbenchViewModel,
+    graph_mode: bool,
 ) {
+    ui::chip(
+        ui,
+        if graph_mode {
+            "Graph mode"
+        } else {
+            "List mode"
+        },
+        ui::selected_bg(ui.ctx()),
+    );
+    ui.add_space(Space::XS as f32);
     if let Some(summary) = &model.inspection_summary {
         ui::metric(ui, &summary.entity, summary.relations, "relations indexed");
     }

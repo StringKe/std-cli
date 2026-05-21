@@ -103,6 +103,14 @@ pub fn studio_inspector_toggle() -> KeyBinding {
     KeyBinding::Mod('I')
 }
 
+pub fn studio_analysis_relation_toggle() -> KeyBinding {
+    KeyBinding::Mod('L')
+}
+
+pub fn studio_analysis_qa_focus() -> KeyBinding {
+    KeyBinding::Plain(egui::Key::Questionmark)
+}
+
 pub fn studio_bottom_panel_toggle() -> KeyBinding {
     KeyBinding::Mod('J')
 }
@@ -187,6 +195,7 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
         'I' => egui::Key::I,
         'J' => egui::Key::J,
         'K' => egui::Key::K,
+        'L' => egui::Key::L,
         'P' => egui::Key::P,
         _ => return false,
     };
@@ -201,6 +210,7 @@ fn named_key_label(key: egui::Key) -> &'static str {
         egui::Key::Comma => ",",
         egui::Key::Enter => "Enter",
         egui::Key::Escape => "Esc",
+        egui::Key::Questionmark => "?",
         egui::Key::Slash => "/",
         egui::Key::Tab => "Tab",
         _ => "Key",
@@ -224,6 +234,8 @@ mod tests {
         assert!(studio_command_palette_slash().label().ends_with("+/"));
         assert!(studio_quick_open().label().ends_with("+P"));
         assert!(studio_settings().label().ends_with("+,"));
+        assert!(studio_analysis_relation_toggle().label().ends_with("+L"));
+        assert_eq!(studio_analysis_qa_focus().label(), "?");
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));

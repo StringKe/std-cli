@@ -10,6 +10,20 @@ use std_studio::{AnalysisWorkbenchTab, AnalysisWorkbenchViewModel};
 const ANALYSIS_PANEL_GAP: f32 = Space::SM as f32;
 
 impl StudioEguiApp {
+    pub(crate) fn handle_analysis_workbench_keyboard(&mut self, ctx: &egui::Context) {
+        if self.app.active_pane != std_studio::StudioPane::Analysis
+            || std_egui::input::ime_composing(ctx)
+        {
+            return;
+        }
+        if std_egui::input::studio_analysis_relation_toggle().pressed(ctx) {
+            self.analysis.toggle_relations_view();
+        }
+        if std_egui::input::studio_analysis_qa_focus().pressed(ctx) {
+            self.analysis.focus_qa();
+        }
+    }
+
     pub(crate) fn render_analysis(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
             ui,
@@ -172,6 +186,7 @@ impl StudioEguiApp {
             coverage: self.analysis.coverage_report.as_ref(),
             answer: &self.analysis.answer,
             search_output: &self.analysis.search_output,
+            relations_graph_mode: self.analysis.relations_graph_mode,
         }
     }
 

@@ -131,6 +131,7 @@ impl eframe::App for StudioEguiApp {
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
+        self.handle_analysis_workbench_keyboard(ctx);
         self.consume_workspace_commands();
         self.render_shell(ctx);
     }
