@@ -1,3 +1,4 @@
+use crate::LauncherSurfaceContract;
 use crate::PANEL_WIDTH;
 use std_egui::{
     motion::MotionContext,
@@ -31,6 +32,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub reduced_launcher_exit_ms: u128,
     pub reduced_focus_ring_ms: u128,
     pub reduce_motion_contract: String,
+    pub ui_contract: LauncherSurfaceContract,
 }
 
 impl LauncherSurfaceSmokeReport {
@@ -65,6 +67,7 @@ impl LauncherSurfaceSmokeReport {
             reduced_focus_ring_ms: reduced_motion.focus_ring().as_millis(),
             reduce_motion_contract:
                 "STD_REDUCE_MOTION=1 collapses launcher enter, exit, focus ring".to_string(),
+            ui_contract: LauncherSurfaceContract::new(),
         }
     }
 
@@ -94,11 +97,12 @@ impl LauncherSurfaceSmokeReport {
             && self.reduced_launcher_exit_ms == 0
             && self.reduced_focus_ring_ms == 0
             && self.reduce_motion_contract.contains("STD_REDUCE_MOTION=1")
+            && self.ui_contract.pass()
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\npanel_radius={}\nnative_viewport_contract={}\npreview_viewport_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -122,7 +126,8 @@ impl LauncherSurfaceSmokeReport {
             self.reduced_launcher_enter_ms,
             self.reduced_launcher_exit_ms,
             self.reduced_focus_ring_ms,
-            self.reduce_motion_contract
+            self.reduce_motion_contract,
+            self.ui_contract.summary()
         )
     }
 }

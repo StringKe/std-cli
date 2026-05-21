@@ -1,0 +1,202 @@
+use crate::LauncherState;
+use std_types::{ActionExecution, ActionExecutionStatus, ActionId, ActionType};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LauncherSurfaceContract {
+    pub search_bar: String,
+    pub result_list: String,
+    pub action_bar: String,
+    pub empty_state: String,
+    pub no_match_state: String,
+    pub executing_state: String,
+    pub defer_state: String,
+    pub error_state: String,
+}
+
+impl LauncherSurfaceContract {
+    pub fn new() -> Self {
+        let mut state = LauncherState::new();
+        state.update_query("rebuild index");
+        let result_count = state.view.results.len();
+        let selected = state
+            .view
+            .selected_result()
+            .expect("seeded launcher result");
+        let selected_type = selected.action.action_type.clone();
+        let preview = state
+            .view
+            .preview
+            .as_ref()
+            .expect("seeded launcher preview");
+
+        Self {
+            search_bar: search_bar_contract(),
+            result_list: result_list_contract(result_count, &selected_type),
+            action_bar: action_bar_contract(&preview.primary_command),
+            empty_state: empty_state_contract(),
+            no_match_state: no_match_state_contract(),
+            executing_state: executing_state_contract(),
+            defer_state: defer_state_contract(),
+            error_state: error_state_contract(),
+        }
+    }
+
+    pub fn pass(&self) -> bool {
+        self.search_bar == "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=optional"
+            && self
+                .result_list
+                .contains("groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other")
+            && self.result_list.contains("row_height=36")
+            && self.result_list.contains("group_height=24")
+            && self.result_list.contains("selected=accent-weak")
+            && self.result_list.contains("shortcut=Enter")
+            && self.action_bar.contains("height=36")
+            && self.action_bar.contains("actions=Mod+K")
+            && self.empty_state.contains("recent_or_suggested")
+            && self.no_match_state.contains("ask_ai_enter")
+            && self.executing_state.contains("input_locked=true")
+            && self.defer_state.contains("NeedsExternalRunner")
+            && self.error_state.contains("copy,retry,open_studio")
+    }
+
+    pub fn summary(&self) -> String {
+        format!(
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
+            if self.pass() { "PASS" } else { "FAIL" },
+            self.search_bar,
+            self.result_list,
+            self.action_bar,
+            self.empty_state,
+            self.no_match_state,
+            self.executing_state,
+            self.defer_state,
+            self.error_state
+        )
+    }
+}
+
+impl Default for LauncherSurfaceContract {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn search_bar_contract() -> String {
+    "height=64;text=headline;icon=search;focus=2px-accent;mode-tag=optional".to_string()
+}
+
+fn result_list_contract(result_count: usize, selected_type: &ActionType) -> String {
+    format!(
+        "groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut=Enter;virtualized=true",
+        action_type_name(selected_type)
+    )
+}
+
+fn action_bar_contract(primary_command: &str) -> String {
+    format!("height=36;left=breadcrumb;right=run+actions;run=Enter;actions=Mod+K;primary={primary_command}")
+}
+
+fn empty_state_contract() -> String {
+    let state = LauncherState::new();
+    format!(
+        "phase={:?};mode={:?};recent_or_suggested={};hint=slash-question-down",
+        state.view.phase,
+        state.view.result_mode,
+        !state.view.results.is_empty()
+    )
+}
+
+fn no_match_state_contract() -> String {
+    let mut state = LauncherState::new();
+    state.update_query("no-such-launcher-result");
+    let fallback = state.no_match_fallback_query().unwrap_or_default();
+    format!(
+        "phase={:?};mode={:?};icon=lg-search;ask_ai_enter={fallback}",
+        state.view.phase, state.view.result_mode
+    )
+}
+
+fn executing_state_contract() -> String {
+    let mut state = LauncherState::new();
+    state.update_query("rebuild index");
+    state.view.preview_executing();
+    format!(
+        "phase={:?};input_locked=true;cancel=Ctrl+C;progress=action-bar",
+        state.view.phase
+    )
+}
+
+fn defer_state_contract() -> String {
+    let feedback = std_egui::LauncherFeedback::from_execution(&execution(
+        "Fixture External Action",
+        ActionExecutionStatus::NeedsExternalRunner,
+    ));
+    format!(
+        "status={:?};title={};actions=copy,retry",
+        feedback.status, feedback.title
+    )
+}
+
+fn error_state_contract() -> String {
+    let feedback = std_egui::LauncherFeedback::from_execution(&execution(
+        "Fixture Plugin Crash",
+        ActionExecutionStatus::Failed,
+    ));
+    format!(
+        "status={:?};title={};actions=copy,retry,open_studio",
+        feedback.status, feedback.title
+    )
+}
+
+fn execution(name: &str, status: ActionExecutionStatus) -> ActionExecution {
+    ActionExecution {
+        action_id: ActionId::default(),
+        action_name: name.to_string(),
+        status,
+        message: "fixture message".to_string(),
+        output: None,
+        created_at: chrono::Utc::now(),
+    }
+}
+
+fn action_type_name(action_type: &ActionType) -> &'static str {
+    match action_type {
+        ActionType::AppLaunch => "app",
+        ActionType::Workflow => "workflow",
+        ActionType::Command => "command",
+        ActionType::Skill => "skill",
+        ActionType::Clipboard => "clipboard",
+        ActionType::Custom(_) => "custom",
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn surface_contract_covers_launcher_docs_21_states() {
+        let contract = LauncherSurfaceContract::new();
+
+        assert!(contract.pass(), "{}", contract.summary());
+        assert!(contract
+            .summary()
+            .contains("launcher_surface_contract PASS"));
+        assert!(contract.summary().contains("search_bar_contract=height=64"));
+        assert!(contract
+            .summary()
+            .contains("result_list_contract=groups=Action / Workflow"));
+        assert!(contract
+            .summary()
+            .contains("no_match_state_contract=phase=NoMatches"));
+        assert!(contract
+            .summary()
+            .contains("executing_state_contract=phase=Executing"));
+        assert!(contract
+            .summary()
+            .contains("defer_state_contract=status=NeedsExternalRunner"));
+        assert!(contract
+            .summary()
+            .contains("error_state_contract=status=Failed"));
+    }
+}

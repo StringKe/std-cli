@@ -11,6 +11,7 @@ mod keyboard;
 mod layout_contract;
 mod semantics;
 mod studio_intent;
+mod surface_contract;
 mod surface_smoke;
 mod voice;
 
@@ -34,6 +35,7 @@ use std_orchestration::{
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionPreview, ActionType};
 pub use studio_intent::{StudioLaunchIntent, StudioLaunchTarget};
+pub use surface_contract::LauncherSurfaceContract;
 pub use surface_smoke::LauncherSurfaceSmokeReport;
 pub use voice::clean_voice_transcript;
 
