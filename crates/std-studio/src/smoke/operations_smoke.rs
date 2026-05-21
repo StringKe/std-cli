@@ -14,6 +14,9 @@ pub(crate) struct OperationsSmoke {
     pub(crate) install_command: String,
     pub(crate) install_result: String,
     pub(crate) install_output: String,
+    pub(crate) runtime_command: String,
+    pub(crate) runtime_result: String,
+    pub(crate) runtime_output: String,
     pub(crate) step_summary: String,
     pub(crate) visual_contract: String,
     pub(crate) a11y_contract: String,
@@ -47,6 +50,9 @@ impl OperationsSmoke {
             install_command: evidence.install.command,
             install_result: evidence.install.result,
             install_output: evidence.install.output,
+            runtime_command: evidence.runtime.command,
+            runtime_result: evidence.runtime.result,
+            runtime_output: evidence.runtime.output,
             step_summary,
             visual_contract,
             a11y_contract,
@@ -66,6 +72,13 @@ impl OperationsSmoke {
             && self.install_command.contains("std install verify --prefix")
             && self.install_result.contains("install verify")
             && self.install_output.contains("launcher=")
+            && self
+                .runtime_command
+                .contains("std-launcher --gui-hotkey-smoke")
+            && self
+                .runtime_result
+                .contains("manual desktop opt-in required")
+            && self.runtime_output.contains("SKIP")
             && self.step_summary.contains("release-build:")
             && self.step_summary.contains("release-package:")
             && self.step_summary.contains("release-verify:")
@@ -76,10 +89,11 @@ impl OperationsSmoke {
                 .contains(operations_rows::operations_gate_visual_contract())
             && self
                 .visual_contract
-                .contains("gates=QA|Doctor|Release|Install")
-            && self.visual_contract.contains("commands=4")
-            && self.visual_contract.contains("results=4")
-            && self.visual_contract.contains("outputs=4")
+                .contains("gates=QA|Doctor|Release|Install|Runtime")
+            && self.visual_contract.contains("manual_gates=Runtime")
+            && self.visual_contract.contains("commands=5")
+            && self.visual_contract.contains("results=5")
+            && self.visual_contract.contains("outputs=5")
             && self
                 .a11y_contract
                 .contains(operations_rows::operations_gate_a11y_contract())
@@ -90,7 +104,7 @@ impl OperationsSmoke {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -104,6 +118,9 @@ impl OperationsSmoke {
             self.install_command,
             self.install_result,
             self.install_output,
+            self.runtime_command,
+            self.runtime_result,
+            self.runtime_output,
             self.step_summary,
             self.visual_contract,
             self.a11y_contract,
@@ -113,32 +130,37 @@ impl OperationsSmoke {
 
 fn operations_visual_contract(evidence: &OpsEvidence) -> String {
     format!(
-        "{};gates={};commands={};results={};outputs={};steps={}",
+        "{};gates={};manual_gates={};commands={};results={};outputs={};steps={}",
         operations_rows::operations_gate_visual_contract(),
         [
             evidence.qa.title,
             evidence.doctor.title,
             evidence.release.title,
-            evidence.install.title
+            evidence.install.title,
+            evidence.runtime.title
         ]
         .join("|"),
+        evidence.runtime.title,
         visible_count([
             &evidence.qa.command,
             &evidence.doctor.command,
             &evidence.release.command,
             &evidence.install.command,
+            &evidence.runtime.command,
         ]),
         visible_count([
             &evidence.qa.result,
             &evidence.doctor.result,
             &evidence.release.result,
             &evidence.install.result,
+            &evidence.runtime.result,
         ]),
         visible_count([
             &evidence.qa.output,
             &evidence.doctor.output,
             &evidence.release.output,
             &evidence.install.output,
+            &evidence.runtime.output,
         ]),
         evidence.qa.steps.len() + evidence.release.steps.len() + evidence.install.steps.len()
     )
@@ -151,7 +173,7 @@ fn operations_a11y_contract(_evidence: &OpsEvidence) -> String {
     )
 }
 
-fn visible_count(values: [&String; 4]) -> usize {
+fn visible_count(values: [&String; 5]) -> usize {
     values
         .iter()
         .filter(|value| !value.trim().is_empty())
@@ -179,12 +201,22 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("operations_install_command=std install verify"));
+        assert!(smoke
+            .summary()
+            .contains("operations_runtime_command=std-launcher --gui-hotkey-smoke"));
+        assert!(smoke
+            .summary()
+            .contains("operations_runtime_result=manual desktop opt-in required"));
+        assert!(smoke.summary().contains("operations_runtime_output=SKIP"));
         assert!(smoke.summary().contains("operations_step_summary="));
         assert!(smoke.summary().contains("operations_visual_contract="));
-        assert!(smoke.summary().contains("gates=QA|Doctor|Release|Install"));
-        assert!(smoke.summary().contains("commands=4"));
-        assert!(smoke.summary().contains("results=4"));
-        assert!(smoke.summary().contains("outputs=4"));
+        assert!(smoke
+            .summary()
+            .contains("gates=QA|Doctor|Release|Install|Runtime"));
+        assert!(smoke.summary().contains("manual_gates=Runtime"));
+        assert!(smoke.summary().contains("commands=5"));
+        assert!(smoke.summary().contains("results=5"));
+        assert!(smoke.summary().contains("outputs=5"));
         assert!(smoke.summary().contains("operations_a11y_contract="));
         assert!(smoke
             .summary()

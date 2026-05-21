@@ -415,6 +415,9 @@ impl StudioSmokeReport {
                 .contains("operations_install_command=std install verify")
             && self
                 .operations_summary
+                .contains("operations_runtime_command=std-launcher --gui-hotkey-smoke")
+            && self
+                .operations_summary
                 .contains("release-package:std release package")
             && self
                 .operations_summary
@@ -426,9 +429,11 @@ impl StudioSmokeReport {
             && self
                 .operations_summary
                 .contains("gates=QA|Doctor|Release|Install")
-            && self.operations_summary.contains("commands=4")
-            && self.operations_summary.contains("results=4")
-            && self.operations_summary.contains("outputs=4")
+            && self.operations_summary.contains("Runtime")
+            && self.operations_summary.contains("manual_gates=Runtime")
+            && self.operations_summary.contains("commands=5")
+            && self.operations_summary.contains("results=5")
+            && self.operations_summary.contains("outputs=5")
             && self.operations_summary.contains("operations_a11y_contract=")
             && self
                 .operations_summary

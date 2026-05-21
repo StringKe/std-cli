@@ -77,6 +77,14 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
         &evidence.install.runbook,
         &["std install run", "std install verify"],
     );
+    assert!(evidence
+        .runtime
+        .command
+        .contains("std-launcher --gui-hotkey-smoke"));
+    assert!(evidence
+        .runtime
+        .result
+        .contains("manual desktop opt-in required"));
     assert!(evidence.runtime.output.contains("SKIP"));
     assert_runbook_contains(
         &evidence.runtime.runbook,
