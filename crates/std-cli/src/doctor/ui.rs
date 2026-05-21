@@ -43,7 +43,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_ui_docs(&root)?;
     check_quality_report_gates(&root)?;
     check_runtime_theme_profiles(&root)?;
-    check_launcher_transparent_carrier(&root)?;
+    check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
     check_desktop_automation_boundary(&root)?;
     Ok(UiDoctor {
@@ -110,34 +110,26 @@ fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> 
     Ok(())
 }
 
-fn check_launcher_transparent_carrier(root: &std::path::Path) -> Result<(), CliError> {
+fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError> {
     let launcher_ui = read_required(&root.join("crates/std-launcher/src/ui.rs"))?;
-    for required in [
-        "pub(crate) fn render_launcher_carrier",
-        "pub(crate) fn launcher_carrier_frame() -> egui::Frame",
-        "egui::Frame::NONE.fill(egui::Color32::TRANSPARENT)",
-        "launcher_carrier_frame_is_transparent_and_unstyled",
-    ] {
+    for required in ["Color::bg_surface_0(&ctx)", "render_launcher_panel"] {
         check_text(&launcher_ui, required)?;
     }
     let launcher_app = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
-    check_text(&launcher_app, "ui::render_launcher_carrier")?;
-    if launcher_app.contains("CentralPanel::default()")
-        || launcher_app.contains("Frame::NONE.fill(egui::Color32::TRANSPARENT)")
-    {
-        return Err(CliError::Config(
-            "launcher app must delegate viewport carrier rendering to ui::render_launcher_carrier"
-                .to_string(),
-        ));
-    }
+    check_text(&launcher_app, "ui::render_launcher_viewport")?;
     let launcher_metrics = read_required(&root.join("crates/std-launcher/src/ui_metrics.rs"))?;
     for required in [
-        "const CARRIER_MARGIN",
-        "carrier_margin_for_scale",
-        "scale.f32(PANEL_WIDTH) + margin * 2.0",
-        "carrier_window_keeps_panel_away_from_native_viewport_edges",
+        "scale.f32(PANEL_WIDTH)",
+        "native_viewport_is_the_launcher_panel_not_a_carrier",
     ] {
         check_text(&launcher_metrics, required)?;
+    }
+    for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
+        if launcher_metrics.contains(forbidden) {
+            return Err(CliError::Config(
+                "launcher must not depend on a visible viewport carrier".to_string(),
+            ));
+        }
     }
     Ok(())
 }

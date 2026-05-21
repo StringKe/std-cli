@@ -4,17 +4,17 @@ use std_launcher::LauncherWindowCommand;
 pub(crate) fn apply_window_commands(
     ctx: &egui::Context,
     commands: &[LauncherWindowCommand],
-    carrier_size: egui::Vec2,
+    viewport_size: egui::Vec2,
 ) {
     for command in commands {
         match command {
             LauncherWindowCommand::PositionForPanel => {
-                if let Some(position) = launcher_window_position(ctx, carrier_size) {
+                if let Some(position) = launcher_window_position(ctx, viewport_size) {
                     ctx.send_viewport_cmd(egui::ViewportCommand::OuterPosition(position));
                 }
             }
             LauncherWindowCommand::ResizeToPanel => {
-                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(carrier_size));
+                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
             }
             LauncherWindowCommand::SetVisible(visible) => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(*visible));
@@ -28,21 +28,21 @@ pub(crate) fn apply_window_commands(
 
 pub(crate) fn launcher_window_position(
     ctx: &egui::Context,
-    carrier_size: egui::Vec2,
+    viewport_size: egui::Vec2,
 ) -> Option<egui::Pos2> {
     let monitor_size = ctx.input(|input| input.viewport().monitor_size)?;
     Some(launcher_window_position_for_monitor(
         monitor_size,
-        carrier_size,
+        viewport_size,
     ))
 }
 
 fn launcher_window_position_for_monitor(
     monitor_size: egui::Vec2,
-    carrier_size: egui::Vec2,
+    viewport_size: egui::Vec2,
 ) -> egui::Pos2 {
-    let x = ((monitor_size.x - carrier_size.x) * 0.5).max(0.0);
-    let y = (monitor_size.y * 0.28).min((monitor_size.y - carrier_size.y).max(0.0));
+    let x = ((monitor_size.x - viewport_size.x) * 0.5).max(0.0);
+    let y = (monitor_size.y * 0.28).min((monitor_size.y - viewport_size.y).max(0.0));
     egui::pos2(x, y)
 }
 

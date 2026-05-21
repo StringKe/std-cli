@@ -13,7 +13,7 @@ use std_egui::{
 use std_launcher::LauncherFocusSection;
 use std_launcher::LauncherState;
 
-pub(crate) fn render_launcher_carrier(
+pub(crate) fn render_launcher_viewport(
     ctx: &egui::Context,
     state: &mut LauncherState,
     hotkey_status: &str,
@@ -22,7 +22,7 @@ pub(crate) fn render_launcher_carrier(
 ) -> bool {
     let mut hide_requested = false;
     egui::CentralPanel::default()
-        .frame(launcher_carrier_frame())
+        .frame(launcher_viewport_frame())
         .show(ctx, |ui| {
             hide_requested = render_launcher_overlay(
                 ui,
@@ -35,7 +35,7 @@ pub(crate) fn render_launcher_carrier(
     hide_requested
 }
 
-pub(crate) fn launcher_carrier_frame() -> egui::Frame {
+pub(crate) fn launcher_viewport_frame() -> egui::Frame {
     egui::Frame::NONE.fill(egui::Color32::TRANSPARENT)
 }
 
@@ -273,8 +273,8 @@ mod tests {
     }
 
     #[test]
-    fn launcher_carrier_frame_is_transparent_and_unstyled() {
-        let frame = launcher_carrier_frame();
+    fn launcher_viewport_frame_is_transparent_and_unstyled() {
+        let frame = launcher_viewport_frame();
 
         assert_eq!(frame.fill, egui::Color32::TRANSPARENT);
         assert_eq!(frame.stroke, egui::Stroke::NONE);

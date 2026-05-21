@@ -36,14 +36,14 @@ impl eframe::App for LauncherApp {
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.apply_theme_profile(ctx);
-        let carrier_size = ui::launcher_window_inner_size(&self.state);
+        let viewport_size = ui::launcher_window_inner_size(&self.state);
         if ctx.input(|input| input.viewport().close_requested()) && !self.allow_close {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), carrier_size);
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
         }
 
         if self.take_hotkey_toggle() {
-            apply_window_commands(ctx, &self.state.handle_hotkey_toggle(), carrier_size);
+            apply_window_commands(ctx, &self.state.handle_hotkey_toggle(), viewport_size);
         }
         if let Some(command) = self
             .resident_entry
@@ -52,17 +52,17 @@ impl eframe::App for LauncherApp {
         {
             match command {
                 ResidentCommand::Show => {
-                    apply_window_commands(ctx, &self.state.handle_show(), carrier_size);
+                    apply_window_commands(ctx, &self.state.handle_show(), viewport_size);
                 }
                 ResidentCommand::Hide => {
-                    apply_window_commands(ctx, &self.state.handle_escape_hide(), carrier_size);
+                    apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
                 }
                 ResidentCommand::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             }
         }
 
         if input::escape().pressed(ctx) {
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), carrier_size);
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
         }
 
         if !self.state.controller.visible {
@@ -70,15 +70,15 @@ impl eframe::App for LauncherApp {
             return;
         }
 
-        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(carrier_size));
-        if ui::render_launcher_carrier(
+        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
+        if ui::render_launcher_viewport(
             ctx,
             &mut self.state,
             &self.hotkey_status,
             &self.resident_status,
             &mut self.voice_transcript,
         ) {
-            apply_window_commands(ctx, &self.state.handle_escape_hide(), carrier_size);
+            apply_window_commands(ctx, &self.state.handle_escape_hide(), viewport_size);
         }
     }
 }
