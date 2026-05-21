@@ -1,4 +1,5 @@
 use crate::{analysis_state::AnalysisUiState, layout::StudioLayoutState};
+use std_egui::input;
 use std_studio::{StudioApp, StudioPane};
 
 pub(crate) struct StudioKeyboardSmoke {
@@ -38,14 +39,24 @@ impl StudioKeyboardSmoke {
     }
 
     pub(crate) fn pass(&self) -> bool {
-        self.sidebar_toggle_path == "Cmd+B:open>closed>open"
-            && self.inspector_toggle_path == "Cmd+I:closed>open>closed"
-            && self.bottom_panel_toggle_path == "Cmd+J:closed>open>closed"
-            && self.command_palette_path == "Cmd+Shift+P|Cmd+/:closed>command"
-            && self.quick_open_path == "Cmd+P:command>quick-open"
+        self.sidebar_toggle_path
+            == shortcut_path(input::studio_sidebar_toggle(), "open>closed>open")
+            && self.inspector_toggle_path
+                == shortcut_path(input::studio_inspector_toggle(), "closed>open>closed")
+            && self.bottom_panel_toggle_path
+                == shortcut_path(input::studio_bottom_panel_toggle(), "closed>open>closed")
+            && self.command_palette_path
+                == format!(
+                    "{}|{}:closed>command",
+                    input::studio_command_palette().label(),
+                    input::studio_command_palette_slash().label()
+                )
+            && self.quick_open_path
+                == shortcut_path(input::studio_quick_open(), "command>quick-open")
             && self.workspace_focus_path == "dashboard>plugins>settings>dashboard"
             && self.analysis_focus_path == "target>tabs>content>query>coverage>target"
-            && self.analysis_qa_focus == "?:coverage>query"
+            && self.analysis_qa_focus
+                == shortcut_path(input::studio_analysis_qa_focus(), "coverage>query")
             && self.keyboard_contract == "docs/20#studio-shortcuts"
     }
 
@@ -72,7 +83,7 @@ fn toggle_sidebar(layout: &mut StudioLayoutState) -> String {
     states.push(open_closed(layout.sidebar_open));
     layout.sidebar_open = !layout.sidebar_open;
     states.push(open_closed(layout.sidebar_open));
-    format!("Cmd+B:{}", states.join(">"))
+    shortcut_path(input::studio_sidebar_toggle(), &states.join(">"))
 }
 
 fn toggle_inspector(layout: &mut StudioLayoutState) -> String {
@@ -81,7 +92,7 @@ fn toggle_inspector(layout: &mut StudioLayoutState) -> String {
     states.push(open_closed(layout.inspector_open));
     layout.inspector_open = !layout.inspector_open;
     states.push(open_closed(layout.inspector_open));
-    format!("Cmd+I:{}", states.join(">"))
+    shortcut_path(input::studio_inspector_toggle(), &states.join(">"))
 }
 
 fn toggle_bottom_panel(layout: &mut StudioLayoutState) -> String {
@@ -90,19 +101,28 @@ fn toggle_bottom_panel(layout: &mut StudioLayoutState) -> String {
     states.push(open_closed(layout.bottom_panel_open));
     layout.bottom_panel_open = !layout.bottom_panel_open;
     states.push(open_closed(layout.bottom_panel_open));
-    format!("Cmd+J:{}", states.join(">"))
+    shortcut_path(input::studio_bottom_panel_toggle(), &states.join(">"))
 }
 
 fn open_command_palette(layout: &mut StudioLayoutState) -> String {
     let before = overlay_state(layout);
     layout.open_command_palette();
-    format!("Cmd+Shift+P|Cmd+/:{}>{}", before, overlay_state(layout))
+    format!(
+        "{}|{}:{}>{}",
+        input::studio_command_palette().label(),
+        input::studio_command_palette_slash().label(),
+        before,
+        overlay_state(layout)
+    )
 }
 
 fn open_quick_open(layout: &mut StudioLayoutState) -> String {
     let before = overlay_state(layout);
     layout.open_quick_open();
-    format!("Cmd+P:{}>{}", before, overlay_state(layout))
+    shortcut_path(
+        input::studio_quick_open(),
+        &format!("{}>{}", before, overlay_state(layout)),
+    )
 }
 
 fn workspace_focus_cycle(studio: &mut StudioApp) -> String {
@@ -135,8 +155,15 @@ fn analysis_focus_paths() -> (String, String) {
     qa.focus_qa();
     (
         labels.join(">"),
-        format!("?:{}>{}", before_qa, qa.focus_area.label()),
+        shortcut_path(
+            input::studio_analysis_qa_focus(),
+            &format!("{}>{}", before_qa, qa.focus_area.label()),
+        ),
     )
+}
+
+fn shortcut_path(binding: input::KeyBinding, path: &str) -> String {
+    format!("{}:{path}", binding.label())
 }
 
 fn open_closed(value: bool) -> &'static str {

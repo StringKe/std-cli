@@ -7,7 +7,7 @@ use crate::{
 };
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Elevation, Radius, Space},
 };
 use std_studio::StudioPane;
@@ -22,7 +22,7 @@ impl StudioEguiApp {
                 ctx,
                 "studio_command_palette",
                 i18n::t("studio.shell.command_palette.title"),
-                "Mod+/ or Mod+Shift+P",
+                &command_palette_shortcut_hint(),
                 command_palette_items(&self.app),
             );
         }
@@ -31,7 +31,7 @@ impl StudioEguiApp {
                 ctx,
                 "studio_quick_open",
                 i18n::t("studio.shell.quick_open.title"),
-                "Mod+P",
+                &input::studio_quick_open().label(),
                 quick_open_items(&self.app),
             );
         }
@@ -173,6 +173,14 @@ impl StudioEguiApp {
         let id = self.app.open_settings_pane();
         self.status = format!("opened workspace pane {}", id.value());
     }
+}
+
+fn command_palette_shortcut_hint() -> String {
+    format!(
+        "{} or {}",
+        input::studio_command_palette_slash().label(),
+        input::studio_command_palette().label()
+    )
 }
 
 fn render_host_overlay(

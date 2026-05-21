@@ -1,4 +1,4 @@
-use std_egui::i18n;
+use std_egui::{i18n, input};
 use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,20 +28,20 @@ pub(crate) fn command_palette_items(app: &StudioApp) -> Vec<StudioCommandItem> {
                 pane.label()
             ),
             detail: i18n::t("studio.shell.command.switch_workspace").to_string(),
-            shortcut: "Enter".to_string(),
+            shortcut: input::enter().label(),
             action: StudioCommandAction::SwitchPane(pane),
         })
         .collect::<Vec<_>>();
     items.push(StudioCommandItem {
         title: i18n::t("studio.shell.command.refresh_workspace").to_string(),
         detail: format!("{} open panes", app.open_workspace_panes().count()),
-        shortcut: "Enter".to_string(),
+        shortcut: input::enter().label(),
         action: StudioCommandAction::Refresh,
     });
     items.push(StudioCommandItem {
         title: i18n::t("studio.shell.command.open_settings").to_string(),
         detail: app.config_path().display().to_string(),
-        shortcut: "Mod+,".to_string(),
+        shortcut: input::studio_settings().label(),
         action: StudioCommandAction::OpenSettings,
     });
     items
@@ -53,7 +53,7 @@ pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
         .map(|pane| StudioCommandItem {
             title: pane.title.clone(),
             detail: pane.kind.content_key().to_string(),
-            shortcut: "Enter".to_string(),
+            shortcut: input::enter().label(),
             action: StudioCommandAction::FocusWorkspace(pane.id),
         })
         .collect::<Vec<_>>();
@@ -61,13 +61,13 @@ pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
         items.push(StudioCommandItem {
             title: i18n::t("studio.shell.command.open_workflow_builder").to_string(),
             detail: app.core.config.workflows_dir().display().to_string(),
-            shortcut: "Enter".to_string(),
+            shortcut: input::enter().label(),
             action: StudioCommandAction::OpenWorkspace(StudioPane::Workflows),
         });
         items.push(StudioCommandItem {
             title: i18n::t("studio.shell.command.open_analysis_workbench").to_string(),
             detail: app.core.config.data_dir.display().to_string(),
-            shortcut: "Enter".to_string(),
+            shortcut: input::enter().label(),
             action: StudioCommandAction::OpenWorkspace(StudioPane::Analysis),
         });
     }
@@ -183,9 +183,11 @@ mod tests {
         assert!(filter_items(&items, "workspace")
             .iter()
             .any(|item| item.title == "Show Dashboard"));
-        assert!(filter_items(&items, "mod+,")
-            .iter()
-            .any(|item| item.title == "Open Settings"));
+        assert!(
+            filter_items(&items, &std_egui::input::studio_settings().label())
+                .iter()
+                .any(|item| item.title == "Open Settings")
+        );
         assert!(filter_items(&items, "missing").is_empty());
     }
 }
