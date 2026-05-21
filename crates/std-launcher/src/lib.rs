@@ -8,6 +8,7 @@ mod close_smoke;
 mod controller;
 mod hotkey;
 mod keyboard;
+mod keyboard_smoke;
 mod layout_contract;
 mod query_mode;
 mod reports;

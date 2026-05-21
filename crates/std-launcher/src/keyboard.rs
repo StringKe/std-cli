@@ -1,5 +1,4 @@
 use crate::LauncherState;
-use std_core::{StdConfig, StdCore};
 use std_egui::{LauncherFeedbackAction, LauncherResultMode};
 use std_types::ActionExecutionStatus;
 
@@ -224,92 +223,6 @@ impl LauncherState {
         execution
     }
 
-    pub fn keyboard_smoke(query: &str) -> LauncherKeyboardReport {
-        let mut state = Self::new();
-        state.controller.show();
-        state.update_query(query);
-        let selected_before = state.view.selected;
-        state.handle_keyboard_input(LauncherKey::ArrowDown, false);
-        let selected_after_down = state.view.selected;
-        state.handle_keyboard_input(LauncherKey::ArrowUp, false);
-        let selected_after_up = state.view.selected;
-        let before_ime = state.view.selected;
-        state.handle_keyboard_input(LauncherKey::ArrowDown, true);
-        let ime_selection_unchanged = state.view.selected == before_ime;
-        state.focus_section = LauncherFocusSection::Search;
-        state.handle_keyboard_input(LauncherKey::FocusNext, false);
-        let focus_after_tab = state.focus_section;
-        state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
-        let focus_after_shift_tab = state.focus_section;
-        let focus_path = "Search>Results>Search".to_string();
-        state.handle_keyboard_input(LauncherKey::ActionPanel, false);
-        let action_panel_selected_before = state.action_panel.selected;
-        state.handle_keyboard_input(LauncherKey::ArrowDown, true);
-        let ime_action_panel_selection_unchanged =
-            state.action_panel.selected == action_panel_selected_before;
-        state.handle_keyboard_input(LauncherKey::FocusNext, false);
-        let action_panel_focus_path = format!(
-            "{:?}>{:?}",
-            LauncherFocusSection::ActionPanel,
-            state.focus_section
-        );
-        state.handle_keyboard_input(LauncherKey::Escape, false);
-        let mut token_state = Self::new();
-        token_state.update_query("open terminal now");
-        token_state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
-        let token_delete_query = token_state.view.query;
-        let ime_trigger_blocked = state
-            .handle_keyboard_input(LauncherKey::Enter, true)
-            .is_none()
-            && state.view.feedback.is_none();
-        state.handle_keyboard_input(LauncherKey::Escape, true);
-        let ime_escape_blocked = state.controller.visible;
-        let mut ime_commit_state = Self::new();
-        ime_commit_state.update_query("index");
-        let query_before_preedit = ime_commit_state.view.query.clone();
-        ime_commit_state.handle_ime_preedit("zhong");
-        let ime_preedit_query_unchanged = ime_commit_state.view.query == query_before_preedit;
-        ime_commit_state.handle_ime_commit("rebuild index");
-        let ime_commit_query = ime_commit_state.view.query.clone();
-        let ime_composition_path =
-            format!("zh-preedit({query_before_preedit})>blocked>commit({ime_commit_query})>enter");
-        let ime_commit_trigger_status = ime_commit_state
-            .handle_keyboard_input(LauncherKey::Enter, false)
-            .map(|execution| execution.status);
-        let direct_trigger_status = state
-            .handle_keyboard_input(LauncherKey::TriggerResult(0), false)
-            .map(|execution| execution.status);
-        let trigger_status = state
-            .handle_keyboard_input(LauncherKey::Enter, false)
-            .map(|execution| execution.status);
-        let (user_enter_status, user_enter_deferred) = user_enter_defer_evidence();
-        state.handle_keyboard_input(LauncherKey::Escape, false);
-        state.handle_keyboard_input(LauncherKey::Escape, false);
-        LauncherKeyboardReport {
-            selected_before,
-            selected_after_down,
-            selected_after_up,
-            direct_trigger_status,
-            trigger_status,
-            user_enter_status,
-            user_enter_deferred,
-            closed_after_escape: !state.controller.visible,
-            ime_selection_unchanged,
-            ime_action_panel_selection_unchanged,
-            ime_trigger_blocked,
-            ime_escape_blocked,
-            ime_composition_path,
-            ime_preedit_query_unchanged,
-            ime_commit_query,
-            ime_commit_trigger_status,
-            focus_after_tab,
-            focus_after_shift_tab,
-            focus_path,
-            action_panel_focus_path,
-            token_delete_query,
-        }
-    }
-
     fn focus_next_section(&mut self) {
         self.focus_section = match (
             self.focus_section,
@@ -406,45 +319,4 @@ impl LauncherKeyboardReport {
             self.token_delete_query
         )
     }
-}
-
-fn user_enter_defer_evidence() -> (Option<ActionExecutionStatus>, bool) {
-    let root = std::env::temp_dir().join(format!(
-        "std-launcher-keyboard-smoke-{}",
-        std::process::id()
-    ));
-    let config = StdConfig {
-        data_dir: root.join("data"),
-        ..StdConfig::default()
-    };
-    write_keyboard_smoke_app(&config);
-    let core = StdCore::with_config(config);
-    let mut state = LauncherState::with_core(core);
-    state.controller.show();
-    state.update_query("Keyboard Smoke App");
-    let Some(execution) = state.handle_keyboard_input_by_user(LauncherKey::Enter, false) else {
-        let _ = std::fs::remove_dir_all(&root);
-        return (None, false);
-    };
-    let deferred = execution
-        .output
-        .as_ref()
-        .and_then(|output| output.get("deferred"))
-        .and_then(|value| value.as_bool())
-        .unwrap_or(false);
-    let _ = std::fs::remove_dir_all(root);
-    (Some(execution.status), deferred)
-}
-
-fn write_keyboard_smoke_app(config: &StdConfig) {
-    let app = config.apps_dir().join("KeyboardSmokeApp.app");
-    let contents = app.join("Contents");
-    let _ = std::fs::create_dir_all(&contents);
-    let _ = std::fs::write(
-        contents.join("Info.plist"),
-        r#"<plist><dict>
-<key>CFBundleDisplayName</key><string>Keyboard Smoke App</string>
-<key>CFBundleName</key><string>KeyboardSmokeApp</string>
-</dict></plist>"#,
-    );
 }
