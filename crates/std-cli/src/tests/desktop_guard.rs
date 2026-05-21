@@ -164,6 +164,10 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         !body.contains("STD_ALLOW_UI_PREVIEW = \"1\""),
         "mise default tasks must not opt into UI preview"
     );
+    assert!(
+        !body.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""),
+        "mise default tasks must not opt into background UI automation"
+    );
 }
 
 #[test]
@@ -171,6 +175,7 @@ fn workspace_test_binaries_carry_desktop_safe_env_by_default() {
     assert_eq!(option_env!("STD_TEST_MODE"), Some("1"));
     assert_eq!(option_env!("STD_ALLOW_DESKTOP_AUTOMATION"), Some("0"));
     assert_eq!(option_env!("STD_ALLOW_UI_PREVIEW"), Some("0"));
+    assert_eq!(option_env!("STD_ALLOW_BACKGROUND_UI_AUTOMATION"), Some("0"));
 }
 
 #[test]
@@ -202,6 +207,7 @@ fn workspace_package_forces_test_env_for_all_crates() {
         "cargo:rustc-env=STD_TEST_MODE=1",
         "cargo:rustc-env=STD_ALLOW_DESKTOP_AUTOMATION=0",
         "cargo:rustc-env=STD_ALLOW_UI_PREVIEW=0",
+        "cargo:rustc-env=STD_ALLOW_BACKGROUND_UI_AUTOMATION=0",
     ] {
         assert!(
             build_body.contains(required),
@@ -257,7 +263,11 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
             "release default cargo command must force safe desktop env unless it is static dependency analysis: {line}"
         );
     }
-    for forbidden in ["STD_ALLOW_DESKTOP_AUTOMATION=1", "STD_ALLOW_UI_PREVIEW=1"] {
+    for forbidden in [
+        "STD_ALLOW_DESKTOP_AUTOMATION=1",
+        "STD_ALLOW_UI_PREVIEW=1",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1",
+    ] {
         assert!(
             !quality_commands.contains(forbidden) && !smoke_commands.contains(forbidden),
             "release default quality gates must not include desktop opt-in: {forbidden}"

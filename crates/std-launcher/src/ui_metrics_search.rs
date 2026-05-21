@@ -1,7 +1,7 @@
 use eframe::egui;
 use std_egui::tokens::UiScale;
 
-const SEARCH_BAR_MIN_HEIGHT: f32 = 44.0;
+const SEARCH_BAR_MIN_HEIGHT: f32 = 40.0;
 const SEARCH_INPUT_WIDTH_RESERVE: f32 = 72.0;
 const SEARCH_INPUT_HEIGHT: f32 = 36.0;
 const SEARCH_ICON_WIDTH: f32 = 24.0;

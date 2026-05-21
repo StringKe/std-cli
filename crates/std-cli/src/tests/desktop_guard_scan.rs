@@ -61,17 +61,20 @@ pub(crate) fn task_has_std_test_mode(body: &str, task: &str) -> bool {
 pub(crate) fn task_blocks_desktop_opt_ins(body: &str, task: &str) -> bool {
     task_has_env(body, task, "STD_ALLOW_DESKTOP_AUTOMATION", "0")
         && task_has_env(body, task, "STD_ALLOW_UI_PREVIEW", "0")
+        && task_has_env(body, task, "STD_ALLOW_BACKGROUND_UI_AUTOMATION", "0")
 }
 
 pub(crate) fn workspace_blocks_desktop_opt_ins(body: &str) -> bool {
     body.contains("STD_ALLOW_DESKTOP_AUTOMATION = \"0\"")
         && body.contains("STD_ALLOW_UI_PREVIEW = \"0\"")
+        && body.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"0\"")
 }
 
 pub(crate) fn command_sets_desktop_safe_env(line: &str) -> bool {
     line.contains("STD_TEST_MODE=1")
         && line.contains("STD_ALLOW_DESKTOP_AUTOMATION=0")
         && line.contains("STD_ALLOW_UI_PREVIEW=0")
+        && line.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION=0")
 }
 
 fn task_has_env(body: &str, task: &str, key: &str, value: &str) -> bool {
@@ -321,16 +324,22 @@ fn forbidden_test_opt_in_terms() -> Vec<String> {
     vec![
         ".env(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
         ".env(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
+        ".env(\"STD_ALLOW_BACKGROUND_UI_AUTOMATION\", \"1\")".to_string(),
         ".env_remove(\"STD_ALLOW_DESKTOP_AUTOMATION\")".to_string(),
         ".env_remove(\"STD_ALLOW_UI_PREVIEW\")".to_string(),
+        ".env_remove(\"STD_ALLOW_BACKGROUND_UI_AUTOMATION\")".to_string(),
         ".env([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         ".env([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
+        ".env([\"STD_ALLOW\", \"BACKGROUND_UI_AUTOMATION\"]".to_string(),
         "set_var(\"STD_ALLOW_DESKTOP_AUTOMATION\", \"1\")".to_string(),
         "set_var(\"STD_ALLOW_UI_PREVIEW\", \"1\")".to_string(),
+        "set_var(\"STD_ALLOW_BACKGROUND_UI_AUTOMATION\", \"1\")".to_string(),
         "remove_var(\"STD_ALLOW_DESKTOP_AUTOMATION\")".to_string(),
         "remove_var(\"STD_ALLOW_UI_PREVIEW\")".to_string(),
+        "remove_var(\"STD_ALLOW_BACKGROUND_UI_AUTOMATION\")".to_string(),
         "set_var([\"STD_ALLOW\", \"DESKTOP_AUTOMATION\"]".to_string(),
         "set_var([\"STD_ALLOW\", \"UI_PREVIEW\"]".to_string(),
+        "set_var([\"STD_ALLOW\", \"BACKGROUND_UI_AUTOMATION\"]".to_string(),
     ]
 }
 
