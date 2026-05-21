@@ -1,5 +1,6 @@
 mod report;
 mod ui;
+mod ui_capture;
 mod ui_tokens;
 mod workspace;
 

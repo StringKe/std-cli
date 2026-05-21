@@ -177,6 +177,25 @@ fn screenshot_capture_script_requires_ui_preview_opt_in() {
 }
 
 #[test]
+fn screenshot_matrix_script_requires_ui_preview_opt_in() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap();
+    let body = fs::read_to_string(root.join("scripts/capture-ui-matrix.sh")).unwrap();
+
+    assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
+    assert!(body.contains("STD_TEST_MODE blocks UI preview"));
+    assert!(body.contains("std-launcher -- --ui-preview"));
+    assert!(body.contains("std-studio -- --ui-preview"));
+    assert!(body.contains("scripts/capture-window.sh"));
+    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher");
+    assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher");
+    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
+}
+
+#[test]
 fn std_core_test_mode_limits_app_discovery_to_local_fixtures() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()

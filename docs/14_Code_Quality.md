@@ -84,6 +84,12 @@ STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-launcher "std-cli Launcher"
 STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-studio "std-cli Studio" artifacts/ui/studio-light-dashboard.png
 ```
 
+成组截图使用 `scripts/capture-ui-matrix.sh`。该脚本同样默认 `SKIP`，并且在 `STD_TEST_MODE=1` 下拒绝运行，不能进入默认测试或质量门禁：
+
+```bash
+STD_ALLOW_UI_PREVIEW=1 scripts/capture-ui-matrix.sh artifacts/ui/manual-acceptance
+```
+
 ## 拆分策略
 
 Clippy 的 `too_many_lines` 管函数规模。Dylint 的 `file_too_long` 管 Rust 源文件规模，超过 500 行时质量门禁失败。新功能优先放在已有领域模块，没有合适模块时新增小模块。禁止为了绕过工具做无意义切片，拆分后的模块名必须表达业务边界。

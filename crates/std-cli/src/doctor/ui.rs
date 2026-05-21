@@ -1,4 +1,5 @@
 use crate::{
+    doctor::ui_capture::check_ui_capture_scripts,
     doctor::workspace::{check_text, find_workspace_root, read_required},
     CliError,
 };
@@ -195,6 +196,7 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
             ));
         }
     }
+    check_ui_capture_scripts(root)?;
     Ok(())
 }
 
