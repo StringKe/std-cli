@@ -33,6 +33,8 @@ impl StudioSmokeReport {
     fn layout_diagnostic_pass(&self) -> bool {
         self.host_window_size == "1280x800"
             && self.min_window_size == "1080x640"
+            && self.host_viewport_contract.contains("decorations=false")
+            && self.host_chrome_contract.contains("native-controls=false")
             && self.host_chrome_height == 52
             && self.status_bar_height == 24
             && self.bottom_panel_tabs.contains("role=bottom-panel-tabs")

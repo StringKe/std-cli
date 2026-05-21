@@ -1,13 +1,15 @@
 use crate::{
     bottom_panel::BottomPanelTabModel,
     layout::StudioLayoutState,
-    viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
+    viewport::{studio_host_viewport_contract, STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
 };
 use std_egui::motion::MotionContext;
 
 pub(crate) struct StudioLayoutSmoke {
     pub(crate) host_window_size: String,
     pub(crate) min_window_size: String,
+    pub(crate) host_viewport_contract: &'static str,
+    pub(crate) host_chrome_contract: &'static str,
     pub(crate) host_chrome_height: u32,
     pub(crate) status_bar_height: u32,
     pub(crate) sidebar_width: u32,
@@ -33,6 +35,8 @@ impl StudioLayoutSmoke {
         Self {
             host_window_size: format_window_size(STUDIO_WINDOW_SIZE),
             min_window_size: format_window_size(STUDIO_MIN_WINDOW_SIZE),
+            host_viewport_contract: studio_host_viewport_contract(),
+            host_chrome_contract: crate::host_chrome::host_chrome_surface_contract(),
             host_chrome_height: 52,
             status_bar_height: 24,
             sidebar_width: layout.sidebar_width() as u32,
