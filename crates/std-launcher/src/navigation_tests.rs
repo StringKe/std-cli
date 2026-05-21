@@ -333,3 +333,19 @@ fn executing_cancel_returns_to_results_without_hiding_launcher() {
     assert_eq!(state.focus_section, LauncherFocusSection::Search);
     assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
 }
+
+#[test]
+fn executing_cancel_is_a_keyboard_system_action_not_query_trigger() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    state.view.preview_executing();
+    let previous_execution = state.view.last_execution.clone();
+
+    let execution = state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+
+    assert!(execution.is_none());
+    assert_eq!(state.view.last_execution, previous_execution);
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::WithResults);
+    assert!(state.controller.visible);
+}

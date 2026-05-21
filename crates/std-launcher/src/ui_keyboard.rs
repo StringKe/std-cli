@@ -11,11 +11,11 @@ pub(crate) fn handle_search_shortcuts(
     state: &mut LauncherState,
     hide_requested: &mut bool,
 ) {
-    if input::ime_composing(ctx) {
-        return;
-    }
     if input::launcher_cancel().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+        return;
+    }
+    if input::ime_composing(ctx) {
         return;
     }
     if input::mod_arrow_down().pressed(ctx) {
