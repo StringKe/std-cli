@@ -134,17 +134,14 @@ impl StudioEguiApp {
                 i18n::t("studio.memory.write.title"),
                 i18n::t("studio.memory.write.detail"),
             );
-            ui.label(i18n::t("studio.memory.scope"));
-            ui.text_edit_singleline(&mut self.memory_scope);
-            ui.label(i18n::t("studio.memory.item_title"));
-            ui.text_edit_singleline(&mut self.memory_title);
-            ui.label(i18n::t("studio.memory.body"));
-            ui.add_sized(
-                [ui.available_width(), 220.0],
-                egui::TextEdit::multiline(&mut self.memory_body),
+            memory_text_input(ui, i18n::t("studio.memory.scope"), &mut self.memory_scope);
+            memory_text_input(
+                ui,
+                i18n::t("studio.memory.item_title"),
+                &mut self.memory_title,
             );
-            ui.label(i18n::t("studio.memory.tags"));
-            ui.text_edit_singleline(&mut self.memory_tags);
+            memory_body_input(ui, i18n::t("studio.memory.body"), &mut self.memory_body);
+            memory_text_input(ui, i18n::t("studio.memory.tags"), &mut self.memory_tags);
             ui.horizontal(|ui| {
                 if ui::quiet_button(ui, i18n::t("studio.memory.remember")).clicked() {
                     self.write_memory_from_form();
@@ -197,4 +194,43 @@ fn memory_query_a11y_label(query: &str) -> String {
         query.trim()
     };
     format!("Memory search, text box, value {value}")
+}
+
+fn memory_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
+    ui.label(label);
+    let response = ui.add_sized(
+        [ui.available_width(), 28.0],
+        egui::TextEdit::singleline(value),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            memory_field_a11y_label(label, value),
+        )
+    });
+}
+
+fn memory_body_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
+    ui.label(label);
+    let response = ui.add_sized(
+        [ui.available_width(), 220.0],
+        egui::TextEdit::multiline(value),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            memory_field_a11y_label(label, value),
+        )
+    });
+}
+
+fn memory_field_a11y_label(label: &str, value: &str) -> String {
+    let value = if value.trim().is_empty() {
+        "empty"
+    } else {
+        value.trim()
+    };
+    format!("{label}, text box, value {value}")
 }
