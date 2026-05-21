@@ -5,6 +5,7 @@ const LOADING_PROGRESS_HEIGHT: f32 = 2.0;
 const LOADING_PROGRESS_WIDTH_RATIO: f32 = 0.38;
 const LOADING_PROGRESS_MIN_WIDTH: f32 = 120.0;
 const GROUP_DIVIDER_HEIGHT: f32 = 1.0;
+const GROUP_LABEL_OFFSET_Y: f32 = 4.0;
 const RESULT_ICON_SIZE: f32 = 20.0;
 const RESULT_ICON_TEXT_OFFSET_Y: f32 = 0.5;
 const RESULT_ROW_TITLE_Y: f32 = 12.0;
@@ -34,10 +35,6 @@ pub(crate) fn group_divider_height(scale: UiScale) -> f32 {
     scale.f32(GROUP_DIVIDER_HEIGHT)
 }
 
-pub(crate) fn group_divider_size(scale: UiScale, available_width: f32) -> egui::Vec2 {
-    egui::vec2(available_width, group_divider_height(scale))
-}
-
 pub(crate) fn group_divider_rect(
     scale: UiScale,
     available_width: f32,
@@ -47,6 +44,10 @@ pub(crate) fn group_divider_rect(
         top_left,
         egui::vec2(available_width, group_divider_height(scale)),
     )
+}
+
+pub(crate) fn group_header_label_offset_y(scale: UiScale) -> f32 {
+    scale.f32(GROUP_LABEL_OFFSET_Y)
 }
 
 pub(crate) fn result_row_size(scale: UiScale, available_width: f32) -> egui::Vec2 {
@@ -110,6 +111,15 @@ pub(crate) fn loading_progress_metrics_for_scale(
 pub(crate) fn group_header_metrics_for_scale(scale: UiScale, available_width: f32) -> (f32, f32) {
     let rect = group_divider_rect(scale, available_width, egui::Pos2::ZERO);
     (rect.width(), rect.height())
+}
+
+#[cfg(test)]
+pub(crate) fn group_header_slot_metrics_for_scale(
+    scale: UiScale,
+    available_width: f32,
+) -> (f32, f32, f32) {
+    let slot = result_row_size(scale, available_width);
+    (slot.x, slot.y, group_header_label_offset_y(scale))
 }
 
 #[cfg(test)]

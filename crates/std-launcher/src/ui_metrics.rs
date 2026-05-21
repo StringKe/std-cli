@@ -7,7 +7,6 @@ use std_launcher::PANEL_WIDTH;
 const SEARCH_HEIGHT: f32 = 64.0;
 const ACTION_BAR_HEIGHT: f32 = 36.0;
 const RESULT_ROW_HEIGHT: f32 = 36.0;
-const GROUP_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
@@ -85,8 +84,8 @@ pub(crate) fn group_divider_rect(available_width: f32, top_left: egui::Pos2) -> 
     crate::ui_metrics_results::group_divider_rect(scale(), available_width, top_left)
 }
 
-pub(crate) fn group_divider_size(available_width: f32) -> egui::Vec2 {
-    crate::ui_metrics_results::group_divider_size(scale(), available_width)
+pub(crate) fn group_header_label_offset_y() -> f32 {
+    crate::ui_metrics_results::group_header_label_offset_y(scale())
 }
 
 pub(crate) fn result_row_layout(
@@ -239,12 +238,13 @@ fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiS
     if !panel_is_expanded(state) {
         return 0.0;
     }
-    let visible_rows = state.view.results.len().clamp(1, MAX_RESULT_ROWS as usize) as f32;
-    let groups = crate::ui_results::group_count(&state.view.results).max(1) as f32;
-    let desired = visible_rows * scale.f32(RESULT_ROW_HEIGHT)
-        + groups * scale.f32(GROUP_ROW_HEIGHT)
-        + scale.f32(Space::SM as f32);
+    let visible_slots = result_list_slot_count(state).clamp(1, MAX_RESULT_ROWS as usize) as f32;
+    let desired = visible_slots * scale.f32(RESULT_ROW_HEIGHT) + scale.f32(Space::SM as f32);
     desired.clamp(scale.f32(128.0), viewport_height * 0.6)
+}
+
+fn result_list_slot_count(state: &LauncherState) -> usize {
+    state.view.results.len() + crate::ui_results::group_count(&state.view.results)
 }
 
 fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
@@ -340,6 +340,17 @@ mod tests {
         assert_eq!(
             crate::ui_metrics_results::group_header_metrics_for_scale(UiScale::new(1.5), 600.0),
             (600.0, 1.5)
+        );
+    }
+
+    #[test]
+    fn group_header_uses_stable_virtual_list_slot_height() {
+        assert_eq!(
+            crate::ui_metrics_results::group_header_slot_metrics_for_scale(
+                UiScale::new(1.5),
+                600.0
+            ),
+            (600.0, 54.0, 6.0)
         );
     }
 
@@ -463,5 +474,19 @@ mod tests {
         let expected = SEARCH_HEIGHT + body + ACTION_BAR_HEIGHT + chrome;
 
         assert_eq!(window_inner_size(&state).y, expected);
+    }
+
+    #[test]
+    fn body_height_counts_virtual_group_header_slots() {
+        let mut state = LauncherState::new();
+        state.update_query("terminal");
+        let slots = result_list_slot_count(&state);
+        let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
+
+        assert!(slots > state.view.results.len());
+        assert_eq!(
+            body,
+            slots.min(MAX_RESULT_ROWS as usize) as f32 * 36.0 + 12.0
+        );
     }
 }

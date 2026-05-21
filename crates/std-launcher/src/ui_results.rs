@@ -307,28 +307,26 @@ fn action_hint_label(ui: &mut egui::Ui, label: &str) {
 
 fn group_header(ui: &mut egui::Ui, group: &str) {
     let ctx = ui.ctx().clone();
-    ui.add_space(Space::xs() as f32);
-    render_group_divider(ui, &ctx);
-    ui.add_space(Space::two_xs() as f32);
-    ui.label(
-        egui::RichText::new(group_header_label(group))
-            .font(Text::footnote())
-            .color(Color::fg_tertiary(&ctx))
-            .strong(),
-    );
-}
-
-fn render_group_divider(ui: &mut egui::Ui, ctx: &egui::Context) {
-    let available_width = ui.available_width();
-    let (rect, _response) = ui.allocate_exact_size(
-        ui_metrics::group_divider_size(available_width),
+    let (slot, _response) = ui.allocate_exact_size(
+        ui_metrics::result_row_size(ui.available_width()),
         egui::Sense::hover(),
     );
-    let divider_rect = ui_metrics::group_divider_rect(available_width, rect.min);
+    let divider = ui_metrics::group_divider_rect(slot.width(), slot.min);
+    let label_pos = egui::pos2(
+        slot.left(),
+        slot.center().y + ui_metrics::group_header_label_offset_y(),
+    );
     ui.painter().rect_filled(
-        divider_rect,
+        divider,
         egui::CornerRadius::ZERO,
-        Color::stroke_border(ctx),
+        Color::stroke_border(&ctx),
+    );
+    ui.painter().text(
+        label_pos,
+        egui::Align2::LEFT_CENTER,
+        group_header_label(group),
+        Text::footnote(),
+        Color::fg_tertiary(&ctx),
     );
 }
 
