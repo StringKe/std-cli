@@ -232,11 +232,15 @@ mod tests {
 
         assert!(report.pass(), "{}", report.summary());
         assert!(report.summary().contains("launcher_preview_smoke PASS"));
+        assert!(report.summary().contains("light-empty"));
         assert!(report.summary().contains("dark-results"));
         assert!(report.summary().contains("light-no-results"));
+        assert!(report.summary().contains("dark-searching"));
+        assert!(report.summary().contains("light-executing"));
         assert!(report.summary().contains("light-defer"));
         assert!(report.summary().contains("dark-defer"));
         assert!(report.summary().contains("light-error"));
+        assert!(report.summary().contains("dark-action-panel"));
         assert!(report.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
     }
 }

@@ -9,9 +9,9 @@ use std_types::{ActionExecution, ActionExecutionStatus};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LauncherPreviewConfig {
-    theme_mode: ThemeMode,
-    scenario: String,
-    timeout_ms: u64,
+    pub(crate) theme_mode: ThemeMode,
+    pub(crate) scenario: String,
+    pub(crate) timeout_ms: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -22,10 +22,10 @@ pub(crate) enum LauncherPreviewRequest {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LauncherPreviewSmokeReport {
-    scenarios: Vec<LauncherPreviewScenario>,
-    commands: Vec<String>,
-    states: Vec<String>,
-    capture_contract: &'static str,
+    pub(crate) scenarios: Vec<LauncherPreviewScenario>,
+    pub(crate) commands: Vec<String>,
+    pub(crate) states: Vec<String>,
+    pub(crate) capture_contract: &'static str,
 }
 
 impl LauncherPreviewSmokeReport {
@@ -104,7 +104,7 @@ pub(crate) fn preview_request_from_args(args: &[String]) -> Option<LauncherPrevi
     preview_config_from_args(args).map(LauncherPreviewRequest::Run)
 }
 
-fn preview_config_from_args(args: &[String]) -> Option<LauncherPreviewConfig> {
+pub(crate) fn preview_config_from_args(args: &[String]) -> Option<LauncherPreviewConfig> {
     Some(LauncherPreviewConfig {
         theme_mode: args
             .get(2)
@@ -153,11 +153,11 @@ fn preview_capture_contract() -> &'static str {
     "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window"
 }
 
-fn preview_window_title() -> &'static str {
+pub(crate) fn preview_window_title() -> &'static str {
     "std-cli Launcher"
 }
 
-fn preview_native_options() -> eframe::NativeOptions {
+pub(crate) fn preview_native_options() -> eframe::NativeOptions {
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size(ui::launcher_initial_window_inner_size())
@@ -168,7 +168,7 @@ fn preview_native_options() -> eframe::NativeOptions {
     }
 }
 
-fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
+pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
     match scenario {
         "empty" => {
             state.update_query("");
@@ -214,7 +214,7 @@ fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct LauncherPreviewScenario {
+pub(crate) struct LauncherPreviewScenario {
     theme: &'static str,
     state: &'static str,
 }
@@ -236,6 +236,14 @@ fn preview_matrix() -> Vec<LauncherPreviewScenario> {
     [
         LauncherPreviewScenario {
             theme: "light",
+            state: "empty",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "empty",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
             state: "results",
         },
         LauncherPreviewScenario {
@@ -252,6 +260,22 @@ fn preview_matrix() -> Vec<LauncherPreviewScenario> {
         },
         LauncherPreviewScenario {
             theme: "light",
+            state: "searching",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "searching",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "executing",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "executing",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
             state: "defer",
         },
         LauncherPreviewScenario {
@@ -265,6 +289,14 @@ fn preview_matrix() -> Vec<LauncherPreviewScenario> {
         LauncherPreviewScenario {
             theme: "dark",
             state: "error",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "action-panel",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "action-panel",
         },
     ]
     .into_iter()
@@ -293,6 +325,10 @@ fn preview_state_summary(scenario: &LauncherPreviewScenario) -> String {
 
 fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
     match state_name {
+        "empty" => {
+            state.view.phase == std_egui::LauncherPhase::Empty
+                && state.view.result_mode == std_egui::LauncherResultMode::SuggestedWorkflows
+        }
         "results" => {
             state.view.phase == std_egui::LauncherPhase::WithResults
                 && !state.view.results.is_empty()
@@ -312,6 +348,9 @@ fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
             .as_ref()
             .map(|feedback| feedback.status == ActionExecutionStatus::Failed)
             .unwrap_or(false),
+        "searching" => state.view.phase == std_egui::LauncherPhase::Searching,
+        "executing" => state.view.phase == std_egui::LauncherPhase::Executing,
+        "action-panel" => state.action_panel.open,
         _ => false,
     }
 }
@@ -325,121 +364,5 @@ fn select_external_runner_result(state: &mut LauncherState) {
     {
         state.view.selected = index;
         state.view.refresh_preview(&state.core);
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn ui_preview_args_are_explicit_opt_in() {
-        let args = vec![
-            "std-launcher".to_string(),
-            "--ui-preview".to_string(),
-            "light".to_string(),
-            "defer".to_string(),
-            "1200".to_string(),
-        ];
-        let config = preview_config_from_args(&args).unwrap();
-
-        assert_eq!(config.theme_mode, ThemeMode::Light);
-        assert_eq!(config.scenario, "defer");
-        assert_eq!(config.timeout_ms, 1200);
-    }
-
-    #[test]
-    fn ui_preview_args_are_blocked_without_opt_in() {
-        std::env::remove_var("STD_ALLOW_UI_PREVIEW");
-        let args = vec![
-            "std-launcher".to_string(),
-            "--ui-preview".to_string(),
-            "light".to_string(),
-            "defer".to_string(),
-            "1200".to_string(),
-        ];
-
-        let Some(LauncherPreviewRequest::Blocked(reason)) = preview_request_from_args(&args) else {
-            panic!("expected blocked UI preview request");
-        };
-        assert!(reason.contains("STD_TEST_MODE blocked UI preview"));
-        assert!(blocked_preview_summary(&reason).contains("launcher_ui_preview SKIP"));
-    }
-
-    #[test]
-    fn preview_smoke_commands_match_ui_preview_parser_contract() {
-        let report = LauncherPreviewSmokeReport::new();
-
-        assert!(report.pass(), "{}", report.summary());
-        assert_eq!(report.scenarios.len(), 8);
-        assert!(report
-            .commands
-            .iter()
-            .all(|command| command.starts_with("STD_ALLOW_UI_PREVIEW=1 ")));
-        assert!(report
-            .commands
-            .iter()
-            .all(|command| command.contains(" --ui-preview light ")
-                || command.contains(" --ui-preview dark ")));
-        assert!(report
-            .states
-            .iter()
-            .any(|state| state.starts_with("light-no-results=PASS")));
-        assert!(report
-            .states
-            .iter()
-            .any(|state| state.starts_with("dark-error=PASS")));
-        assert!(report
-            .summary()
-            .contains("preview_capture_contract=explicit-opt-in-only"));
-        assert!(report.summary().contains("blocked-in-STD_TEST_MODE"));
-        assert!(report.summary().contains("no-default-window"));
-    }
-
-    #[test]
-    fn ui_preview_uses_transparent_visible_chrome() {
-        let options = preview_native_options();
-        let description = format!("{:?}", options.viewport);
-
-        assert_eq!(preview_window_title(), "std-cli Launcher");
-        assert!(description.contains("transparent: Some(true)"));
-        assert!(description.contains("decorations: Some(false)"));
-        assert!(description.contains("visible: Some(true)"));
-        assert_eq!(
-            ui::launcher_initial_window_inner_size(),
-            egui::vec2(720.0, 64.0)
-        );
-    }
-
-    #[test]
-    fn ui_preview_scenarios_seed_visible_launcher_states() {
-        let mut state = LauncherState::new();
-
-        apply_preview_scenario(&mut state, "no-results");
-        assert!(state.view.results.is_empty());
-        assert_eq!(state.view.phase, std_egui::LauncherPhase::NoMatches);
-
-        apply_preview_scenario(&mut state, "searching");
-        assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
-
-        apply_preview_scenario(&mut state, "executing");
-        assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);
-
-        apply_preview_scenario(&mut state, "defer");
-        assert_eq!(
-            state.view.feedback.as_ref().unwrap().status,
-            ActionExecutionStatus::NeedsExternalRunner
-        );
-        assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
-
-        apply_preview_scenario(&mut state, "action-panel");
-        assert!(state.action_panel.open);
-        assert_eq!(state.action_panel.action_name, "Open Terminal");
-
-        apply_preview_scenario(&mut state, "error");
-        assert_eq!(
-            state.view.feedback.as_ref().unwrap().status,
-            ActionExecutionStatus::Failed
-        );
     }
 }

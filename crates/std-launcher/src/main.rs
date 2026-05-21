@@ -6,6 +6,8 @@ mod app;
 mod cli;
 mod gui_smoke;
 mod preview;
+#[cfg(test)]
+mod preview_tests;
 mod resident;
 mod ui;
 mod ui_action_bar;
