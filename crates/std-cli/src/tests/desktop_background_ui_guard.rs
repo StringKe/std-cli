@@ -122,6 +122,8 @@ fn assert_background_runner_contract(root: &Path) {
             "background runner must implement isolated per-process delivery: {required}"
         );
     }
+    assert_no_previous_pid_event_delivery(&runner);
+    assert_no_global_or_frontmost_delivery(&runner);
 }
 
 fn assert_background_harness_contract(root: &Path) {
@@ -261,4 +263,37 @@ fn background_runner_contract_terms() -> &'static [&'static str] {
         "requiredBundleId",
         "requiredWindowTitle",
     ]
+}
+
+fn assert_no_previous_pid_event_delivery(runner: &str) {
+    for forbidden in [
+        "postToPid(previousPid)",
+        "postMouse(type: .leftMouseDown, to: previousPid",
+        "sendAppKitActivation(to: previousPid",
+        "postCenterPrimer(to: previousPid",
+        "postKeySmoke(to: previousPid",
+    ] {
+        assert!(
+            !runner.contains(forbidden),
+            "background runner must never deliver events to previous app: {forbidden}"
+        );
+    }
+}
+
+fn assert_no_global_or_frontmost_delivery(runner: &str) {
+    for forbidden in [
+        "CGEvent.post(",
+        "post(tap:",
+        "kCGHIDEventTap",
+        "/usr/bin/open",
+        "System Events",
+        "AXPress",
+        "CGWarpMouseCursorPosition",
+        "mouseCursorPosition: frontmost",
+    ] {
+        assert!(
+            !runner.contains(forbidden),
+            "background runner must not use global or frontmost delivery: {forbidden}"
+        );
+    }
 }

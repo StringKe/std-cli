@@ -94,10 +94,12 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - 激活前先安装 previous 和 target 两个 per-process event tap，然后再发 appKitDefined primer 和 center primer
 - previous 和 target 任一 event tap 安装失败时必须直接 `FAIL`，禁止继续发送 primer、点击或键盘事件
 - per-process event tap 只订阅 raw value 13、19、20 三类 focus message，只允许拦截 previous app deactivation，target activation 必须放行
+- previous app 只能被安装 event tap 用于拦截 deactivation，禁止对 previous pid 调用 `postToPid`
 - activation start 使用 `appKitDefined` subtype 1 `applicationActivated`，结束使用 subtype 2 `applicationDeactivated`
 - center primer 只能投递到 harness window center，用于窗口激活，不触发用户行为
 - CGEvent 必须写入 `windowUnderMouse`、`windowThatCanHandle` 和 field 51/58，事件路由必须保持 window id 与 harness 匹配
 - previous app 永远不能作为输入目标；它只允许被安装 event tap，用来丢弃 deactivation focus message
+- 验收只能验证后台事件路由能力，不能借这个 runner 打开 Terminal、1Password、WeChat、系统设置或用户当前工作窗口
 - 如果用户当前 frontmost app 是 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或 System Preferences，runner 必须在安装 event tap 前直接 `FAIL`
 - 不向用户当前 frontmost app、Terminal、1Password、WeChat、weixin、wechat、微信或系统设置发送事件
 - 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件。macOS App 名称和窗口标题存在多语言别名，WeChat、weixin、wechat、微信这类名称都不能作为允许条件。harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
