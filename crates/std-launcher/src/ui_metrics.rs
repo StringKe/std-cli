@@ -112,6 +112,10 @@ pub(crate) fn action_bar_content_height() -> f32 {
     scale().f32(24.0)
 }
 
+pub(crate) fn action_bar_height() -> f32 {
+    scale().f32(ACTION_BAR_HEIGHT)
+}
+
 pub(crate) fn action_summary_label_height() -> f32 {
     scale().f32(18.0)
 }

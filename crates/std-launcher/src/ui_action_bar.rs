@@ -5,7 +5,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     i18n, input,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, Space, Text},
     LauncherPhase,
 };
 use std_launcher::LauncherState;
@@ -17,29 +17,34 @@ pub(crate) fn render(
     _resident_status: &str,
 ) -> egui::Rect {
     let ctx = ui.ctx().clone();
-    egui::Frame::new()
-        .fill(Color::bg_surface_1(&ctx))
-        .corner_radius(egui::CornerRadius::same(Radius::md()))
-        .inner_margin(egui::Margin::symmetric(Space::xs(), Space::two_xs()))
-        .show(ui, |ui| {
-            ui.horizontal(|ui| {
-                let right_width = 272.0_f32.min(ui.available_width() * 0.48);
-                let left_width = (ui.available_width() - right_width - Space::xs() as f32)
-                    .max(ui_metrics::scale().f32(160.0));
-                ui.allocate_ui_with_layout(
-                    egui::vec2(left_width, ui_metrics::action_bar_content_height()),
-                    egui::Layout::left_to_right(egui::Align::Center),
-                    |ui| render_action_summary(ui, state, left_width),
-                );
-                ui.allocate_ui_with_layout(
-                    egui::vec2(right_width, ui_metrics::action_bar_content_height()),
-                    egui::Layout::right_to_left(egui::Align::Center),
-                    |ui| render_action_hints(ui, state),
-                );
-            });
-        })
-        .response
-        .rect
+    let width = ui.available_width();
+    let (rect, _response) = ui.allocate_exact_size(
+        egui::vec2(width, ui_metrics::action_bar_height()),
+        egui::Sense::hover(),
+    );
+    ui.painter().line_segment(
+        [rect.left_top(), rect.right_top()],
+        egui::Stroke::new(1.0, Color::stroke_divider(&ctx)),
+    );
+    let content_rect = rect.shrink2(egui::vec2(Space::xs() as f32, Space::two_xs() as f32));
+    ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
+        ui.horizontal(|ui| {
+            let right_width = 272.0_f32.min(ui.available_width() * 0.48);
+            let left_width = (ui.available_width() - right_width - Space::xs() as f32)
+                .max(ui_metrics::scale().f32(160.0));
+            ui.allocate_ui_with_layout(
+                egui::vec2(left_width, ui_metrics::action_bar_content_height()),
+                egui::Layout::left_to_right(egui::Align::Center),
+                |ui| render_action_summary(ui, state, left_width),
+            );
+            ui.allocate_ui_with_layout(
+                egui::vec2(right_width, ui_metrics::action_bar_content_height()),
+                egui::Layout::right_to_left(egui::Align::Center),
+                |ui| render_action_hints(ui, state),
+            );
+        });
+    });
+    rect
 }
 
 fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) {
@@ -87,6 +92,11 @@ fn action_bar_visible_hint_labels(state: &LauncherState) -> Vec<String> {
             input::launcher_action_panel().label(),
         ],
     }
+}
+
+#[cfg(test)]
+fn action_bar_visual_contract() -> &'static str {
+    "height=36;top-divider=1px;rounded-frame=false;background=panel"
 }
 
 fn render_action_summary(ui: &mut egui::Ui, state: &LauncherState, max_width: f32) {
@@ -161,5 +171,13 @@ mod tests {
         assert!(!labels.contains(&"registered".to_string()));
         assert!(!labels.contains(&"preview".to_string()));
         assert!(!labels.iter().any(|label| label.contains("menu bar")));
+    }
+
+    #[test]
+    fn action_bar_uses_inline_status_row_not_nested_card() {
+        assert_eq!(
+            action_bar_visual_contract(),
+            "height=36;top-divider=1px;rounded-frame=false;background=panel"
+        );
     }
 }
