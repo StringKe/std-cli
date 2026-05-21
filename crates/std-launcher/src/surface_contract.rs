@@ -56,7 +56,13 @@ impl LauncherSurfaceContract {
             && self.result_list.contains("selected=accent-weak")
             && self
                 .result_list
-                .contains(&format!("shortcut={}", input::enter().label()))
+                .contains(&format!(
+                    "direct_shortcut={}",
+                    input::launcher_result_keycap(0).unwrap()
+                ))
+            && self
+                .result_list
+                .contains(&format!("primary_shortcut={}", input::enter().label()))
             && self.action_bar.contains("height=36")
             && self.action_bar.contains("left=breadcrumb+primary-command")
             && self.action_bar.contains("breadcrumb=Command > Rebuild Index")
@@ -112,8 +118,9 @@ fn search_bar_contract() -> String {
 
 fn result_list_contract(result_count: usize, selected_type: &ActionType) -> String {
     format!(
-        "groups=Action / Workflow>App / File>Clipboard>Memory>Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut={};virtualized=true",
+        "groups=Action / Workflow>App / File>Clipboard>Memory>Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};direct_shortcut={};primary_shortcut={};virtualized=true",
         action_type_name(selected_type),
+        input::launcher_result_keycap(0).unwrap(),
         input::enter().label()
     )
 }
@@ -281,6 +288,13 @@ mod tests {
         assert!(contract
             .summary()
             .contains("result_list_contract=groups=Action / Workflow"));
+        assert!(contract.summary().contains(&format!(
+            "direct_shortcut={}",
+            input::launcher_result_keycap(0).unwrap()
+        )));
+        assert!(contract
+            .summary()
+            .contains(&format!("primary_shortcut={}", input::enter().label())));
         assert!(contract
             .summary()
             .contains("no_match_state_contract=phase=NoMatches"));

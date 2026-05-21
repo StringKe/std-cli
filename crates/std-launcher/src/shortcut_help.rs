@@ -1,8 +1,8 @@
 use std_egui::input;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LauncherShortcutHelpRow {
-    pub key: &'static str,
+    pub key: String,
     pub action: &'static str,
 }
 
@@ -13,39 +13,47 @@ pub fn launcher_shortcut_help_visible(query: &str) -> bool {
 pub fn launcher_shortcut_help_rows() -> Vec<LauncherShortcutHelpRow> {
     vec![
         LauncherShortcutHelpRow {
-            key: "Up / Down",
+            key: format!(
+                "{} / {}",
+                input::arrow_up().label(),
+                input::arrow_down().label()
+            ),
             action: "Move selection",
         },
         LauncherShortcutHelpRow {
-            key: "Mod+Up / Mod+Down",
+            key: format!(
+                "{} / {}",
+                input::mod_arrow_up().label(),
+                input::mod_arrow_down().label()
+            ),
             action: "Jump to first or last result",
         },
         LauncherShortcutHelpRow {
-            key: "Tab / Shift+Tab",
+            key: format!("{} / {}", input::tab().label(), input::shift_tab().label()),
             action: "Move focus between search, results, and actions",
         },
         LauncherShortcutHelpRow {
-            key: "Enter",
+            key: input::enter().label(),
             action: "Run selected primary action",
         },
         LauncherShortcutHelpRow {
-            key: "Mod+K",
+            key: input::launcher_action_panel().label(),
             action: "Open Action Panel",
         },
         LauncherShortcutHelpRow {
-            key: "Mod+1..9",
+            key: launcher_index_range_label(),
             action: "Run result by index",
         },
         LauncherShortcutHelpRow {
-            key: "Mod+Backspace",
+            key: input::launcher_delete_previous_token().label(),
             action: "Delete previous query token",
         },
         LauncherShortcutHelpRow {
-            key: "? text",
+            key: "? text".to_string(),
             action: "Ask natural language planner",
         },
         LauncherShortcutHelpRow {
-            key: "Esc",
+            key: input::escape().label(),
             action: "Clear query or hide Launcher",
         },
     ]
@@ -66,6 +74,14 @@ pub fn launcher_shortcut_help_summary() -> String {
     )
 }
 
+fn launcher_index_range_label() -> String {
+    format!(
+        "{}..{}",
+        input::launcher_result_keycap(0).unwrap_or_else(|| "1".to_string()),
+        input::launcher_result_keycap(8).unwrap_or_else(|| "9".to_string())
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,17 +99,34 @@ mod tests {
         let summary = launcher_shortcut_help_summary();
 
         for required in [
-            "Up / Down",
-            "Mod+Up / Mod+Down",
-            "Tab / Shift+Tab",
-            "Enter",
-            "Mod+K",
-            "Mod+1..9",
-            "Mod+Backspace",
-            "? text",
-            "Esc",
+            format!(
+                "{} / {}",
+                input::arrow_up().label(),
+                input::arrow_down().label()
+            ),
+            format!(
+                "{} / {}",
+                input::mod_arrow_up().label(),
+                input::mod_arrow_down().label()
+            ),
+            format!("{} / {}", input::tab().label(), input::shift_tab().label()),
+            input::enter().label(),
+            input::launcher_action_panel().label(),
+            launcher_index_range_label(),
+            input::launcher_delete_previous_token().label(),
+            "? text".to_string(),
+            input::escape().label(),
         ] {
-            assert!(summary.contains(required), "{required}");
+            assert!(summary.contains(&required), "{required}");
         }
+    }
+
+    #[test]
+    fn shortcut_help_rows_use_platform_labels_not_mod_placeholders() {
+        let summary = launcher_shortcut_help_summary();
+
+        assert!(!summary.contains("Mod+"));
+        assert!(summary.contains(&input::launcher_action_panel().label()));
+        assert!(summary.contains(&launcher_index_range_label()));
     }
 }

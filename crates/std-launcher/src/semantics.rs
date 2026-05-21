@@ -396,7 +396,10 @@ impl LauncherUiSemanticsReport {
             && self.error_open_studio_target == "ExecutionHistory"
             && self.error_open_studio_command == "studio-pane://history"
             && self.shortcut_help_summary.contains("trigger=?")
-            && self.shortcut_help_summary.contains("Mod+K")
+            && self
+                .shortcut_help_summary
+                .contains(&input::launcher_action_panel().label())
+            && !self.shortcut_help_summary.contains("Mod+")
             && (!self.reduce_motion || self.launcher_enter_ms == 0)
     }
 

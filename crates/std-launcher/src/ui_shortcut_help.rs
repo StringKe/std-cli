@@ -14,7 +14,7 @@ pub(crate) fn render(ui: &mut egui::Ui) {
     );
     ui.add_space(Space::xs() as f32);
     for row in launcher_shortcut_help_rows() {
-        shortcut_row(ui, row.key, row.action);
+        shortcut_row(ui, &row.key, row.action);
         ui.add_space(Space::two_xs() as f32);
     }
 }
