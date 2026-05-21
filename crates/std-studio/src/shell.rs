@@ -43,8 +43,9 @@ impl StudioEguiApp {
     }
 
     fn render_active_workspace(&mut self, ui: &mut egui::Ui) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| match self.app.active_pane {
+        egui::ScrollArea::vertical().show(ui, |ui| {
+            ui.add_space(Space::SM as f32);
+            match self.app.active_pane {
                 StudioPane::Dashboard => self.render_dashboard(ui),
                 StudioPane::Workflows => self.render_workflows(ui),
                 StudioPane::Apps => self.render_apps(ui),
@@ -54,7 +55,7 @@ impl StudioEguiApp {
                 StudioPane::History => self.render_history(ui),
                 StudioPane::Operations => self.render_operations(ui),
                 StudioPane::Settings => self.render_settings(ui),
-            });
+            }
         });
         self.render_workspace_panes(ui);
     }

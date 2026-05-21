@@ -13,6 +13,7 @@ pub(crate) struct StudioSurfaceSmoke {
     light_status_surface_layer: String,
     dark_selected_surface_layer: String,
     light_selected_surface_layer: String,
+    canvas_outer_frame: String,
     standard_modal_enter_ms: u128,
     reduced_modal_enter_ms: u128,
     reduced_focus_ring_ms: u128,
@@ -79,6 +80,7 @@ impl StudioSurfaceSmoke {
                 "accent/weak",
                 theme.light_selection,
             ),
+            canvas_outer_frame: canvas_outer_frame_contract(),
             standard_modal_enter_ms: standard_motion.modal_enter().as_millis(),
             reduced_modal_enter_ms: reduced_motion.modal_enter().as_millis(),
             reduced_focus_ring_ms: reduced_motion.focus_ring().as_millis(),
@@ -113,6 +115,7 @@ impl StudioSurfaceSmoke {
             && self.light_status_surface_layer.contains("bg/surface-1")
             && self.dark_selected_surface_layer.contains("#4E9CFF@46")
             && self.light_selected_surface_layer.contains("#0A6BFF@31")
+            && self.canvas_outer_frame == "unframed,no_nested_card"
             && self.standard_modal_enter_ms == 220
             && self.reduced_modal_enter_ms == 0
             && self.reduced_focus_ring_ms == 0
@@ -125,7 +128,7 @@ impl StudioSurfaceSmoke {
     pub(crate) fn output(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
+            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
             self.dark_canvas_surface_layer,
             self.light_canvas_surface_layer,
             self.dark_sidebar_surface_layer,
@@ -138,6 +141,7 @@ impl StudioSurfaceSmoke {
             self.light_status_surface_layer,
             self.dark_selected_surface_layer,
             self.light_selected_surface_layer,
+            self.canvas_outer_frame,
             self.standard_modal_enter_ms,
             self.reduced_modal_enter_ms,
             self.reduced_focus_ring_ms,
@@ -160,6 +164,19 @@ fn color_hex(color: egui::Color32) -> String {
     format!("#{:02X}{:02X}{:02X}", color.r(), color.g(), color.b())
 }
 
+fn canvas_outer_frame_contract() -> String {
+    let source = include_str!("../shell.rs");
+    let body = source
+        .split("fn render_active_workspace")
+        .nth(1)
+        .and_then(|section| section.split("fn render_context").next())
+        .unwrap_or("");
+    if body.contains("egui::ScrollArea::vertical()") && !body.contains("ui::surface_frame") {
+        return "unframed,no_nested_card".to_string();
+    }
+    "canvas_outer_frame=FAIL".to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -172,6 +189,7 @@ mod tests {
         assert!(report.output().contains("studio_surface_smoke PASS"));
         assert!(report.output().contains("dark_canvas_surface_layer"));
         assert!(report.output().contains("light_canvas_surface_layer"));
+        assert!(report.output().contains("canvas_outer_frame=unframed"));
         assert!(report.output().contains("standard_modal_enter_ms=220"));
         assert!(report.output().contains("reduced_modal_enter_ms=0"));
         assert!(report.output().contains("reduced_focus_ring_ms=0"));
