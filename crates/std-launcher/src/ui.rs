@@ -89,9 +89,10 @@ pub(crate) fn render_launcher_panel(
         .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
         .corner_radius(egui::CornerRadius::same(Radius::xl()))
         .shadow(Elevation::level_3(&ctx))
-        .inner_margin(egui::Margin::same(Space::md()))
+        .inner_margin(egui::Margin::same(ui_metrics::panel_inner_padding() as i8))
         .show(ui, |ui| {
-            ui.set_width(panel_rect.width() - Space::md() as f32 * 2.0);
+            let padding = ui_metrics::panel_inner_padding();
+            ui.set_width(panel_rect.width() - padding * 2.0);
             render_search_bar(ui, state, &mut hide_requested);
             if !ui_metrics::panel_is_expanded(state) {
                 return;

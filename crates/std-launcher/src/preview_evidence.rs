@@ -34,13 +34,17 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
     let rect = ui_metrics::panel_rect(available, &state);
     let body = ui_metrics::body_height(&state, viewport.y);
+    let content_clearance = rect.height()
+        - ui_metrics::panel_inner_padding() * 2.0
+        - ui_metrics::panel_content_height(&state, body);
     let fits = rect.min.y == 0.0
         && rect.max.y <= viewport.y
         && (rect.height() - viewport.y).abs() < 0.5
         && viewport.x >= rect.width()
-        && body >= 0.0;
+        && body >= 0.0
+        && content_clearance >= 0.0;
     format!(
-        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={}",
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={}",
         scenario.label(),
         if fits { "PASS" } else { "FAIL" },
         viewport.x.round() as u32,
@@ -48,7 +52,8 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         rect.width().round() as u32,
         rect.height().round() as u32,
         body.round() as u32,
-        (viewport.y - rect.max.y).round() as i32
+        (viewport.y - rect.max.y).round() as i32,
+        content_clearance.round() as i32
     )
 }
 

@@ -20,6 +20,10 @@ pub(crate) fn window_margin() -> f32 {
     0.0
 }
 
+pub(crate) fn panel_inner_padding() -> f32 {
+    scale().f32(Space::MD as f32)
+}
+
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
     let panel_width = panel_width_for_available(available.width(), margin);
@@ -192,6 +196,10 @@ pub(crate) fn panel_height(state: &LauncherState, body_height: f32) -> f32 {
     panel_height_for_scale(state, body_height, UiScale::from_env())
 }
 
+pub(crate) fn panel_content_height(state: &LauncherState, body_height: f32) -> f32 {
+    panel_content_height_for_scale(state, body_height, UiScale::from_env())
+}
+
 pub(crate) fn body_height(state: &LauncherState, viewport_height: f32) -> f32 {
     body_height_for_scale(state, viewport_height, UiScale::from_env())
 }
@@ -204,13 +212,21 @@ pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
 }
 
 fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(scale.f32(PANEL_WIDTH), scale.f32(SEARCH_HEIGHT))
+    egui::vec2(
+        scale.f32(PANEL_WIDTH),
+        collapsed_panel_height_for_scale(scale),
+    )
 }
 
 fn panel_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
     if !panel_is_expanded(state) {
-        return scale.f32(SEARCH_HEIGHT);
+        return collapsed_panel_height_for_scale(scale);
     }
+    let panel_padding = scale.f32(Space::MD as f32) * 2.0;
+    panel_content_height_for_scale(state, body_height, scale) + panel_padding
+}
+
+fn panel_content_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
     scale.f32(SEARCH_HEIGHT)
         + body_height
         + scale.f32(ACTION_BAR_HEIGHT)
@@ -229,6 +245,10 @@ fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiS
         + groups * scale.f32(GROUP_ROW_HEIGHT)
         + scale.f32(Space::SM as f32);
     desired.clamp(scale.f32(128.0), viewport_height * 0.6)
+}
+
+fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
+    scale.f32(SEARCH_HEIGHT) + scale.f32(Space::MD as f32) * 2.0
 }
 
 fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
@@ -261,8 +281,8 @@ mod tests {
         let base = initial_window_inner_size_for_scale(UiScale::default());
         let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
 
-        assert_eq!(base, egui::vec2(720.0, 64.0));
-        assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
+        assert_eq!(base, egui::vec2(720.0, 96.0));
+        assert_eq!(zoomed, egui::vec2(1080.0, 144.0));
     }
 
     #[test]
@@ -403,7 +423,7 @@ mod tests {
         let rect = panel_rect(available, &state);
 
         assert_eq!(rect.width(), PANEL_WIDTH);
-        assert_eq!(rect.height(), SEARCH_HEIGHT);
+        assert_eq!(rect.height(), SEARCH_HEIGHT + Space::MD as f32 * 2.0);
         assert_eq!(rect.height(), available.height());
     }
 
@@ -432,5 +452,16 @@ mod tests {
         assert_eq!(rect.max.x, available.right());
         assert_eq!(rect.min.y, 0.0);
         assert_eq!(rect.max.y, available.bottom());
+    }
+
+    #[test]
+    fn native_viewport_height_includes_panel_inner_padding() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
+        let chrome = Space::MD as f32 * 3.0 + Space::SM as f32;
+        let expected = SEARCH_HEIGHT + body + ACTION_BAR_HEIGHT + chrome;
+
+        assert_eq!(window_inner_size(&state).y, expected);
     }
 }
