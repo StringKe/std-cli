@@ -129,6 +129,76 @@ fn action_panel_keyboard_path_defers_external_runner_by_default() {
 }
 
 #[test]
+fn action_panel_default_enter_on_review_first_still_defers_external_runner() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    let execution = state
+        .handle_keyboard_input(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(
+        state.action_panel.selected_item().unwrap().title(),
+        "Review first"
+    );
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        state
+            .view
+            .feedback
+            .as_ref()
+            .map(|feedback| feedback.deferred),
+        Some(true)
+    );
+}
+
+#[test]
+fn action_panel_selection_api_separates_default_and_user_enter_routes() {
+    let source = include_str!("action_panel_state.rs");
+    let default_route = source
+        .find("pub fn trigger_action_panel_selection(&mut self)")
+        .unwrap();
+    let user_route = source
+        .find("pub fn trigger_action_panel_selection_by_user(&mut self)")
+        .unwrap();
+    let false_route = source
+        .find("self.trigger_action_panel_selection_with_external_runner(false)")
+        .unwrap();
+    let true_route = source
+        .find("self.trigger_action_panel_selection_with_external_runner(true)")
+        .unwrap();
+
+    assert!(default_route < false_route);
+    assert!(user_route < true_route);
+    assert!(source.contains("ActionPanelItem::Run"));
+    assert!(source.contains("self.trigger_selected_with_external_runner(allow_external_runner)"));
+    assert!(source.contains("ActionPanelItem::ReviewFirst =>"));
+}
+
+#[test]
+fn keyboard_enter_uses_user_route_only_for_explicit_user_execution() {
+    let source = include_str!("keyboard.rs");
+    let action_panel_branch = source.find("if self.action_panel.open").unwrap();
+    let by_user = source
+        .find("self.trigger_action_panel_selection_by_user()")
+        .unwrap();
+    let default = source
+        .find("self.trigger_action_panel_selection()")
+        .unwrap();
+
+    assert!(action_panel_branch < by_user);
+    assert!(by_user < default);
+    assert!(source.contains("if allow_external_runner"));
+}
+
+#[test]
 fn action_panel_ime_blocks_open_and_trigger() {
     let temp = tempfile::tempdir().unwrap();
     let core = StdCore::with_config(StdConfig {

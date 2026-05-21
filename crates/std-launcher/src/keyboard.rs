@@ -199,7 +199,11 @@ impl LauncherState {
             return self.trigger_feedback_action();
         }
         if self.action_panel.open {
-            return self.trigger_action_panel_selection();
+            return if allow_external_runner {
+                self.trigger_action_panel_selection_by_user()
+            } else {
+                self.trigger_action_panel_selection()
+            };
         }
         if self.view.result_mode == LauncherResultMode::NaturalLanguage {
             return self.trigger_selected();

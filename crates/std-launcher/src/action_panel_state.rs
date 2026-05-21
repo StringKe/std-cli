@@ -1,4 +1,5 @@
-use crate::{LauncherFocusSection, LauncherFocusSource, LauncherState};
+use crate::{ActionPanelItem, LauncherFocusSection, LauncherFocusSource, LauncherState};
+use std_types::ActionExecution;
 
 impl LauncherState {
     pub fn open_action_panel(&mut self) -> bool {
@@ -37,5 +38,33 @@ impl LauncherState {
         let mut query = self.action_panel.query.clone();
         query.push(ch);
         self.update_action_panel_query(query);
+    }
+
+    pub fn trigger_action_panel_selection(&mut self) -> Option<ActionExecution> {
+        self.trigger_action_panel_selection_with_external_runner(false)
+    }
+
+    pub fn trigger_action_panel_selection_by_user(&mut self) -> Option<ActionExecution> {
+        self.trigger_action_panel_selection_with_external_runner(true)
+    }
+
+    fn trigger_action_panel_selection_with_external_runner(
+        &mut self,
+        allow_external_runner: bool,
+    ) -> Option<ActionExecution> {
+        match self.action_panel.selected_item()?.clone() {
+            ActionPanelItem::Run => {
+                self.trigger_selected_with_external_runner(allow_external_runner)
+            }
+            ActionPanelItem::ReviewFirst => {
+                self.trigger_selected_with_external_runner(allow_external_runner)
+            }
+            ActionPanelItem::Defer => self.trigger_selected(),
+            ActionPanelItem::OpenInStudio => {
+                self.open_selected_action_in_studio()?;
+                None
+            }
+            ActionPanelItem::CopyCommand(command) => Some(self.complete_action_panel_copy(command)),
+        }
     }
 }

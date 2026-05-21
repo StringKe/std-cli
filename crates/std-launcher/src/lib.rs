@@ -228,19 +228,6 @@ impl LauncherState {
         self.view.preview.clone()
     }
 
-    pub fn trigger_action_panel_selection(&mut self) -> Option<ActionExecution> {
-        match self.action_panel.selected_item()?.clone() {
-            ActionPanelItem::Run => self.trigger_selected_by_user(),
-            ActionPanelItem::ReviewFirst => self.trigger_selected_by_user(),
-            ActionPanelItem::Defer => self.trigger_selected(),
-            ActionPanelItem::OpenInStudio => {
-                self.open_selected_action_in_studio()?;
-                None
-            }
-            ActionPanelItem::CopyCommand(command) => Some(self.complete_action_panel_copy(command)),
-        }
-    }
-
     pub fn trigger_selected(&mut self) -> Option<ActionExecution> {
         self.trigger_selected_with_external_runner(false)
     }
@@ -271,7 +258,7 @@ impl LauncherState {
         self.trigger_selected_with_external_runner(allow_external_runner)
     }
 
-    fn trigger_selected_with_external_runner(
+    pub(crate) fn trigger_selected_with_external_runner(
         &mut self,
         allow_external_runner: bool,
     ) -> Option<ActionExecution> {
@@ -328,7 +315,7 @@ impl LauncherState {
         Some(execution)
     }
 
-    fn complete_action_panel_copy(&mut self, command: String) -> ActionExecution {
+    pub(crate) fn complete_action_panel_copy(&mut self, command: String) -> ActionExecution {
         let action_name = self
             .view
             .selected_result()
