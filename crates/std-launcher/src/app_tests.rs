@@ -46,6 +46,39 @@ fn launcher_state_searches_local_app_bundles_without_launching() {
 }
 
 #[test]
+fn launcher_searches_one_app_by_multilingual_aliases_without_launching() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("FixtureTalk.app");
+    write_multilingual_app_bundle(&app);
+    let core = StdCore::with_config(config);
+    let mut state = LauncherState::with_core(core);
+    let queries = [
+        "Fixture Talk".to_string(),
+        "fixturetalk".to_string(),
+        "fixture-chat".to_string(),
+        localized_fixture_name(),
+    ];
+
+    let mut action_ids = Vec::new();
+    for query in queries {
+        let preview = state.update_query(&query).unwrap();
+        assert_eq!(preview.title, "Open App: Fixture Talk");
+        action_ids.push(preview.action_id);
+    }
+    let execution = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert!(action_ids.windows(2).all(|pair| pair[0] == pair[1]));
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(execution.action_name, "Open App: Fixture Talk");
+}
+
+#[test]
 fn launcher_gui_enter_defers_external_runner_in_tests() {
     let temp = tempfile::tempdir().unwrap();
     let config = StdConfig {
@@ -184,6 +217,9 @@ fn write_multilingual_app_bundle(app: &std::path::Path) {
         r#"<plist><dict>
 <key>CFBundleDisplayName</key><string>Fixture Talk</string>
 <key>CFBundleName</key><string>FixtureTalk</string>
+<key>CFBundleURLTypes</key><array><dict><key>CFBundleURLSchemes</key><array>
+<string>fixture-chat</string>
+</array></dict></array>
 </dict></plist>"#,
     )
     .unwrap();
