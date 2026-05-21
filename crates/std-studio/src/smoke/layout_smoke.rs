@@ -1,4 +1,5 @@
 use crate::{
+    bottom_panel::BottomPanelTabModel,
     layout::StudioLayoutState,
     viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
 };
@@ -16,6 +17,7 @@ pub(crate) struct StudioLayoutSmoke {
     pub(crate) inspector_context_route: String,
     pub(crate) bottom_panel_height: u32,
     pub(crate) bottom_panel_default_open: bool,
+    pub(crate) bottom_panel_tabs: String,
     pub(crate) canvas_surface: String,
     pub(crate) canvas_content_route: String,
     pub(crate) status_bar_right: String,
@@ -40,6 +42,7 @@ impl StudioLayoutSmoke {
             inspector_context_route: inspector_context_route_evidence(),
             bottom_panel_height: layout.bottom_panel_height() as u32,
             bottom_panel_default_open: layout.bottom_panel_open,
+            bottom_panel_tabs: BottomPanelTabModel::docs22_default().contract(),
             canvas_surface: canvas_motion_evidence(),
             canvas_content_route: canvas_content_route_evidence(),
             status_bar_right: status_bar_right_evidence(),

@@ -1,6 +1,9 @@
 use crate::{ui, StudioEguiApp};
 use eframe::egui;
-use std_egui::{i18n, tokens::Space};
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space, Text},
+};
 
 const BOTTOM_ROW_HEIGHT: f32 = Space::XL as f32 + Space::TWO_XS as f32;
 const STATUS_CHIP_WIDTH: f32 = 120.0;
@@ -8,6 +11,57 @@ const STATUS_CHIP_HEIGHT: f32 = Space::MD as f32 + Space::TWO_XS as f32;
 const STATUS_CHIP_Y_OFFSET: f32 = STATUS_CHIP_HEIGHT / 2.0;
 const ROW_TITLE_Y_OFFSET: f32 = -7.0;
 const ROW_DETAIL_Y_OFFSET: f32 = 9.0;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum BottomPanelTab {
+    BatchDebug,
+    Logs,
+    Problems,
+    Performance,
+}
+
+impl BottomPanelTab {
+    pub(crate) fn label(self) -> &'static str {
+        match self {
+            Self::BatchDebug => i18n::t("studio.shell.bottom.batch_debug"),
+            Self::Logs => i18n::t("studio.shell.bottom.logs"),
+            Self::Problems => i18n::t("studio.shell.bottom.problems"),
+            Self::Performance => i18n::t("studio.shell.bottom.performance"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct BottomPanelTabModel {
+    pub(crate) tabs: Vec<BottomPanelTab>,
+    pub(crate) selected: BottomPanelTab,
+}
+
+impl BottomPanelTabModel {
+    pub(crate) fn docs22_default() -> Self {
+        Self {
+            tabs: vec![
+                BottomPanelTab::BatchDebug,
+                BottomPanelTab::Logs,
+                BottomPanelTab::Problems,
+                BottomPanelTab::Performance,
+            ],
+            selected: BottomPanelTab::BatchDebug,
+        }
+    }
+
+    pub(crate) fn labels(&self) -> Vec<&'static str> {
+        self.tabs.iter().map(|tab| tab.label()).collect()
+    }
+
+    pub(crate) fn contract(&self) -> String {
+        format!(
+            "tabs={};selected={};role=bottom-panel-tabs",
+            self.labels().join("|"),
+            self.selected.label()
+        )
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct BottomPanelSnapshot {
@@ -26,6 +80,8 @@ pub(crate) struct BottomPanelRow {
 impl StudioEguiApp {
     pub(crate) fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            render_bottom_panel_tabs(ui, &BottomPanelTabModel::docs22_default());
+            ui.add_space(Space::XS as f32);
             ui::section_header(
                 ui,
                 i18n::t("studio.shell.batch_debug.title"),
@@ -112,6 +168,48 @@ impl StudioEguiApp {
     }
 }
 
+fn render_bottom_panel_tabs(ui: &mut egui::Ui, model: &BottomPanelTabModel) {
+    ui.horizontal_wrapped(|ui| {
+        for tab in &model.tabs {
+            render_bottom_panel_tab(ui, *tab, *tab == model.selected);
+        }
+    });
+}
+
+fn render_bottom_panel_tab(ui: &mut egui::Ui, tab: BottomPanelTab, selected: bool) {
+    let ctx = ui.ctx().clone();
+    let fill = if selected {
+        Color::accent_weak(&ctx)
+    } else {
+        Color::bg_surface_2(&ctx)
+    };
+    let stroke = if selected {
+        Color::accent_base(&ctx)
+    } else {
+        Color::stroke_divider(&ctx)
+    };
+    let response = egui::Frame::new()
+        .fill(fill)
+        .stroke(egui::Stroke::new(1.0, stroke))
+        .corner_radius(egui::CornerRadius::same(Radius::SM))
+        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .show(ui, |ui| {
+            ui.label(
+                egui::RichText::new(tab.label())
+                    .font(Text::caption())
+                    .color(ui::strong_text(&ctx)),
+            );
+        })
+        .response;
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::SelectableLabel,
+            ui.is_enabled(),
+            tab.label(),
+        )
+    });
+}
+
 fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
     let (rect, response) = ui.allocate_exact_size(
         egui::vec2(ui.available_width(), BOTTOM_ROW_HEIGHT),
@@ -182,4 +280,24 @@ fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
 #[cfg(test)]
 pub(crate) fn completed_status() -> String {
     format!("{:?}", std_types::ActionExecutionStatus::Completed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn bottom_panel_tabs_match_docs22_default_order() {
+        let model = BottomPanelTabModel::docs22_default();
+
+        assert_eq!(
+            model.labels(),
+            vec!["Batch Debug", "Logs", "Problems", "Performance"]
+        );
+        assert_eq!(model.selected, BottomPanelTab::BatchDebug);
+        assert_eq!(
+            model.contract(),
+            "tabs=Batch Debug|Logs|Problems|Performance;selected=Batch Debug;role=bottom-panel-tabs"
+        );
+    }
 }
