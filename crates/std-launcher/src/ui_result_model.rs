@@ -1,4 +1,4 @@
-use std_egui::i18n;
+use std_egui::{i18n, input};
 use std_types::{ActionPreview, ActionType, SearchResult};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,9 +30,9 @@ impl LauncherResultRowModel {
         selected: bool,
     ) -> Self {
         let shortcut = if selected {
-            Some("Enter".to_string())
+            Some(input::enter().label())
         } else if index < 9 {
-            Some(format!("Mod+{}", index + 1))
+            input::launcher_result_keycap(index)
         } else {
             None
         };
@@ -185,7 +185,8 @@ mod tests {
         assert!(matches!(
             &items[3],
             LauncherResultListItem::Row(row)
-                if row.result_index == 1 && row.shortcut.as_deref() == Some("Enter")
+                if row.result_index == 1
+                    && row.shortcut.as_deref() == Some(input::enter().label().as_str())
         ));
     }
 
@@ -200,7 +201,10 @@ mod tests {
         assert_eq!(row.subtitle, "Refresh index");
         assert_eq!(row.group, i18n::t("launcher.results.group.action_workflow"));
         assert_eq!(row.icon_label, "CMD");
-        assert_eq!(row.shortcut.as_deref(), Some("Enter"));
+        assert_eq!(
+            row.shortcut.as_deref(),
+            Some(input::enter().label().as_str())
+        );
         assert_eq!(row.action_label, "std index rebuild .");
         assert_eq!(
             row.action_hint,
@@ -220,7 +224,10 @@ mod tests {
         let third_row = LauncherResultRowModel::from_result(&third, None, 2, 10, false);
         let tenth_row = LauncherResultRowModel::from_result(&tenth, None, 9, 10, false);
 
-        assert_eq!(third_row.shortcut.as_deref(), Some("Mod+3"));
+        assert_eq!(
+            third_row.shortcut.as_deref(),
+            input::launcher_result_keycap(2).as_deref()
+        );
         assert!(third_row.action_hint.is_none());
         assert!(tenth_row.shortcut.is_none());
         assert_eq!(tenth_row.group, i18n::t("launcher.results.group.app_file"));

@@ -195,7 +195,7 @@ fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
                     .color(Color::fg_primary(&ctx)),
             );
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                keycap(ui, "Enter");
+                keycap(ui, &input::enter().label());
             });
         });
     });

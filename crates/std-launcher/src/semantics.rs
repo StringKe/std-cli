@@ -2,6 +2,7 @@ use crate::{keyboard::LauncherKey, LauncherState};
 use std_egui::{
     a11y::AccessibilityContext,
     i18n::{self, Locale},
+    input,
     motion::MotionContext,
     LauncherFeedback, LauncherPhase, LauncherResultMode,
 };
@@ -92,7 +93,11 @@ impl LauncherState {
             loading_spinner_after_ms: 200,
             executing_search_text: executing.search_text,
             executing_input_enabled: false,
-            executing_cancel_shortcut: "Cancel Ctrl+C".to_string(),
+            executing_cancel_shortcut: format!(
+                "{} {}",
+                i18n::translate(Locale::EnUs, "launcher.action.cancel"),
+                input::launcher_cancel().label()
+            ),
             defer_feedback_label: feedback.defer_label,
             defer_actions: "Copy,Retry".to_string(),
             failed_feedback_label: feedback.failed_label,
@@ -179,20 +184,24 @@ fn result_semantics(state: &LauncherState) -> ResultSemantics {
     let selected_keycap = if state.view.results.is_empty() {
         "none".to_string()
     } else {
-        "Mod+1".to_string()
+        input::launcher_result_keycap(0).unwrap_or_else(|| "none".to_string())
     };
     let selected_action_hint = state
         .view
         .preview
         .as_ref()
-        .map(|preview| format!("Enter {}", preview.primary_command))
-        .unwrap_or_else(|| "Enter none".to_string());
+        .map(|preview| format!("{} {}", input::enter().label(), preview.primary_command))
+        .unwrap_or_else(|| format!("{} none", input::enter().label()));
     ResultSemantics {
         selected_label,
         selected_position,
         selected_keycap,
         selected_action_hint,
-        action_bar_hint: "Actions Mod+K".to_string(),
+        action_bar_hint: format!(
+            "{} {}",
+            i18n::translate(Locale::EnUs, "launcher.action.actions"),
+            input::launcher_action_panel().label()
+        ),
     }
 }
 
@@ -300,7 +309,10 @@ fn feedback_semantics() -> FeedbackSemantics {
         open_studio_target: format!("{:?}", studio_intent.target),
         open_studio_command: studio_intent.command,
         keyboard_path: format!(
-            "Feedback>ArrowDown:{retry}>ArrowDown:{open_studio}>Enter:{}",
+            "Feedback>{}:{retry}>{}:{open_studio}>{}:{}",
+            input::arrow_down().label(),
+            input::arrow_down().label(),
+            input::enter().label(),
             keyboard_state
                 .studio_intent
                 .as_ref()
@@ -343,11 +355,20 @@ impl LauncherUiSemanticsReport {
             && self.empty_result_count > 0
             && self.empty_title == "Suggested Workflows"
             && self.empty_detail.contains("Press / for commands")
-            && self.selected_label.contains("press Enter")
+            && self
+                .selected_label
+                .contains(&format!("press {}", input::enter().label()))
             && self.selected_position.contains(" of ")
-            && self.selected_keycap == "Mod+1"
-            && self.selected_action_hint.starts_with("Enter ")
-            && self.action_bar_hint == "Actions Mod+K"
+            && self.selected_keycap == input::launcher_result_keycap(0).unwrap()
+            && self
+                .selected_action_hint
+                .starts_with(&format!("{} ", input::enter().label()))
+            && self.action_bar_hint
+                == format!(
+                    "{} {}",
+                    i18n::translate(Locale::EnUs, "launcher.action.actions"),
+                    input::launcher_action_panel().label()
+                )
             && self.action_panel_actions.contains("Open in Studio")
             && self
                 .action_panel_open_studio_command
@@ -368,7 +389,12 @@ impl LauncherUiSemanticsReport {
             && self.loading_spinner_after_ms == 200
             && self.executing_search_text.starts_with("Running:")
             && !self.executing_input_enabled
-            && self.executing_cancel_shortcut == "Cancel Ctrl+C"
+            && self.executing_cancel_shortcut
+                == format!(
+                    "{} {}",
+                    i18n::translate(Locale::EnUs, "launcher.action.cancel"),
+                    input::launcher_cancel().label()
+                )
             && self
                 .defer_feedback_label
                 .contains(std_egui::i18n::t("launcher.feedback.deferred"))
@@ -377,9 +403,12 @@ impl LauncherUiSemanticsReport {
                 .failed_feedback_label
                 .contains(std_egui::i18n::t("launcher.feedback.failed"))
             && self.error_actions == "Copy,Retry,Open Studio"
-            && self
-                .feedback_keyboard_path
-                .contains("ArrowDown:Retry>ArrowDown:OpenStudio>Enter:studio-pane://history")
+            && self.feedback_keyboard_path.contains(&format!(
+                "{}:Retry>{}:OpenStudio>{}:studio-pane://history",
+                input::arrow_down().label(),
+                input::arrow_down().label(),
+                input::enter().label()
+            ))
             && self.error_open_studio_target == "ExecutionHistory"
             && self.error_open_studio_command == "studio-pane://history"
             && (!self.reduce_motion || self.launcher_enter_ms == 0)

@@ -50,13 +50,13 @@ pub(crate) fn render(
 fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) {
     match action_bar_hint_mode(state) {
         ActionBarHintMode::Cancel => {
-            keycap(ui, "Ctrl+C");
+            keycap(ui, &input::launcher_cancel().label());
             quiet_label(ui, i18n::t("launcher.action.cancel"));
         }
         ActionBarHintMode::RunActions => {
             keycap(ui, &input::launcher_action_panel().label());
             quiet_label(ui, i18n::t("launcher.action.actions"));
-            keycap(ui, "Enter");
+            keycap(ui, &input::enter().label());
             quiet_label(ui, i18n::t("launcher.action.run"));
         }
     }
@@ -82,12 +82,12 @@ fn action_bar_visible_hint_labels(state: &LauncherState) -> Vec<String> {
         ActionBarHintMode::Cancel => {
             vec![
                 i18n::t("launcher.action.cancel").to_string(),
-                "Ctrl+C".to_string(),
+                input::launcher_cancel().label(),
             ]
         }
         ActionBarHintMode::RunActions => vec![
             i18n::t("launcher.action.run").to_string(),
-            "Enter".to_string(),
+            input::enter().label(),
             i18n::t("launcher.action.actions").to_string(),
             input::launcher_action_panel().label(),
         ],

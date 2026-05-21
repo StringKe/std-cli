@@ -209,7 +209,7 @@ fn result_row(
 }
 
 #[cfg(test)]
-fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (&str, &str) {
+fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (String, &str) {
     ui_result_rows::result_row_keyboard_affordance(model)
 }
 
@@ -232,8 +232,12 @@ mod tests {
         let row = LauncherResultRowModel::from_result(&result, None, 0, 1, true);
 
         assert_eq!(
-            result_row_keyboard_affordance(&row),
-            ("Enter", i18n::t("launcher.action.run"))
+            result_row_keyboard_affordance(&row).0,
+            std_egui::input::enter().label()
+        );
+        assert_eq!(
+            result_row_keyboard_affordance(&row).1,
+            i18n::t("launcher.action.run")
         );
     }
 

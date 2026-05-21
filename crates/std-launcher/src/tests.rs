@@ -225,19 +225,24 @@ fn launcher_ui_semantics_smoke_covers_result_empty_defer_and_error_states() {
 }
 
 fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
+    let first_keycap = std_egui::input::launcher_result_keycap(0).unwrap();
+    let enter = std_egui::input::enter().label();
+    let actions = std_egui::input::launcher_action_panel().label();
     assert_eq!(report.result_phase, "WithResults");
     assert_eq!(report.result_mode, "Matches");
-    assert_eq!(report.selected_keycap, "Mod+1");
-    assert!(report.selected_action_hint.starts_with("Enter "));
-    assert_eq!(report.action_bar_hint, "Actions Mod+K");
+    assert_eq!(report.selected_keycap, first_keycap);
+    assert!(report
+        .selected_action_hint
+        .starts_with(&format!("{enter} ")));
+    assert_eq!(report.action_bar_hint, format!("Actions {actions}"));
     assert!(report.action_panel_actions.contains("Open in Studio"));
     assert!(report
         .action_panel_open_studio_command
         .starts_with("studio-pane://"));
     assert!(summary.contains("launcher_ui_semantics_smoke PASS"));
     assert!(summary.contains("result_phase=WithResults"));
-    assert!(summary.contains("selected_keycap=Mod+1"));
-    assert!(summary.contains("action_bar_hint=Actions Mod+K"));
+    assert!(summary.contains(&format!("selected_keycap={first_keycap}")));
+    assert!(summary.contains(&format!("action_bar_hint=Actions {actions}")));
     assert!(summary.contains("action_panel_actions="));
 }
 
@@ -254,7 +259,10 @@ fn assert_loading_and_execution_semantics(report: &LauncherUiSemanticsReport, su
     assert_eq!(report.loading_spinner_after_ms, 200);
     assert!(report.executing_search_text.starts_with("Running:"));
     assert!(!report.executing_input_enabled);
-    assert_eq!(report.executing_cancel_shortcut, "Cancel Ctrl+C");
+    assert_eq!(
+        report.executing_cancel_shortcut,
+        format!("Cancel {}", std_egui::input::launcher_cancel().label())
+    );
     assert!(summary.contains("loading_progress=2px Searching indeterminate"));
     assert!(summary.contains("executing_input_enabled=false"));
 }

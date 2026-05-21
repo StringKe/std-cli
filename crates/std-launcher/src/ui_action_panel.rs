@@ -147,7 +147,7 @@ fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui
                             .color(Color::fg_primary(&ctx)),
                     );
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        keycap(ui, item.shortcut());
+                        keycap(ui, &item.shortcut_label());
                     });
                 });
             });

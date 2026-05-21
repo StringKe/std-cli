@@ -88,6 +88,30 @@ pub fn launcher_action_panel() -> KeyBinding {
     KeyBinding::Mod('K')
 }
 
+pub fn launcher_cancel() -> KeyBinding {
+    KeyBinding::Named("Ctrl+C")
+}
+
+pub fn launcher_defer() -> KeyBinding {
+    KeyBinding::ShiftNamed(egui::Key::Enter)
+}
+
+pub fn launcher_open_studio() -> KeyBinding {
+    KeyBinding::Mod('O')
+}
+
+pub fn launcher_copy_command() -> KeyBinding {
+    KeyBinding::Mod('C')
+}
+
+pub fn launcher_result_keycap(index: usize) -> Option<String> {
+    if index < 9 {
+        Some(format!("{}+{}", primary_modifier_label(), index + 1))
+    } else {
+        None
+    }
+}
+
 pub fn studio_command_palette() -> KeyBinding {
     KeyBinding::ModShift('P')
 }
@@ -209,10 +233,12 @@ pub fn ime_composing(ctx: &egui::Context) -> bool {
 fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
     let key = match key.to_ascii_uppercase() {
         'B' => egui::Key::B,
+        'C' => egui::Key::C,
         'I' => egui::Key::I,
         'J' => egui::Key::J,
         'K' => egui::Key::K,
         'L' => egui::Key::L,
+        'O' => egui::Key::O,
         'P' => egui::Key::P,
         _ => return false,
     };
@@ -258,6 +284,14 @@ mod tests {
         assert!(launcher_delete_previous_token()
             .label()
             .ends_with("+Backspace"));
+        assert_eq!(enter().label(), "Enter");
+        assert_eq!(launcher_defer().label(), "Shift+Enter");
+        assert_eq!(launcher_cancel().label(), "Ctrl+C");
+        assert!(launcher_open_studio().label().ends_with("+O"));
+        assert!(launcher_copy_command().label().ends_with("+C"));
+        assert!(launcher_result_keycap(0).unwrap().ends_with("+1"));
+        assert!(launcher_result_keycap(8).unwrap().ends_with("+9"));
+        assert!(launcher_result_keycap(9).is_none());
         assert_eq!(tab().label(), "Tab");
         assert_eq!(shift_tab().label(), "Shift+Tab");
     }

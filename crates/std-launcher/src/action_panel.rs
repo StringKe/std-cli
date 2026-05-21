@@ -1,3 +1,4 @@
+use std_egui::input;
 use std_types::{Action, ActionType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -94,18 +95,18 @@ impl ActionPanelItem {
         }
     }
 
-    pub fn shortcut(&self) -> &str {
+    pub fn shortcut_label(&self) -> String {
         match self {
-            Self::Run => "Enter",
-            Self::Defer => "Shift+Enter",
-            Self::OpenInStudio => "Cmd+O",
-            Self::CopyCommand(_) => "Cmd+C",
+            Self::Run => input::enter().label(),
+            Self::Defer => input::launcher_defer().label(),
+            Self::OpenInStudio => input::launcher_open_studio().label(),
+            Self::CopyCommand(_) => input::launcher_copy_command().label(),
         }
     }
 
     fn matches(&self, query: &str) -> bool {
         self.title().to_lowercase().contains(query)
-            || self.shortcut().to_lowercase().contains(query)
+            || self.shortcut_label().to_lowercase().contains(query)
     }
 }
 

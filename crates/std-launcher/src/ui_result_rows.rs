@@ -196,9 +196,9 @@ fn action_hint_label(ui: &mut egui::Ui, label: &str) {
 }
 
 #[cfg(test)]
-pub(crate) fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (&str, &str) {
+pub(crate) fn result_row_keyboard_affordance(model: &LauncherResultRowModel) -> (String, &str) {
     (
-        model.shortcut.as_deref().unwrap_or("none"),
+        model.shortcut.clone().unwrap_or_else(|| "none".to_string()),
         model.action_label.as_str(),
     )
 }

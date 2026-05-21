@@ -1,4 +1,5 @@
 use crate::{LauncherQueryMode, LauncherQueryRequest, LauncherState};
+use std_egui::input;
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId, ActionType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,11 +54,15 @@ impl LauncherSurfaceContract {
             && self.result_list.contains("row_height=36")
             && self.result_list.contains("group_height=24")
             && self.result_list.contains("selected=accent-weak")
-            && self.result_list.contains("shortcut=Enter")
+            && self
+                .result_list
+                .contains(&format!("shortcut={}", input::enter().label()))
             && self.action_bar.contains("height=36")
             && self.action_bar.contains("left=breadcrumb+primary-command")
             && self.action_bar.contains("breadcrumb=Command > Rebuild Index")
-            && self.action_bar.contains("actions=Mod+K")
+            && self
+                .action_bar
+                .contains(&format!("actions={}", input::launcher_action_panel().label()))
             && self.action_bar.contains("font=code")
             && self.empty_state.contains("recent_or_suggested")
             && self.no_match_state.contains("ask_ai_enter")
@@ -107,15 +112,18 @@ fn search_bar_contract() -> String {
 
 fn result_list_contract(result_count: usize, selected_type: &ActionType) -> String {
     format!(
-        "groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut=Enter;virtualized=true",
-        action_type_name(selected_type)
+        "groups=Action / Workflow>App / File>Clipboard>Memory / Skill>Other;row_height=36;group_height=24;result_count={result_count};selected=accent-weak;selected_kind={};shortcut={};virtualized=true",
+        action_type_name(selected_type),
+        input::enter().label()
     )
 }
 
 fn action_bar_contract(preview: &std_types::ActionPreview) -> String {
     let summary = crate::ActionBarPreviewSummary::from_preview(preview);
     format!(
-        "height=36;left=breadcrumb+primary-command;font=code;right=run+actions;run=Enter;actions=Mod+K;{}",
+        "height=36;left=breadcrumb+primary-command;font=code;right=run+actions;run={};actions={};{}",
+        input::enter().label(),
+        input::launcher_action_panel().label(),
         summary.contract()
     )
 }
@@ -192,8 +200,9 @@ fn executing_state_contract() -> String {
     state.update_query("rebuild index");
     state.view.preview_executing();
     format!(
-        "phase={:?};input_locked=true;cancel=Ctrl+C;progress=action-bar",
-        state.view.phase
+        "phase={:?};input_locked=true;cancel={};progress=action-bar",
+        state.view.phase,
+        input::launcher_cancel().label()
     )
 }
 
