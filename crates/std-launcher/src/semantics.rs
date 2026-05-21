@@ -47,6 +47,7 @@ pub struct LauncherUiSemanticsReport {
     pub feedback_keyboard_path: String,
     pub error_open_studio_target: String,
     pub error_open_studio_command: String,
+    pub shortcut_help_summary: String,
     pub reduce_motion: bool,
     pub launcher_enter_ms: u128,
     pub focus_ring_width: u32,
@@ -104,6 +105,7 @@ impl LauncherState {
             feedback_keyboard_path: feedback.keyboard_path,
             error_open_studio_target: feedback.open_studio_target,
             error_open_studio_command: feedback.open_studio_command,
+            shortcut_help_summary: shortcut_help_semantics(),
             reduce_motion: motion.is_reduced(),
             launcher_enter_ms: motion.launcher_enter().as_millis(),
             focus_ring_width: a11y.focus_ring_width() as u32,
@@ -393,12 +395,14 @@ impl LauncherUiSemanticsReport {
             ))
             && self.error_open_studio_target == "ExecutionHistory"
             && self.error_open_studio_command == "studio-pane://history"
+            && self.shortcut_help_summary.contains("trigger=?")
+            && self.shortcut_help_summary.contains("Mod+K")
             && (!self.reduce_motion || self.launcher_enter_ms == 0)
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nshortcut_help={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -436,11 +440,16 @@ impl LauncherUiSemanticsReport {
             self.feedback_keyboard_path,
             self.error_open_studio_target,
             self.error_open_studio_command,
+            self.shortcut_help_summary,
             self.reduce_motion,
             self.launcher_enter_ms,
             self.focus_ring_width
         )
     }
+}
+
+fn shortcut_help_semantics() -> String {
+    crate::launcher_shortcut_help_summary()
 }
 
 fn deferred_execution() -> ActionExecution {

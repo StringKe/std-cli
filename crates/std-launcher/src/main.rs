@@ -29,6 +29,7 @@ mod ui_result_rows;
 mod ui_results;
 mod ui_results_virtual;
 mod ui_search;
+mod ui_shortcut_help;
 mod window;
 
 use app::LauncherApp;

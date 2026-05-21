@@ -6,7 +6,7 @@ use crate::{
         group_count as model_group_count, list_items, LauncherResultListItem,
         LauncherResultRowModel,
     },
-    ui_result_nl, ui_result_rows, ui_results_virtual,
+    ui_result_nl, ui_result_rows, ui_results_virtual, ui_shortcut_help,
 };
 use eframe::egui;
 use std_egui::{
@@ -68,6 +68,10 @@ fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
 
 fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
     if state.view.result_mode == LauncherResultMode::NaturalLanguage {
+        if std_launcher::launcher_shortcut_help_visible(&state.view.query) {
+            ui_shortcut_help::render(ui);
+            return false;
+        }
         if let Some(suggestion) = state.view.nl_suggestion.as_ref() {
             ui_result_nl::render(ui, suggestion);
         }
@@ -295,5 +299,17 @@ mod tests {
         assert!(viewport_body.contains("LauncherPhase::Searching"));
         assert!(viewport_body.contains("render_loading_progress_bar"));
         assert!(!progress_body.contains("render_loading_progress_bar"));
+    }
+
+    #[test]
+    fn lone_question_mark_renders_shortcut_help_not_nl_actions() {
+        assert!(std_launcher::launcher_shortcut_help_visible("?"));
+        assert!(!std_launcher::launcher_shortcut_help_visible("? rebuild"));
+
+        let source = include_str!("ui_results.rs");
+        let help_index = source.find("ui_shortcut_help::render(ui)").unwrap();
+        let nl_index = source.find("ui_result_nl::render(ui, suggestion)").unwrap();
+
+        assert!(help_index < nl_index);
     }
 }

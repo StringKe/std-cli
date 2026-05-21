@@ -15,6 +15,7 @@ mod query_mode;
 mod reports;
 mod semantics;
 mod semantics_executing;
+mod shortcut_help;
 mod studio_intent;
 mod suggested;
 mod surface_contract;
@@ -43,6 +44,10 @@ pub use reports::{
     TRIGGER_BUDGET_MS,
 };
 pub use semantics::LauncherUiSemanticsReport;
+pub use shortcut_help::{
+    launcher_shortcut_help_rows, launcher_shortcut_help_summary, launcher_shortcut_help_visible,
+    LauncherShortcutHelpRow,
+};
 use std::time::Instant;
 use std_core::{StdConfig, StdCore};
 use std_egui::LauncherViewModel;
