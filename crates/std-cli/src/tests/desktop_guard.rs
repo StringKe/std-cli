@@ -291,10 +291,13 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         "isolated_background_ui_harness_only",
         "HARNESS_BUNDLE_ID",
         "HARNESS_WINDOW_TITLE",
+        "BACKGROUND_RUNNER",
+        "scripts/background-ui-smoke.swift",
         "required_bundle_id=",
         "required_window_title=",
         "harness_pid required",
         "window_id required",
+        "/usr/bin/swift",
         "driver_sequence=",
         "per-process-event-tap",
         "appKitDefined-activation-primer",
@@ -340,6 +343,28 @@ fn background_ui_smoke_contract_requires_isolated_harness() {
         assert!(
             quality_doc.contains(required),
             "background UI acceptance docs must describe safe harness boundary: {required}"
+        );
+    }
+
+    let runner = fs::read_to_string(root.join("scripts/background-ui-smoke.swift")).unwrap();
+    for required in [
+        "STD_TEST_MODE blocks background UI automation",
+        "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
+        "CGEvent.tapCreateForPid",
+        ".headInsertEventTap",
+        "NSEvent.otherEvent",
+        "appKitDefined",
+        "postToPid",
+        "mouseEventWindowUnderMousePointer",
+        "mouseEventWindowUnderMousePointerThatCanHandleThisEvent",
+        "CGEventField(rawValue: 51)",
+        "CGEventField(rawValue: 58)",
+        "requiredBundleId",
+        "requiredWindowTitle",
+    ] {
+        assert!(
+            runner.contains(required),
+            "background runner must implement isolated per-process delivery: {required}"
         );
     }
 }

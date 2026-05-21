@@ -95,6 +95,8 @@ STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview light panes 8000
 - 不向用户当前 frontmost app、Terminal、1Password、WeChat 或系统设置发送事件
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
 
+当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `std ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1` 和 `STD_TEST_MODE`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。
+
 该路径不能进入 `mise run quality`、release smoke gate 或默认测试。它只用于后续真实截图、键盘焦点、窗口或面板管理验收。
 
 截图采集脚本同样必须显式 opt-in，未设置 `STD_ALLOW_UI_PREVIEW=1` 时直接返回 `SKIP`，不调用 macOS `screencapture`：

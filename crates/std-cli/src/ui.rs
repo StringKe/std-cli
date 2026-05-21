@@ -2,6 +2,7 @@ use clap::Subcommand;
 
 const HARNESS_BUNDLE_ID: &str = "dev.std-cli.background-ui-harness";
 const HARNESS_WINDOW_TITLE: &str = "std-cli Background UI Harness";
+const BACKGROUND_RUNNER: &str = "scripts/background-ui-smoke.swift";
 const BACKGROUND_DRIVER: [&str; 4] = [
     "per-process-event-tap",
     "appKitDefined-activation-primer",
@@ -66,11 +67,7 @@ fn background_smoke(config: BackgroundSmokeConfig) -> String {
     if let Some(reason) = invalid_harness_reason(&config) {
         return background_smoke_report("SKIP", reason, &config);
     }
-    background_smoke_report(
-        "SKIP",
-        "background UI driver requires isolated harness implementation",
-        &config,
-    )
+    run_background_smoke_driver(&config)
 }
 
 fn invalid_harness_reason(config: &BackgroundSmokeConfig) -> Option<&'static str> {
@@ -125,6 +122,96 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "fallback=never_frontmost_desktop_click".to_string(),
     ]
     .join("\n")
+}
+
+fn run_background_smoke_driver(config: &BackgroundSmokeConfig) -> String {
+    #[cfg(target_os = "macos")]
+    {
+        run_macos_background_smoke_driver(config)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        background_smoke_report("SKIP", "background UI driver requires macOS", config)
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn run_macos_background_smoke_driver(config: &BackgroundSmokeConfig) -> String {
+    let Some(runner) = background_runner_path() else {
+        return background_smoke_report("SKIP", "background UI runner script missing", config);
+    };
+    let Some(harness_pid) = config.harness_pid else {
+        return background_smoke_report("SKIP", "harness_pid required", config);
+    };
+    let Some(window_id) = config.window_id else {
+        return background_smoke_report("SKIP", "window_id required", config);
+    };
+    let output = std::process::Command::new("/usr/bin/swift")
+        .arg(runner)
+        .arg("--harness-pid")
+        .arg(harness_pid.to_string())
+        .arg("--window-id")
+        .arg(window_id.to_string())
+        .arg("--bundle-id")
+        .arg(HARNESS_BUNDLE_ID)
+        .arg("--window-title")
+        .arg(HARNESS_WINDOW_TITLE)
+        .output();
+    match output {
+        Ok(output) => background_driver_report(config, output),
+        Err(error) => background_smoke_report(
+            "SKIP",
+            &format!("background UI runner failed to start: {error}"),
+            config,
+        ),
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn background_runner_path() -> Option<std::path::PathBuf> {
+    let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let root = manifest_dir.parent()?.parent()?;
+    let runner = root.join(BACKGROUND_RUNNER);
+    runner.exists().then_some(runner)
+}
+
+#[cfg(target_os = "macos")]
+fn background_driver_report(
+    config: &BackgroundSmokeConfig,
+    output: std::process::Output,
+) -> String {
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let status = if output.status.success() {
+        "PASS"
+    } else {
+        "FAIL"
+    };
+    [
+        background_smoke_report(
+            status,
+            "background UI driver executed isolated harness",
+            config,
+        ),
+        format!("runner={BACKGROUND_RUNNER}"),
+        format!("runner_exit={}", output.status.code().unwrap_or(-1)),
+        format!("runner_stdout={}", single_line(stdout.trim())),
+        format!("runner_stderr={}", single_line(stderr.trim())),
+    ]
+    .join("\n")
+}
+
+#[cfg(target_os = "macos")]
+fn single_line(value: &str) -> String {
+    if value.is_empty() {
+        return "EMPTY".to_string();
+    }
+    value
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join(" | ")
 }
 
 fn opt_u32(value: Option<u32>) -> String {

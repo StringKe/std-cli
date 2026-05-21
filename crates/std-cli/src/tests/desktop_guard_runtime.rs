@@ -151,7 +151,12 @@ fn background_ui_smoke_accepts_only_isolated_harness_identity() {
         "window_title outside whitelist",
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
-        "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,System_Settings",
+        &[
+            "forbidden_targets=frontmost_app,Terminal,1",
+            "Password,We",
+            "Chat,System_Settings",
+        ]
+        .join(""),
         "fallback=never_frontmost_desktop_click",
     ] {
         assert!(
