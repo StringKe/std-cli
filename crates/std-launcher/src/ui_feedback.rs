@@ -30,12 +30,9 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) {
 
 fn render_contents(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
     let ctx = ui.ctx().clone();
-    ui.horizontal(|ui| {
-        render_text(ui, &ctx, feedback);
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            render_actions(ui, state, feedback);
-        });
-    });
+    render_text(ui, &ctx, feedback);
+    ui.add_space(Space::xs() as f32);
+    render_actions(ui, state, feedback);
 }
 
 fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
@@ -65,28 +62,31 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
 
 fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
     let actions = feedback.actions();
-    for (index, action) in actions.into_iter().enumerate().rev() {
-        let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
-            && state.view.selected_feedback_action == index;
-        match action {
-            LauncherFeedbackAction::Copy => {
-                if feedback_button(ui, i18n::t("launcher.feedback.copy"), selected).clicked() {
-                    ui.ctx().copy_text(feedback.summary());
+    ui.horizontal_wrapped(|ui| {
+        for (index, action) in actions.into_iter().enumerate() {
+            let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
+                && state.view.selected_feedback_action == index;
+            match action {
+                LauncherFeedbackAction::Copy => {
+                    if feedback_button(ui, i18n::t("launcher.feedback.copy"), selected).clicked() {
+                        ui.ctx().copy_text(feedback.summary());
+                    }
                 }
-            }
-            LauncherFeedbackAction::Retry => {
-                if feedback_button(ui, i18n::t("launcher.feedback.retry"), selected).clicked() {
-                    state.trigger_selected();
+                LauncherFeedbackAction::Retry => {
+                    if feedback_button(ui, i18n::t("launcher.feedback.retry"), selected).clicked() {
+                        state.trigger_selected();
+                    }
                 }
-            }
-            LauncherFeedbackAction::OpenStudio => {
-                if feedback_button(ui, i18n::t("launcher.feedback.open_studio"), selected).clicked()
-                {
-                    state.open_studio_execution_history_from_feedback();
+                LauncherFeedbackAction::OpenStudio => {
+                    if feedback_button(ui, i18n::t("launcher.feedback.open_studio"), selected)
+                        .clicked()
+                    {
+                        state.open_studio_execution_history_from_feedback();
+                    }
                 }
             }
         }
-    }
+    });
 }
 
 fn feedback_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
@@ -224,5 +224,20 @@ mod tests {
         let old_metric_label = ["{}ms", " search"].join("");
 
         assert!(!source.contains(&old_metric_label));
+    }
+
+    #[test]
+    fn feedback_surface_stacks_text_above_actions() {
+        let source = include_str!("ui_feedback.rs");
+        let render_contents = source
+            .split("fn render_contents")
+            .nth(1)
+            .and_then(|body| body.split("fn render_text").next())
+            .unwrap();
+
+        assert!(render_contents.contains("render_text(ui, &ctx, feedback);"));
+        assert!(render_contents.contains("render_actions(ui, state, feedback);"));
+        assert!(source.contains("ui.horizontal_wrapped"));
+        assert!(!render_contents.contains("right_to_left"));
     }
 }
