@@ -158,6 +158,22 @@ fn workspace_pane_a11y_label_includes_heading_and_kind() {
 }
 
 #[test]
+fn workspace_action_labels_include_pane_title_role_and_shortcut() {
+    let mut app = StudioEguiApp::default();
+    app.app.open_settings_pane();
+    let spec = focused_workspace_spec(&app.app).unwrap();
+
+    assert_eq!(
+        crate::workspace_panes::workspace_action_a11y_label("Close", &spec, Some("Mod+W")),
+        "Close, workspace pane action, 设置, button, press Enter, shortcut Mod+W"
+    );
+    assert_eq!(
+        crate::workspace_panes::workspace_action_a11y_label("Refresh", &spec, None),
+        "Refresh, workspace pane action, 设置, button, press Enter"
+    );
+}
+
+#[test]
 fn workspace_canvas_renders_only_focused_internal_pane() {
     let mut app = StudioEguiApp::default();
     let plugin = app.app.open_plugin_manager_pane();

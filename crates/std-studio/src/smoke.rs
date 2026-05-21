@@ -1,4 +1,6 @@
 mod analysis_smoke;
+#[cfg(test)]
+mod diagnostics;
 mod keyboard_smoke;
 mod layout_smoke;
 mod operations_smoke;

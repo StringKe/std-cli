@@ -253,7 +253,7 @@ impl StudioSmokeReport {
                 .contains("shortcuts=save|simulate|test|history")
             && self
                 .builder_toolbar_contract
-                .contains("a11y=button-label-shortcut-purpose")
+                .contains("button-label-shortcut-purpose")
             && self.builder_toolbar_contract.contains("textbox-goal-value")
             && self
                 .builder_toolbar_contract
@@ -374,7 +374,14 @@ impl StudioSmokeReport {
                 .contains("runtime_panel=status|runtime|exit|duration|boundary")
             && self
                 .plugin_inspector_contract
-                .contains("description=visible;permissions=1;commands=1;audit_log=visible")
+                .contains("description=visible;permissions=1;commands=1")
+            && self
+                .plugin_inspector_contract
+                .contains("enable_state=enabled")
+            && self
+                .plugin_inspector_contract
+                .contains("review_prompt=visible")
+            && self.plugin_inspector_contract.contains("audit_log=visible")
             && self
                 .plugin_visual_contract
                 .contains("list=name|version|status|source|enable")
@@ -432,7 +439,7 @@ impl StudioSmokeReport {
             && self.operations_summary.contains("operations_visual_contract=")
             && self
                 .operations_summary
-                .contains("gate=title|status|command|steps|runbook|evidence|result|artifact|output|record-evidence")
+                .contains("gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence")
             && self
                 .operations_summary
                 .contains("gates=QA|Doctor|Release|Install")

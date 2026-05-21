@@ -6,7 +6,13 @@ fn studio_smoke_reports_internal_workspace_pane_management() {
     let report = run_studio_smoke().unwrap();
     let summary = report.summary();
 
-    assert!(report.pass());
+    assert!(
+        report.pass(),
+        "{}\n{}\n{}",
+        report.contract_diagnostics(),
+        report.workflow_contract_diagnostics(),
+        summary
+    );
     assert_workspace_policy_summary(&summary);
     assert_shell_layout_summary(&summary);
     assert_workflow_builder_summary(&summary);
@@ -192,7 +198,8 @@ fn assert_plugin_manager_visual_summary(summary: &str) {
     assert!(summary.contains("boundary_panel=permissions|fs|network|actions"));
     assert!(summary.contains("runtime_panel=status|runtime|exit|duration|boundary"));
     assert!(summary.contains("plugin_inspector_contract=description=visible"));
-    assert!(summary.contains("commands=1;audit_log=visible"));
+    assert!(summary.contains("commands=1;enable_state=enabled"));
+    assert!(summary.contains("review_prompt=visible;audit_log=visible"));
     assert!(summary.contains("plugin_visual_contract=list=name|version|status|source|enable"));
     assert!(summary.contains("status_bar=manifest=1/1 PASS"));
     assert!(summary.contains("inspector=description|permissions|commands|audit-log"));
@@ -231,12 +238,14 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_install_output=std="));
     assert!(summary.contains("operations_visual_contract="));
     assert!(summary.contains(
-        "gate=title|status|command|steps|runbook|evidence|result|artifact|output|record-evidence"
+        "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"
     ));
     assert!(summary.contains("gates=QA|Doctor|Release|Install"));
-    assert!(summary.contains("commands=4"));
-    assert!(summary.contains("results=4"));
-    assert!(summary.contains("outputs=4"));
+    assert!(summary.contains("Runtime"));
+    assert!(summary.contains("manual_gates=Runtime"));
+    assert!(summary.contains("commands=5"));
+    assert!(summary.contains("results=5"));
+    assert!(summary.contains("outputs=5"));
     assert!(summary.contains("operations_a11y_contract="));
     assert!(summary.contains("a11y=row-label-includes-label-value-detail"));
 }

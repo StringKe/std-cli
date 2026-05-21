@@ -2,7 +2,7 @@ use crate::{ui, StudioEguiApp};
 use eframe::egui;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use std_egui::{i18n, tokens::Space};
+use std_egui::{i18n, input, tokens::Space};
 use std_studio::{StudioPane, WorkspacePane, WorkspacePaneId, WorkspacePaneKind};
 
 pub(crate) type WorkspaceCommandQueue = Arc<Mutex<Vec<StudioWorkspaceCommand>>>;
@@ -294,37 +294,106 @@ fn render_workspace_actions(
     commands: &WorkspaceCommandQueue,
 ) {
     ui.horizontal_wrapped(|ui| {
-        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.show_in_main")).clicked() {
+        if workspace_action_button(
+            ui,
+            spec,
+            i18n::t("studio.workspace_panes.show_in_main"),
+            None,
+        )
+        .clicked()
+        {
             push_command(commands, StudioWorkspaceCommand::ShowInMain(spec.pane));
         }
         if let Some(path) = &spec.workflow_path {
-            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.preview_workflow")).clicked() {
+            if workspace_action_button(
+                ui,
+                spec,
+                i18n::t("studio.workspace_panes.preview_workflow"),
+                None,
+            )
+            .clicked()
+            {
                 push_command(
                     commands,
                     StudioWorkspaceCommand::PreviewWorkflow(path.clone()),
                 );
             }
-            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.run_workflow")).clicked() {
+            if workspace_action_button(
+                ui,
+                spec,
+                i18n::t("studio.workspace_panes.run_workflow"),
+                Some(input::studio_workflow_test().label().as_str()),
+            )
+            .clicked()
+            {
                 push_command(commands, StudioWorkspaceCommand::RunWorkflow(path.clone()));
             }
         }
         if let Some(path) = &spec.analysis_path {
-            if ui::quiet_button(ui, i18n::t("studio.workspace_panes.analyze")).clicked() {
+            if workspace_action_button(ui, spec, i18n::t("studio.workspace_panes.analyze"), None)
+                .clicked()
+            {
                 push_command(commands, StudioWorkspaceCommand::Analyze(path.clone()));
             }
         }
         if spec.content_key == "plugins"
-            && ui::quiet_button(ui, i18n::t("studio.workspace_panes.reload_plugins")).clicked()
+            && workspace_action_button(
+                ui,
+                spec,
+                i18n::t("studio.workspace_panes.reload_plugins"),
+                None,
+            )
+            .clicked()
         {
             push_command(commands, StudioWorkspaceCommand::ReloadPlugins);
         }
-        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.refresh")).clicked() {
+        if workspace_action_button(ui, spec, i18n::t("studio.workspace_panes.refresh"), None)
+            .clicked()
+        {
             push_command(commands, StudioWorkspaceCommand::Refresh);
         }
-        if ui::quiet_button(ui, i18n::t("studio.workspace_panes.close")).clicked() {
+        if workspace_action_button(
+            ui,
+            spec,
+            i18n::t("studio.workspace_panes.close"),
+            Some(input::studio_close_tab().label().as_str()),
+        )
+        .clicked()
+        {
             push_command(commands, StudioWorkspaceCommand::Close(spec.id));
         }
     });
+}
+
+fn workspace_action_button(
+    ui: &mut egui::Ui,
+    spec: &StudioWorkspaceSpec,
+    label: &str,
+    shortcut: Option<&str>,
+) -> egui::Response {
+    let response = ui::quiet_button(ui, label);
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            workspace_action_a11y_label(label, spec, shortcut),
+        )
+    });
+    response
+}
+
+pub(crate) fn workspace_action_a11y_label(
+    label: &str,
+    spec: &StudioWorkspaceSpec,
+    shortcut: Option<&str>,
+) -> String {
+    let suffix = shortcut
+        .map(|value| format!(", shortcut {value}"))
+        .unwrap_or_default();
+    format!(
+        "{label}, workspace pane action, {}, button, press Enter{suffix}",
+        spec.title
+    )
 }
 
 fn push_command(commands: &WorkspaceCommandQueue, command: StudioWorkspaceCommand) {
