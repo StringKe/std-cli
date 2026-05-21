@@ -44,10 +44,12 @@ pub(crate) fn run_workspace_pane_smoke(
         && studio.focused_pane == Some(plugin)
         && plugin_refocused;
     let restored_title = pane_title(studio, plugin);
-    let focus_label = format!(
-        "focused={},title={restored_title},strategy=internal-egui-workspace-panes,reopened_memory={},reopened_internal={reopened_is_internal}",
-        plugin.value(),
-        reopened.value()
+    let focus_label = workspace_management_evidence(
+        plugin,
+        reopened,
+        &restored_title,
+        reopened_is_internal,
+        state_preserved_after_focus,
     );
     WorkspacePaneSmoke {
         opened,
@@ -62,6 +64,20 @@ pub(crate) fn run_workspace_pane_smoke(
         state_preserved_after_focus,
         focus_label,
     }
+}
+
+fn workspace_management_evidence(
+    focused: WorkspacePaneId,
+    reopened: WorkspacePaneId,
+    restored_title: &str,
+    reopened_is_internal: bool,
+    state_preserved_after_focus: bool,
+) -> String {
+    format!(
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_internal={reopened_is_internal}",
+        focused.value(),
+        reopened.value()
+    )
 }
 
 fn workspace_content_keys(studio: &StudioApp) -> String {

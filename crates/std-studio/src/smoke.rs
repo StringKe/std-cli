@@ -156,6 +156,16 @@ impl StudioSmokeReport {
             && self.pane_restored_title == "Plugin Manager"
             && self.pane_closed_removed
             && self.pane_state_preserved
+            && self
+                .pane_focus_label
+                .contains("host=single-borderless-egui-viewport")
+            && self
+                .pane_focus_label
+                .contains("sequence=open>focus>switch>close>reopen>restore")
+            && self.pane_focus_label.contains("state_preserved=true")
+            && self
+                .pane_focus_label
+                .contains("forbidden=native-child-windows:false|detached-panels:false")
             && self.pane_focus_label.contains("title=Plugin Manager")
             && !self.native_child_windows
             && !self.detached_panels
@@ -418,7 +428,12 @@ mod tests {
         assert!(summary.contains("pane_restored_title=Plugin Manager"));
         assert!(summary.contains("pane_closed_removed=true"));
         assert!(summary.contains("pane_state_preserved=true"));
-        assert!(summary.contains("pane_focus_label=focused="));
+        assert!(summary.contains("pane_focus_label=strategy=internal-egui-workspace-panes"));
+        assert!(summary.contains("host=single-borderless-egui-viewport"));
+        assert!(summary.contains("sequence=open>focus>switch>close>reopen>restore"));
+        assert!(summary.contains("state_preserved=true"));
+        assert!(summary.contains("forbidden=native-child-windows:false|detached-panels:false"));
+        assert!(summary.contains("focused="));
         assert!(summary.contains("title=Plugin Manager"));
         assert!(summary.contains("strategy=internal-egui-workspace-panes"));
         assert!(summary.contains("reopened_memory="));
