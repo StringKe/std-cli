@@ -88,6 +88,13 @@ impl StudioEguiApp {
                 if self.analysis.focus_area == AnalysisFocusArea::Target {
                     response.request_focus();
                 }
+                response.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::TextEdit,
+                        ui.is_enabled(),
+                        analysis_target_a11y_label(&self.analysis.path),
+                    )
+                });
                 if ui::quiet_button(ui, i18n::t("studio.analysis.analyze")).clicked() {
                     self.analyze_current_path();
                 }
@@ -331,4 +338,41 @@ fn format_search_results(results: &[IndexSearchResult]) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+fn analysis_target_a11y_label(path: &str) -> String {
+    let value = if path.trim().is_empty() {
+        "empty"
+    } else {
+        path.trim()
+    };
+    format!("Analysis target path, text box, value {value}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn analysis_target_input_has_textbox_semantics() {
+        let source = include_str!("analysis.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("AnalysisFocusArea::Target.focus_id()"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("analysis_target_a11y_label"));
+        assert!(implementation.contains("response.request_focus()"));
+    }
+
+    #[test]
+    fn analysis_target_a11y_label_exposes_value() {
+        assert_eq!(
+            analysis_target_a11y_label("/tmp/project"),
+            "Analysis target path, text box, value /tmp/project"
+        );
+        assert_eq!(
+            analysis_target_a11y_label(" "),
+            "Analysis target path, text box, value empty"
+        );
+    }
 }
