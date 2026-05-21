@@ -13,9 +13,14 @@ const ICON_SIZE: f32 = Space::MD as f32;
 const ICON_RAIL_WIDTH: f32 = Space::XL as f32;
 const ICON_RAIL_HEIGHT: f32 = NAV_ROW_HEIGHT;
 const PANE_CLOSE_SIZE: f32 = Space::LG as f32;
-const PANE_CLOSE_INSET: f32 = 14.0;
-const OPEN_TITLE_Y: f32 = 13.0;
-const OPEN_DETAIL_Y: f32 = 29.0;
+const PANE_CLOSE_CENTER_INSET: f32 = Space::SM as f32 + Space::TWO_XS as f32 / 2.0;
+const OPEN_TITLE_BASELINE_Y: f32 = Space::SM as f32 + 1.0;
+const OPEN_DETAIL_BASELINE_Y: f32 = Space::XL as f32 - 3.0;
+const PANE_STATE_CENTER_X: f32 = Space::XS as f32 + Space::TWO_XS as f32 / 2.0;
+const PANE_STATE_RADIUS: f32 = 3.0;
+const CLOSE_GLYPH_HALF: f32 = Space::XS as f32 / 2.0;
+#[cfg(test)]
+const TEST_NAV_WIDTH: f32 = Space::LG as f32 * 10.0;
 
 impl StudioEguiApp {
     pub(crate) fn render_navigation(&mut self, ui: &mut egui::Ui) {
@@ -170,10 +175,7 @@ fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> 
     });
     if ui.is_rect_visible(rect) {
         paint_nav_bg(ui, rect, response.hovered(), selected);
-        let icon_rect = egui::Rect::from_min_size(
-            egui::pos2(rect.left() + Space::SM as f32, rect.center().y - 8.0),
-            egui::vec2(ICON_SIZE, ICON_SIZE),
-        );
+        let icon_rect = nav_row_icon_rect(rect);
         shell_icons::paint_pane_icon(ui, icon_rect, pane, selected);
         ui.painter().text(
             egui::pos2(icon_rect.right() + Space::XS as f32, rect.center().y),
@@ -223,14 +225,14 @@ fn open_nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, detail: &str) 
         shell_icons::paint_pane_icon(ui, icon_rect, pane, false);
         let text_x = icon_rect.right() + Space::XS as f32;
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + OPEN_TITLE_Y),
+            egui::pos2(text_x, rect.top() + OPEN_TITLE_BASELINE_Y),
             egui::Align2::LEFT_CENTER,
             title,
             Text::body(),
             ui::strong_text(ui.ctx()),
         );
         ui.painter().text(
-            egui::pos2(text_x, rect.top() + OPEN_DETAIL_Y),
+            egui::pos2(text_x, rect.top() + OPEN_DETAIL_BASELINE_Y),
             egui::Align2::LEFT_CENTER,
             detail,
             Text::caption(),
@@ -245,10 +247,7 @@ fn pane_manager_row(ui: &mut egui::Ui, title: &str, open: bool, focused: bool) -
         egui::vec2(ui.available_width(), PANE_ROW_HEIGHT),
         egui::Sense::click(),
     );
-    let close_rect = egui::Rect::from_center_size(
-        egui::pos2(rect.right() - PANE_CLOSE_INSET, rect.center().y),
-        egui::vec2(PANE_CLOSE_SIZE, PANE_CLOSE_SIZE),
-    );
+    let close_rect = pane_close_rect(rect);
     let close_id = ui.id().with(("pane_close", title));
     let close_response = ui.interact(close_rect, close_id, egui::Sense::click());
     response.widget_info(|| {
@@ -284,7 +283,7 @@ fn paint_pane_state(ui: &egui::Ui, rect: egui::Rect, open: bool, focused: bool) 
         Color::fg_tertiary(ui.ctx())
     };
     ui.painter()
-        .circle_filled(egui::pos2(rect.left() + 10.0, rect.center().y), 3.0, color);
+        .circle_filled(pane_state_center(rect), PANE_STATE_RADIUS, color);
 }
 
 fn paint_pane_title(
@@ -322,7 +321,7 @@ fn paint_close_control(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
         .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
     let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ui.ctx()));
     let center = rect.center();
-    let half = 4.0;
+    let half = CLOSE_GLYPH_HALF;
     ui.painter().line_segment(
         [
             egui::pos2(center.x - half, center.y - half),
@@ -349,4 +348,68 @@ fn paint_nav_bg(ui: &egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) 
     };
     ui.painter()
         .rect_filled(rect, egui::CornerRadius::same(Radius::MD), fill);
+}
+
+fn nav_row_icon_rect(rect: egui::Rect) -> egui::Rect {
+    egui::Rect::from_center_size(
+        egui::pos2(
+            rect.left() + Space::SM as f32 + ICON_SIZE / 2.0,
+            rect.center().y,
+        ),
+        egui::vec2(ICON_SIZE, ICON_SIZE),
+    )
+}
+
+fn pane_close_rect(rect: egui::Rect) -> egui::Rect {
+    egui::Rect::from_center_size(
+        egui::pos2(rect.right() - PANE_CLOSE_CENTER_INSET, rect.center().y),
+        egui::vec2(PANE_CLOSE_SIZE, PANE_CLOSE_SIZE),
+    )
+}
+
+fn pane_state_center(rect: egui::Rect) -> egui::Pos2 {
+    egui::pos2(rect.left() + PANE_STATE_CENTER_X, rect.center().y)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn navigation_rows_match_documented_studio_metrics() {
+        assert_eq!(NAV_ROW_HEIGHT, 28.0);
+        assert_eq!(OPEN_ROW_HEIGHT, 44.0);
+        assert_eq!(PANE_ROW_HEIGHT, 36.0);
+        assert_eq!(ICON_RAIL_WIDTH, Space::XL as f32);
+        assert_eq!(PANE_CLOSE_SIZE, Space::LG as f32);
+    }
+
+    #[test]
+    fn nav_row_icon_rect_uses_centered_token_size() {
+        let rect =
+            egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(TEST_NAV_WIDTH, NAV_ROW_HEIGHT));
+        let icon = nav_row_icon_rect(rect);
+
+        assert_eq!(icon.width(), ICON_SIZE);
+        assert_eq!(icon.height(), ICON_SIZE);
+        assert_eq!(icon.center().y, rect.center().y);
+        assert_eq!(icon.left(), Space::SM as f32);
+    }
+
+    #[test]
+    fn pane_manager_controls_have_stable_token_geometry() {
+        let rect = egui::Rect::from_min_size(
+            egui::Pos2::ZERO,
+            egui::vec2(TEST_NAV_WIDTH, PANE_ROW_HEIGHT),
+        );
+        let close = pane_close_rect(rect);
+        let state = pane_state_center(rect);
+
+        assert_eq!(close.width(), Space::LG as f32);
+        assert_eq!(close.height(), Space::LG as f32);
+        assert_eq!(close.center().y, rect.center().y);
+        assert_eq!(state.y, rect.center().y);
+        assert_eq!(state.x, PANE_STATE_CENTER_X);
+        assert_eq!(CLOSE_GLYPH_HALF, Space::XS as f32 / 2.0);
+    }
 }
