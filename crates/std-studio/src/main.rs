@@ -8,6 +8,7 @@ mod bottom_panel;
 mod commands;
 mod host_chrome;
 mod layout;
+mod native_app;
 mod operations;
 mod operations_rows;
 mod preview;
@@ -31,6 +32,7 @@ mod workspace_tabs;
 
 use analysis_state::AnalysisUiState;
 use layout::StudioLayoutState;
+use native_app::{native_app_blocked_by_test_mode, run_studio_native_app};
 use preview::{
     blocked_studio_preview_summary, run_studio_preview, studio_preview_request_from_args,
     StudioPreviewRequest, StudioPreviewSmokeReport,
@@ -41,11 +43,9 @@ use std::sync::{Arc, Mutex};
 use std_egui::tokens::ThemeProfile;
 use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 use studio_open::{
-    apply_studio_open_request, run_studio_open_request, studio_open_blocked_summary,
-    studio_open_request_from_args, StudioOpenRequest,
+    run_studio_open_request, studio_open_blocked_summary, studio_open_request_from_args,
 };
 use studio_smoke_cli::{theme_smoke_from_args, workspace_policy_smoke_from_args};
-use viewport::studio_native_options;
 use workspace_panes::WorkspaceCommandQueue;
 
 pub(crate) struct StudioEguiApp {
@@ -225,22 +225,7 @@ fn main() -> eframe::Result<()> {
         return Ok(());
     }
 
-    eframe::run_native(
-        "std-cli Studio",
-        studio_native_options(),
-        Box::new(|_cc| Ok(Box::new(StudioEguiApp::default()))),
-    )
-}
-
-fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp {
-    let mut app = StudioEguiApp::default();
-    apply_studio_open_request(&mut app, request);
-    app
-}
-
-fn native_app_blocked_by_test_mode() -> Option<&'static str> {
-    std_core::std_test_mode_enabled()
-        .then_some("studio_native_app SKIP reason=STD_TEST_MODE blocked native app startup")
+    run_studio_native_app()
 }
 
 #[cfg(test)]
@@ -486,13 +471,5 @@ mod app_tests {
             .any(|item| item.title == "Refresh Workspace State"));
         assert!(quick_open.iter().any(|item| item.title == "Plugin Manager"));
         assert_eq!(app.app.focused_pane, Some(pane));
-    }
-
-    #[test]
-    fn test_mode_blocks_native_studio_startup() {
-        assert_eq!(
-            native_app_blocked_by_test_mode(),
-            Some("studio_native_app SKIP reason=STD_TEST_MODE blocked native app startup")
-        );
     }
 }

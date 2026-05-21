@@ -101,8 +101,14 @@ pub(crate) fn run_studio_open_request(request: StudioOpenRequest) -> eframe::Res
     eframe::run_native(
         "std-cli Studio",
         studio_native_options(),
-        Box::new(move |_cc| Ok(Box::new(crate::app_for_open_request(request)))),
+        Box::new(move |_cc| Ok(Box::new(app_for_open_request(request)))),
     )
+}
+
+pub(crate) fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp {
+    let mut app = StudioEguiApp::default();
+    apply_studio_open_request(&mut app, request);
+    app
 }
 
 fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
@@ -148,7 +154,7 @@ mod tests {
             StudioOpenRequest::Settings,
             StudioOpenRequest::Workflows,
         ] {
-            let app = crate::app_for_open_request(request);
+            let app = app_for_open_request(request);
 
             assert_eq!(app.app.open_workspace_panes().count(), 1);
             assert!(app.app.focused_pane.is_some());
@@ -159,7 +165,7 @@ mod tests {
 
     #[test]
     fn settings_request_uses_internal_workspace_pane() {
-        let app = crate::app_for_open_request(StudioOpenRequest::Settings);
+        let app = app_for_open_request(StudioOpenRequest::Settings);
         let spec = crate::workspace_panes::focused_workspace_spec(&app.app).unwrap();
 
         assert_eq!(app.app.active_pane, StudioPane::Settings);
