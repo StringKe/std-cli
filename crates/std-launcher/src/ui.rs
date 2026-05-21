@@ -129,7 +129,7 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
                     egui::RichText::new(i18n::t("launcher.voice.label"))
                         .color(Color::fg_secondary(&ctx)),
                 );
-                ui.add_sized(
+                let voice_response = ui.add_sized(
                     [
                         ui_metrics::voice_input_width(ui.available_width()),
                         ui_metrics::voice_input_height(),
@@ -137,11 +137,30 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
                     egui::TextEdit::singleline(voice_transcript)
                         .hint_text(i18n::t("launcher.voice.placeholder")),
                 );
+                voice_response.widget_info(|| {
+                    egui::WidgetInfo::labeled(
+                        egui::WidgetType::TextEdit,
+                        ui.is_enabled(),
+                        voice_input_a11y_label(voice_transcript),
+                    )
+                });
                 if quiet_button(ui, i18n::t("launcher.voice.apply")).clicked() {
                     state.apply_voice_transcript(voice_transcript.as_str());
                 }
             });
         });
+}
+
+fn voice_input_a11y_label(transcript: &str) -> String {
+    let value = if transcript.trim().is_empty() {
+        "empty"
+    } else {
+        transcript.trim()
+    };
+    format!(
+        "{}, text box, value {value}",
+        i18n::t("launcher.voice.label")
+    )
 }
 
 #[cfg(test)]
@@ -167,5 +186,14 @@ mod tests {
         assert!(source.contains("ui.set_min_width(panel_rect.width())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)"));
+    }
+
+    #[test]
+    fn voice_input_a11y_label_exposes_value() {
+        assert_eq!(
+            voice_input_a11y_label("open terminal"),
+            "Voice, text box, value open terminal"
+        );
+        assert_eq!(voice_input_a11y_label("  "), "Voice, text box, value empty");
     }
 }

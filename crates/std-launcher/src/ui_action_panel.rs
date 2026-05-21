@@ -65,7 +65,7 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
         egui::WidgetInfo::labeled(
             egui::WidgetType::TextEdit,
             ui.is_enabled(),
-            i18n::t("launcher.action.filter.a11y"),
+            action_panel_filter_a11y_label(&state.action_panel.query),
         )
     });
     if response.changed() {
@@ -125,6 +125,18 @@ fn typed_action_panel_chars(ctx: &egui::Context) -> Vec<char> {
             })
             .collect()
     })
+}
+
+fn action_panel_filter_a11y_label(query: &str) -> String {
+    let value = if query.trim().is_empty() {
+        "empty"
+    } else {
+        query.trim()
+    };
+    format!(
+        "{}, text box, value {value}",
+        i18n::t("launcher.action.filter.a11y")
+    )
 }
 
 fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui::Response {
@@ -202,5 +214,17 @@ mod tests {
 
         assert!(guard_index < typed_index);
         assert!(typed_index < key_index);
+    }
+
+    #[test]
+    fn action_panel_filter_a11y_label_exposes_value() {
+        assert_eq!(
+            action_panel_filter_a11y_label("retry"),
+            "Filter actions, text box, value retry"
+        );
+        assert_eq!(
+            action_panel_filter_a11y_label("  "),
+            "Filter actions, text box, value empty"
+        );
     }
 }
