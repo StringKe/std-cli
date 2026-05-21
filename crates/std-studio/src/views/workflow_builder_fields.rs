@@ -8,13 +8,20 @@ pub(crate) fn text_field_row(ui: &mut egui::Ui, label: &str, value: &mut String)
     field_frame(ui).show(ui, |ui| {
         ui.horizontal(|ui| {
             field_label(ui, label);
-            ui.add_sized(
+            let response = ui.add_sized(
                 [
                     ui.available_width(),
                     workflow_builder_metrics::PROPERTY_SINGLE_LINE_HEIGHT,
                 ],
                 egui::TextEdit::singleline(value).font(Text::body()),
             );
+            response.widget_info(|| {
+                egui::WidgetInfo::labeled(
+                    egui::WidgetType::TextEdit,
+                    ui.is_enabled(),
+                    field_a11y_label(label, value),
+                )
+            });
         });
     });
     ui.add_space(Space::TWO_XS as f32);
@@ -23,20 +30,34 @@ pub(crate) fn text_field_row(ui: &mut egui::Ui, label: &str, value: &mut String)
 pub(crate) fn parameters_field_row(ui: &mut egui::Ui, label: &str, value: &mut String) {
     field_frame(ui).show(ui, |ui| {
         field_label(ui, label);
-        ui.add_sized(
+        let response = ui.add_sized(
             workflow_builder_metrics::parameter_editor_size(ui.available_width()),
             egui::TextEdit::multiline(value).font(Text::code()),
         );
+        response.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::TextEdit,
+                ui.is_enabled(),
+                field_a11y_label(label, value),
+            )
+        });
     });
     ui.add_space(Space::TWO_XS as f32);
 }
 
 pub(crate) fn index_field(ui: &mut egui::Ui, label: &str, value: &mut String) {
     field_label(ui, label);
-    ui.add_sized(
+    let response = ui.add_sized(
         workflow_builder_metrics::step_index_size(),
         egui::TextEdit::singleline(value).font(Text::code()),
     );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::TextEdit,
+            ui.is_enabled(),
+            field_a11y_label(label, value),
+        )
+    });
 }
 
 pub(crate) fn property_button(ui: &mut egui::Ui, label: &str, emphasized: bool) -> egui::Response {
@@ -91,8 +112,19 @@ fn field_label(ui: &mut egui::Ui, label: &str) {
     );
 }
 
+fn field_a11y_label(label: &str, value: &str) -> String {
+    let value = if value.trim().is_empty() {
+        "empty"
+    } else {
+        value.trim()
+    };
+    format!("{label}, text box, value {value}")
+}
+
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn workflow_builder_fields_use_token_rows_not_bare_inputs() {
         let source = include_str!("workflow_builder_fields.rs");
@@ -103,6 +135,20 @@ mod tests {
         assert!(implementation.contains("Color::accent_weak"));
         assert!(implementation.contains("TextEdit::singleline"));
         assert!(implementation.contains("TextEdit::multiline"));
+        assert!(implementation.contains("WidgetType::TextEdit"));
+        assert!(implementation.contains("field_a11y_label"));
         assert!(!implementation.contains("ui.text_edit_singleline"));
+    }
+
+    #[test]
+    fn workflow_builder_field_a11y_label_exposes_value() {
+        assert_eq!(
+            field_a11y_label("Step name", "Collect context"),
+            "Step name, text box, value Collect context"
+        );
+        assert_eq!(
+            field_a11y_label("Parameters", "  "),
+            "Parameters, text box, value empty"
+        );
     }
 }
