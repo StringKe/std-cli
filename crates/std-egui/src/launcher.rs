@@ -109,6 +109,7 @@ impl LauncherViewModel {
     pub fn update_query(&mut self, core: &StdCore, query: impl Into<String>) {
         let query = LauncherQueryRequest::parse(query);
         let action_only = query.action_only();
+        let command_only = query.command_only();
         self.query = query.display_query;
         let started_at = Instant::now();
         self.results = core
@@ -119,6 +120,9 @@ impl LauncherViewModel {
             .unwrap_or_default();
         if action_only {
             self.results.retain(is_action_result);
+        }
+        if command_only {
+            self.results.retain(is_command_result);
         }
         sort_launcher_results(&mut self.results);
         let overflowed = self.results.len() > RESULT_DISPLAY_LIMIT;
@@ -260,6 +264,10 @@ impl LauncherQueryRequest {
     fn action_only(&self) -> bool {
         self.mode == LauncherQueryMode::Actions
     }
+
+    fn command_only(&self) -> bool {
+        self.mode == LauncherQueryMode::Command
+    }
 }
 
 fn result_mode(query: &str, empty_results: bool) -> LauncherResultMode {
@@ -295,6 +303,10 @@ fn is_action_result(result: &SearchResult) -> bool {
         result.action.action_type,
         ActionType::Command | ActionType::Workflow
     )
+}
+
+fn is_command_result(result: &SearchResult) -> bool {
+    result.action.action_type == ActionType::Command
 }
 
 fn sort_launcher_results(results: &mut [SearchResult]) {

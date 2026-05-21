@@ -169,6 +169,10 @@ mod tests {
 
         model.update_query(&core, "/rebuild index");
         assert_eq!(model.query, "/rebuild index");
+        assert!(model
+            .results
+            .iter()
+            .all(|result| result.action.action_type == ActionType::Command));
         assert_eq!(model.preview.as_ref().unwrap().title, "Rebuild Index");
 
         model.update_query(&core, ">rebuild index");

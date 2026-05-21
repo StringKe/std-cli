@@ -57,6 +57,10 @@ impl LauncherQueryRequest {
     pub fn action_only(&self) -> bool {
         self.mode == LauncherQueryMode::Actions
     }
+
+    pub fn command_only(&self) -> bool {
+        self.mode == LauncherQueryMode::Command
+    }
 }
 
 fn normalize_query(query: String) -> String {
@@ -105,8 +109,10 @@ mod tests {
         assert_eq!(command.display_query, "/workflow new");
         assert_eq!(command.search_query, "workflow new");
         assert!(!command.action_only());
+        assert!(command.command_only());
         assert_eq!(actions.search_query, "plugin");
         assert!(actions.action_only());
+        assert!(!actions.command_only());
         assert_eq!(ask.search_query, "rebuild index");
     }
 }

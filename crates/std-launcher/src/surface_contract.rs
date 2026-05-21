@@ -57,6 +57,7 @@ impl LauncherSurfaceContract {
             && self.empty_state.contains("recent_or_suggested")
             && self.no_match_state.contains("ask_ai_enter")
             && self.query_prefixes.contains("command_search=rebuild")
+            && self.query_prefixes.contains("command_only=true")
             && self.query_prefixes.contains("actions_only=true")
             && self.executing_state.contains("input_locked=true")
             && self.defer_state.contains("NeedsExternalRunner")
@@ -129,9 +130,10 @@ fn query_prefix_contract() -> String {
     let actions = LauncherQueryRequest::parse(">rebuild index");
     let ask = LauncherQueryRequest::parse("?rebuild index");
     format!(
-        "command_display={};command_search={};actions_search={};actions_only={};ask_search={}",
+        "command_display={};command_search={};command_only={};actions_search={};actions_only={};ask_search={}",
         command.display_query,
         command.search_query,
+        command.command_only(),
         actions.search_query,
         actions.action_only(),
         ask.search_query
