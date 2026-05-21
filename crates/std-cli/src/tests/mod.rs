@@ -6,6 +6,7 @@ mod index;
 mod local_content;
 mod plugin;
 mod release;
+mod release_quality;
 mod support;
 mod workflow;
 mod workflow_batch;

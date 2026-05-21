@@ -151,73 +151,32 @@ fn assert_quality_report_smoke_commands(manifest: &serde_json::Value) {
     )
     .unwrap();
     for expected in [
-        "smoke=std doctor",
-        "smoke=std-launcher --smoke \"rebuild index\"",
-        "smoke=std-launcher --window-smoke",
-        "smoke=std-launcher --theme-smoke",
-        "smoke=std-launcher --surface-smoke",
-        "smoke=std-launcher --ui-semantics-smoke index",
-        "smoke=std-launcher --keyboard-smoke index",
-        "smoke=std-launcher --action-panel-smoke index",
-        "smoke=std-launcher --preview-smoke",
-        "smoke=std-studio --smoke",
-        "smoke=std-studio --workspace-policy-smoke",
-        "smoke=std-studio --theme-smoke",
-        "smoke=std-studio --preview-smoke",
-        "smoke=std workflow trace --limit 5",
-        "smoke=std index coverage",
-        "smoke=std plugin check examples/plugins/hello-js",
+        "smoke=STD_TEST_MODE=1 std doctor",
+        "smoke=STD_TEST_MODE=1 std-launcher --smoke \"rebuild index\"",
+        "smoke=STD_TEST_MODE=1 std-launcher --window-smoke",
+        "smoke=STD_TEST_MODE=1 std-launcher --theme-smoke",
+        "smoke=STD_TEST_MODE=1 std-launcher --surface-smoke",
+        "smoke=STD_TEST_MODE=1 std-launcher --ui-semantics-smoke index",
+        "smoke=STD_TEST_MODE=1 std-launcher --keyboard-smoke index",
+        "smoke=STD_TEST_MODE=1 std-launcher --action-panel-smoke index",
+        "smoke=STD_TEST_MODE=1 std-launcher --preview-smoke",
+        "smoke=STD_TEST_MODE=1 std-studio --smoke",
+        "smoke=STD_TEST_MODE=1 std-studio --workspace-policy-smoke",
+        "smoke=STD_TEST_MODE=1 std-studio --theme-smoke",
+        "smoke=STD_TEST_MODE=1 std-studio --preview-smoke",
+        "smoke=STD_TEST_MODE=1 std workflow trace --limit 5",
+        "smoke=STD_TEST_MODE=1 std index coverage",
+        "smoke=STD_TEST_MODE=1 std plugin check examples/plugins/hello-js",
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
         "quality_command=mise run quality",
-        "command=cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
+        "command=STD_TEST_MODE=1 cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
     ] {
         assert!(quality_report.contains(expected));
     }
     assert!(!quality_report.contains("smoke=STD_ALLOW_DESKTOP_AUTOMATION=1"));
-}
-
-#[test]
-fn release_quality_report_keeps_desktop_automation_manual_only() {
-    let temp = tempfile::tempdir().unwrap();
-    let config_path = temp.path().join("std-cli.json");
-    let source_dir = temp.path().join("release");
-    let dist_dir = temp.path().join("dist").join("1.0.0");
-    std::fs::create_dir_all(&source_dir).unwrap();
-    for binary in ["std", "std-launcher", "std-studio"] {
-        std::fs::write(source_dir.join(binary), format!("{binary}\n")).unwrap();
-    }
-    std::fs::write(
-        &config_path,
-        serde_json::json!({
-            "data_dir": temp.path().join("data"),
-        })
-        .to_string(),
-    )
-    .unwrap();
-    std::env::set_var("STDCLI_CONFIG", &config_path);
-
-    run_cli([
-        "std",
-        "release",
-        "package",
-        "--version",
-        "1.0.0",
-        "--from",
-        source_dir.to_str().unwrap(),
-        "--dist",
-        dist_dir.to_str().unwrap(),
-    ])
-    .unwrap();
-    std::env::remove_var("STDCLI_CONFIG");
-
-    let report =
-        std::fs::read_to_string(dist_dir.join("quality").join("quality-report.txt")).unwrap();
-    assert!(report.contains("quality_command=mise run quality"));
-    assert!(report.contains(
-        "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space"
-    ));
-    assert!(!report.contains("smoke=STD_ALLOW_DESKTOP_AUTOMATION=1"));
-    assert!(!report.contains("command=STD_ALLOW_DESKTOP_AUTOMATION=1"));
+    assert!(!quality_report.contains("smoke=STD_ALLOW_UI_PREVIEW=1"));
+    assert!(!quality_report.contains("smoke=std-launcher --"));
+    assert!(!quality_report.contains("smoke=std-studio --"));
 }
 
 fn assert_release_verify_output(verified: &str) {

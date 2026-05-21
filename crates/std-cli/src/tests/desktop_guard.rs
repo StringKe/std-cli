@@ -107,6 +107,37 @@ fn release_quality_keeps_desktop_smoke_manual_only() {
             "release default quality gates must not include desktop opt-in: {forbidden}"
         );
     }
+    for forbidden in [
+        "--ui-preview",
+        "gui-hotkey-smoke",
+        "1Password",
+        "WeChat",
+        "微信",
+    ] {
+        assert!(
+            !smoke_commands.contains(forbidden),
+            "release default quality gates must not touch desktop apps: {forbidden}"
+        );
+    }
+    for line in smoke_commands
+        .lines()
+        .filter(|line| line.contains("\"STD_"))
+    {
+        assert!(
+            line.contains("STD_TEST_MODE=1"),
+            "release default smoke command must force STD_TEST_MODE=1: {line}"
+        );
+    }
+    let quality_commands = source_section(&body, "const QUALITY_COMMANDS", "const SMOKE_COMMANDS");
+    for line in quality_commands
+        .lines()
+        .filter(|line| line.contains("\"cargo"))
+    {
+        assert!(
+            line.contains("STD_TEST_MODE=1") || line.contains("cargo deny") || line.contains("cargo machete"),
+            "release default cargo command must force STD_TEST_MODE=1 unless it is static dependency analysis: {line}"
+        );
+    }
 }
 
 #[test]
