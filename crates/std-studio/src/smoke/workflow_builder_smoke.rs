@@ -7,6 +7,7 @@ pub(crate) struct WorkflowBuilderSmoke {
     pub(crate) moved_step: bool,
     pub(crate) simulated: bool,
     pub(crate) run_status: String,
+    pub(crate) planned_run_status: String,
     pub(crate) trace_steps: usize,
     pub(crate) trace_events: usize,
     pub(crate) interaction_sequence: String,
@@ -40,6 +41,8 @@ pub(crate) fn run_workflow_builder_smoke(
     )?;
     let moved = studio.move_workflow_step(&workflow_path, 1, 0)?;
     let simulated = studio.preview_workflow_path(&workflow_path)?.steps.len() == 2;
+    let planned = studio.plan_workflow("terminal")?;
+    let planned_run = studio.run_planned_workflow()?.clone();
     let execution = studio.run_workflow_path(&workflow_path)?.clone();
     let run_status = format!("{:?}", execution.status);
     let traces = studio.recent_workflow_traces(10)?;
@@ -57,11 +60,13 @@ pub(crate) fn run_workflow_builder_smoke(
         moved_step: moved.name == "Validate edited output",
         simulated,
         run_status,
+        planned_run_status: format!("{:?}:{}", planned_run.status, planned.name),
         trace_steps: trace.map(|trace| trace.steps.len()).unwrap_or_default(),
         trace_events: trace
             .map(|trace| trace.audit_events.len())
             .unwrap_or_default(),
-        interaction_sequence: "create>add>edit>move>simulate>run>trace".to_string(),
+        interaction_sequence: "create>add>edit>move>simulate>run-planned>run-saved>trace"
+            .to_string(),
         selected_step_title: moved.name,
         trace_status,
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),

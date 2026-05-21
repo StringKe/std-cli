@@ -138,6 +138,30 @@ mod tests {
         assert_eq!(preview.steps.len(), 1);
     }
 
+    #[test]
+    fn planned_workflow_can_run_before_save_and_write_history() {
+        let temp = tempfile::tempdir().unwrap();
+        let mut app = StudioApp::with_core(std_core::StdCore::with_config(std_core::StdConfig {
+            data_dir: temp.path().join("data"),
+            ..std_core::StdConfig::default()
+        }));
+        app.planned_workflow = Some(Workflow {
+            id: Uuid::new_v4(),
+            name: "Draft Run".to_string(),
+            description: "Run without saving first".to_string(),
+            steps: vec![step("Collect", serde_json::json!({"phase": "collect"}))],
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+        });
+
+        let execution = app.run_planned_workflow().unwrap().clone();
+        let history = app.recent_workflow_executions(5).unwrap();
+
+        assert_eq!(execution.workflow_name, "Draft Run");
+        assert_eq!(execution.results.len(), 1);
+        assert_eq!(history[0].workflow_id, execution.workflow_id);
+    }
+
     fn step(name: &str, parameters: serde_json::Value) -> WorkflowStep {
         WorkflowStep {
             id: Uuid::new_v4(),

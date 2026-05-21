@@ -82,10 +82,11 @@ fn assert_workflow_builder_summary(summary: &str) {
     assert!(summary.contains("builder_moved_step=true"));
     assert!(summary.contains("builder_simulated=true"));
     assert!(summary.contains("builder_run_status=Completed"));
+    assert!(summary.contains("builder_planned_run_status=Completed:terminal"));
     assert!(summary.contains("builder_trace_steps=2"));
-    assert!(
-        summary.contains("builder_interaction_sequence=create>add>edit>move>simulate>run>trace")
-    );
+    assert!(summary.contains(
+        "builder_interaction_sequence=create>add>edit>move>simulate>run-planned>run-saved>trace"
+    ));
     assert!(summary.contains("builder_selected_step=Validate edited output"));
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));

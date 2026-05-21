@@ -130,7 +130,22 @@ impl StudioApp {
     ) -> Result<&WorkflowExecution, OrchestrationError> {
         self.core.ensure_storage()?;
         let workflow = load_workflow(path)?;
-        let execution = WorkflowExecutor::new(self.core.clone()).execute_capture(&workflow)?;
+        self.run_workflow(&workflow)
+    }
+
+    pub fn run_planned_workflow(&mut self) -> Result<&WorkflowExecution, OrchestrationError> {
+        let workflow = self.planned_workflow.clone().ok_or_else(|| {
+            OrchestrationError::InvalidWorkflow("missing planned workflow".to_string())
+        })?;
+        self.run_workflow(&workflow)
+    }
+
+    pub fn run_workflow(
+        &mut self,
+        workflow: &Workflow,
+    ) -> Result<&WorkflowExecution, OrchestrationError> {
+        self.core.ensure_storage()?;
+        let execution = WorkflowExecutor::new(self.core.clone()).execute_capture(workflow)?;
         append_workflow_execution(&self.core.config.history_dir(), &execution)?;
         self.last_workflow_execution = Some(execution);
         self.refresh();

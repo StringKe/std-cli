@@ -255,7 +255,7 @@ impl StudioEguiApp {
         if let Some(path) = self.workflow_selected_path.clone() {
             self.run_workflow_path(&path);
         } else {
-            self.status = "select saved workflow before running".to_string();
+            self.run_planned_workflow();
         }
     }
 
@@ -316,6 +316,20 @@ impl StudioEguiApp {
                 self.layout.open_bottom_panel();
                 self.status = format!(
                     "run {:?} steps={}",
+                    execution.status,
+                    execution.results.len()
+                )
+            }
+            Err(error) => self.status = error.to_string(),
+        }
+    }
+
+    pub(crate) fn run_planned_workflow(&mut self) {
+        match self.app.run_planned_workflow() {
+            Ok(execution) => {
+                self.layout.open_bottom_panel();
+                self.status = format!(
+                    "run planned {:?} steps={}",
                     execution.status,
                     execution.results.len()
                 )

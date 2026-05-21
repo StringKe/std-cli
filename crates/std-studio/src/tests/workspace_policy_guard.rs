@@ -1,6 +1,11 @@
 use std::{fs, path::Path};
 
-const ALLOWED_VIEWPORT_FILES: &[&str] = &["viewport.rs", "host_chrome.rs"];
+const ALLOWED_VIEWPORT_FILES: &[&str] = &[
+    "viewport.rs",
+    "host_chrome.rs",
+    "preview.rs",
+    "preview_tests.rs",
+];
 const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["native_app.rs", "preview.rs"];
 
 #[test]
