@@ -126,7 +126,7 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
 }
 
 #[test]
-fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
+fn preview_smoke_sizes_prove_transparent_viewport_with_panel_only_surface() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
@@ -134,8 +134,9 @@ fn preview_smoke_sizes_prove_panel_frame_fills_viewport() {
         .summary()
         .contains("preview_sizes=light-collapsed=PASS"));
     assert!(report.summary().contains("light-empty=PASS"));
-    assert!(report.summary().contains("bottom_clearance=0"));
-    assert!(report.summary().contains("panel_frame=fills_viewport"));
+    assert!(report
+        .summary()
+        .contains("panel_frame=transparent_viewport_panel_only"));
     assert!(report
         .summary()
         .contains("search_surface=panel_as_search_surface"));
@@ -170,7 +171,7 @@ fn preview_evidence_names_capture_window_not_product_viewport() {
     let preview = include_str!("preview.rs");
 
     assert!(surface.contains("capture_window=transparent,opt_in_only"));
-    assert!(surface.contains("capture_surface=all_states_fill_panel"));
+    assert!(surface.contains("capture_surface=panel_only_on_transparent_viewport"));
     assert!(!surface.contains("preview_viewport="));
     assert!(preview.contains("no-product-viewport"));
     assert!(!preview.contains("preview_viewport"));

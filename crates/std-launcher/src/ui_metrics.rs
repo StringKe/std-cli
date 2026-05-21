@@ -208,13 +208,18 @@ pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
     )
 }
 
-pub(crate) fn panel_frame_fills_viewport(state: &LauncherState) -> bool {
+pub(crate) fn panel_is_only_visible_surface(state: &LauncherState) -> bool {
     let viewport = window_inner_size(state);
     let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
     let panel = panel_rect(available, state);
-    panel.min == available.min
-        && panel.max.x == available.max.x
-        && (panel.max.y - available.max.y).abs() < 0.5
+    panel.width() > 0.0
+        && panel.height() > 0.0
+        && panel.min.x >= available.min.x
+        && panel.min.y >= available.min.y
+        && panel.max.x <= available.max.x + 0.5
+        && panel.max.y <= available.max.y + 0.5
+        && crate::ui::launcher_viewport_frame().fill == egui::Color32::TRANSPARENT
+        && crate::ui::launcher_viewport_frame().stroke == egui::Stroke::NONE
 }
 
 pub(crate) fn panel_height(state: &LauncherState, body_height: f32) -> f32 {

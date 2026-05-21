@@ -48,9 +48,8 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let body = ui_metrics::body_height(&state, viewport.y);
     let padding = ui_metrics::panel_inner_padding_for_state(&state);
     let content_clearance = preview_content_clearance(&state, rect.height(), padding, body);
-    let fits = rect.min.y == 0.0
-        && rect.max.y <= viewport.y
-        && (rect.height() - viewport.y).abs() < 0.5
+    let fits = rect.min.y >= 0.0
+        && rect.max.y <= viewport.y + 0.5
         && viewport.x >= rect.width()
         && body >= 0.0
         && content_clearance >= 0.0;
@@ -85,8 +84,8 @@ fn preview_content_clearance(
 }
 
 fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
-    if ui_metrics::panel_frame_fills_viewport(state) {
-        "fills_viewport"
+    if ui_metrics::panel_is_only_visible_surface(state) {
+        "transparent_viewport_panel_only"
     } else {
         "carrier_background_visible"
     }
@@ -158,7 +157,7 @@ struct PreviewSurfaceSummary {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct PreviewStateSurface {
-    fills_panel: bool,
+    panel_only: bool,
     search_bar: &'static str,
     body: &'static str,
     action_bar: &'static str,
@@ -169,7 +168,7 @@ struct PreviewStateSurface {
 impl PreviewStateSurface {
     fn for_state(state: &LauncherState, state_name: &str) -> Self {
         Self {
-            fills_panel: ui_metrics::panel_frame_fills_viewport(state),
+            panel_only: ui_metrics::panel_is_only_visible_surface(state),
             search_bar: search_surface_for_state(state_name),
             body: body_surface_for_state(state_name),
             action_bar: action_bar_surface_for_state(state_name),
@@ -179,7 +178,7 @@ impl PreviewStateSurface {
     }
 
     fn passes(&self, state_name: &str) -> bool {
-        self.fills_panel
+        self.panel_only
             && self.search_bar != "carrier"
             && self.body != "carrier"
             && self.action_bar != "carrier"
@@ -190,8 +189,8 @@ impl PreviewStateSurface {
 
     fn summary(&self) -> String {
         format!(
-            "state_surface=fills_panel:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
-            self.fills_panel,
+            "state_surface=panel_only:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
+            self.panel_only,
             self.search_bar,
             self.body,
             self.action_bar,

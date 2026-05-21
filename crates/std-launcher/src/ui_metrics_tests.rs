@@ -169,7 +169,7 @@ fn panel_rect_clamps_when_viewport_is_short() {
 }
 
 #[test]
-fn native_viewport_is_the_launcher_panel_not_a_carrier() {
+fn transparent_viewport_has_no_carrier_background() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
@@ -181,7 +181,7 @@ fn native_viewport_is_the_launcher_panel_not_a_carrier() {
     assert_eq!(rect.max.x, available.right());
     assert_eq!(rect.min.y, 0.0);
     assert_eq!(rect.max.y, available.bottom());
-    assert!(panel_frame_fills_viewport(&state));
+    assert!(panel_is_only_visible_surface(&state));
 }
 
 #[test]
@@ -226,7 +226,7 @@ fn body_height_counts_virtual_group_header_slots() {
 }
 
 #[test]
-fn all_preview_visible_states_fill_the_native_viewport() {
+fn all_preview_visible_states_keep_transparent_viewport_panel_only() {
     for scenario in [
         "empty",
         "results",
@@ -240,7 +240,7 @@ fn all_preview_visible_states_fill_the_native_viewport() {
         let mut state = LauncherState::new();
         crate::preview::apply_preview_scenario(&mut state, scenario);
 
-        assert!(panel_frame_fills_viewport(&state), "{scenario}");
+        assert!(panel_is_only_visible_surface(&state), "{scenario}");
     }
 }
 
@@ -255,5 +255,5 @@ fn empty_suggested_workflows_panel_uses_full_native_height() {
 
     assert!(body <= viewport.y - panel_content_height_for_scale(&state, 0.0, UiScale::default()));
     assert_eq!(panel.height(), viewport.y);
-    assert!(panel_frame_fills_viewport(&state));
+    assert!(panel_is_only_visible_surface(&state));
 }

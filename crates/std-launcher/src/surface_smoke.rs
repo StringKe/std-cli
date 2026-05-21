@@ -86,7 +86,7 @@ impl LauncherSurfaceSmokeReport {
             && self.capture_window_contract
                 == "capture_window=transparent,opt_in_only,width_matches_panel,height_matches_panel"
             && self.capture_surface_contract
-                == "capture_surface=all_states_fill_panel,no_carrier_background"
+                == "capture_surface=panel_only_on_transparent_viewport,no_carrier_background"
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -194,7 +194,7 @@ fn capture_window_contract() -> String {
 }
 
 fn capture_surface_contract() -> String {
-    "capture_surface=all_states_fill_panel,no_carrier_background".to_string()
+    "capture_surface=panel_only_on_transparent_viewport,no_carrier_background".to_string()
 }
 
 fn action_bar_preview_state() -> String {

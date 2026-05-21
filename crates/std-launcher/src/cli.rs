@@ -242,7 +242,7 @@ mod tests {
             .contains("capture_window=transparent,opt_in_only"));
         assert!(report
             .summary()
-            .contains("capture_surface=all_states_fill_panel,no_carrier_background"));
+            .contains("capture_surface=panel_only_on_transparent_viewport,no_carrier_background"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
@@ -297,7 +297,7 @@ mod tests {
 
     fn assert_preview_summary_has_state_surfaces(summary: &str) {
         for expected in [
-            "state_surface=fills_panel:true,search:panel-as-search-surface",
+            "state_surface=panel_only:true,search:panel-as-search-surface",
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",
             "feedback:status-danger-weak",
