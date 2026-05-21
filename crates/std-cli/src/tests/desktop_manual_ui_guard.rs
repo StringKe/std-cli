@@ -147,7 +147,7 @@ fn assert_background_harness_contract(root: &Path) {
     }
 }
 
-fn background_cli_contract_terms() -> [&'static str; 33] {
+fn background_cli_contract_terms() -> [&'static str; 34] {
     [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -178,6 +178,7 @@ fn background_cli_contract_terms() -> [&'static str; 33] {
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
         "focus_messages=raw_13_19_20",
+        "tap_mask=focus_raw_13_19_20_only",
         "window_addressing=windowUnderMouse_windowThatCanHandle_fields_51_58",
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
         "fallback=never_frontmost_desktop_click",
@@ -213,7 +214,7 @@ fn background_doc_contract_terms() -> [&'static str; 23] {
     ]
 }
 
-fn background_runner_contract_terms() -> [&'static str; 19] {
+fn background_runner_contract_terms() -> [&'static str; 20] {
     [
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
@@ -221,6 +222,7 @@ fn background_runner_contract_terms() -> [&'static str; 19] {
         ".headInsertEventTap",
         "NSEvent.otherEvent",
         "appKitDefined",
+        "focusEventMask()",
         "NSRunningApplication(processIdentifier: config.harnessPid)",
         "pid bundle_id outside whitelist",
         "previousPid != config.harnessPid",

@@ -118,6 +118,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "focus_guard=drop_previous_app_deactivation".to_string(),
         "focus_policy=allow_target_activation_only".to_string(),
         "focus_messages=raw_13_19_20".to_string(),
+        "tap_mask=focus_raw_13_19_20_only".to_string(),
         "primer_start=appKitDefined_subtype_1_applicationActivated".to_string(),
         "primer_end=appKitDefined_subtype_2_applicationDeactivated".to_string(),
         "center_primer=window_center_activation_only_no_user_action".to_string(),

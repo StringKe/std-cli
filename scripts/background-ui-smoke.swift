@@ -92,7 +92,7 @@ final class BackgroundActivationSession {
             pid: pid,
             place: .headInsertEventTap,
             options: .defaultTap,
-            eventsOfInterest: CGEventMask.max,
+            eventsOfInterest: focusEventMask(),
             callback: eventTapCallback,
             userInfo: info
         ) else {
@@ -122,6 +122,14 @@ let eventTapCallback: CGEventTapCallBack = { _, type, event, userInfo in
         return nil
     }
     return Unmanaged.passUnretained(event)
+}
+
+func focusEventMask() -> CGEventMask {
+    [CGEventType(rawValue: 13), CGEventType(rawValue: 19), CGEventType(rawValue: 20)]
+        .compactMap { $0 }
+        .reduce(CGEventMask(0)) { mask, type in
+            mask | (1 << type.rawValue)
+        }
 }
 
 func isFocusMessage(_ type: CGEventType) -> Bool {

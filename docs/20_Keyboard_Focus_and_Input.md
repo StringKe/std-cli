@@ -106,7 +106,7 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 - harness 目标必须由固定 bundle id、pid、window id、window title 四重匹配确认
 - 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
 - driver 顺序固定为 per-process event tap -> appKitDefined primer -> center primer -> postToPid 定向输入
-- event tap 只拦截 previous app deactivation，target activation 必须放行
+- event tap 只订阅 raw value 13、19、20 三类 focus message，只拦截 previous app deactivation，target activation 必须放行
 - previous app 永远不能作为输入目标；真实 App 名称不能作为 harness 选择条件
 - 浮动光标只是状态可视化，不是输入机制
 - 禁止向当前 frontmost app、Terminal、1Password、WeChat、系统设置或用户既有窗口投递事件
