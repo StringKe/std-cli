@@ -1,5 +1,5 @@
 use crate::LauncherState;
-use std_egui::{LauncherFeedbackAction, LauncherResultMode};
+use std_egui::{LauncherFeedbackAction, LauncherPhase, LauncherResultMode};
 use std_types::ActionExecutionStatus;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -17,6 +17,8 @@ pub enum LauncherKey {
     DeletePreviousToken,
     TypeActionPanelQuery(char),
     TriggerResult(usize),
+    MoveExecutingToBackground,
+    CancelExecuting,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -133,6 +135,14 @@ impl LauncherState {
                 self.type_action_panel_query(ch);
                 None
             }
+            LauncherKey::MoveExecutingToBackground => {
+                self.move_executing_to_background();
+                None
+            }
+            LauncherKey::CancelExecuting => {
+                self.cancel_executing();
+                None
+            }
             LauncherKey::TriggerResult(index) if allow_external_runner => {
                 self.trigger_result_by_user(index)
             }
@@ -195,6 +205,10 @@ impl LauncherState {
         &mut self,
         allow_external_runner: bool,
     ) -> Option<std_types::ActionExecution> {
+        if self.view.phase == LauncherPhase::Executing {
+            self.move_executing_to_background();
+            return None;
+        }
         if self.focus_section == LauncherFocusSection::Feedback {
             return self.trigger_feedback_action();
         }
@@ -235,6 +249,30 @@ impl LauncherState {
             self.hide();
         }
         None
+    }
+
+    pub fn move_executing_to_background(&mut self) {
+        if self.view.phase != LauncherPhase::Executing {
+            return;
+        }
+        self.hide();
+    }
+
+    pub fn cancel_executing(&mut self) {
+        if self.view.phase != LauncherPhase::Executing {
+            return;
+        }
+        self.view.phase = if self.view.results.is_empty() {
+            if self.view.query.trim().is_empty() {
+                std_egui::LauncherPhase::Empty
+            } else {
+                std_egui::LauncherPhase::NoMatches
+            }
+        } else {
+            std_egui::LauncherPhase::WithResults
+        };
+        self.focus_section = LauncherFocusSection::Search;
+        self.focus_source = LauncherFocusSource::Keyboard;
     }
 
     pub fn trigger_feedback_action(&mut self) -> Option<std_types::ActionExecution> {

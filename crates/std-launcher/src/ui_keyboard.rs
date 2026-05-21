@@ -11,6 +11,10 @@ pub(crate) fn handle_search_shortcuts(
     if input::ime_composing(ctx) {
         return;
     }
+    if input::launcher_cancel().pressed(ctx) {
+        state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+        return;
+    }
     if input::mod_arrow_down().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::JumpToLast, false);
     } else if input::arrow_down().pressed(ctx) {
@@ -45,6 +49,11 @@ pub(crate) fn handle_search_shortcuts(
 }
 
 fn handle_user_execution(state: &mut LauncherState, key: LauncherKey, hide_requested: &mut bool) {
+    if key == LauncherKey::Enter && state.view.phase == std_egui::LauncherPhase::Executing {
+        state.handle_keyboard_input(LauncherKey::MoveExecutingToBackground, false);
+        *hide_requested = true;
+        return;
+    }
     if let Some(execution) = state.handle_keyboard_input_by_user(key, false) {
         *hide_requested = execution_hides_launcher(&execution);
     }
@@ -69,6 +78,22 @@ mod tests {
         assert!(!execution_hides_launcher(&execution(
             ActionExecutionStatus::Failed
         )));
+    }
+
+    #[test]
+    fn ui_keyboard_routes_executing_enter_and_cancel_before_normal_trigger() {
+        let source = include_str!("ui_keyboard.rs");
+        let cancel_index = source
+            .find("input::launcher_cancel().pressed(ctx)")
+            .unwrap();
+        let enter_index = source.find("input::enter().pressed(ctx)").unwrap();
+        let executing_index = source.find("LauncherPhase::Executing").unwrap();
+        let user_trigger_index = source
+            .find("state.handle_keyboard_input_by_user(key, false)")
+            .unwrap();
+
+        assert!(cancel_index < enter_index);
+        assert!(executing_index < user_trigger_index);
     }
 
     fn execution(status: ActionExecutionStatus) -> ActionExecution {

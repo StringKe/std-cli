@@ -8,6 +8,7 @@ pub enum KeyBinding {
     ModShiftNamed(egui::Key),
     ModOnlyNamed(egui::Key),
     AltNamed(egui::Key),
+    Ctrl(char),
     ShiftNamed(egui::Key),
     Plain(egui::Key),
     Named(&'static str),
@@ -36,6 +37,7 @@ impl KeyBinding {
                 format!("{}+{}", primary_modifier_label(), named_key_label(key))
             }
             Self::AltNamed(key) => format!("Alt+{}", named_key_label(key)),
+            Self::Ctrl(key) => format!("Ctrl+{}", key.to_ascii_uppercase()),
             Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
             Self::Named(name) => name.to_string(),
@@ -70,6 +72,13 @@ impl KeyBinding {
                     && !input.modifiers.ctrl
                     && input.key_pressed(key)
             }
+            Self::Ctrl(key) => {
+                !input.modifiers.command
+                    && !input.modifiers.shift
+                    && !input.modifiers.alt
+                    && input.modifiers.ctrl
+                    && pressed_alpha(input, key)
+            }
             Self::ShiftNamed(key) => {
                 !input.modifiers.command
                     && input.modifiers.shift
@@ -102,7 +111,7 @@ pub fn launcher_action_panel() -> KeyBinding {
 }
 
 pub fn launcher_cancel() -> KeyBinding {
-    KeyBinding::Named("Ctrl+C")
+    KeyBinding::Ctrl('C')
 }
 
 pub fn launcher_defer() -> KeyBinding {
@@ -357,6 +366,7 @@ mod tests {
             .ends_with("+Backspace"));
         assert_eq!(enter().label(), "Enter");
         assert_eq!(launcher_defer().label(), "Shift+Enter");
+        assert_eq!(KeyBinding::Ctrl('C').label(), "Ctrl+C");
         assert_eq!(launcher_cancel().label(), "Ctrl+C");
         assert!(launcher_open_studio().label().ends_with("+O"));
         assert!(launcher_copy_command().label().ends_with("+C"));

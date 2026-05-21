@@ -301,3 +301,35 @@ fn empty_query_suggestions_respect_ime_composition() {
     assert_eq!(state.empty_suggestion_selected, 0);
     assert_eq!(state.view.query, "");
 }
+
+#[test]
+fn executing_enter_moves_launcher_to_background_without_retriggering() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    let previous_trigger = state.view.last_execution.clone();
+    state.view.preview_executing();
+
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    assert!(execution.is_none());
+    assert!(!state.controller.visible);
+    assert_eq!(state.view.last_execution, previous_trigger);
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);
+}
+
+#[test]
+fn executing_cancel_returns_to_results_without_hiding_launcher() {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    state.view.preview_executing();
+
+    let execution = state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+
+    assert!(execution.is_none());
+    assert!(state.controller.visible);
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::WithResults);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(state.keyboard_focus_visible(LauncherFocusSection::Search));
+}
