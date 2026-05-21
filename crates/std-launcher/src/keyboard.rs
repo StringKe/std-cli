@@ -35,6 +35,8 @@ pub struct LauncherKeyboardReport {
     pub ime_action_panel_selection_unchanged: bool,
     pub ime_trigger_blocked: bool,
     pub ime_escape_blocked: bool,
+    pub ime_composition_path: String,
+    pub ime_commit_trigger_status: Option<ActionExecutionStatus>,
     pub focus_after_tab: LauncherFocusSection,
     pub focus_after_shift_tab: LauncherFocusSection,
     pub focus_path: String,
@@ -185,6 +187,10 @@ impl LauncherState {
             && state.view.feedback.is_none();
         state.handle_keyboard_input(LauncherKey::Escape, true);
         let ime_escape_blocked = state.controller.visible;
+        let ime_composition_path = "zh-preedit>blocked>commit>enter".to_string();
+        let ime_commit_trigger_status = state
+            .handle_keyboard_input(LauncherKey::Enter, false)
+            .map(|execution| execution.status);
         let direct_trigger_status = state
             .handle_keyboard_input(LauncherKey::TriggerResult(0), false)
             .map(|execution| execution.status);
@@ -204,6 +210,8 @@ impl LauncherState {
             ime_action_panel_selection_unchanged,
             ime_trigger_blocked,
             ime_escape_blocked,
+            ime_composition_path,
+            ime_commit_trigger_status,
             focus_after_tab,
             focus_after_shift_tab,
             focus_path,
@@ -242,6 +250,8 @@ impl LauncherKeyboardReport {
             && self.ime_action_panel_selection_unchanged
             && self.ime_trigger_blocked
             && self.ime_escape_blocked
+            && self.ime_composition_path == "zh-preedit>blocked>commit>enter"
+            && self.ime_commit_trigger_status.is_some()
             && self.focus_after_tab == LauncherFocusSection::Results
             && self.focus_after_shift_tab == LauncherFocusSection::Search
             && self.focus_path == "Search>Results>Search"
@@ -251,7 +261,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\ndirect_trigger_status={}\ntrigger_status={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_composition_path={}\nime_commit_trigger_status={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ntoken_delete_query={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -269,6 +279,11 @@ impl LauncherKeyboardReport {
             self.ime_action_panel_selection_unchanged,
             self.ime_trigger_blocked,
             self.ime_escape_blocked,
+            self.ime_composition_path,
+            self.ime_commit_trigger_status
+                .as_ref()
+                .map(|status| format!("{status:?}"))
+                .unwrap_or_else(|| "none".to_string()),
             self.focus_after_tab,
             self.focus_after_shift_tab,
             self.focus_path,

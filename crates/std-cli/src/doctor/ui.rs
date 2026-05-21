@@ -46,6 +46,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_runtime_theme_profiles(&root)?;
     check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
+    check_launcher_keyboard_ime_evidence(&root)?;
     check_desktop_automation_boundary(&root)?;
     Ok(UiDoctor {
         docs: "PASS",
@@ -171,6 +172,19 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "light-panes",
     ] {
         check_text(&studio, required)?;
+    }
+    Ok(())
+}
+
+fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), CliError> {
+    let keyboard = read_required(&root.join("crates/std-launcher/src/keyboard.rs"))?;
+    for required in [
+        "if ime_composing",
+        "ime_composition_path",
+        "zh-preedit>blocked>commit>enter",
+        "ime_commit_trigger_status",
+    ] {
+        check_text(&keyboard, required)?;
     }
     Ok(())
 }
