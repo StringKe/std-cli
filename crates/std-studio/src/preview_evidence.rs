@@ -38,11 +38,12 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_state_passes(&app, name)
         && preview_surface_passes(&surface, theme);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={},{}",
+        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},{}",
         if valid { "PASS" } else { "FAIL" },
         app.app.active_pane,
         app.app.open_workspace_panes().count(),
         app.status,
+        workflow_e2e_contract(&app, name),
         surface.summary()
     )
 }
@@ -106,6 +107,20 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                 && !app.app.workspace_policy.allows_detached_panels()
         }
         _ => false,
+    }
+}
+
+fn workflow_e2e_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
+    if scenario == "workflow"
+        && app.app.active_pane == StudioPane::Workflows
+        && app.app.workflow_debug.is_some()
+        && app.app.last_workflow_execution.is_some()
+        && app.app.open_workspace_panes().count() >= 2
+        && app.layout.bottom_panel_open
+    {
+        "builder|dry-run|execution|trace|history-pane|bottom-panel"
+    } else {
+        "not-workflow"
     }
 }
 

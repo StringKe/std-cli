@@ -39,7 +39,9 @@ impl StudioPreviewSmokeReport {
                 .iter()
                 .map(|scenario| {
                     let (theme, name) = scenario.split_once('-').unwrap_or(("dark", "dashboard"));
-                    format!("STD_ALLOW_UI_PREVIEW=1 std-studio --ui-preview {theme} {name} 8000")
+                    format!(
+                        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview {theme} {name} 8000"
+                    )
                 })
                 .collect(),
             states: scenarios
@@ -182,7 +184,7 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
 }
 
 fn preview_capture_contract() -> &'static str {
-    "explicit-opt-in-only,blocked-in-STD_TEST_MODE,no-default-window,normal-viewport-close"
+    "explicit-opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,normal-viewport-close"
 }
 
 fn required_capture_states(scenarios: &[String]) -> Vec<String> {
@@ -293,6 +295,8 @@ pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
     let _ = app.app.preview_workflow_path(&path);
     let _ = app.app.run_workflow_path(&path);
     app.app.open_workflow_builder(path);
+    app.app.open_execution_history_pane();
+    app.layout.open_bottom_panel();
     app.status = "workflow preview seeded".to_string();
 }
 

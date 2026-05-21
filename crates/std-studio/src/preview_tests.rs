@@ -67,7 +67,8 @@ fn workflow_preview_seeds_builder_runtime_state() {
     assert!(app.workflow_selected_path.is_some());
     assert!(app.app.workflow_debug.is_some());
     assert!(app.app.last_workflow_execution.is_some());
-    assert_eq!(app.app.open_workspace_panes().count(), 1);
+    assert_eq!(app.app.open_workspace_panes().count(), 2);
+    assert!(app.layout.bottom_panel_open);
 }
 
 #[test]
@@ -147,7 +148,10 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("light-settings=PASS"));
     assert!(summary.contains("settings_surface=internal-workspace-pane"));
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
+    assert!(summary.contains("cargo run -p std-studio -- --ui-preview"));
+    assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
+    assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("normal-viewport-close"));
