@@ -35,9 +35,9 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
     let rect = ui_metrics::panel_rect(available, &state);
     let body = ui_metrics::body_height(&state, viewport.y);
-    let content_clearance = rect.height()
-        - ui_metrics::panel_inner_padding() * 2.0
-        - ui_metrics::panel_content_height(&state, body);
+    let padding = ui_metrics::panel_inner_padding_for_state(&state);
+    let content_clearance =
+        rect.height() - padding * 2.0 - ui_metrics::panel_content_height(&state, body);
     let fits = rect.min.y == 0.0
         && rect.max.y <= viewport.y
         && (rect.height() - viewport.y).abs() < 0.5

@@ -133,7 +133,7 @@ fn ui_preview_uses_transparent_visible_chrome() {
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
         ui::launcher_initial_window_inner_size(),
-        egui::vec2(720.0, 96.0)
+        egui::vec2(720.0, 64.0)
     );
 }
 

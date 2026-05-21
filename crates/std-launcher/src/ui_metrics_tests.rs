@@ -5,8 +5,8 @@ fn initial_window_size_scales_with_ui_zoom() {
     let base = initial_window_inner_size_for_scale(UiScale::default());
     let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
 
-    assert_eq!(base, egui::vec2(720.0, 96.0));
-    assert_eq!(zoomed, egui::vec2(1080.0, 144.0));
+    assert_eq!(base, egui::vec2(720.0, 64.0));
+    assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
 }
 
 #[test]
@@ -152,7 +152,7 @@ fn collapsed_panel_rect_matches_native_viewport() {
     let rect = panel_rect(available, &state);
 
     assert_eq!(rect.width(), PANEL_WIDTH);
-    assert_eq!(rect.height(), SEARCH_HEIGHT + Space::MD as f32 * 2.0);
+    assert_eq!(rect.height(), SEARCH_HEIGHT);
     assert_eq!(rect.height(), available.height());
 }
 
@@ -182,6 +182,20 @@ fn native_viewport_is_the_launcher_panel_not_a_carrier() {
     assert_eq!(rect.min.y, 0.0);
     assert_eq!(rect.max.y, available.bottom());
     assert!(panel_frame_fills_viewport(&state));
+}
+
+#[test]
+fn collapsed_launcher_uses_docs_search_bar_height_without_outer_padding() {
+    let mut state = LauncherState::new();
+    state.view.results.clear();
+    state.view.preview = None;
+    let viewport = window_inner_size(&state);
+    let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
+    let rect = panel_rect(available, &state);
+
+    assert_eq!(viewport.y, SEARCH_HEIGHT);
+    assert_eq!(rect.height(), SEARCH_HEIGHT);
+    assert_eq!(panel_inner_padding_for_state(&state), 0.0);
 }
 
 #[test]

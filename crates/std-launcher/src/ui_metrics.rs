@@ -24,6 +24,14 @@ pub(crate) fn panel_inner_padding() -> f32 {
     scale().f32(Space::MD as f32)
 }
 
+pub(crate) fn panel_inner_padding_for_state(state: &LauncherState) -> f32 {
+    if panel_is_expanded(state) {
+        panel_inner_padding()
+    } else {
+        0.0
+    }
+}
+
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
     let panel_width = panel_width_for_available(available.width(), margin);
@@ -275,7 +283,7 @@ fn result_list_visible_height(state: &LauncherState, scale: UiScale) -> f32 {
 }
 
 fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(SEARCH_HEIGHT) + scale.f32(Space::MD as f32) * 2.0
+    scale.f32(SEARCH_HEIGHT)
 }
 
 fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
