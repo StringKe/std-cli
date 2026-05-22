@@ -9,6 +9,7 @@ mod typography;
 pub use color::{Color, EffectiveTheme, ThemeMode};
 pub use geometry::{
     ControlSize, Elevation, FocusRing, HostChromeSize, NavigationSize, OverlaySize, Radius, Space,
+    StudioSize,
 };
 pub use style::{apply_theme, ime_composing, reduce_motion, ThemeProfile};
 pub use theme_smoke::ThemeSmokeReport;

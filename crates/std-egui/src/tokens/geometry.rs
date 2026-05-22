@@ -231,6 +231,38 @@ impl HostChromeSize {
     }
 }
 
+pub struct StudioSize;
+
+impl StudioSize {
+    pub const INPUT_HEIGHT: f32 = 28.0;
+    pub const TOOLBAR_HEIGHT: f32 = 44.0;
+    pub const TAB_BAR_HEIGHT: f32 = 36.0;
+    pub const WIDE_WORKSPACE_BREAKPOINT: f32 = 900.0;
+    pub const FORM_BUTTON_RESERVE_WIDTH: f32 = 110.0;
+    pub const PLUGIN_TOOLBAR_ACTIONS_WIDTH: f32 = 230.0;
+    pub const ANALYSIS_TOOLBAR_ACTIONS_WIDTH: f32 = 420.0;
+    pub const ANALYSIS_QUERY_ACTIONS_WIDTH: f32 = 176.0;
+    pub const ANALYSIS_FIELD_MIN_WIDTH: f32 = 260.0;
+    pub const SEARCH_RESULTS_MAX_HEIGHT: f32 = 430.0;
+    pub const DETAIL_BODY_MAX_HEIGHT: f32 = 480.0;
+    pub const PANEL_LIST_MAX_HEIGHT: f32 = 560.0;
+    pub const MEMORY_LIST_MAX_HEIGHT: f32 = 590.0;
+    pub const PLUGIN_CHECKS_MAX_HEIGHT: f32 = 190.0;
+    pub const MULTILINE_INPUT_HEIGHT: f32 = 220.0;
+
+    pub fn input_size(width: f32) -> egui::Vec2 {
+        egui::vec2(width, UiScale::from_env().f32(Self::INPUT_HEIGHT))
+    }
+
+    pub fn toolbar_field_width(available_width: f32, reserve_width: f32) -> f32 {
+        (available_width - reserve_width).max(Self::ANALYSIS_FIELD_MIN_WIDTH)
+    }
+
+    pub fn thirds_column_width(available_width: f32, gap: f32) -> f32 {
+        (available_width - gap * 2.0) / 3.0
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -377,6 +409,18 @@ mod tests {
         assert_eq!(HostChromeSize::drag_min_width(), 320.0);
         assert_eq!(HostChromeSize::action_reserve_width(), 520.0);
         assert_eq!(HostChromeSize::test_chrome_size(), egui::vec2(1280.0, 52.0));
+    }
+
+    #[test]
+    fn studio_sizes_export_workspace_layout_geometry() {
+        assert_eq!(StudioSize::TOOLBAR_HEIGHT, 44.0);
+        assert_eq!(StudioSize::TAB_BAR_HEIGHT, 36.0);
+        assert_eq!(StudioSize::INPUT_HEIGHT, 28.0);
+        assert_eq!(StudioSize::WIDE_WORKSPACE_BREAKPOINT, 900.0);
+        assert_eq!(StudioSize::input_size(320.0), egui::vec2(320.0, 28.0));
+        assert_eq!(StudioSize::thirds_column_width(924.0, 12.0), 300.0);
+        assert_eq!(StudioSize::toolbar_field_width(300.0, 110.0), 260.0);
+        assert_eq!(StudioSize::toolbar_field_width(500.0, 110.0), 390.0);
     }
 
     #[test]
