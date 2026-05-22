@@ -60,7 +60,7 @@ fn render_search_bar_contents(
             egui::WidgetInfo::labeled(
                 egui::WidgetType::TextEdit,
                 ui.is_enabled(),
-                a11y.launcher_search_label(&state.view.query),
+                search_a11y_label(state, &a11y),
             )
         });
         if state.keyboard_focus_visible(LauncherFocusSection::Search) {
@@ -137,6 +137,24 @@ fn search_bar_text(state: &LauncherState) -> String {
             .unwrap_or_else(|| i18n::t("launcher.action.executing").to_string());
     }
     state.view.query.clone()
+}
+
+fn search_a11y_label(state: &LauncherState, a11y: &AccessibilityContext) -> String {
+    if state.view.phase != LauncherPhase::Executing {
+        return a11y.launcher_search_label(&state.view.query);
+    }
+    state
+        .view
+        .preview
+        .as_ref()
+        .map(|preview| a11y.launcher_running_label(&preview.title))
+        .or_else(|| {
+            state
+                .view
+                .selected_result()
+                .map(|result| a11y.launcher_running_label(&result.action.name))
+        })
+        .unwrap_or_else(|| a11y.launcher_running_label(i18n::t("launcher.action.executing")))
 }
 
 fn search_placeholder(state: &LauncherState) -> &'static str {
@@ -265,9 +283,11 @@ mod tests {
         state.update_query("index");
         state.view.preview_executing();
         let text = search_bar_text(&state);
+        let a11y = AccessibilityContext::from_env();
 
         assert!(text.starts_with(i18n::t("launcher.search.running")));
         assert!(text.contains("Rebuild Index"));
+        assert_eq!(search_a11y_label(&state, &a11y), "Running Rebuild Index");
         assert_eq!(
             search_placeholder(&state),
             i18n::t("launcher.action.executing")
