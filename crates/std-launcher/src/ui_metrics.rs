@@ -102,6 +102,13 @@ pub(crate) fn result_row_layout(
     crate::ui_metrics_results::result_row_layout(scale(), rect)
 }
 
+pub(crate) fn result_right_affordance_layout(
+    rect: egui::Rect,
+    has_action: bool,
+) -> crate::ui_metrics_results::LauncherResultRightAffordanceLayout {
+    crate::ui_metrics_results::result_right_affordance_layout(scale(), rect, has_action)
+}
+
 pub(crate) fn ask_ai_row_height() -> f32 {
     scale().f32(34.0)
 }

@@ -84,6 +84,17 @@ fn result_row_layout_reserves_icon_text_and_right_hint_regions() {
 }
 
 #[test]
+fn result_right_affordance_layout_reserves_fixed_keycap_and_action_regions() {
+    assert_eq!(
+        crate::ui_metrics_results::result_right_affordance_metrics_for_scale(
+            UiScale::new(1.5),
+            720.0
+        ),
+        (66.0, 108.0, 78.0)
+    );
+}
+
+#[test]
 fn panel_rect_anchors_to_upper_screen_region() {
     let position = screen_anchor_position(egui::vec2(1440.0, 900.0), egui::vec2(720.0, 320.0));
 

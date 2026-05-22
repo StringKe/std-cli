@@ -136,6 +136,7 @@ mod tests {
         assert!(source.contains("paint_command"));
         assert!(source.contains("Color::fg_secondary(ctx)"));
         assert!(source.contains("Color::accent_base(ctx)"));
-        assert!(!source.contains("painter().text"));
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+        assert!(!implementation.contains("painter().text"));
     }
 }

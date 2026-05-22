@@ -1,7 +1,5 @@
 use crate::{
-    ui_metrics,
-    ui_parts::keycap,
-    ui_result_icons,
+    ui_metrics, ui_result_icons,
     ui_result_model::{group_header_label, LauncherResultRowModel},
 };
 use eframe::egui;
@@ -143,19 +141,21 @@ fn paint_result_right(
     layout: &crate::ui_metrics_results::LauncherResultRowLayout,
     model: &LauncherResultRowModel,
 ) {
-    ui.scope_builder(egui::UiBuilder::new().max_rect(layout.right_rect), |ui| {
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            if model.action_hint.is_some() {
-                if let Some(shortcut) = model.primary_shortcut.as_deref() {
-                    keycap(ui, shortcut);
-                }
-                action_hint_label(ui, &model.action_label);
-            }
-            if let Some(shortcut) = model.direct_shortcut.as_deref() {
-                keycap(ui, shortcut);
-            }
-        });
-    });
+    let affordance =
+        ui_metrics::result_right_affordance_layout(layout.right_rect, model.action_hint.is_some());
+    if let Some(shortcut) = model.direct_shortcut.as_deref() {
+        paint_keycap(ui, affordance.direct_keycap, shortcut);
+    }
+    if model.action_hint.is_some() {
+        if let Some(rect) = affordance.action_label {
+            paint_action_hint_label(ui, rect, &model.action_label);
+        }
+        if let (Some(rect), Some(shortcut)) =
+            (affordance.primary_keycap, model.primary_shortcut.as_deref())
+        {
+            paint_keycap(ui, rect, shortcut);
+        }
+    }
 }
 
 fn paint_result_row_background(
@@ -185,12 +185,38 @@ fn result_row_background_color(
     }
 }
 
-fn action_hint_label(ui: &mut egui::Ui, label: &str) {
+fn paint_action_hint_label(ui: &mut egui::Ui, rect: egui::Rect, label: &str) {
     let ctx = ui.ctx().clone();
-    ui.label(
-        egui::RichText::new(label)
-            .font(Text::caption())
-            .color(Color::fg_secondary(&ctx)),
+    let painter = ui.painter().with_clip_rect(rect);
+    painter.text(
+        rect.center(),
+        egui::Align2::CENTER_CENTER,
+        label,
+        Text::caption(),
+        Color::fg_secondary(&ctx),
+    );
+}
+
+fn paint_keycap(ui: &mut egui::Ui, rect: egui::Rect, label: &str) {
+    let ctx = ui.ctx().clone();
+    let key_rect = rect.shrink2(egui::vec2(2.0, 6.0));
+    ui.painter().rect_filled(
+        key_rect,
+        egui::CornerRadius::same(Radius::sm()),
+        Color::bg_surface_0(&ctx),
+    );
+    ui.painter().rect_stroke(
+        key_rect,
+        egui::CornerRadius::same(Radius::sm()),
+        egui::Stroke::new(1.0, Color::stroke_border(&ctx)),
+        egui::StrokeKind::Inside,
+    );
+    ui.painter().text(
+        key_rect.center(),
+        egui::Align2::CENTER_CENTER,
+        label,
+        Text::caption(),
+        Color::fg_secondary(&ctx),
     );
 }
 
@@ -270,6 +296,22 @@ mod tests {
         assert!(selected_label.contains(&format!("press Enter to {}", selected.action_label)));
         assert!(idle_label.contains("shortcut"));
         assert!(!idle_label.contains(&format!("press Enter to {}", idle.action_label)));
+    }
+
+    #[test]
+    fn result_right_affordance_uses_fixed_regions_not_wrapped_buttons() {
+        let source = include_str!("ui_result_rows.rs");
+        let right_body = source
+            .split("fn paint_result_right")
+            .nth(1)
+            .and_then(|body| body.split("fn paint_result_row_background").next())
+            .unwrap();
+
+        assert!(right_body.contains("result_right_affordance_layout"));
+        assert!(right_body.contains("paint_keycap"));
+        assert!(right_body.contains("paint_action_hint_label"));
+        assert!(!right_body.contains("right_to_left"));
+        assert!(!right_body.contains("crate::ui_parts::keycap"));
     }
 
     #[test]

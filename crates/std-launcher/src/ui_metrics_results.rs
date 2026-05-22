@@ -12,9 +12,52 @@ const RESULT_ROW_TITLE_HEIGHT: f32 = 18.0;
 const RESULT_ROW_SUBTITLE_Y: f32 = 28.0;
 const RESULT_RIGHT_AREA_WIDTH: f32 = 180.0;
 const RESULT_TEXT_RIGHT_GAP: f32 = 12.0;
+const RESULT_DIRECT_KEYCAP_WIDTH: f32 = 44.0;
+const RESULT_PRIMARY_KEYCAP_WIDTH: f32 = 52.0;
+const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
+const RESULT_RIGHT_GAP: f32 = 6.0;
 
 pub(crate) fn loading_progress_height(scale: UiScale) -> f32 {
     scale.f32(LOADING_PROGRESS_HEIGHT)
+}
+
+pub(crate) fn result_right_affordance_layout(
+    scale: UiScale,
+    rect: egui::Rect,
+    has_action: bool,
+) -> LauncherResultRightAffordanceLayout {
+    let gap = scale.f32(RESULT_RIGHT_GAP);
+    let direct_width = scale.f32(RESULT_DIRECT_KEYCAP_WIDTH);
+    let primary_width = scale.f32(RESULT_PRIMARY_KEYCAP_WIDTH);
+    let action_width = if has_action {
+        scale.f32(RESULT_ACTION_LABEL_WIDTH)
+    } else {
+        0.0
+    };
+    let mut right = rect.right();
+    let direct_keycap = take_right_rect(rect, &mut right, direct_width);
+    let primary_keycap = has_action.then(|| {
+        right -= gap;
+        take_right_rect(rect, &mut right, primary_width)
+    });
+    let action_label = has_action.then(|| {
+        right -= gap;
+        take_right_rect(rect, &mut right, action_width)
+    });
+    LauncherResultRightAffordanceLayout {
+        direct_keycap,
+        action_label,
+        primary_keycap,
+    }
+}
+
+fn take_right_rect(container: egui::Rect, right: &mut f32, width: f32) -> egui::Rect {
+    let rect = egui::Rect::from_min_max(
+        egui::pos2((*right - width).max(container.left()), container.top()),
+        egui::pos2(*right, container.bottom()),
+    );
+    *right = rect.left();
+    rect
 }
 
 pub(crate) fn loading_progress_size(scale: UiScale, available_width: f32) -> egui::Vec2 {
@@ -100,6 +143,13 @@ pub(crate) struct LauncherResultRowLayout {
     pub(crate) right_rect: egui::Rect,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct LauncherResultRightAffordanceLayout {
+    pub(crate) direct_keycap: egui::Rect,
+    pub(crate) action_label: Option<egui::Rect>,
+    pub(crate) primary_keycap: Option<egui::Rect>,
+}
+
 #[cfg(test)]
 pub(crate) fn loading_progress_metrics_for_scale(
     scale: UiScale,
@@ -132,5 +182,20 @@ pub(crate) fn result_row_layout_metrics_for_scale(scale: UiScale, width: f32) ->
         layout.icon_rect.width(),
         layout.text_clip.width(),
         layout.right_rect.width(),
+    )
+}
+
+#[cfg(test)]
+pub(crate) fn result_right_affordance_metrics_for_scale(
+    scale: UiScale,
+    width: f32,
+) -> (f32, f32, f32) {
+    let row = egui::Rect::from_min_size(egui::Pos2::ZERO, result_row_size(scale, width));
+    let layout = result_row_layout(scale, row);
+    let affordance = result_right_affordance_layout(scale, layout.right_rect, true);
+    (
+        affordance.direct_keycap.width(),
+        affordance.action_label.unwrap().width(),
+        affordance.primary_keycap.unwrap().width(),
     )
 }
