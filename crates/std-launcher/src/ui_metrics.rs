@@ -142,23 +142,12 @@ pub(crate) fn feedback_detail_height() -> f32 {
     scale().f32(36.0)
 }
 
-pub(crate) fn feedback_action_height() -> f32 {
-    feedback_action_height_for_scale(scale())
-}
-
 pub(crate) fn feedback_panel_height_for_scale(scale: UiScale) -> f32 {
     feedback_text_height_for_scale(scale)
-        + scale.f32(Space::XS as f32)
-        + feedback_action_height_for_scale(scale)
-        + scale.f32(Space::XS as f32)
 }
 
 fn feedback_text_height_for_scale(scale: UiScale) -> f32 {
     scale.f32(58.0)
-}
-
-pub(crate) fn feedback_action_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(30.0)
 }
 
 pub(crate) struct FeedbackIconGeometry {

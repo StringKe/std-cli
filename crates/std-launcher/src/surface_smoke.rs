@@ -124,7 +124,8 @@ impl LauncherSurfaceSmokeReport {
                     "{}:Plugin Crash",
                     std_egui::i18n::t("launcher.feedback.failed")
                 )
-            && self.feedback_text_contract == "detail=max-2-lines,wrap=true,truncate=false"
+            && self.feedback_text_contract
+                == "layout=inline-toast;detail=max-2-lines,wrap=true,truncate=false"
             && self.feedback_icon_contract == "status_icons=completed|deferred|failed"
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
@@ -254,7 +255,7 @@ fn feedback_icon_contract() -> String {
 }
 
 fn feedback_text_contract() -> String {
-    "detail=max-2-lines,wrap=true,truncate=false".to_string()
+    "layout=inline-toast;detail=max-2-lines,wrap=true,truncate=false".to_string()
 }
 
 fn deferred_execution() -> ActionExecution {
@@ -313,6 +314,7 @@ mod tests {
         assert!(summary.contains("reduced_launcher_exit_ms=0"));
         assert!(summary.contains("reduced_focus_ring_ms=0"));
         assert!(summary.contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
-        assert!(summary.contains("feedback_text_contract=detail=max-2-lines"));
+        assert!(summary.contains("feedback_text_contract=layout=inline-toast"));
+        assert!(summary.contains("detail=max-2-lines"));
     }
 }

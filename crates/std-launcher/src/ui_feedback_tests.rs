@@ -87,7 +87,7 @@ fn feedback_surface_hides_performance_metrics_from_user_copy() {
 }
 
 #[test]
-fn feedback_surface_stacks_text_above_actions() {
+fn feedback_surface_keeps_text_and_actions_on_one_toast_row() {
     let source = include_str!("ui_feedback.rs");
     let render_contents = source
         .split("fn render_contents")
@@ -95,11 +95,12 @@ fn feedback_surface_stacks_text_above_actions() {
         .and_then(|body| body.split("fn render_text").next())
         .unwrap();
 
-    assert!(render_contents.contains("render_text(ui, &ctx, feedback);"));
-    assert!(render_contents.contains("render_actions(ui, state, feedback)"));
-    assert!(source.contains("ui_metrics::feedback_action_height()"));
-    assert!(source.contains("Layout::left_to_right"));
-    assert!(!render_contents.contains("right_to_left"));
+    assert!(render_contents.contains("ui.horizontal"));
+    assert!(render_contents.contains("render_text(ui, &ctx, feedback, text_width);"));
+    assert!(render_contents.contains("render_actions(ui, state, feedback, actions_width)"));
+    assert!(source.contains("feedback_actions_width(feedback)"));
+    assert!(source.contains("Layout::right_to_left"));
+    assert!(!render_contents.contains("ui_metrics::feedback_action_height()"));
 }
 
 #[test]
@@ -109,21 +110,16 @@ fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
     let source = include_str!("ui_feedback.rs");
 
     let scale = std_egui::tokens::UiScale::default();
-    let expected = ui_metrics::feedback_text_height()
-        + scale.f32(Space::XS as f32)
-        + ui_metrics::feedback_action_height()
-        + scale.f32(Space::XS as f32);
+    let expected = ui_metrics::feedback_text_height();
 
-    assert_eq!(ui_metrics::feedback_action_height(), 30.0);
     assert_eq!(ui_metrics::feedback_panel_height_for_scale(scale), expected);
     assert!(metrics.contains("feedback_panel_height_for_scale"));
     assert!(metrics.contains("feedback_text_height()"));
-    assert!(metrics.contains("feedback_action_height()"));
-    assert!(layout.contains("scale.f32(Space::XS as f32)"));
     assert!(layout.contains("feedback_panel_height_for_scale(scale)"));
-    assert!(metrics.contains("feedback_action_height_for_scale"));
+    assert!(!metrics.contains("feedback_action_height()"));
+    assert!(!metrics.contains("feedback_action_height_for_scale"));
     assert!(!metrics.contains("scale.f32(66.0)"));
-    assert!(source.contains("ui_metrics::feedback_action_height()"));
+    assert!(source.contains("ui_metrics::feedback_text_height()"));
 }
 
 #[test]

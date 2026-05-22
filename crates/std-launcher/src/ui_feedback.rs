@@ -56,13 +56,19 @@ fn render_contents(
     feedback: &LauncherFeedback,
 ) -> FeedbackCommand {
     let ctx = ui.ctx().clone();
-    render_text(ui, &ctx, feedback);
-    ui.add_space(Space::xs() as f32);
-    render_actions(ui, state, feedback)
+    let actions_width = feedback_actions_width(feedback);
+    let text_width = (ui.available_width() - actions_width - Space::sm() as f32)
+        .max(ui_metrics::scale().f32(240.0));
+    let mut command = FeedbackCommand::None;
+    ui.horizontal(|ui| {
+        render_text(ui, &ctx, feedback, text_width);
+        ui.add_space(Space::xs() as f32);
+        command = render_actions(ui, state, feedback, actions_width);
+    });
+    command
 }
 
-fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
-    let width = ui.available_width().min(ui_metrics::scale().f32(360.0));
+fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback, width: f32) {
     ui.allocate_ui_with_layout(
         egui::vec2(width, ui_metrics::feedback_text_height()),
         egui::Layout::top_down(egui::Align::Min),
@@ -131,12 +137,13 @@ fn render_actions(
     ui: &mut egui::Ui,
     state: &LauncherState,
     feedback: &LauncherFeedback,
+    width: f32,
 ) -> FeedbackCommand {
     let actions = feedback.actions();
     let mut command = FeedbackCommand::None;
     ui.allocate_ui_with_layout(
-        egui::vec2(ui.available_width(), ui_metrics::feedback_action_height()),
-        egui::Layout::left_to_right(egui::Align::Center),
+        egui::vec2(width, ui_metrics::feedback_text_height()),
+        egui::Layout::right_to_left(egui::Align::Center),
         |ui| {
             for (index, action) in actions.into_iter().enumerate() {
                 let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
@@ -186,6 +193,11 @@ fn render_actions(
         },
     );
     command
+}
+
+fn feedback_actions_width(feedback: &LauncherFeedback) -> f32 {
+    let count = feedback.actions().len() as f32;
+    ui_metrics::scale().f32(count * 76.0)
 }
 
 fn feedback_button(
