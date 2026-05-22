@@ -1,16 +1,19 @@
 use crate::{
     analysis_format::{format_analysis_answer, format_coverage_report, format_inspection},
-    analysis_query_panel::{self, AnalysisQueryAction, AnalysisQueryPanelState},
+    analysis_query_panel::{self, AnalysisQueryAction},
     analysis_state::AnalysisFocusArea,
     analysis_tab_content::{self, AnalysisTabRenderState},
     ui, StudioEguiApp,
 };
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
-use std_index::{IndexCoverageReport, IndexSearchResult};
+use std_index::IndexSearchResult;
 use std_studio::{AnalysisWorkbenchTab, AnalysisWorkbenchViewModel};
 
-const ANALYSIS_PANEL_GAP: f32 = Space::SM as f32;
+const ANALYSIS_TOOLBAR_HEIGHT: f32 = 44.0;
+const ANALYSIS_TABS_HEIGHT: f32 = 36.0;
+const ANALYSIS_TARGET_MIN_WIDTH: f32 = 260.0;
+const ANALYSIS_QA_MIN_WIDTH: f32 = 260.0;
 
 impl StudioEguiApp {
     pub(crate) fn handle_analysis_workbench_keyboard(&mut self, ctx: &egui::Context) {
@@ -41,46 +44,20 @@ impl StudioEguiApp {
         );
         self.render_analysis_toolbar(ui);
         ui.add_space(Space::SM as f32);
-        self.render_analysis_workspace(ui);
-    }
-
-    fn render_analysis_workspace(&mut self, ui: &mut egui::Ui) {
-        let available_width = ui.available_width();
-        if available_width < 940.0 {
-            self.render_active_analysis(ui);
-            ui.add_space(ANALYSIS_PANEL_GAP);
-            self.render_analysis_query(ui);
-            ui.add_space(ANALYSIS_PANEL_GAP);
-            self.render_analysis_coverage(ui);
-            return;
-        }
-        let column_width = (available_width - ANALYSIS_PANEL_GAP * 2.0) / 3.0;
-        ui.horizontal_top(|ui| {
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_active_analysis(ui),
-            );
-            ui.add_space(ANALYSIS_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_analysis_query(ui),
-            );
-            ui.add_space(ANALYSIS_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_analysis_coverage(ui),
-            );
-        });
+        self.render_analysis_tabs_bar(ui);
+        ui.add_space(Space::SM as f32);
+        self.render_analysis_content(ui);
     }
 
     fn render_analysis_toolbar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            ui.set_min_height(ANALYSIS_TOOLBAR_HEIGHT);
             ui.horizontal(|ui| {
+                let available = ui.available_width();
+                let target_width = ((available * 0.38).max(ANALYSIS_TARGET_MIN_WIDTH))
+                    .min((available - 420.0).max(ANALYSIS_TARGET_MIN_WIDTH));
                 let response = ui.add_sized(
-                    [ui.available_width() - 120.0, 28.0],
+                    [target_width, 28.0],
                     egui::TextEdit::singleline(&mut self.analysis.path)
                         .id(AnalysisFocusArea::Target.focus_id())
                         .hint_text(i18n::t("studio.analysis.path.hint")),
@@ -95,19 +72,45 @@ impl StudioEguiApp {
                         analysis_target_a11y_label(&self.analysis.path),
                     )
                 });
-                if ui::quiet_button(ui, i18n::t("studio.analysis.analyze")).clicked() {
+                if ui::quiet_button(ui, i18n::t("studio.analysis.reindex")).clicked() {
                     self.analyze_current_path();
+                }
+                ui.separator();
+                let query_width = (ui.available_width() - 176.0).max(ANALYSIS_QA_MIN_WIDTH);
+                match analysis_query_panel::render_toolbar_query(
+                    ui,
+                    &mut self.analysis.query,
+                    self.analysis.focus_area,
+                    query_width,
+                ) {
+                    AnalysisQueryAction::Ask => self.ask_analysis(),
+                    AnalysisQueryAction::Search => self.search_analysis(),
+                    AnalysisQueryAction::Inspect => self.inspect_analysis(),
+                    AnalysisQueryAction::None => {}
                 }
             });
         });
     }
 
-    fn render_active_analysis(&mut self, ui: &mut egui::Ui) {
+    fn render_analysis_tabs_bar(&mut self, ui: &mut egui::Ui) {
+        ui::surface_frame(ui.ctx()).show(ui, |ui| {
+            ui.set_min_height(ANALYSIS_TABS_HEIGHT);
+            let model = self.analysis_workbench_model();
+            render_analysis_tabs(
+                ui,
+                &model,
+                &mut self.analysis.active_tab,
+                self.analysis.focus_area,
+            );
+        });
+    }
+
+    fn render_analysis_content(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
-                i18n::t("studio.analysis.entity.title"),
-                i18n::t("studio.analysis.entity.detail"),
+                i18n::t("studio.analysis.workbench.title"),
+                i18n::t("studio.analysis.workbench.detail"),
             );
             ui::chip(
                 ui,
@@ -116,69 +119,7 @@ impl StudioEguiApp {
             );
             ui.add_space(Space::XS as f32);
             let model = self.analysis_workbench_model();
-            render_analysis_tabs(
-                ui,
-                &model,
-                &mut self.analysis.active_tab,
-                self.analysis.focus_area,
-            );
-            ui.add_space(Space::XS as f32);
             analysis_tab_content::render_tab_content(ui, self.analysis_render_state(&model));
-        });
-    }
-
-    fn render_analysis_query(&mut self, ui: &mut egui::Ui) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            let model = self.analysis_workbench_model();
-            match analysis_query_panel::render(
-                ui,
-                AnalysisQueryPanelState {
-                    query: &mut self.analysis.query,
-                    answer: &self.analysis.answer,
-                    search_output: &self.analysis.search_output,
-                    model: &model,
-                    focus_area: self.analysis.focus_area,
-                },
-            ) {
-                AnalysisQueryAction::Ask => self.ask_analysis(),
-                AnalysisQueryAction::Search => self.search_analysis(),
-                AnalysisQueryAction::Inspect => self.inspect_analysis(),
-                AnalysisQueryAction::None => {}
-            }
-        });
-    }
-
-    fn render_analysis_coverage(&mut self, ui: &mut egui::Ui) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.analysis.coverage.title"),
-                i18n::t("studio.analysis.coverage.detail"),
-            );
-            if ui::quiet_button(ui, i18n::t("studio.analysis.coverage.refresh")).clicked() {
-                self.refresh_analysis_coverage();
-            }
-            if self.analysis.coverage_output.is_empty() {
-                match self.cached_analysis_coverage_report() {
-                    Ok(report) => {
-                        let model = self.analysis_workbench_model();
-                        let mut state = self.analysis_render_state(&model);
-                        state.active_tab = AnalysisWorkbenchTab::Overview;
-                        state.coverage = Some(report);
-                        analysis_tab_content::render_tab_content(ui, state);
-                    }
-                    Err(error) => {
-                        ui.label(error.to_string());
-                    }
-                }
-            } else {
-                render_output(
-                    ui,
-                    i18n::t("studio.analysis.coverage.report"),
-                    &self.analysis.coverage_output,
-                    460.0,
-                );
-            }
         });
     }
 
@@ -206,15 +147,6 @@ impl StudioEguiApp {
             relations_graph_mode: self.analysis.relations_graph_mode,
             focus_area: self.analysis.focus_area,
         }
-    }
-
-    fn cached_analysis_coverage_report(
-        &self,
-    ) -> Result<&IndexCoverageReport, std_index::IndexError> {
-        self.analysis
-            .coverage_report
-            .as_ref()
-            .ok_or_else(|| std_index::IndexError::Io(std::io::Error::other("coverage not loaded")))
     }
 
     fn analyze_current_path(&mut self) {
@@ -309,19 +241,6 @@ fn render_analysis_tabs(
     });
 }
 
-fn render_output(ui: &mut egui::Ui, title: &str, value: &str, height: f32) {
-    ui.label(egui::RichText::new(title).strong());
-    if value.is_empty() {
-        ui::empty_state(ui, i18n::t("studio.analysis.output.empty"));
-    } else {
-        egui::ScrollArea::vertical()
-            .max_height(height)
-            .show(ui, |ui| {
-                ui.label(value);
-            });
-    }
-}
-
 fn format_search_results(results: &[IndexSearchResult]) -> String {
     if results.is_empty() {
         return "no index search results".to_string();
@@ -362,6 +281,24 @@ mod tests {
         assert!(implementation.contains("WidgetType::TextEdit"));
         assert!(implementation.contains("analysis_target_a11y_label"));
         assert!(implementation.contains("response.request_focus()"));
+    }
+
+    #[test]
+    fn analysis_uses_docs_22_workbench_shell_not_three_panel_layout() {
+        let source = include_str!("analysis.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("const ANALYSIS_TOOLBAR_HEIGHT: f32 = 44.0"));
+        assert!(implementation.contains("const ANALYSIS_TABS_HEIGHT: f32 = 36.0"));
+        assert!(implementation.contains("fn render_analysis_toolbar"));
+        assert!(implementation.contains("fn render_analysis_tabs_bar"));
+        assert!(implementation.contains("fn render_analysis_content"));
+        assert!(implementation.contains("analysis_query_panel::render_toolbar_query"));
+        assert!(implementation.contains("studio.analysis.reindex"));
+        assert!(implementation.contains("studio.analysis.workbench.title"));
+        assert!(!implementation.contains("fn render_analysis_workspace"));
+        assert!(!implementation.contains("fn render_analysis_query"));
+        assert!(!implementation.contains("fn render_analysis_coverage"));
     }
 
     #[test]

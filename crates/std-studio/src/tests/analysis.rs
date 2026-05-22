@@ -126,16 +126,41 @@ fn analysis_query_panel_contract_surfaces_evidence_and_search_hits() {
     )
     .unwrap();
 
-    assert!(body.contains("Evidence Sources"));
-    assert!(body.contains("jump_target"));
-    assert!(body.contains("model.answer_sources"));
-    assert!(body.contains("model.search_hits"));
     assert!(body.contains("AnalysisQueryAction"));
     assert!(body.contains("WidgetType::TextEdit"));
     assert!(body.contains("analysis_query_a11y_label"));
     assert!(body.contains("AnalysisFocusArea::Query.focus_id()"));
     assert!(body.contains("Analysis query, text box, value"));
     assert!(body.contains("query.trim().is_empty()"));
+
+    let tabs = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("analysis_tab_content.rs"),
+    )
+    .unwrap();
+    assert!(tabs.contains("Sources"));
+    assert!(tabs.contains("jump_target"));
+    assert!(tabs.contains("model.answer_sources"));
+    assert!(tabs.contains("model.search_hits"));
+}
+
+#[test]
+fn analysis_toolbar_query_contract_matches_docs_22_workbench() {
+    let body = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("analysis_query_panel.rs"),
+    )
+    .unwrap();
+
+    assert!(body.contains("pub(crate) fn render_toolbar_query"));
+    assert!(body.contains("studio.analysis.qa.hint"));
+    assert!(body.contains("AnalysisFocusArea::Query.focus_id()"));
+    assert!(body.contains("AnalysisQueryAction::Ask"));
+    assert!(body.contains("AnalysisQueryAction::Search"));
+    assert!(body.contains("AnalysisQueryAction::Inspect"));
+    assert!(body.contains("WidgetType::TextEdit"));
 }
 
 #[test]

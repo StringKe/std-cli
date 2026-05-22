@@ -8,8 +8,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.analysis.detail") => Some("four-layer local understanding and QA"),
         (Locale::ZhCn, "studio.analysis.path.hint") => Some("project、file、app、workflow 路径"),
         (Locale::EnUs, "studio.analysis.path.hint") => Some("project, file, app, workflow path"),
-        (Locale::ZhCn, "studio.analysis.analyze") => Some("Analyze"),
-        (Locale::EnUs, "studio.analysis.analyze") => Some("Analyze"),
+        (Locale::ZhCn, "studio.analysis.reindex") => Some("Re-Index"),
+        (Locale::EnUs, "studio.analysis.reindex") => Some("Re-Index"),
+        (Locale::ZhCn, "studio.analysis.qa.hint") => Some("Ask index or search symbols"),
+        (Locale::EnUs, "studio.analysis.qa.hint") => Some("Ask index or search symbols"),
+        (Locale::ZhCn, "studio.analysis.workbench.title") => Some("Workbench"),
+        (Locale::EnUs, "studio.analysis.workbench.title") => Some("Workbench"),
+        (Locale::ZhCn, "studio.analysis.workbench.detail") => {
+            Some("target toolbar、tabs、tab content")
+        }
+        (Locale::EnUs, "studio.analysis.workbench.detail") => {
+            Some("target toolbar, tabs, tab content")
+        }
         (Locale::ZhCn, "studio.analysis.entity.title") => Some("Entity"),
         (Locale::EnUs, "studio.analysis.entity.title") => Some("Entity"),
         (Locale::ZhCn, "studio.analysis.entity.detail") => Some("当前 index document"),
@@ -51,7 +61,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.analysis.title" => Some("Index Analysis"),
         "studio.analysis.detail" => Some("four-layer local understanding and QA"),
         "studio.analysis.path.hint" => Some("project, file, app, workflow path"),
-        "studio.analysis.analyze" => Some("Analyze"),
+        "studio.analysis.reindex" => Some("Re-Index"),
+        "studio.analysis.qa.hint" => Some("Ask index or search symbols"),
+        "studio.analysis.workbench.title" => Some("Workbench"),
+        "studio.analysis.workbench.detail" => Some("target toolbar, tabs, tab content"),
         "studio.analysis.entity.title" => Some("Entity"),
         "studio.analysis.entity.detail" => Some("active index document"),
         "studio.analysis.entity.empty" => Some("No active analysis"),
