@@ -279,16 +279,10 @@ fn feedback_action_a11y_label(
     feedback: &LauncherFeedback,
     action: LauncherFeedbackAction,
 ) -> String {
-    let label = match action {
-        LauncherFeedbackAction::Copy => i18n::t("launcher.feedback.copy"),
-        LauncherFeedbackAction::Retry => i18n::t("launcher.feedback.retry"),
-        LauncherFeedbackAction::OpenStudio => i18n::t("launcher.feedback.open_studio"),
-    };
-    format!(
-        "{label}, feedback action for {}, {}, press Enter",
-        feedback.action_name,
-        feedback.status_label()
-    )
+    i18n::t("launcher.feedback.action.a11y")
+        .replace("{action}", feedback_action_label(action))
+        .replace("{target}", &feedback.action_name)
+        .replace("{status}", feedback.status_label())
 }
 
 fn feedback_panel_a11y_label(feedback: &LauncherFeedback) -> String {
@@ -298,12 +292,10 @@ fn feedback_panel_a11y_label(feedback: &LauncherFeedback) -> String {
         .map(feedback_action_label)
         .collect::<Vec<_>>()
         .join(", ");
-    format!(
-        "Execution feedback, {}, action {}, available actions {}",
-        feedback.status_label(),
-        feedback.action_name,
-        actions
-    )
+    i18n::t("launcher.feedback.panel.a11y")
+        .replace("{status}", feedback.status_label())
+        .replace("{target}", &feedback.action_name)
+        .replace("{actions}", &actions)
 }
 
 fn feedback_action_label(action: LauncherFeedbackAction) -> &'static str {

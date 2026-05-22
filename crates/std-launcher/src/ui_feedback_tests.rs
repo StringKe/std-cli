@@ -159,27 +159,33 @@ fn feedback_actions_expose_a11y_name_action_status_and_enter_hint() {
 
     assert_eq!(
         feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Copy),
-        format!(
-            "{}, feedback action for StdFixtureTerminal, {}, press Enter",
-            feedback_action_label(LauncherFeedbackAction::Copy),
-            feedback.status_label()
-        )
+        i18n::t("launcher.feedback.action.a11y")
+            .replace(
+                "{action}",
+                feedback_action_label(LauncherFeedbackAction::Copy)
+            )
+            .replace("{target}", "StdFixtureTerminal")
+            .replace("{status}", feedback.status_label())
     );
     assert_eq!(
         feedback_action_a11y_label(&feedback, LauncherFeedbackAction::Retry),
-        format!(
-            "{}, feedback action for StdFixtureTerminal, {}, press Enter",
-            feedback_action_label(LauncherFeedbackAction::Retry),
-            feedback.status_label()
-        )
+        i18n::t("launcher.feedback.action.a11y")
+            .replace(
+                "{action}",
+                feedback_action_label(LauncherFeedbackAction::Retry)
+            )
+            .replace("{target}", "StdFixtureTerminal")
+            .replace("{status}", feedback.status_label())
     );
     assert_eq!(
         feedback_action_a11y_label(&feedback, LauncherFeedbackAction::OpenStudio),
-        format!(
-            "{}, feedback action for StdFixtureTerminal, {}, press Enter",
-            feedback_action_label(LauncherFeedbackAction::OpenStudio),
-            feedback.status_label()
-        )
+        i18n::t("launcher.feedback.action.a11y")
+            .replace(
+                "{action}",
+                feedback_action_label(LauncherFeedbackAction::OpenStudio)
+            )
+            .replace("{target}", "StdFixtureTerminal")
+            .replace("{status}", feedback.status_label())
     );
 }
 
@@ -189,7 +195,7 @@ fn feedback_panel_exposes_a11y_state_and_available_actions() {
 
     let label = feedback_panel_a11y_label(&feedback);
 
-    assert!(label.contains("Execution feedback"));
+    assert!(label.contains(i18n::t("launcher.feedback.copy")));
     assert!(label.contains(feedback.status_label()));
     assert!(label.contains("StdFixtureTerminal"));
     for action in feedback.actions() {
@@ -204,7 +210,7 @@ fn feedback_buttons_register_accessibility_widget_info() {
 
     assert!(production_source.contains("feedback_action_a11y_label"));
     assert!(production_source.contains("WidgetType::Button"));
-    assert!(production_source.contains("press Enter"));
+    assert!(production_source.contains("launcher.feedback.action.a11y"));
 }
 
 #[test]
@@ -214,7 +220,15 @@ fn feedback_panel_registers_accessibility_widget_info() {
 
     assert!(production_source.contains("feedback_panel_a11y_label"));
     assert!(production_source.contains("WidgetType::Label"));
-    assert!(production_source.contains("Execution feedback"));
+    assert!(production_source.contains("launcher.feedback.panel.a11y"));
+}
+
+#[test]
+fn feedback_accessibility_copy_uses_i18n_templates() {
+    assert_ne!(i18n::t("launcher.feedback.action.a11y"), "UNKNOWN_I18N_KEY");
+    assert_ne!(i18n::t("launcher.feedback.panel.a11y"), "UNKNOWN_I18N_KEY");
+    assert!(i18n::t("launcher.feedback.action.a11y").contains("{action}"));
+    assert!(i18n::t("launcher.feedback.panel.a11y").contains("{actions}"));
 }
 
 #[test]

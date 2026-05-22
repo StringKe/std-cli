@@ -26,6 +26,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.feedback.icon.deferred") => Some("Review status"),
         (Locale::ZhCn, "launcher.feedback.icon.failed") => Some("错误状态"),
         (Locale::EnUs, "launcher.feedback.icon.failed") => Some("Error status"),
+        (Locale::ZhCn, "launcher.feedback.action.a11y") => {
+            Some("{action}，{target} 的反馈操作，状态 {status}，按 Enter")
+        }
+        (Locale::EnUs, "launcher.feedback.action.a11y") => {
+            Some("{action}, feedback action for {target}, {status}, press Enter")
+        }
+        (Locale::ZhCn, "launcher.feedback.panel.a11y") => {
+            Some("执行反馈，状态 {status}，操作 {target}，可用操作 {actions}")
+        }
+        (Locale::EnUs, "launcher.feedback.panel.a11y") => {
+            Some("Execution feedback, {status}, action {target}, available actions {actions}")
+        }
         _ => None,
     }
 }
@@ -44,6 +56,12 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.feedback.icon.completed" => Some("Completed status"),
         "launcher.feedback.icon.deferred" => Some("Review status"),
         "launcher.feedback.icon.failed" => Some("Error status"),
+        "launcher.feedback.action.a11y" => {
+            Some("{action}, feedback action for {target}, {status}, press Enter")
+        }
+        "launcher.feedback.panel.a11y" => {
+            Some("Execution feedback, {status}, action {target}, available actions {actions}")
+        }
         _ => None,
     }
 }
