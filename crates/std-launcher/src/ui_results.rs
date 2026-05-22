@@ -1,22 +1,19 @@
 use crate::{
     ui_empty::{self, EmptyAction},
     ui_keyboard, ui_metrics,
-    ui_parts::{draw_focus_ring, surface_frame},
     ui_result_model::{
         group_count as model_group_count, list_items, LauncherResultListItem,
         LauncherResultRowModel,
     },
-    ui_result_nl, ui_result_rows, ui_results_virtual, ui_shortcut_help,
+    ui_result_nl, ui_result_rows, ui_results_surface, ui_results_virtual, ui_shortcut_help,
 };
 use eframe::egui;
 use std_egui::{
-    a11y::AccessibilityContext,
     i18n,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, Space, Text},
     LauncherResultMode,
 };
-use std_launcher::LauncherFocusSection;
-use std_launcher::LauncherState;
+use std_launcher::{LauncherFocusSection, LauncherState};
 use std_types::SearchResult;
 
 pub(crate) fn group_count(results: &[SearchResult]) -> usize {
@@ -25,65 +22,10 @@ pub(crate) fn group_count(results: &[SearchResult]) -> usize {
 
 pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
     let mut hide_requested = false;
-    let response = surface_frame(ui.ctx()).show(ui, |ui| {
-        ui_result_rows::section_header(
-            ui,
-            section_title(&state.view),
-            &section_detail(&state.view),
-        );
+    ui_results_surface::show(ui, state, |ui, state| {
         hide_requested = render_results(ui, state, max_height);
     });
-    if state.keyboard_focus_visible(LauncherFocusSection::Results) {
-        let a11y = AccessibilityContext::from_env();
-        draw_focus_ring(
-            ui,
-            response.response.rect,
-            Radius::md(),
-            ui_metrics::focus_ring_expand(),
-            a11y.focus_ring_width(),
-        );
-    }
     hide_requested
-}
-
-fn section_detail(view: &std_egui::LauncherViewModel) -> String {
-    match view.phase {
-        std_egui::LauncherPhase::Searching
-        | std_egui::LauncherPhase::Executing
-        | std_egui::LauncherPhase::Feedback => String::new(),
-        _ => match view.result_mode {
-            LauncherResultMode::SuggestedWorkflows => {
-                i18n::t("launcher.results.suggested_workflows.detail").to_string()
-            }
-            LauncherResultMode::NoMatches => {
-                i18n::t("launcher.results.no_matches.detail").to_string()
-            }
-            LauncherResultMode::NaturalLanguage => {
-                i18n::t("launcher.results.nl.detail").to_string()
-            }
-            LauncherResultMode::Matches => format!(
-                "{} {}",
-                view.results.len(),
-                i18n::t("launcher.results.matches_suffix")
-            ),
-        },
-    }
-}
-
-fn section_title(view: &std_egui::LauncherViewModel) -> &'static str {
-    match view.phase {
-        std_egui::LauncherPhase::Searching => i18n::t("launcher.results.searching.title"),
-        std_egui::LauncherPhase::Executing => i18n::t("launcher.results.executing.title"),
-        std_egui::LauncherPhase::Feedback => i18n::t("launcher.results.feedback.title"),
-        _ => match view.result_mode {
-            LauncherResultMode::SuggestedWorkflows => {
-                i18n::t("launcher.results.suggested_workflows.title")
-            }
-            LauncherResultMode::Matches => i18n::t("launcher.results.title"),
-            LauncherResultMode::NoMatches => i18n::t("launcher.results.title"),
-            LauncherResultMode::NaturalLanguage => i18n::t("launcher.results.nl.title"),
-        },
-    }
 }
 
 fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32) -> bool {
@@ -271,28 +213,6 @@ mod tests {
             result_row_keyboard_affordance(&row).2,
             i18n::t("launcher.action.run")
         );
-    }
-
-    #[test]
-    fn section_detail_removes_match_count_noise_from_non_match_states() {
-        let core = std_core::StdCore::default();
-        core.seed_builtin_actions().unwrap();
-        let mut view = std_egui::LauncherViewModel::new(&core);
-
-        view.update_query(&core, "");
-        assert_eq!(
-            section_detail(&view),
-            i18n::t("launcher.results.suggested_workflows.detail")
-        );
-        view.update_query(&core, "no-such-launcher-result");
-        assert_eq!(
-            section_detail(&view),
-            i18n::t("launcher.results.no_matches.detail")
-        );
-        view.preview_searching("slow query");
-        assert_eq!(section_detail(&view), "");
-        view.update_query(&core, "index");
-        assert!(section_detail(&view).contains(i18n::t("launcher.results.matches_suffix")));
     }
 
     #[test]

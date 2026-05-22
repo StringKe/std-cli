@@ -6,7 +6,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, Radius, Text},
     LauncherViewModel,
 };
 
@@ -53,22 +53,6 @@ pub(crate) fn result_row(ui: &mut egui::Ui, model: &LauncherResultRowModel) -> e
     let rect = response.rect.shrink2(ui_metrics::result_row_shrink());
     paint_result_row(ui, rect, model, selected, &ctx);
     response
-}
-
-pub(crate) fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
-    let ctx = ui.ctx().clone();
-    ui.horizontal(|ui| {
-        ui.label(
-            egui::RichText::new(title)
-                .font(Text::body())
-                .color(Color::fg_primary(&ctx))
-                .strong(),
-        );
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            ui.label(egui::RichText::new(detail).font(Text::footnote()));
-        });
-    });
-    ui.add_space(Space::two_xs() as f32);
 }
 
 pub(crate) fn result_accessibility_label(

@@ -28,6 +28,7 @@ mod ui_result_model;
 mod ui_result_nl;
 mod ui_result_rows;
 mod ui_results;
+mod ui_results_surface;
 mod ui_results_virtual;
 mod ui_search;
 mod ui_shortcut_help;
