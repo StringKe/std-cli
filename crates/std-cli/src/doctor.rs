@@ -4,6 +4,7 @@ mod dylint;
 mod report;
 mod ui;
 mod ui_capture;
+mod ui_capture_png;
 mod ui_tokens;
 mod workspace;
 

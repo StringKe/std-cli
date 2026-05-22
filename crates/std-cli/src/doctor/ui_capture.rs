@@ -1,4 +1,5 @@
 use crate::{
+    doctor::ui_capture_png::{verify_capture_png, CaptureManifestEntry},
     doctor::workspace::{check_text, read_required},
     CliError,
 };
@@ -50,16 +51,6 @@ const STUDIO_CAPTURE_STATES: &[(&str, &str)] = &[
     ("light", "panes"),
     ("dark", "panes"),
 ];
-
-struct CaptureManifestEntry<'a> {
-    path: &'a str,
-    declared_bytes: usize,
-    declared_width: u32,
-    declared_height: u32,
-    surface: &'a str,
-    theme: &'a str,
-    scenario: &'a str,
-}
 
 pub(crate) fn check_ui_capture_scripts(root: &std::path::Path) -> Result<(), CliError> {
     check_window_capture_script(root)?;
@@ -215,73 +206,6 @@ fn verify_capture_line(
     Ok(())
 }
 
-fn verify_capture_png(root: &Path, entry: &CaptureManifestEntry<'_>) -> Result<(), CliError> {
-    let png_path = capture_path(root, entry.path);
-    let bytes = fs::read(&png_path).map_err(|error| {
-        CliError::Doctor(format!(
-            "unable to read capture png for {} {} {}: {error}",
-            entry.surface, entry.theme, entry.scenario
-        ))
-    })?;
-    if bytes.len() != entry.declared_bytes {
-        return Err(CliError::Doctor(format!(
-            "capture manifest byte count mismatch for {} {} {}: declared={} actual={}",
-            entry.surface,
-            entry.theme,
-            entry.scenario,
-            entry.declared_bytes,
-            bytes.len()
-        )));
-    }
-    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
-        return Err(CliError::Doctor(format!(
-            "capture file must be PNG for {} {} {}",
-            entry.surface, entry.theme, entry.scenario
-        )));
-    }
-    let (actual_width, actual_height) = png_dimensions(&bytes)?;
-    if actual_width != entry.declared_width || actual_height != entry.declared_height {
-        return Err(CliError::Doctor(format!(
-            "capture manifest dimensions mismatch for {} {} {}: declared={}x{} actual={}x{}",
-            entry.surface,
-            entry.theme,
-            entry.scenario,
-            entry.declared_width,
-            entry.declared_height,
-            actual_width,
-            actual_height
-        )));
-    }
-    Ok(())
-}
-
-fn png_dimensions(bytes: &[u8]) -> Result<(u32, u32), CliError> {
-    if bytes.len() < 24 || !bytes.starts_with(b"\x89PNG\r\n\x1a\n") || &bytes[12..16] != b"IHDR" {
-        return Err(CliError::Doctor(
-            "capture file must contain PNG IHDR dimensions".to_string(),
-        ));
-    }
-    let width = u32::from_be_bytes(bytes[16..20].try_into().unwrap());
-    let height = u32::from_be_bytes(bytes[20..24].try_into().unwrap());
-    if width == 0 || height == 0 {
-        return Err(CliError::Doctor(
-            "capture PNG dimensions must be positive".to_string(),
-        ));
-    }
-    Ok((width, height))
-}
-
-fn capture_path(root: &Path, path: &str) -> PathBuf {
-    let path = Path::new(path);
-    if path.is_absolute() {
-        path.to_path_buf()
-    } else if let Some(name) = path.file_name() {
-        root.join(name)
-    } else {
-        root.join(path)
-    }
-}
-
 fn capture_field<'a>(line: &'a str, key: &str) -> Result<&'a str, CliError> {
     line.split_whitespace()
         .find_map(|part| part.strip_prefix(key))
@@ -328,10 +252,10 @@ mod tests {
 
     #[test]
     fn ui_capture_manifest_rejects_missing_state() {
-        let png_bytes = sample_png_bytes().len();
+        let png_bytes = sample_png_bytes(720, 64).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=1 height=1\n"
+                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=720 height=64\n"
             ),
             "",
         );
@@ -344,12 +268,12 @@ mod tests {
 
     #[test]
     fn ui_capture_manifest_rejects_empty_png() {
-        let png_bytes = sample_png_bytes().len();
+        let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1 height=1"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1 height=1",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1080 height=640",
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
@@ -386,12 +310,12 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         write_sample_pngs(temp.path());
         fs::write(temp.path().join("studio-light-panes.png"), b"not-png").unwrap();
-        let png_bytes = sample_png_bytes().len();
+        let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1 height=1"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1 height=1",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1080 height=640",
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
@@ -405,18 +329,36 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         write_sample_pngs(temp.path());
         let manifest = sample_manifest().replace(
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1 height=1",
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=2 height=1",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1080 height=640",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1081 height=640",
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
         assert!(error.to_string().contains(
-            "capture manifest dimensions mismatch for studio light panes: declared=2x1 actual=1x1"
+            "capture manifest dimensions mismatch for studio light panes: declared=1081x640 actual=1080x640"
         ));
     }
 
+    #[test]
+    fn ui_capture_manifest_with_root_rejects_too_small_png() {
+        let temp = tempfile::tempdir().unwrap();
+        write_sample_pngs(temp.path());
+        let bytes = sample_png_bytes(500, 64);
+        fs::write(temp.path().join("launcher-light-collapsed.png"), bytes).unwrap();
+        let manifest = sample_manifest().replace(
+            "launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=720 height=64",
+            "launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=500 height=64",
+        );
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("capture PNG too small for launcher light collapsed"));
+    }
+
     fn sample_manifest() -> String {
-        let png_bytes = sample_png_bytes().len();
+        let launcher_bytes = sample_png_bytes(720, 64).len();
+        let studio_bytes = sample_png_bytes(1080, 640).len();
         let mut lines = vec![
             "capture-ui-matrix manifest".to_string(),
             "created_at=2026-05-22T00:00:00Z".to_string(),
@@ -428,28 +370,40 @@ mod tests {
         ];
         for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
             lines.push(format!(
-                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={png_bytes} width=1 height=1"
+                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={launcher_bytes} width=720 height=64"
             ));
         }
         for (theme, scenario) in STUDIO_CAPTURE_STATES {
             lines.push(format!(
-                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={png_bytes} width=1 height=1"
+                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={studio_bytes} width=1080 height=640"
             ));
         }
         lines.join("\n")
     }
 
     fn write_sample_pngs(root: &Path) {
-        let bytes = sample_png_bytes();
+        let launcher_bytes = sample_png_bytes(720, 64);
         for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
-            fs::write(root.join(format!("launcher-{theme}-{scenario}.png")), bytes).unwrap();
+            fs::write(
+                root.join(format!("launcher-{theme}-{scenario}.png")),
+                &launcher_bytes,
+            )
+            .unwrap();
         }
+        let studio_bytes = sample_png_bytes(1080, 640);
         for (theme, scenario) in STUDIO_CAPTURE_STATES {
-            fs::write(root.join(format!("studio-{theme}-{scenario}.png")), bytes).unwrap();
+            fs::write(
+                root.join(format!("studio-{theme}-{scenario}.png")),
+                &studio_bytes,
+            )
+            .unwrap();
         }
     }
 
-    fn sample_png_bytes() -> &'static [u8] {
-        b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01"
+    fn sample_png_bytes(width: u32, height: u32) -> Vec<u8> {
+        let mut bytes = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR".to_vec();
+        bytes.extend(width.to_be_bytes());
+        bytes.extend(height.to_be_bytes());
+        bytes
     }
 }
