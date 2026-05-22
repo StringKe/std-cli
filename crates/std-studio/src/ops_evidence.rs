@@ -56,7 +56,7 @@ impl OpsEvidence {
                 command: "mise run quality".to_string(),
                 steps: crate::ops_steps::quality_steps(),
                 runbook: ops_runbook::quality_runbook(),
-                status: quality_status(&root),
+                status: quality_status(&release_dir),
                 evidence: "mise.toml, .github/workflows/quality.yml, crates/file_too_long"
                     .to_string(),
                 result: quality_result(&root),
@@ -148,16 +148,12 @@ impl OpsEvidence {
     }
 }
 
-fn quality_status(root: &Path) -> OpsStatus {
-    let required = [
-        root.join("mise.toml"),
-        root.join("clippy.toml"),
-        root.join("rustfmt.toml"),
-        root.join("deny.toml"),
-        root.join(".github/workflows/quality.yml"),
-        root.join("crates/file_too_long"),
-    ];
-    if required.iter().all(|path| path.exists()) {
+fn quality_status(release_dir: &Path) -> OpsStatus {
+    if release_dir
+        .join("quality")
+        .join("quality-report.txt")
+        .is_file()
+    {
         OpsStatus::Pass
     } else {
         OpsStatus::Missing

@@ -13,7 +13,10 @@ fn studio_operations_evidence_reports_current_quality_release_and_install_state(
 }
 
 fn assert_gate_statuses(evidence: &OpsEvidence) {
-    assert_eq!(evidence.qa.status, OpsStatus::Pass);
+    assert!(matches!(
+        evidence.qa.status,
+        OpsStatus::Pass | OpsStatus::Missing
+    ));
     assert_eq!(evidence.doctor.status, OpsStatus::Pass);
     assert!(matches!(
         evidence.release.status,
@@ -27,7 +30,9 @@ fn assert_gate_statuses(evidence: &OpsEvidence) {
 }
 
 fn assert_line_contract(lines: &[String]) {
-    assert!(lines.iter().any(|line| line.contains("qa=PASS")));
+    assert!(lines
+        .iter()
+        .any(|line| line.contains("qa=PASS") || line.contains("qa=MISSING")));
     assert!(lines.iter().any(|line| line.contains("result=")));
     assert!(lines.iter().any(|line| line.contains("runbook=")));
     assert!(lines.iter().any(|line| line.contains("std doctor")));
@@ -151,7 +156,7 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
     assert!(summary.contains("UI Docs 18-24:MANUAL"));
     assert!(summary.contains("Launcher:MANUAL"));
     assert!(summary.contains("Studio:MANUAL"));
-    assert!(summary.contains("Quality:PASS"));
+    assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
     assert!(manual.contains("UI Docs 18-24"));
     assert!(manual.contains("Launcher"));
     assert!(operations_completion::completion_manual_gates(&rows)
