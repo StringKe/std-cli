@@ -14,6 +14,9 @@ pub(crate) struct OperationsSmoke {
     pub(crate) install_command: String,
     pub(crate) install_result: String,
     pub(crate) install_output: String,
+    pub(crate) plugin_command: String,
+    pub(crate) plugin_result: String,
+    pub(crate) plugin_output: String,
     pub(crate) index_command: String,
     pub(crate) index_result: String,
     pub(crate) index_output: String,
@@ -57,6 +60,9 @@ impl OperationsSmoke {
             install_command: evidence.install.command,
             install_result: evidence.install.result,
             install_output: evidence.install.output,
+            plugin_command: evidence.plugin.command,
+            plugin_result: evidence.plugin.result,
+            plugin_output: evidence.plugin.output,
             index_command: evidence.index.command,
             index_result: evidence.index.result,
             index_output: evidence.index.output,
@@ -89,6 +95,12 @@ impl OperationsSmoke {
             && self.install_command.contains("std install verify --prefix")
             && self.install_result.contains("install verify")
             && self.install_output.contains("launcher=")
+            && self.plugin_command == "std-studio smoke"
+            && self.plugin_result.contains("plugin runtime evidence")
+            && self.plugin_output.contains("js_runtime=PASS")
+            && self.plugin_output.contains("ts_runtime=PASS")
+            && self.plugin_output.contains("deno_core=PASS")
+            && self.plugin_output.contains("permission_boundary=PASS")
             && self.index_command == "std index coverage"
             && self.index_result.contains("index coverage evidence")
             && self.index_output.contains("overview=PASS")
@@ -129,11 +141,11 @@ impl OperationsSmoke {
                 .contains(operations_completion::completion_audit_contract())
             && self
                 .visual_contract
-                .contains("gates=QA|Doctor|Release|Install|Index|Runtime")
+                .contains("gates=QA|Doctor|Release|Install|Plugin|Index|Runtime")
             && self.visual_contract.contains("manual_gates=Runtime")
-            && self.visual_contract.contains("commands=6")
-            && self.visual_contract.contains("results=6")
-            && self.visual_contract.contains("outputs=6")
+            && self.visual_contract.contains("commands=7")
+            && self.visual_contract.contains("results=7")
+            && self.visual_contract.contains("outputs=7")
             && self
                 .a11y_contract
                 .contains(operations_rows::operations_gate_a11y_contract())
@@ -148,7 +160,7 @@ impl OperationsSmoke {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_index_command={}\noperations_index_result={}\noperations_index_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_completion_manual_gates={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_plugin_command={}\noperations_plugin_result={}\noperations_plugin_output={}\noperations_index_command={}\noperations_index_result={}\noperations_index_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_completion_manual_gates={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -162,6 +174,9 @@ impl OperationsSmoke {
             self.install_command,
             self.install_result,
             self.install_output,
+            self.plugin_command,
+            self.plugin_result,
+            self.plugin_output,
             self.index_command,
             self.index_result,
             self.index_output,
@@ -189,6 +204,7 @@ fn operations_visual_contract(evidence: &OpsEvidence) -> String {
             evidence.doctor.title,
             evidence.release.title,
             evidence.install.title,
+            evidence.plugin.title,
             evidence.index.title,
             evidence.runtime.title
         ]
@@ -199,6 +215,7 @@ fn operations_visual_contract(evidence: &OpsEvidence) -> String {
             &evidence.doctor.command,
             &evidence.release.command,
             &evidence.install.command,
+            &evidence.plugin.command,
             &evidence.index.command,
             &evidence.runtime.command,
         ]),
@@ -207,6 +224,7 @@ fn operations_visual_contract(evidence: &OpsEvidence) -> String {
             &evidence.doctor.result,
             &evidence.release.result,
             &evidence.install.result,
+            &evidence.plugin.result,
             &evidence.index.result,
             &evidence.runtime.result,
         ]),
@@ -215,6 +233,7 @@ fn operations_visual_contract(evidence: &OpsEvidence) -> String {
             &evidence.doctor.output,
             &evidence.release.output,
             &evidence.install.output,
+            &evidence.plugin.output,
             &evidence.index.output,
             &evidence.runtime.output,
         ]),
@@ -229,7 +248,7 @@ fn operations_a11y_contract(_evidence: &OpsEvidence) -> String {
     )
 }
 
-fn visible_count(values: [&String; 6]) -> usize {
+fn visible_count(values: [&String; 7]) -> usize {
     values
         .iter()
         .filter(|value| !value.trim().is_empty())
@@ -294,6 +313,12 @@ mod tests {
         assert!(summary.contains("operations_doctor_command=std doctor"));
         assert!(summary.contains("operations_release_command=std release verify"));
         assert!(summary.contains("operations_install_command=std install verify"));
+        assert!(summary.contains("operations_plugin_command=std-studio smoke"));
+        assert!(summary.contains("operations_plugin_result=plugin runtime evidence"));
+        assert!(summary.contains("operations_plugin_output=js_runtime=PASS"));
+        assert!(summary.contains("ts_runtime=PASS"));
+        assert!(summary.contains("deno_core=PASS"));
+        assert!(summary.contains("permission_boundary=PASS"));
         assert!(summary.contains("operations_index_command=std index coverage"));
         assert!(summary.contains("operations_index_result=index coverage evidence"));
         assert!(summary.contains("operations_index_output=cli_coverage=PASS"));
@@ -307,10 +332,10 @@ mod tests {
     }
 
     fn assert_gate_contract(summary: &str) {
-        assert!(summary.contains("gates=QA|Doctor|Release|Install|Index|Runtime"));
+        assert!(summary.contains("gates=QA|Doctor|Release|Install|Plugin|Index|Runtime"));
         assert!(summary.contains("manual_gates=Runtime"));
-        assert!(summary.contains("commands=6"));
-        assert!(summary.contains("results=6"));
-        assert!(summary.contains("outputs=6"));
+        assert!(summary.contains("commands=7"));
+        assert!(summary.contains("results=7"));
+        assert!(summary.contains("outputs=7"));
     }
 }

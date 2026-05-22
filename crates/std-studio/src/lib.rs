@@ -9,6 +9,7 @@ mod apps;
 pub mod operations_completion;
 mod ops_evidence;
 mod ops_index_evidence;
+mod ops_plugin_evidence;
 mod ops_runbook;
 mod ops_steps;
 mod planned_workflow;

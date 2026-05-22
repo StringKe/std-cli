@@ -50,6 +50,16 @@ pub(crate) fn index_runbook() -> String {
     .join(" && ")
 }
 
+pub(crate) fn plugin_runbook() -> String {
+    [
+        "std plugin check fixtures/plugins/studio-smoke/plugin.json",
+        "std plugin run studio-js-smoke",
+        "std plugin run studio-ts-smoke",
+        "std-studio smoke",
+    ]
+    .join(" && ")
+}
+
 pub(crate) fn runtime_runbook() -> String {
     [
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",

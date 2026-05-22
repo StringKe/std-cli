@@ -384,6 +384,15 @@ impl StudioSmokeReport {
                 .contains("install-run:std install run")
             && self
                 .operations_summary
+                .contains("operations_plugin_command=std-studio smoke")
+            && self
+                .operations_summary
+                .contains("operations_plugin_output=js_runtime=PASS")
+            && self.operations_summary.contains("ts_runtime=PASS")
+            && self.operations_summary.contains("deno_core=PASS")
+            && self.operations_summary.contains("permission_boundary=PASS")
+            && self
+                .operations_summary
                 .contains("operations_index_command=std index coverage")
             && self
                 .operations_summary
@@ -404,11 +413,11 @@ impl StudioSmokeReport {
                 .contains("ui_areas=manual_until_runtime_proof")
             && self
                 .operations_summary
-                .contains("gates=QA|Doctor|Release|Install|Index|Runtime")
+                .contains("gates=QA|Doctor|Release|Install|Plugin|Index|Runtime")
             && self.operations_summary.contains("manual_gates=Runtime")
-            && self.operations_summary.contains("commands=6")
-            && self.operations_summary.contains("results=6")
-            && self.operations_summary.contains("outputs=6")
+            && self.operations_summary.contains("commands=7")
+            && self.operations_summary.contains("results=7")
+            && self.operations_summary.contains("outputs=7")
             && self.operations_summary.contains("operations_a11y_contract=")
             && self
                 .operations_summary

@@ -26,6 +26,7 @@ fn assert_gate_statuses(evidence: &OpsEvidence) {
         evidence.install.status,
         OpsStatus::Pass | OpsStatus::Missing
     ));
+    assert_eq!(evidence.plugin.status, OpsStatus::Manual);
     assert_eq!(evidence.index.status, OpsStatus::Manual);
     assert_eq!(evidence.runtime.status, OpsStatus::Manual);
 }
@@ -44,6 +45,14 @@ fn assert_line_contract(lines: &[String]) {
 }
 
 fn assert_gate_outputs(evidence: &OpsEvidence) {
+    assert_quality_and_doctor_outputs(evidence);
+    assert_release_and_install_outputs(evidence);
+    assert_index_output(evidence);
+    assert_plugin_output(evidence);
+    assert_runtime_output(evidence);
+}
+
+fn assert_quality_and_doctor_outputs(evidence: &OpsEvidence) {
     assert!(!evidence.qa.result.is_empty());
     assert!(evidence.qa.output.contains("rustfmt=PASS"));
     assert_runbook_contains(
@@ -67,6 +76,9 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
         &evidence.doctor.runbook,
         &["std doctor", "std release plan", "std install plan"],
     );
+}
+
+fn assert_release_and_install_outputs(evidence: &OpsEvidence) {
     assert!(!evidence.release.result.is_empty());
     assert!(evidence.release.result.contains("release verify"));
     assert!(evidence.release.output.contains("manifest="));
@@ -91,6 +103,10 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
             ".std-cli/install-check",
         ],
     );
+    assert_mise_install_gate_matches_operations_prefix(&evidence.install.command);
+}
+
+fn assert_index_output(evidence: &OpsEvidence) {
     assert_eq!(evidence.index.command, "std index coverage");
     assert!(evidence.index.result.contains("index coverage evidence"));
     assert!(evidence.index.output.contains("overview=PASS"));
@@ -106,7 +122,27 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
             "std index ask coverage",
         ],
     );
-    assert_mise_install_gate_matches_operations_prefix(&evidence.install.command);
+}
+
+fn assert_plugin_output(evidence: &OpsEvidence) {
+    assert_eq!(evidence.plugin.command, "std-studio smoke");
+    assert!(evidence.plugin.result.contains("plugin runtime evidence"));
+    assert!(evidence.plugin.output.contains("js_runtime=PASS"));
+    assert!(evidence.plugin.output.contains("ts_runtime=PASS"));
+    assert!(evidence.plugin.output.contains("deno_core=PASS"));
+    assert!(evidence.plugin.output.contains("permission_boundary=PASS"));
+    assert_runbook_contains(
+        &evidence.plugin.runbook,
+        &[
+            "std plugin check",
+            "std plugin run studio-js-smoke",
+            "std plugin run studio-ts-smoke",
+            "std-studio smoke",
+        ],
+    );
+}
+
+fn assert_runtime_output(evidence: &OpsEvidence) {
     assert_eq!(
         evidence.runtime.command,
         "mise run ui-background-acceptance"

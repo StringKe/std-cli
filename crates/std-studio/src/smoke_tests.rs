@@ -310,6 +310,11 @@ fn assert_operations_gate_summary(summary: &str) {
     assert!(summary.contains("operations_release_output=manifest="));
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
+    assert!(summary.contains("operations_plugin_command=std-studio smoke"));
+    assert!(summary.contains("operations_plugin_output=js_runtime=PASS"));
+    assert!(summary.contains("ts_runtime=PASS"));
+    assert!(summary.contains("deno_core=PASS"));
+    assert!(summary.contains("permission_boundary=PASS"));
     assert!(summary.contains("operations_index_command=std index coverage"));
     assert!(summary.contains("operations_index_output=cli_coverage=PASS"));
     assert!(summary.contains("overview=PASS"));
@@ -334,11 +339,11 @@ fn assert_operations_contract_summary(summary: &str) {
     assert!(summary.contains(
         "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence"
     ));
-    assert!(summary.contains("gates=QA|Doctor|Release|Install|Index|Runtime"));
+    assert!(summary.contains("gates=QA|Doctor|Release|Install|Plugin|Index|Runtime"));
     assert!(summary.contains("manual_gates=Runtime"));
-    assert!(summary.contains("commands=6"));
-    assert!(summary.contains("results=6"));
-    assert!(summary.contains("outputs=6"));
+    assert!(summary.contains("commands=7"));
+    assert!(summary.contains("results=7"));
+    assert!(summary.contains("outputs=7"));
     assert!(summary.contains("completion=area|status|evidence|manual_gates"));
     assert!(summary.contains("ui_areas=manual_until_runtime_proof"));
     assert!(summary.contains("operations_a11y_contract="));

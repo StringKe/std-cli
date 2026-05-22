@@ -3,7 +3,7 @@ use std::{
     time::UNIX_EPOCH,
 };
 
-use crate::{ops_index_evidence, ops_runbook};
+use crate::{ops_index_evidence, ops_plugin_evidence, ops_runbook};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpsEvidence {
@@ -11,6 +11,7 @@ pub struct OpsEvidence {
     pub doctor: OpsGate,
     pub release: OpsGate,
     pub install: OpsGate,
+    pub plugin: OpsGate,
     pub index: OpsGate,
     pub runtime: OpsGate,
 }
@@ -107,6 +108,23 @@ impl OpsEvidence {
                 artifact: install_prefix.display().to_string(),
                 output: install_output(&install_prefix),
             },
+            plugin: OpsGate {
+                title: "Plugin",
+                command: "std-studio smoke".to_string(),
+                steps: Vec::new(),
+                runbook: ops_runbook::plugin_runbook(),
+                status: OpsStatus::Manual,
+                evidence: "Plugin Manager JS/TS runtime, manifest, permission boundary smoke"
+                    .to_string(),
+                result: ops_plugin_evidence::plugin_result(&root),
+                detail: "manual until installed binary JS and TS plugin runtime proof exists"
+                    .to_string(),
+                artifact: root
+                    .join("crates/std-studio/src/smoke/plugin_smoke.rs")
+                    .display()
+                    .to_string(),
+                output: ops_plugin_evidence::plugin_output(&root),
+            },
             index: OpsGate {
                 title: "Index",
                 command: "std index coverage".to_string(),
@@ -146,6 +164,7 @@ impl OpsEvidence {
             &self.doctor,
             &self.release,
             &self.install,
+            &self.plugin,
             &self.index,
             &self.runtime,
         ]
