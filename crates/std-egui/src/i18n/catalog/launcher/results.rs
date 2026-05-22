@@ -68,6 +68,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.a11y.result") => {
             Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
         }
+        (Locale::ZhCn, "launcher.a11y.result.shortcut") => Some("，快捷键 {shortcut}"),
+        (Locale::EnUs, "launcher.a11y.result.shortcut") => Some(", shortcut {shortcut}"),
+        (Locale::ZhCn, "launcher.a11y.result.primary") => Some("，按 {shortcut} {action}"),
+        (Locale::EnUs, "launcher.a11y.result.primary") => Some(", press {shortcut} to {action}"),
+        (Locale::ZhCn, "launcher.a11y.result.match_source") => Some("，匹配来源 {source}"),
+        (Locale::EnUs, "launcher.a11y.result.match_source") => Some(", matched by {source}"),
         (Locale::ZhCn, "launcher.a11y.result_group") => Some("{group}，结果分组"),
         (Locale::EnUs, "launcher.a11y.result_group") => Some("{group}, result group"),
         (Locale::ZhCn, "launcher.a11y.action_panel") => Some("{selected} 的操作，列表 {count} 项"),
@@ -148,6 +154,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.a11y.result" => {
             Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
         }
+        "launcher.a11y.result.shortcut" => Some(", shortcut {shortcut}"),
+        "launcher.a11y.result.primary" => Some(", press {shortcut} to {action}"),
+        "launcher.a11y.result.match_source" => Some(", matched by {source}"),
         "launcher.a11y.result_group" => Some("{group}, result group"),
         "launcher.a11y.action_panel" => Some("Actions for {selected}, list of {count}"),
         _ => result_list_fallback(key),

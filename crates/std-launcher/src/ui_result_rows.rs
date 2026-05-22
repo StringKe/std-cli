@@ -5,6 +5,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
+    i18n,
     tokens::{Color, Radius, Space, Text},
     LauncherViewModel,
 };
@@ -65,15 +66,32 @@ pub(crate) fn result_accessibility_label(
         view.results.len(),
     );
     if let Some(shortcut) = model.direct_shortcut.as_deref() {
-        label.push_str(&format!(", shortcut {shortcut}"));
+        label.push_str(&result_label_part(
+            "launcher.a11y.result.shortcut",
+            &[("{shortcut}", shortcut)],
+        ));
     }
     if let Some(primary) = model.primary_shortcut.as_deref() {
-        label.push_str(&format!(", press {primary} to {}", model.action_label));
+        label.push_str(&result_label_part(
+            "launcher.a11y.result.primary",
+            &[("{shortcut}", primary), ("{action}", &model.action_label)],
+        ));
     }
     if let Some(badge) = model.match_badge.as_deref() {
-        label.push_str(&format!(", matched by {badge}"));
+        label.push_str(&result_label_part(
+            "launcher.a11y.result.match_source",
+            &[("{source}", badge)],
+        ));
     }
     label
+}
+
+fn result_label_part(key: &str, replacements: &[(&str, &str)]) -> String {
+    let mut text = i18n::t(key).to_string();
+    for (from, to) in replacements {
+        text = text.replace(from, to);
+    }
+    text
 }
 
 fn paint_result_row(
@@ -343,10 +361,10 @@ mod tests {
         let idle_label = result_accessibility_label(&idle, &view);
         let enter = std_egui::input::enter().label();
 
-        assert!(selected_label.contains("shortcut"));
-        assert!(selected_label.contains(&format!("press {enter} to {}", selected.action_label)));
-        assert!(idle_label.contains("shortcut"));
-        assert!(!idle_label.contains(&format!("press {enter} to {}", idle.action_label)));
+        assert!(selected_label.contains("快捷键"));
+        assert!(selected_label.contains(&format!("按 {enter} {}", selected.action_label)));
+        assert!(idle_label.contains("快捷键"));
+        assert!(!idle_label.contains(&format!("按 {enter} {}", idle.action_label)));
     }
 
     #[test]
@@ -367,11 +385,30 @@ mod tests {
         let row = LauncherResultRowModel::from_result(&result, None, "weixin", 0, 1, true);
 
         assert_eq!(row.match_badge.as_deref(), Some("别名"));
-        assert!(result_accessibility_label(&row, &view).contains("matched by"));
+        assert!(result_accessibility_label(&row, &view).contains("匹配来源"));
 
         result.matched_fields = vec!["name".to_string()];
         let title_row = LauncherResultRowModel::from_result(&result, None, "wechat", 0, 1, true);
         assert!(title_row.match_badge.is_none());
+    }
+
+    #[test]
+    fn result_accessibility_label_uses_localized_parts() {
+        assert_eq!(
+            result_label_part("launcher.a11y.result.shortcut", &[("{shortcut}", "1")]),
+            "，快捷键 1"
+        );
+        assert_eq!(
+            result_label_part(
+                "launcher.a11y.result.primary",
+                &[("{shortcut}", "Enter"), ("{action}", "运行")]
+            ),
+            "，按 Enter 运行"
+        );
+        assert_eq!(
+            result_label_part("launcher.a11y.result.match_source", &[("{source}", "别名")]),
+            "，匹配来源 别名"
+        );
     }
 
     #[test]

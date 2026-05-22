@@ -3,11 +3,14 @@ use std_egui::{
     i18n::{self, Locale},
 };
 
-const REQUIRED_KEYS: [&str; 18] = [
+const REQUIRED_KEYS: [&str; 21] = [
     "launcher.empty.no_matches.title",
     "launcher.empty.no_matches.detail",
     "launcher.a11y.search.query",
     "launcher.a11y.result",
+    "launcher.a11y.result.shortcut",
+    "launcher.a11y.result.primary",
+    "launcher.a11y.result.match_source",
     "launcher.a11y.action_panel",
     "launcher.feedback.failed",
     "launcher.feedback.deferred",
