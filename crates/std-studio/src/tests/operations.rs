@@ -26,6 +26,7 @@ fn assert_gate_statuses(evidence: &OpsEvidence) {
         evidence.install.status,
         OpsStatus::Pass | OpsStatus::Missing
     ));
+    assert_eq!(evidence.index.status, OpsStatus::Manual);
     assert_eq!(evidence.runtime.status, OpsStatus::Manual);
 }
 
@@ -88,6 +89,21 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
             "std install run",
             "std install verify",
             ".std-cli/install-check",
+        ],
+    );
+    assert_eq!(evidence.index.command, "std index coverage");
+    assert!(evidence.index.result.contains("index coverage evidence"));
+    assert!(evidence.index.output.contains("overview=PASS"));
+    assert!(evidence.index.output.contains("components=PASS"));
+    assert!(evidence.index.output.contains("relations=PASS"));
+    assert!(evidence.index.output.contains("qa=PASS"));
+    assert_runbook_contains(
+        &evidence.index.runbook,
+        &[
+            "std index rebuild .",
+            "std index coverage",
+            "std index inspect std-cli",
+            "std index ask coverage",
         ],
     );
     assert_mise_install_gate_matches_operations_prefix(&evidence.install.command);

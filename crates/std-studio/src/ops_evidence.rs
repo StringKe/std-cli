@@ -3,7 +3,7 @@ use std::{
     time::UNIX_EPOCH,
 };
 
-use crate::ops_runbook;
+use crate::{ops_index_evidence, ops_runbook};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OpsEvidence {
@@ -11,6 +11,7 @@ pub struct OpsEvidence {
     pub doctor: OpsGate,
     pub release: OpsGate,
     pub install: OpsGate,
+    pub index: OpsGate,
     pub runtime: OpsGate,
 }
 
@@ -106,6 +107,23 @@ impl OpsEvidence {
                 artifact: install_prefix.display().to_string(),
                 output: install_output(&install_prefix),
             },
+            index: OpsGate {
+                title: "Index",
+                command: "std index coverage".to_string(),
+                steps: Vec::new(),
+                runbook: ops_runbook::index_runbook(),
+                status: OpsStatus::Manual,
+                evidence: "CLI coverage, Studio analysis smoke, Analysis Workbench UI contract"
+                    .to_string(),
+                result: ops_index_evidence::index_result(&root),
+                detail: "manual until installed binary four-layer coverage proof exists"
+                    .to_string(),
+                artifact: root
+                    .join("crates/std-index/src/coverage.rs")
+                    .display()
+                    .to_string(),
+                output: ops_index_evidence::index_output(&root),
+            },
             runtime: OpsGate {
                 title: "Runtime",
                 command: "mise run ui-background-acceptance".to_string(),
@@ -128,6 +146,7 @@ impl OpsEvidence {
             &self.doctor,
             &self.release,
             &self.install,
+            &self.index,
             &self.runtime,
         ]
         .into_iter()

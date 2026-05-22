@@ -40,6 +40,16 @@ pub(crate) fn install_runbook(prefix: &std::path::Path, dist_dir: &std::path::Pa
     )
 }
 
+pub(crate) fn index_runbook() -> String {
+    [
+        "std index rebuild .",
+        "std index coverage",
+        "std index inspect std-cli",
+        "std index ask coverage",
+    ]
+    .join(" && ")
+}
+
 pub(crate) fn runtime_runbook() -> String {
     [
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",

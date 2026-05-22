@@ -382,6 +382,16 @@ impl StudioSmokeReport {
             && self
                 .operations_summary
                 .contains("install-run:std install run")
+            && self
+                .operations_summary
+                .contains("operations_index_command=std index coverage")
+            && self
+                .operations_summary
+                .contains("operations_index_output=cli_coverage=PASS")
+            && self.operations_summary.contains("overview=PASS")
+            && self.operations_summary.contains("components=PASS")
+            && self.operations_summary.contains("relations=PASS")
+            && self.operations_summary.contains("qa=PASS")
             && self.operations_summary.contains("operations_visual_contract=")
             && self.operations_summary.contains(
                 "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence",
@@ -394,12 +404,11 @@ impl StudioSmokeReport {
                 .contains("ui_areas=manual_until_runtime_proof")
             && self
                 .operations_summary
-                .contains("gates=QA|Doctor|Release|Install")
-            && self.operations_summary.contains("Runtime")
+                .contains("gates=QA|Doctor|Release|Install|Index|Runtime")
             && self.operations_summary.contains("manual_gates=Runtime")
-            && self.operations_summary.contains("commands=5")
-            && self.operations_summary.contains("results=5")
-            && self.operations_summary.contains("outputs=5")
+            && self.operations_summary.contains("commands=6")
+            && self.operations_summary.contains("results=6")
+            && self.operations_summary.contains("outputs=6")
             && self.operations_summary.contains("operations_a11y_contract=")
             && self
                 .operations_summary

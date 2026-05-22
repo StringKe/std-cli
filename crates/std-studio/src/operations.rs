@@ -24,6 +24,8 @@ impl StudioEguiApp {
             ui.add_space(OPERATIONS_PANEL_GAP);
             self.render_operations_column(ui, &[&evidence.release, &evidence.install]);
             ui.add_space(OPERATIONS_PANEL_GAP);
+            self.render_evidence_gate(ui, &evidence.index);
+            ui.add_space(OPERATIONS_PANEL_GAP);
             self.render_evidence_gate(ui, &evidence.runtime);
             ui.add_space(OPERATIONS_PANEL_GAP);
             self.render_completion_gate(ui, evidence);
@@ -47,6 +49,8 @@ impl StudioEguiApp {
                 egui::vec2(column_width, 0.0),
                 egui::Layout::top_down(egui::Align::Min),
                 |ui| {
+                    self.render_evidence_gate(ui, &evidence.index);
+                    ui.add_space(OPERATIONS_PANEL_GAP);
                     self.render_evidence_gate(ui, &evidence.runtime);
                     ui.add_space(OPERATIONS_PANEL_GAP);
                     workspace_policy_evidence::render_with_state(ui, &self.app);

@@ -8,6 +8,7 @@ mod analysis_workbench;
 mod apps;
 pub mod operations_completion;
 mod ops_evidence;
+mod ops_index_evidence;
 mod ops_runbook;
 mod ops_steps;
 mod planned_workflow;
