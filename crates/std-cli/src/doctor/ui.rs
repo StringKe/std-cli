@@ -232,13 +232,17 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(
         &launcher_metrics_tests,
-        "panel_rect_matches_native_host_window_height",
+        "panel_rect_floats_inside_transparent_native_host",
+    )?;
+    check_text(
+        &launcher_metrics_tests,
+        "native_host_keeps_transparent_gutter_around_panel_surface",
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=transparent_host,panel_surface=opaque,host_gap=0x0,no_host_background",
-        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gap=0x0,no_host_background",
-        "capture_surface=opaque_panel_surface,transparent_host,host_gap=0x0,no_host_background,no_shadow_clip",
+        "native_host_window=transparent_host,panel_surface=opaque,host_gutter=16px,no_host_background",
+        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=16px,no_host_background",
+        "capture_surface=opaque_panel_surface,transparent_host,host_gutter=16px,no_host_background,no_shadow_clip",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -250,10 +254,15 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     ] {
         check_text(&capture_script, required)?;
     }
-    for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
+    for forbidden in [
+        "const CARRIER_MARGIN",
+        "carrier_margin_for_scale",
+        "host_gap=0x0",
+        "panel_only=true",
+    ] {
         if launcher_metrics.contains(forbidden) {
             return Err(CliError::Config(
-                "launcher must not depend on a visible viewport host gap".to_string(),
+                "launcher must use explicit transparent host gutter tokens".to_string(),
             ));
         }
     }

@@ -108,7 +108,7 @@ impl LauncherWindowSmokeReport {
             && self
                 .host_positioning_contract
                 .contains("host_background=none")
-            && self.host_positioning_contract.contains("host_gap=0x0")
+            && self.host_positioning_contract.contains("host_gutter=16px")
             && self.elapsed_ms <= self.budget_ms
     }
 

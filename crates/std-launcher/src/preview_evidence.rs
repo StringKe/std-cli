@@ -173,7 +173,7 @@ struct PreviewSurfaceSummary {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct PreviewStateSurface {
-    panel_only: bool,
+    panel_floats: bool,
     search_bar: &'static str,
     body: &'static str,
     action_bar: &'static str,
@@ -236,9 +236,9 @@ impl PreviewNativeHostSurface {
     fn passes(&self) -> bool {
         self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.geometry.contains("host_gap=0x0")
-            && self.geometry.contains("panel_origin=0x0")
-            && self.geometry.contains("panel_only=true")
+            && self.geometry.contains("host_gap=32x32")
+            && self.geometry.contains("panel_origin=16x16")
+            && self.geometry.contains("panel_floats=true")
     }
 
     fn summary(&self) -> String {
@@ -252,7 +252,7 @@ impl PreviewNativeHostSurface {
 impl PreviewStateSurface {
     fn for_state(state: &LauncherState, state_name: &str) -> Self {
         Self {
-            panel_only: ui_metrics::panel_is_only_visible_surface(state),
+            panel_floats: ui_metrics::panel_is_only_visible_surface(state),
             search_bar: search_surface_for_state(state_name),
             body: body_surface_for_state(state_name),
             action_bar: action_bar_surface_for_state(state_name),
@@ -262,7 +262,7 @@ impl PreviewStateSurface {
     }
 
     fn passes(&self, state_name: &str) -> bool {
-        self.panel_only
+        self.panel_floats
             && self.search_bar != "carrier"
             && self.body != "carrier"
             && self.action_bar != "carrier"
@@ -273,8 +273,8 @@ impl PreviewStateSurface {
 
     fn summary(&self) -> String {
         format!(
-            "state_surface=panel_only:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
-            self.panel_only,
+            "state_surface=panel_floats:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
+            self.panel_floats,
             self.search_bar,
             self.body,
             self.action_bar,

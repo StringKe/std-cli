@@ -169,7 +169,7 @@ mod tests {
         assert!(description.contains("resizable: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
         assert!(background_harness_window_contract().starts_with(
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gap=0x0,size=720x"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gutter=16px,size=752x"
         ));
         std::env::remove_var(HARNESS_TOKEN_ENV);
     }

@@ -17,7 +17,11 @@ pub(crate) fn scale() -> UiScale {
 }
 
 pub(crate) fn window_margin() -> f32 {
-    0.0
+    host_gutter()
+}
+
+pub(crate) fn host_gutter() -> f32 {
+    crate::ui_metrics_layout::host_gutter_for_scale(scale())
 }
 
 pub(crate) fn panel_inner_padding() -> f32 {
@@ -291,14 +295,15 @@ struct PanelSurfaceGeometry {
 impl PanelSurfaceGeometry {
     fn passes(&self) -> bool {
         self.frame_clear
-            && self.panel.min == egui::Pos2::ZERO
-            && (self.panel.width() - self.window.x).abs() <= 0.5
-            && (self.panel.height() - self.window.y).abs() <= 0.5
+            && self.panel.min.x > 0.0
+            && self.panel.min.y > 0.0
+            && self.panel.max.x < self.window.x
+            && self.panel.max.y < self.window.y
     }
 
     fn summary(&self) -> String {
         format!(
-            "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear={};panel_only={}",
+            "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear={};panel_floats={}",
             self.window.x.round() as u32,
             self.window.y.round() as u32,
             self.panel.min.x.round() as i32,

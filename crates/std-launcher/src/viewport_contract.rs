@@ -33,12 +33,12 @@ pub fn launcher_viewport_frame_contract() -> String {
 }
 
 pub fn launcher_host_positioning_contract() -> &'static str {
-    "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
+    "host_positioning=show:resize-to-transparent-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=16px"
 }
 
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
-        "native_host=transparent,transparent=true,decorations=false,resizable=false,visible={visible},panel_surface=opaque,host_gap=0x0,size={}x{}",
+        "native_host=transparent,transparent=true,decorations=false,resizable=false,visible={visible},panel_surface=opaque,host_gutter=16px,size={}x{}",
         size.x as u32, size.y as u32
     )
 }
@@ -50,12 +50,12 @@ mod tests {
     #[test]
     fn launcher_viewport_contracts_name_transparency_and_size() {
         assert_eq!(
-            transparent_hidden_panel_contract(egui::vec2(720.0, 64.0)),
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gap=0x0,size=720x64"
+            transparent_hidden_panel_contract(egui::vec2(752.0, 96.0)),
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gutter=16px,size=752x96"
         );
         assert_eq!(
-            transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gap=0x0,size=720x320"
+            transparent_visible_panel_contract(egui::vec2(752.0, 352.0)),
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gutter=16px,size=752x352"
         );
     }
 
@@ -86,7 +86,7 @@ mod tests {
         );
         assert_eq!(
             launcher_host_positioning_contract(),
-            "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
+            "host_positioning=show:resize-to-transparent-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=16px"
         );
     }
 }

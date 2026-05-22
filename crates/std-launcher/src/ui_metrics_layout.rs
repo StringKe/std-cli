@@ -5,30 +5,36 @@ use std_launcher::{LauncherState, PANEL_WIDTH};
 const SEARCH_BAR_MIN_CONTENT_HEIGHT: f32 = 40.0;
 const VOICE_ROW_HEIGHT: f32 = 44.0;
 
+pub(crate) fn host_gutter_for_scale(scale: UiScale) -> f32 {
+    scale.f32(Space::MD as f32)
+}
+
 pub(crate) struct LauncherLayoutBudget {
     pub(crate) content_height: f32,
     pub(crate) total_height: f32,
 }
 
 pub(crate) fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
+    let gutter = host_gutter_for_scale(scale) * 2.0;
     egui::vec2(
-        scale.f32(PANEL_WIDTH),
-        collapsed_panel_height_for_scale(scale),
+        scale.f32(PANEL_WIDTH) + gutter,
+        collapsed_panel_height_for_scale(scale) + gutter,
     )
 }
 
 pub(crate) fn window_inner_size_for_scale(state: &LauncherState, scale: UiScale) -> egui::Vec2 {
-    let mut viewport_height = crate::ui_metrics::DEFAULT_VIEWPORT_HEIGHT;
+    let gutter = host_gutter_for_scale(scale) * 2.0;
+    let mut panel_height = crate::ui_metrics::DEFAULT_VIEWPORT_HEIGHT;
     for _ in 0..4 {
-        let body_height = body_height_for_scale(state, viewport_height, scale);
+        let body_height = body_height_for_scale(state, panel_height, scale);
         let next_height = panel_height_for_scale(state, body_height, scale);
-        if (next_height - viewport_height).abs() < 0.5 {
-            viewport_height = next_height;
+        if (next_height - panel_height).abs() < 0.5 {
+            panel_height = next_height;
             break;
         }
-        viewport_height = next_height;
+        panel_height = next_height;
     }
-    egui::vec2(scale.f32(PANEL_WIDTH), viewport_height)
+    egui::vec2(scale.f32(PANEL_WIDTH) + gutter, panel_height + gutter)
 }
 
 pub(crate) fn panel_height_for_scale(

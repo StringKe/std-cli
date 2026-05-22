@@ -116,11 +116,11 @@ mod tests {
         assert!(description.contains("visible: Some(false)"));
         assert_eq!(
             contract,
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gap=0x0,size=720x64"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gutter=16px,size=752x96"
         );
         assert_eq!(
             ui::launcher_initial_window_inner_size(),
-            egui::vec2(720.0, 64.0)
+            egui::vec2(752.0, 96.0)
         );
     }
 
@@ -134,7 +134,7 @@ mod tests {
         state.update_query("index");
         let expanded_size = ui::launcher_window_inner_size(&state);
 
-        assert_eq!(collapsed_size.y, 64.0);
+        assert_eq!(collapsed_size.y, 96.0);
         assert_eq!(expanded_size.x, collapsed_size.x);
         assert!(expanded_size.y > collapsed_size.y);
     }

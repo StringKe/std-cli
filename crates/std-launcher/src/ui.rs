@@ -51,8 +51,8 @@ pub(crate) fn render_launcher_overlay(
     voice_transcript: &mut String,
 ) -> bool {
     let available = ui.max_rect();
-    let body_height = ui_metrics::body_height(state, available.height());
     let rect = ui_metrics::panel_rect(available, state);
+    let body_height = ui_metrics::body_height(state, rect.height());
 
     let mut hide_requested = false;
     ui.scope_builder(egui::UiBuilder::new().max_rect(rect), |ui| {
