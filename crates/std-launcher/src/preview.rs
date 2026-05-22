@@ -1,9 +1,9 @@
 use crate::app::LauncherApp;
 use crate::preview_evidence::{preview_size_summary, preview_state_summary};
+use crate::ui;
 use crate::ui_completion_boundary::{
     launcher_ui_completion_boundary_passes, launcher_ui_completion_boundary_summary,
 };
-use crate::ui;
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
