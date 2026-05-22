@@ -1,13 +1,8 @@
+use crate::StudioWorkspacePolicy;
 use std::{fs, path::Path};
 
-const ALLOWED_VIEWPORT_FILES: &[&str] = &[
-    "src/viewport.rs",
-    "src/host_chrome.rs",
-    "src/host_chrome_drag.rs",
-    "src/preview.rs",
-    "src/preview_tests.rs",
-];
-const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = &["src/native_app.rs", "src/preview.rs"];
+const ALLOWED_VIEWPORT_FILES: &[&str] = StudioWorkspacePolicy::VIEWPORT_TOUCHPOINTS;
+const ALLOWED_NATIVE_ENTRY_FILES: &[&str] = StudioWorkspacePolicy::NATIVE_ENTRYPOINTS;
 
 #[test]
 fn studio_main_path_forbids_detached_or_native_child_windows() {
@@ -69,6 +64,7 @@ fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
         if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
             || viewport_file_allowed(&path)
             || is_guard_file(&path)
+            || is_policy_evidence_file(&path)
         {
             continue;
         }
@@ -136,16 +132,10 @@ fn scan_allowed_viewport_files(src_dir: &Path, violations: &mut Vec<String>) {
 }
 
 fn forbidden_studio_window_patterns() -> Vec<String> {
-    vec![
-        ["egui::", "Window", "::new"].join(""),
-        ["Window", "::new"].join(""),
-        ["Viewport", "Builder::default"].join(""),
-        ["Viewport", "Command::"].join(""),
-        ["send_", "viewport_cmd"].join(""),
-        ".show_viewport".to_string(),
-        ["Viewport", "Id"].join(""),
-        ["Viewport", "Class"].join(""),
-    ]
+    StudioWorkspacePolicy::FORBIDDEN_WORKBENCH_APIS
+        .iter()
+        .map(|pattern| pattern.to_string())
+        .collect()
 }
 
 fn allowed_viewport_pattern(file: &str, pattern: &str) -> bool {
@@ -204,6 +194,20 @@ fn is_guard_file(path: &Path) -> bool {
     path.file_name()
         .and_then(|name| name.to_str())
         .map(|name| name == "workspace_policy_guard.rs")
+        .unwrap_or(false)
+}
+
+fn is_policy_evidence_file(path: &Path) -> bool {
+    studio_src_relative_path(path)
+        .as_deref()
+        .map(|path| {
+            matches!(
+                path,
+                "src/workspace_policy.rs"
+                    | "src/smoke/workspace_policy_smoke.rs"
+                    | "src/studio_smoke_cli.rs"
+            )
+        })
         .unwrap_or(false)
 }
 

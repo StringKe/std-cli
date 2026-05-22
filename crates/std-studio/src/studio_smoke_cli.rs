@@ -71,6 +71,10 @@ mod tests {
 
         assert!(report.pass());
         assert!(report.output().contains("internal-egui-workspace-panes"));
+        assert!(report
+            .output()
+            .contains("source_guard=workspace_policy_guard.rs"));
+        assert!(report.output().contains("forbidden_apis=egui::Window::new"));
     }
 
     #[test]

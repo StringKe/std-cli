@@ -18,6 +18,25 @@ pub enum PaneSystemPolicy {
 
 impl StudioWorkspacePolicy {
     pub const DOC_REFERENCE: &'static str = "docs/22 + docs/24";
+    pub const VIEWPORT_TOUCHPOINTS: &'static [&'static str] = &[
+        "src/viewport.rs",
+        "src/host_chrome.rs",
+        "src/host_chrome_drag.rs",
+        "src/preview.rs",
+        "src/preview_tests.rs",
+    ];
+    pub const NATIVE_ENTRYPOINTS: &'static [&'static str] =
+        &["src/native_app.rs", "src/preview.rs"];
+    pub const FORBIDDEN_WORKBENCH_APIS: &'static [&'static str] = &[
+        "egui::Window::new",
+        "Window::new",
+        "ViewportBuilder::default",
+        "ViewportCommand::",
+        "send_viewport_cmd",
+        ".show_viewport",
+        "ViewportId",
+        "ViewportClass",
+    ];
 
     pub const fn studio_v1() -> Self {
         Self {
@@ -47,12 +66,15 @@ impl StudioWorkspacePolicy {
 
     pub fn strict_report(self) -> String {
         format!(
-            "host={};pane_system={};native_child_windows={};detached_panels={};docs={}",
+            "host={};pane_system={};native_child_windows={};detached_panels={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={}",
             self.host_window.label(),
             self.pane_system.label(),
             self.native_child_windows,
             self.detached_panels,
-            Self::DOC_REFERENCE
+            Self::DOC_REFERENCE,
+            Self::VIEWPORT_TOUCHPOINTS.join("|"),
+            Self::NATIVE_ENTRYPOINTS.join("|"),
+            Self::FORBIDDEN_WORKBENCH_APIS.join("|")
         )
     }
 }
