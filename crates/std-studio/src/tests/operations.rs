@@ -156,6 +156,8 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
     assert!(summary.contains("UI Docs 18-24:MANUAL"));
     assert!(summary.contains("Launcher:MANUAL"));
     assert!(summary.contains("Studio:MANUAL"));
+    assert!(summary.contains("Plugin:MANUAL"));
+    assert!(summary.contains("Index:MANUAL"));
     assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
     assert!(manual.contains("UI Docs 18-24"));
     assert!(manual.contains("Launcher"));
@@ -163,6 +165,10 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
         .contains("launcher-background-harness-enter"));
     assert!(operations_completion::completion_manual_gates(&rows)
         .contains("studio-keyboard-a11y-focus"));
+    assert!(
+        operations_completion::completion_manual_gates(&rows).contains("plugin-ts-binary-runtime")
+    );
+    assert!(operations_completion::completion_manual_gates(&rows).contains("index-qa-coverage"));
     assert_eq!(rows.len(), 11);
 }
 

@@ -47,15 +47,24 @@ pub fn completion_audit_rows(evidence: &OpsEvidence) -> Vec<CompletionAuditRow> 
             OpsStatus::Manual,
             "terminal automation remains manual completion evidence",
         ),
-        row(
+        manual_row(
             "Plugin",
-            evidence.doctor.status,
-            "plugin command and manifest gates are source verified",
+            "requires binary JS and TS plugin runtime proof",
+            &[
+                "plugin-js-binary-runtime",
+                "plugin-ts-binary-runtime",
+                "plugin-permission-boundary-runtime",
+            ],
         ),
-        row(
+        manual_row(
             "Index",
-            evidence.doctor.status,
-            "index coverage is part of doctor and release smoke",
+            "requires four-layer index coverage proof",
+            &[
+                "index-overview-coverage",
+                "index-components-coverage",
+                "index-symbols-relations-coverage",
+                "index-qa-coverage",
+            ],
         ),
         row(
             "Workflow",
@@ -129,10 +138,14 @@ mod tests {
 
         assert!(summary.contains("Launcher:MANUAL"));
         assert!(summary.contains("Studio:MANUAL"));
+        assert!(summary.contains("Plugin:MANUAL"));
+        assert!(summary.contains("Index:MANUAL"));
         assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
         assert!(completion_manual_areas(&rows).contains("UI Docs 18-24"));
         assert!(completion_manual_gates(&rows).contains("launcher-background-harness-enter"));
         assert!(completion_manual_gates(&rows).contains("studio-keyboard-a11y-focus"));
+        assert!(completion_manual_gates(&rows).contains("plugin-js-binary-runtime"));
+        assert!(completion_manual_gates(&rows).contains("index-qa-coverage"));
         assert_eq!(rows.len(), 11);
     }
 }
