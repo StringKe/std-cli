@@ -233,6 +233,12 @@ fn assert_analysis_workbench_summary(summary: &str) {
 
 fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_smoke=PASS"));
+    assert_operations_gate_summary(summary);
+    assert_operations_completion_summary(summary);
+    assert_operations_contract_summary(summary);
+}
+
+fn assert_operations_gate_summary(summary: &str) {
     assert!(summary.contains("operations_qa_command=mise run quality"));
     assert!(summary.contains("operations_qa_output=rustfmt=PASS"));
     assert!(summary.contains("operations_doctor_command=std doctor"));
@@ -242,6 +248,16 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
     assert!(summary.contains("operations_runtime_command=mise run ui-background-acceptance"));
+}
+
+fn assert_operations_completion_summary(summary: &str) {
+    assert!(summary.contains("operations_completion_summary=UI Docs 18-24:MANUAL|Launcher:MANUAL"));
+    assert!(summary.contains("Studio:MANUAL"));
+    assert!(summary.contains("Quality:PASS"));
+    assert!(summary.contains("operations_completion_manual=UI Docs 18-24"));
+}
+
+fn assert_operations_contract_summary(summary: &str) {
     assert!(summary.contains("operations_visual_contract="));
     assert!(summary.contains(
         "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"
@@ -252,6 +268,8 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("commands=5"));
     assert!(summary.contains("results=5"));
     assert!(summary.contains("outputs=5"));
+    assert!(summary.contains("completion=area|status|evidence"));
+    assert!(summary.contains("ui_areas=manual_until_runtime_proof"));
     assert!(summary.contains("operations_a11y_contract="));
     assert!(summary.contains("a11y=row-label-includes-label-value-detail"));
 }

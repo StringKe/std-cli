@@ -1,7 +1,7 @@
 use crate::{operations_rows, ui, workspace_policy_evidence, StudioEguiApp};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
-use std_studio::{OpsEvidence, OpsGate, OpsStatus};
+use std_studio::{operations_completion, OpsEvidence, OpsGate, OpsStatus};
 
 const QUALITY_TOOLS: [&str; 5] = ["rustfmt", "clippy", "dylint", "cargo-deny", "cargo-machete"];
 const OPERATIONS_PANEL_GAP: f32 = Space::SM as f32;
@@ -26,7 +26,7 @@ impl StudioEguiApp {
             ui.add_space(OPERATIONS_PANEL_GAP);
             self.render_evidence_gate(ui, &evidence.runtime);
             ui.add_space(OPERATIONS_PANEL_GAP);
-            self.render_completion_gate(ui);
+            self.render_completion_gate(ui, evidence);
             return;
         }
         let column_width = (available_width - OPERATIONS_PANEL_GAP * 2.0) / 3.0;
@@ -51,7 +51,7 @@ impl StudioEguiApp {
                     ui.add_space(OPERATIONS_PANEL_GAP);
                     workspace_policy_evidence::render(ui, self.app.workspace_policy);
                     ui.add_space(OPERATIONS_PANEL_GAP);
-                    self.render_completion_gate(ui);
+                    self.render_completion_gate(ui, evidence);
                 },
             );
         });
@@ -133,20 +133,15 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_completion_gate(&self, ui: &mut egui::Ui) {
+    fn render_completion_gate(&self, ui: &mut egui::Ui, evidence: &OpsEvidence) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
                 i18n::t("studio.operations.completion.title"),
                 i18n::t("studio.operations.completion.detail"),
             );
-            operations_rows::completion_chip_bar(
-                ui,
-                &[
-                    "Core", "Launcher", "Studio", "Terminal", "Plugin", "Index", "Workflow",
-                    "Release", "Install", "Quality",
-                ],
-            );
+            let rows = operations_completion::completion_audit_rows(evidence);
+            operations_rows::completion_audit_rows(ui, &rows);
             ui.add_space(Space::XS as f32);
             ui.label(i18n::t("studio.operations.completion.note"));
         });

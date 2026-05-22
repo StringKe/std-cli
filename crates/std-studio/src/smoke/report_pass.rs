@@ -316,6 +316,14 @@ impl StudioSmokeReport {
                 .contains("operations_runtime_command=mise run ui-background-acceptance")
             && self
                 .operations_summary
+                .contains("operations_completion_summary=UI Docs 18-24:MANUAL|Launcher:MANUAL")
+            && self.operations_summary.contains("Studio:MANUAL")
+            && self.operations_summary.contains("Quality:PASS")
+            && self
+                .operations_summary
+                .contains("operations_completion_manual=UI Docs 18-24")
+            && self
+                .operations_summary
                 .contains("release-package:std release package")
             && self
                 .operations_summary
@@ -324,6 +332,12 @@ impl StudioSmokeReport {
             && self.operations_summary.contains(
                 "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence",
             )
+            && self
+                .operations_summary
+                .contains("completion=area|status|evidence")
+            && self
+                .operations_summary
+                .contains("ui_areas=manual_until_runtime_proof")
             && self
                 .operations_summary
                 .contains("gates=QA|Doctor|Release|Install")

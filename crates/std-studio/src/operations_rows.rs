@@ -1,12 +1,10 @@
-use crate::{
-    ui,
-    views::{
-        row_metrics,
-        row_paint::{self, RowSurface, ThreeTextRows},
-    },
+use crate::views::{
+    row_metrics,
+    row_paint::{self, RowSurface, ThreeTextRows},
 };
 use eframe::egui;
 use std_egui::tokens::Space;
+use std_studio::operations_completion::CompletionAuditRow;
 
 pub(crate) fn gate_row(ui: &mut egui::Ui, label: &str, value: &str, detail: &str) {
     let (rect, response) = ui.allocate_exact_size(
@@ -35,12 +33,10 @@ pub(crate) fn gate_row(ui: &mut egui::Ui, label: &str, value: &str, detail: &str
     ui.add_space(Space::TWO_XS as f32);
 }
 
-pub(crate) fn completion_chip_bar(ui: &mut egui::Ui, labels: &[&str]) {
-    ui.horizontal_wrapped(|ui| {
-        for label in labels {
-            ui::chip(ui, label, ui::warn_bg(ui.ctx()));
-        }
-    });
+pub(crate) fn completion_audit_rows(ui: &mut egui::Ui, rows: &[CompletionAuditRow]) {
+    for row in rows {
+        gate_row(ui, row.area, row.status.label(), &row.evidence);
+    }
 }
 
 pub(crate) fn gate_row_a11y_label(label: &str, value: &str, detail: &str) -> String {
@@ -49,6 +45,10 @@ pub(crate) fn gate_row_a11y_label(label: &str, value: &str, detail: &str) -> Str
 
 pub(crate) fn operations_gate_visual_contract() -> &'static str {
     "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"
+}
+
+pub(crate) fn completion_audit_visual_contract() -> &'static str {
+    "completion=area|status|evidence"
 }
 
 pub(crate) fn operations_gate_a11y_contract() -> &'static str {

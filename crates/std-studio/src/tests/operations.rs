@@ -9,6 +9,7 @@ fn studio_operations_evidence_reports_current_quality_release_and_install_state(
     assert_line_contract(&lines);
     assert_gate_outputs(&evidence);
     assert_gate_steps(&evidence);
+    assert_completion_audit_rows(&evidence);
 }
 
 fn assert_gate_statuses(evidence: &OpsEvidence) {
@@ -132,6 +133,20 @@ fn assert_gate_steps(evidence: &OpsEvidence) {
         .steps
         .iter()
         .any(|step| step.name == "install-verify" && step.command.contains("std install verify")));
+}
+
+fn assert_completion_audit_rows(evidence: &OpsEvidence) {
+    let rows = operations_completion::completion_audit_rows(evidence);
+    let summary = operations_completion::completion_audit_summary(&rows);
+    let manual = operations_completion::completion_manual_areas(&rows);
+
+    assert!(summary.contains("UI Docs 18-24:MANUAL"));
+    assert!(summary.contains("Launcher:MANUAL"));
+    assert!(summary.contains("Studio:MANUAL"));
+    assert!(summary.contains("Quality:PASS"));
+    assert!(manual.contains("UI Docs 18-24"));
+    assert!(manual.contains("Launcher"));
+    assert_eq!(rows.len(), 11);
 }
 
 fn assert_runbook_contains(runbook: &str, commands: &[&str]) {
