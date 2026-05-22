@@ -98,6 +98,60 @@ fn indexer_extracts_mac_app_bundle_metadata() {
 }
 
 #[test]
+fn indexer_searches_mac_app_bundle_by_multilingual_aliases() {
+    let temp = tempfile::tempdir().unwrap();
+    let app = temp.path().join("Weixin.app");
+    fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
+    fs::write(
+        app.join("Contents").join("Info.plist"),
+        r#"<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>com.tencent.xinWeChat</string>
+  <key>CFBundleExecutable</key>
+  <string>WeChat</string>
+</dict>
+</plist>
+"#,
+    )
+    .unwrap();
+    fs::write(
+        app.join("Contents")
+            .join("Resources")
+            .join("zh_CN.lproj")
+            .join("InfoPlist.strings"),
+        "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
+    )
+    .unwrap();
+
+    let doc = Indexer::analyze(&app).unwrap();
+    let index_dir = temp.path().join("index");
+    Indexer::write_document(&index_dir, &doc).unwrap();
+    let chinese = Indexer::search_documents(&index_dir, "微信", 10).unwrap();
+    let english = Indexer::search_documents(&index_dir, "wechat", 10).unwrap();
+    let pinyin = Indexer::search_documents(&index_dir, "weixin", 10).unwrap();
+
+    assert_eq!(doc.overview.name, "WeChat");
+    assert!(doc.overview.summary.contains("wechat"));
+    assert!(doc.overview.summary.contains("weixin"));
+    assert!(doc.overview.summary.contains("微信"));
+    assert!(doc
+        .relations
+        .iter()
+        .any(|relation| relation.relation == "app_bundle_alias" && relation.symbol == "wechat"));
+    assert_eq!(chinese[0].document.overview.id, doc.overview.id);
+    assert_eq!(english[0].document.overview.id, doc.overview.id);
+    assert_eq!(pinyin[0].document.overview.id, doc.overview.id);
+    assert!(
+        english[0]
+            .matched_fields
+            .contains(&"overview.summary".to_string())
+            || english[0].matched_fields.contains(&"relations".to_string())
+    );
+}
+
+#[test]
 fn indexer_recurses_components_and_extracts_symbols() {
     let temp = tempfile::tempdir().unwrap();
     fs::create_dir_all(temp.path().join("src")).unwrap();

@@ -1,5 +1,6 @@
 //! Local personal index foundation for std-cli.
 
+mod app_bundle;
 mod coverage;
 mod files;
 mod history;
@@ -9,6 +10,7 @@ mod types;
 mod util;
 mod workflow;
 
+use app_bundle::AppBundleMetadata;
 use chrono::Utc;
 use coverage::coverage_report;
 use files::{
@@ -41,13 +43,22 @@ impl Indexer {
 
         let metadata = fs::metadata(path)?;
         let kind = classify_entity(path, &metadata);
-        let name = entity_name(path);
+        let app_bundle = (kind == EntityKind::AppBundle)
+            .then(|| AppBundleMetadata::read(path))
+            .flatten();
+        let name = app_bundle
+            .as_ref()
+            .map(|metadata| metadata.display_name.clone())
+            .unwrap_or_else(|| entity_name(path));
         let components = if metadata.is_dir() {
             digest_directory(path, &FileIndexOptions::default())?
         } else {
             vec![digest_file(path)?]
         };
-        let relations = infer_relations(&components);
+        let mut relations = infer_relations(&components);
+        if let Some(metadata) = &app_bundle {
+            relations.extend(metadata.alias_relations(path));
+        }
         let history = historical_context(path)?;
 
         Ok(IndexDocument {
@@ -56,10 +67,7 @@ impl Indexer {
                 kind,
                 path: path.to_path_buf(),
                 name: name.clone(),
-                summary: format!(
-                    "Local entity `{name}` with {} indexed components",
-                    components.len()
-                ),
+                summary: entity_summary(&name, components.len(), app_bundle.as_ref()),
                 created_at: Utc::now(),
             },
             relations,
@@ -188,6 +196,19 @@ impl Indexer {
             .flat_map(|index| index.entries)
             .collect::<Vec<_>>();
         Ok(search_file_entries(entries, query, limit))
+    }
+}
+
+fn entity_summary(
+    name: &str,
+    component_count: usize,
+    app_bundle: Option<&AppBundleMetadata>,
+) -> String {
+    let base = format!("Local entity `{name}` with {component_count} indexed components");
+    if let Some(metadata) = app_bundle {
+        format!("{base}. {}", metadata.summary())
+    } else {
+        base
     }
 }
 
