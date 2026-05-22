@@ -303,6 +303,9 @@ fn assert_operations_completion_summary(summary: &str) {
     assert!(summary.contains("Studio:MANUAL"));
     assert!(summary.contains("Quality:PASS"));
     assert!(summary.contains("operations_completion_manual=UI Docs 18-24"));
+    assert!(summary.contains("operations_completion_manual_gates="));
+    assert!(summary.contains("launcher-background-harness-enter"));
+    assert!(summary.contains("studio-keyboard-a11y-focus"));
 }
 
 fn assert_operations_contract_summary(summary: &str) {
@@ -316,7 +319,7 @@ fn assert_operations_contract_summary(summary: &str) {
     assert!(summary.contains("commands=5"));
     assert!(summary.contains("results=5"));
     assert!(summary.contains("outputs=5"));
-    assert!(summary.contains("completion=area|status|evidence"));
+    assert!(summary.contains("completion=area|status|evidence|manual_gates"));
     assert!(summary.contains("ui_areas=manual_until_runtime_proof"));
     assert!(summary.contains("operations_a11y_contract="));
     assert!(summary.contains("a11y=row-label-includes-label-value-detail"));

@@ -19,6 +19,7 @@ pub(crate) struct OperationsSmoke {
     pub(crate) runtime_output: String,
     pub(crate) completion_summary: String,
     pub(crate) completion_manual_areas: String,
+    pub(crate) completion_manual_gates: String,
     pub(crate) step_summary: String,
     pub(crate) visual_contract: String,
     pub(crate) a11y_contract: String,
@@ -60,6 +61,9 @@ impl OperationsSmoke {
             completion_manual_areas: operations_completion::completion_manual_areas(
                 &completion_rows,
             ),
+            completion_manual_gates: operations_completion::completion_manual_gates(
+                &completion_rows,
+            ),
             step_summary,
             visual_contract,
             a11y_contract,
@@ -88,6 +92,12 @@ impl OperationsSmoke {
             && self.completion_summary.contains("Studio:MANUAL")
             && self.completion_summary.contains("Quality:PASS")
             && self.completion_manual_areas.contains("UI Docs 18-24")
+            && self
+                .completion_manual_gates
+                .contains("launcher-background-harness-enter")
+            && self
+                .completion_manual_gates
+                .contains("studio-workspace-pane-open-focus-close-restore")
             && self.step_summary.contains("release-build:")
             && self.step_summary.contains("release-package:")
             && self.step_summary.contains("release-verify:")
@@ -126,7 +136,7 @@ impl OperationsSmoke {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_completion_manual_gates={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -145,6 +155,7 @@ impl OperationsSmoke {
             self.runtime_output,
             self.completion_summary,
             self.completion_manual_areas,
+            self.completion_manual_gates,
             self.step_summary,
             self.visual_contract,
             self.a11y_contract,
@@ -224,6 +235,15 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("operations_completion_manual=UI Docs 18-24"));
+        assert!(smoke
+            .summary()
+            .contains("operations_completion_manual_gates="));
+        assert!(smoke
+            .summary()
+            .contains("launcher-background-harness-enter"));
+        assert!(smoke
+            .summary()
+            .contains("studio-workspace-pane-open-focus-close-restore"));
         assert!(smoke.summary().contains("operations_step_summary="));
         assert!(smoke.summary().contains("operations_visual_contract="));
         assert_gate_contract(&smoke.summary());
@@ -231,7 +251,9 @@ mod tests {
         assert!(smoke.summary().contains(
             "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
         ));
-        assert!(smoke.summary().contains("completion=area|status|evidence"));
+        assert!(smoke
+            .summary()
+            .contains("completion=area|status|evidence|manual_gates"));
         assert!(smoke
             .summary()
             .contains("ui_areas=manual_until_runtime_proof"));

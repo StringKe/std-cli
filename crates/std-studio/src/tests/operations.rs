@@ -154,6 +154,10 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
     assert!(summary.contains("Quality:PASS"));
     assert!(manual.contains("UI Docs 18-24"));
     assert!(manual.contains("Launcher"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("launcher-background-harness-enter"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("studio-keyboard-a11y-focus"));
     assert_eq!(rows.len(), 11);
 }
 

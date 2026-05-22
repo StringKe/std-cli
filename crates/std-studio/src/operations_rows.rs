@@ -76,7 +76,7 @@ pub(crate) fn operations_gate_visual_contract() -> &'static str {
 }
 
 pub(crate) fn completion_audit_visual_contract() -> &'static str {
-    "completion=area|status|evidence"
+    "completion=area|status|evidence|manual_gates"
 }
 
 pub(crate) fn operations_gate_a11y_contract() -> &'static str {

@@ -363,6 +363,15 @@ impl StudioSmokeReport {
                 .contains("operations_completion_manual=UI Docs 18-24")
             && self
                 .operations_summary
+                .contains("operations_completion_manual_gates=")
+            && self
+                .operations_summary
+                .contains("launcher-background-harness-enter")
+            && self
+                .operations_summary
+                .contains("studio-keyboard-a11y-focus")
+            && self
+                .operations_summary
                 .contains("release-package:std release package")
             && self
                 .operations_summary
@@ -373,7 +382,7 @@ impl StudioSmokeReport {
             )
             && self
                 .operations_summary
-                .contains("completion=area|status|evidence")
+                .contains("completion=area|status|evidence|manual_gates")
             && self
                 .operations_summary
                 .contains("ui_areas=manual_until_runtime_proof")
