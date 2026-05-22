@@ -188,6 +188,34 @@ fn launcher_sizes_export_action_panel_geometry() {
 }
 
 #[test]
+fn launcher_sizes_export_empty_state_geometry() {
+    let scale = UiScale::new(1.5);
+    let rect =
+        egui::Rect::from_min_size(egui::Pos2::ZERO, LauncherSize::no_matches_icon_size(scale));
+    let center = LauncherSize::no_matches_icon_center(scale, rect);
+
+    assert_eq!(LauncherSize::NO_MATCHES_ICON_SIZE, 32.0);
+    assert_eq!(LauncherSize::NO_MATCHES_ICON_CENTER_OFFSET, 2.0);
+    assert_eq!(LauncherSize::NO_MATCHES_ICON_RADIUS, 9.0);
+    assert_eq!(LauncherSize::NO_MATCHES_ICON_HANDLE_INSET, 7.0);
+    assert_eq!(LauncherSize::NO_MATCHES_ICON_HANDLE_OUTSET, 13.0);
+    assert_eq!(
+        LauncherSize::no_matches_icon_size(scale),
+        egui::vec2(48.0, 48.0)
+    );
+    assert_eq!(center, egui::pos2(21.0, 21.0));
+    assert_eq!(LauncherSize::no_matches_icon_radius(scale), 13.5);
+    assert_eq!(
+        LauncherSize::no_matches_icon_handle_start(scale, center),
+        egui::pos2(31.5, 31.5)
+    );
+    assert_eq!(
+        LauncherSize::no_matches_icon_handle_end(scale, center),
+        egui::pos2(40.5, 40.5)
+    );
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {

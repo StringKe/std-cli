@@ -256,6 +256,11 @@ impl LauncherSize {
     pub const ACTION_PANEL_ROW_HEIGHT: f32 = 32.0;
     pub const ACTION_PANEL_ROW_STEP: f32 = 34.0;
     pub const ACTION_PANEL_SEARCH_HEIGHT: f32 = 28.0;
+    pub const NO_MATCHES_ICON_SIZE: f32 = 32.0;
+    pub const NO_MATCHES_ICON_CENTER_OFFSET: f32 = 2.0;
+    pub const NO_MATCHES_ICON_RADIUS: f32 = 9.0;
+    pub const NO_MATCHES_ICON_HANDLE_INSET: f32 = 7.0;
+    pub const NO_MATCHES_ICON_HANDLE_OUTSET: f32 = 13.0;
 
     pub fn panel_surface_width(scale: UiScale) -> f32 {
         scale.f32(Self::PANEL_WIDTH)
@@ -343,5 +348,35 @@ impl LauncherSize {
 
     pub fn action_panel_row_height(scale: UiScale) -> f32 {
         scale.f32(Self::ACTION_PANEL_ROW_HEIGHT)
+    }
+
+    pub fn no_matches_icon_size(scale: UiScale) -> egui::Vec2 {
+        egui::vec2(
+            scale.f32(Self::NO_MATCHES_ICON_SIZE),
+            scale.f32(Self::NO_MATCHES_ICON_SIZE),
+        )
+    }
+
+    pub fn no_matches_icon_center(scale: UiScale, rect: egui::Rect) -> egui::Pos2 {
+        let offset = scale.f32(Self::NO_MATCHES_ICON_CENTER_OFFSET);
+        rect.center() - egui::vec2(offset, offset)
+    }
+
+    pub fn no_matches_icon_radius(scale: UiScale) -> f32 {
+        scale.f32(Self::NO_MATCHES_ICON_RADIUS)
+    }
+
+    pub fn no_matches_icon_handle_start(scale: UiScale, center: egui::Pos2) -> egui::Pos2 {
+        egui::pos2(
+            center.x + scale.f32(Self::NO_MATCHES_ICON_HANDLE_INSET),
+            center.y + scale.f32(Self::NO_MATCHES_ICON_HANDLE_INSET),
+        )
+    }
+
+    pub fn no_matches_icon_handle_end(scale: UiScale, center: egui::Pos2) -> egui::Pos2 {
+        egui::pos2(
+            center.x + scale.f32(Self::NO_MATCHES_ICON_HANDLE_OUTSET),
+            center.y + scale.f32(Self::NO_MATCHES_ICON_HANDLE_OUTSET),
+        )
     }
 }

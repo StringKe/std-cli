@@ -1,34 +1,20 @@
 use eframe::egui;
-use std_egui::tokens::UiScale;
-
-const NO_MATCHES_ICON_SIZE: f32 = 32.0;
-const NO_MATCHES_ICON_RADIUS: f32 = 9.0;
-const NO_MATCHES_ICON_HANDLE_INSET: f32 = 7.0;
-const NO_MATCHES_ICON_HANDLE_OUTSET: f32 = 13.0;
+use std_egui::tokens::{LauncherSize, UiScale};
 
 pub(crate) fn no_matches_icon_size(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(
-        scale.f32(NO_MATCHES_ICON_SIZE),
-        scale.f32(NO_MATCHES_ICON_SIZE),
-    )
+    LauncherSize::no_matches_icon_size(scale)
 }
 
 pub(crate) fn no_matches_icon_geometry(
     scale: UiScale,
     rect: egui::Rect,
 ) -> EmptySearchIconGeometry {
-    let center = rect.center() - egui::vec2(scale.f32(2.0), scale.f32(2.0));
+    let center = LauncherSize::no_matches_icon_center(scale, rect);
     EmptySearchIconGeometry {
         center,
-        radius: scale.f32(NO_MATCHES_ICON_RADIUS),
-        handle_start: egui::pos2(
-            center.x + scale.f32(NO_MATCHES_ICON_HANDLE_INSET),
-            center.y + scale.f32(NO_MATCHES_ICON_HANDLE_INSET),
-        ),
-        handle_end: egui::pos2(
-            center.x + scale.f32(NO_MATCHES_ICON_HANDLE_OUTSET),
-            center.y + scale.f32(NO_MATCHES_ICON_HANDLE_OUTSET),
-        ),
+        radius: LauncherSize::no_matches_icon_radius(scale),
+        handle_start: LauncherSize::no_matches_icon_handle_start(scale, center),
+        handle_end: LauncherSize::no_matches_icon_handle_end(scale, center),
     }
 }
 
