@@ -55,7 +55,7 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let viewport = ui::launcher_window_inner_size(&state);
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
     let rect = ui_metrics::panel_rect(available, &state);
-    let body = ui_metrics::body_height(&state, viewport.y);
+    let body = ui_metrics::body_height(&state, rect.height());
     let padding = ui_metrics::panel_inner_padding_for_state(&state);
     let content_clearance = preview_content_clearance(&state, rect.height(), padding, body);
     let fits = rect.min.y >= 0.0
@@ -66,7 +66,7 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let panel_frame = launcher_panel_frame_contract(&state);
     let search_surface = launcher_search_surface_contract(&state);
     format!(
-        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={},search_surface={},{}",
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},budget_source=panel,panel_frame={},search_surface={},{}",
         scenario.label(),
         if fits { "PASS" } else { "FAIL" },
         viewport.x.round() as u32,

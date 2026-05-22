@@ -297,6 +297,7 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "result_token=bg/surface-1",
         "selected_token=accent/weak",
         "bottom_clearance",
+        "budget_source=panel",
         "selected_token=accent/weak",
         "required_capture_states",
         "light-results",
