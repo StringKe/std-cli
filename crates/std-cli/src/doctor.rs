@@ -8,6 +8,8 @@ mod ui_capture_manifest;
 mod ui_capture_pixels;
 mod ui_capture_png;
 mod ui_capture_scripts;
+#[cfg(test)]
+mod ui_capture_tests;
 mod ui_tokens;
 mod workspace;
 
