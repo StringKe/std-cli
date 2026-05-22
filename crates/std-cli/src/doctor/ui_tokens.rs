@@ -132,6 +132,7 @@ fn ui_shell_path(path: &Path) -> bool {
                     | "shell.rs"
                     | "shell_navigation.rs"
                     | "shell_overlays.rs"
+                    | "context_help.rs"
                     | "host_chrome.rs"
                     | "bottom_panel.rs"
                     | "workspace_tabs.rs"

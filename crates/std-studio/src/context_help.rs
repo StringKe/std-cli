@@ -6,11 +6,8 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     input,
-    tokens::{Color, Elevation, Radius, Space, Text},
+    tokens::{Color, Elevation, OverlaySize, Radius, Space, Text},
 };
-
-const HELP_OVERLAY_Y: f32 = 116.0;
-const HELP_OVERLAY_WIDTH: f32 = 560.0;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioContextHelp {
@@ -59,7 +56,10 @@ impl StudioEguiApp {
         }
         let help = StudioContextHelp::from_app(&self.app);
         egui::Area::new(egui::Id::new("studio_context_help"))
-            .anchor(egui::Align2::CENTER_TOP, egui::vec2(0.0, HELP_OVERLAY_Y))
+            .anchor(
+                egui::Align2::CENTER_TOP,
+                OverlaySize::context_help_anchor_offset(),
+            )
             .order(egui::Order::Foreground)
             .constrain(true)
             .show(ctx, |ui| {
@@ -132,7 +132,7 @@ fn render_context_help_frame(ui: &mut egui::Ui, help: &StudioContextHelp) {
         .shadow(Elevation::level_2(&ctx))
         .inner_margin(egui::Margin::same(Space::MD))
         .show(ui, |ui| {
-            ui.set_width(HELP_OVERLAY_WIDTH);
+            ui.set_width(OverlaySize::context_help_width());
             ui::section_header(ui, &help.title, &help.detail);
             render_signals(ui, &help.signals);
             ui.add_space(Space::SM as f32);
@@ -157,7 +157,7 @@ fn render_signals(ui: &mut egui::Ui, signals: &[String]) {
 fn render_shortcuts(ui: &mut egui::Ui, shortcuts: &[ContextHelpShortcut]) {
     egui::Grid::new("studio_context_help_shortcuts")
         .num_columns(2)
-        .spacing(egui::vec2(Space::MD as f32, Space::XS as f32))
+        .spacing(OverlaySize::context_help_grid_spacing())
         .striped(false)
         .show(ui, |ui| {
             for shortcut in shortcuts {
@@ -193,6 +193,8 @@ mod tests {
         assert!(implementation.contains("egui::Area"));
         assert!(!implementation.contains("egui::Window"));
         assert!(implementation.contains("Color::bg_surface_1"));
+        assert!(implementation.contains("OverlaySize::context_help_anchor_offset()"));
+        assert!(implementation.contains("OverlaySize::context_help_width()"));
         assert!(implementation.contains("context_help_a11y_label"));
     }
 

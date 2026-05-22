@@ -120,6 +120,25 @@ impl ControlSize {
     }
 }
 
+pub struct OverlaySize;
+
+impl OverlaySize {
+    pub const CONTEXT_HELP_Y: f32 = 116.0;
+    pub const CONTEXT_HELP_WIDTH: f32 = 560.0;
+
+    pub fn context_help_anchor_offset() -> egui::Vec2 {
+        egui::vec2(0.0, UiScale::from_env().f32(Self::CONTEXT_HELP_Y))
+    }
+
+    pub fn context_help_width() -> f32 {
+        UiScale::from_env().f32(Self::CONTEXT_HELP_WIDTH)
+    }
+
+    pub fn context_help_grid_spacing() -> egui::Vec2 {
+        egui::vec2(Space::md() as f32, Space::xs() as f32)
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -224,6 +243,19 @@ mod tests {
     fn control_sizes_export_switch_geometry() {
         assert_eq!(ControlSize::switch_size(), egui::vec2(48.0, 24.0));
         assert_eq!(ControlSize::switch_right_inset(), 40.0);
+    }
+
+    #[test]
+    fn overlay_sizes_export_context_help_geometry() {
+        assert_eq!(
+            OverlaySize::context_help_anchor_offset(),
+            egui::vec2(0.0, 116.0)
+        );
+        assert_eq!(OverlaySize::context_help_width(), 560.0);
+        assert_eq!(
+            OverlaySize::context_help_grid_spacing(),
+            egui::vec2(16.0, 8.0)
+        );
     }
 
     #[test]
