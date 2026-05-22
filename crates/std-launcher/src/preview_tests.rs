@@ -58,6 +58,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert_preview_affordance_contract(&report);
     assert_required_capture_state_contract(&report);
     assert_preview_capture_contract(&report);
+    assert_preview_ui_completion_boundary(&report);
 }
 
 fn assert_preview_state_matrix(report: &LauncherPreviewSmokeReport) {
@@ -174,6 +175,16 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("no-carrier-background"));
+}
+
+fn assert_preview_ui_completion_boundary(report: &LauncherPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(summary.contains("ui_completion_boundary=headless-preview-is-not-ui-completion"));
+    assert!(summary.contains("manual_ui_evidence_gates=launcher-light-dark-screenshots"));
+    assert!(summary.contains("launcher-results-no-results-defer-error-screenshots"));
+    assert!(summary.contains("launcher-keyboard-navigation-ime"));
+    assert!(summary.contains("launcher-installed-hotkey-toggle"));
 }
 
 #[test]

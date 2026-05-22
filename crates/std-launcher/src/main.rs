@@ -16,6 +16,7 @@ mod resident;
 mod ui;
 mod ui_action_bar;
 mod ui_action_panel;
+mod ui_completion_boundary;
 mod ui_empty;
 mod ui_feedback;
 mod ui_keyboard;

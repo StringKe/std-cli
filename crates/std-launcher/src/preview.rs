@@ -1,5 +1,8 @@
 use crate::app::LauncherApp;
 use crate::preview_evidence::{preview_size_summary, preview_state_summary};
+use crate::ui_completion_boundary::{
+    launcher_ui_completion_boundary_passes, launcher_ui_completion_boundary_summary,
+};
 use crate::ui;
 use eframe::egui;
 use std::env;
@@ -29,6 +32,7 @@ pub(crate) struct LauncherPreviewSmokeReport {
     pub(crate) sizes: Vec<String>,
     pub(crate) required_capture_states: Vec<String>,
     pub(crate) capture_contract: &'static str,
+    pub(crate) ui_completion_boundary: String,
 }
 
 impl LauncherPreviewSmokeReport {
@@ -44,6 +48,7 @@ impl LauncherPreviewSmokeReport {
             required_capture_states: required_capture_states(&scenarios),
             scenarios,
             capture_contract: preview_capture_contract(),
+            ui_completion_boundary: launcher_ui_completion_boundary_summary(),
         }
     }
 
@@ -55,11 +60,12 @@ impl LauncherPreviewSmokeReport {
             && self.required_capture_states == required_capture_states(&self.scenarios)
             && required_capture_states_pass(&self.required_capture_states)
             && self.capture_contract == preview_capture_contract()
+            && launcher_ui_completion_boundary_passes(&self.ui_completion_boundary)
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}",
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios
                 .iter()
@@ -70,7 +76,8 @@ impl LauncherPreviewSmokeReport {
             self.states.join(";"),
             self.sizes.join(";"),
             self.required_capture_states.join(","),
-            self.capture_contract
+            self.capture_contract,
+            self.ui_completion_boundary
         )
     }
 }

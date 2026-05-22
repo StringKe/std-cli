@@ -81,6 +81,12 @@ fn assert_navigation(report: &LauncherKeyboardReport) {
 }
 
 fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
+    assert_trigger_statuses(report);
+    assert_deferred_enter_feedback(report);
+    assert_trigger_summary(summary);
+}
+
+fn assert_trigger_statuses(report: &LauncherKeyboardReport) {
     assert_eq!(
         report.trigger_status,
         Some(ActionExecutionStatus::Completed)
@@ -97,6 +103,9 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
         report.user_enter_route,
         "Enter>handle_keyboard_input_by_user>LauncherUser"
     );
+}
+
+fn assert_deferred_enter_feedback(report: &LauncherKeyboardReport) {
     assert!(report.user_enter_deferred);
     assert_eq!(
         report.user_enter_defer_reason,
@@ -110,6 +119,9 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
     assert!(report.user_enter_keeps_launcher_open);
     assert_eq!(report.user_enter_window_commands, "none");
     assert!(report.enter_window.pass());
+}
+
+fn assert_trigger_summary(summary: &str) {
     assert!(summary.contains("direct_trigger_status=Completed"));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
     assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>LauncherUser"));
