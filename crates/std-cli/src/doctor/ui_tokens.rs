@@ -182,7 +182,7 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
         return true;
     }
     if file_name == "shell_icons.rs" {
-        return true;
+        return shell_icon_micro_geometry_exception(term);
     }
     matches!(
         (parent, file_name, term),
@@ -195,6 +195,10 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
             | (_, "ui_metrics_results.rs", "egui::vec2(")
             | (_, "ui_metrics_action_panel.rs", "egui::vec2(")
     )
+}
+
+fn shell_icon_micro_geometry_exception(term: &str) -> bool {
+    matches!(term, ".size(" | "CornerRadius::same(" | "egui::vec2(")
 }
 
 fn path_has_component(path: &Path, component: &str) -> bool {
@@ -283,6 +287,16 @@ mod tests {
         let path = PathBuf::from("crates/std-launcher/src/ui_parts.rs");
 
         assert!(!ui_token_exception(&path, "Color32::"));
+    }
+
+    #[test]
+    fn shell_icons_only_allow_micro_geometry_not_color_bypass() {
+        let path = PathBuf::from("crates/std-studio/src/shell_icons.rs");
+
+        assert!(ui_token_exception(&path, "egui::vec2("));
+        assert!(ui_token_exception(&path, "CornerRadius::same("));
+        assert!(!ui_token_exception(&path, "Color32::"));
+        assert!(!ui_token_exception(&path, "Color32::from_rgb("));
     }
 
     #[test]
