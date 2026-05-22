@@ -64,6 +64,11 @@ const MANUAL_UI_EVIDENCE: [&str; 6] = [
     "background_ui_rule=isolated-harness-only",
 ];
 
+const UI_CAPTURE_EVIDENCE_RULES: [&str; 2] = [
+    "ui_capture_pixels=samples+unique_colors+black_pixels+white_pixels",
+    "ui_capture_rejects=single-color+all-black+all-white-carrier",
+];
+
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
     fs::create_dir_all(quality_dir)?;
     let root = project_root();
@@ -144,6 +149,9 @@ fn quality_report() -> String {
     for evidence in MANUAL_UI_EVIDENCE {
         lines.push(format!("manual_ui_evidence={evidence}"));
     }
+    for rule in UI_CAPTURE_EVIDENCE_RULES {
+        lines.push(format!("manual_ui_evidence_rule={rule}"));
+    }
     lines.join("\n")
 }
 
@@ -191,6 +199,8 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
         "manual_ui_evidence=background_ui_rule=isolated-harness-only",
+        "manual_ui_evidence_rule=ui_capture_pixels=samples+unique_colors+black_pixels+white_pixels",
+        "manual_ui_evidence_rule=ui_capture_rejects=single-color+all-black+all-white-carrier",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(
