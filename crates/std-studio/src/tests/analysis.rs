@@ -139,7 +139,8 @@ fn analysis_query_panel_contract_surfaces_evidence_and_search_hits() {
             .join("analysis_tab_content.rs"),
     )
     .unwrap();
-    assert!(tabs.contains("Sources"));
+    assert!(tabs.contains("studio.analysis.sources"));
+    assert!(tabs.contains("studio.analysis.search_hits"));
     assert!(tabs.contains("jump_target"));
     assert!(tabs.contains("model.answer_sources"));
     assert!(tabs.contains("model.search_hits"));

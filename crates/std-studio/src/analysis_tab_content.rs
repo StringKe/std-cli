@@ -162,7 +162,7 @@ fn render_answer_sources(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) 
     if model.answer_sources.is_empty() {
         return;
     }
-    ui.label(egui::RichText::new("Sources").strong());
+    ui.label(egui::RichText::new(i18n::t("studio.analysis.sources")).strong());
     for source in &model.answer_sources {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
             ui::metric(
@@ -179,7 +179,7 @@ fn render_search_hits(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel) {
     if model.search_hits.is_empty() {
         return;
     }
-    ui.label(egui::RichText::new("Search hits").strong());
+    ui.label(egui::RichText::new(i18n::t("studio.analysis.search_hits")).strong());
     for hit in &model.search_hits {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
             ui::metric(ui, &hit.title, &hit.score, &hit.detail);
