@@ -252,4 +252,70 @@ mod tests {
             "Quick Open, text box, value empty"
         );
     }
+
+    #[test]
+    fn command_overlay_shortcuts_respect_ime_preedit_frame() {
+        let ctx = egui::Context::default();
+        let mut app = StudioEguiApp::default();
+        app.layout.open_command_palette();
+        app.layout.overlay_selected = 0;
+        let before_pane = app.app.active_pane;
+
+        let _ = ctx.run(ime_preedit_overlay_input(), |ctx| {
+            app.handle_overlay_keyboard(ctx);
+        });
+
+        assert!(app.layout.command_palette_open);
+        assert_eq!(app.layout.overlay_selected, 0);
+        assert_eq!(app.app.active_pane, before_pane);
+        assert!(app.status.is_empty());
+    }
+
+    #[test]
+    fn quick_open_shortcuts_respect_ime_preedit_frame() {
+        let ctx = egui::Context::default();
+        let mut app = StudioEguiApp::default();
+        let focused = app.app.open_plugin_manager_pane();
+        app.layout.open_quick_open();
+        app.layout.overlay_selected = 0;
+
+        let _ = ctx.run(ime_preedit_overlay_input(), |ctx| {
+            app.handle_overlay_keyboard(ctx);
+        });
+
+        assert!(app.layout.quick_open_open);
+        assert_eq!(app.layout.overlay_selected, 0);
+        assert_eq!(app.app.focused_pane, Some(focused));
+        assert!(app.status.is_empty());
+    }
+
+    fn ime_preedit_overlay_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("ming".to_string())),
+                egui::Event::Key {
+                    key: egui::Key::ArrowDown,
+                    physical_key: Some(egui::Key::ArrowDown),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::Key {
+                    key: egui::Key::Enter,
+                    physical_key: Some(egui::Key::Enter),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::Key {
+                    key: egui::Key::Escape,
+                    physical_key: Some(egui::Key::Escape),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+            ..Default::default()
+        }
+    }
 }
