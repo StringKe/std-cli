@@ -11,6 +11,9 @@ fn screenshot_capture_script_requires_ui_preview_opt_in() {
     assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
     assert!(body.contains("capture-window SKIP"));
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cg-capture-window.swift");
+    assert!(body.contains("<process-pid> <process-name>"));
+    assert!(driver.contains("kCGWindowOwnerPID"));
+    assert!(driver.contains("pid == ownerPid"));
     assert!(driver.contains("title.contains(titleFragment)"));
     assert!(!driver.contains("fallback"));
 }
@@ -25,6 +28,8 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
     assert!(body.contains("cargo run -p std-launcher -- --ui-preview"));
     assert!(body.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(body.contains("scripts/capture-window.sh"));
+    assert!(body.contains("scripts/capture-window.sh \"$pid\" std-launcher"));
+    assert!(body.contains("scripts/capture-window.sh \"$pid\" std-studio"));
     for required in launcher_required_capture_states() {
         assert!(
             body.contains(required),

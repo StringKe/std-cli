@@ -120,11 +120,11 @@ STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance
 截图采集脚本同样必须显式 opt-in，未设置 `STD_ALLOW_UI_PREVIEW=1` 时直接返回 `SKIP`，不调用 macOS `screencapture`：
 
 ```bash
-STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-launcher "std-cli Launcher" artifacts/ui/launcher-light-results.png
-STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-studio "std-cli Studio" artifacts/ui/studio-light-dashboard.png
+STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh <std-launcher-pid> std-launcher "std-cli Launcher" artifacts/ui/launcher-light-results.png
+STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh <std-studio-pid> std-studio "std-cli Studio" artifacts/ui/studio-light-dashboard.png
 ```
 
-成组截图使用 `mise run ui-capture-matrix` 或 `scripts/capture-ui-matrix.sh`。该入口同样默认 `SKIP`，并且在 `STD_TEST_MODE=1` 下拒绝运行，不能进入默认测试或质量门禁。窗口捕获必须同时匹配进程名和产品窗口标题，找不到标题时直接失败，不能 fallback 捕获同进程任意窗口：
+成组截图使用 `mise run ui-capture-matrix` 或 `scripts/capture-ui-matrix.sh`。该入口同样默认 `SKIP`，并且在 `STD_TEST_MODE=1` 下拒绝运行，不能进入默认测试或质量门禁。窗口捕获必须同时匹配预览进程 pid、进程名和产品窗口标题，找不到标题时直接失败，不能 fallback 捕获同进程任意窗口：
 
 ```bash
 STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix

@@ -34,7 +34,7 @@ capture_launcher() {
   STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview "$theme" "$scenario" 7000 &
   pid="$!"
   pids="$pids $pid"
-  STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-launcher "std-cli Launcher" "$output"
+  STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-launcher "std-cli Launcher" "$output"
   wait "$pid" || true
   test -s "$output"
   echo "$output"
@@ -47,7 +47,7 @@ capture_studio() {
   STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview "$theme" "$scenario" 7000 &
   pid="$!"
   pids="$pids $pid"
-  STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-studio "std-cli Studio" "$output"
+  STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-studio "std-cli Studio" "$output"
   wait "$pid" || true
   test -s "$output"
   echo "$output"

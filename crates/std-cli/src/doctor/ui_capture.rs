@@ -14,8 +14,17 @@ fn check_window_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "STD_ALLOW_UI_PREVIEW",
         "capture-window SKIP",
         "cg-capture-window.swift",
+        "<process-pid> <process-name>",
     ] {
         check_text(&body, required)?;
+    }
+    let driver = read_required(&root.join("scripts/cg-capture-window.swift"))?;
+    for required in [
+        "kCGWindowOwnerPID",
+        "pid == ownerPid",
+        "title.contains(titleFragment)",
+    ] {
+        check_text(&driver, required)?;
     }
     Ok(())
 }
@@ -28,6 +37,8 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "cargo run -p std-launcher -- --ui-preview",
         "cargo run -p std-studio -- --ui-preview",
         "scripts/capture-window.sh",
+        "scripts/capture-window.sh \"$pid\" std-launcher",
+        "scripts/capture-window.sh \"$pid\" std-studio",
         "capture_launcher light collapsed",
         "capture_launcher dark collapsed",
         "capture_launcher light empty",
