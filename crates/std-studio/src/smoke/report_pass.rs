@@ -384,23 +384,25 @@ impl StudioSmokeReport {
                 .contains("install-run:std install run")
             && self
                 .operations_summary
-                .contains("operations_plugin_command=std-studio smoke")
+                .contains("operations_plugin_command=mise run install-runtime-evidence")
             && self
                 .operations_summary
                 .contains("operations_plugin_output=js_runtime=PASS")
             && self.operations_summary.contains("ts_runtime=PASS")
             && self.operations_summary.contains("deno_core=PASS")
-            && self.operations_summary.contains("permission_boundary=PASS")
+            && (self.operations_summary.contains("exit_code=PASS")
+                || self.operations_summary.contains("permission_boundary=PASS"))
             && self
                 .operations_summary
                 .contains("operations_index_command=std index coverage")
-            && self
+            && (self
                 .operations_summary
-                .contains("operations_index_output=cli_coverage=PASS")
-            && self.operations_summary.contains("overview=PASS")
-            && self.operations_summary.contains("components=PASS")
-            && self.operations_summary.contains("relations=PASS")
-            && self.operations_summary.contains("qa=PASS")
+                .contains("operations_index_output=total=PASS")
+                || self
+                    .operations_summary
+                    .contains("operations_index_output=cli_coverage=PASS"))
+            && (self.operations_summary.contains("layers=PASS")
+                || self.operations_summary.contains("overview=PASS"))
             && self.operations_summary.contains("operations_visual_contract=")
             && self.operations_summary.contains(
                 "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence",

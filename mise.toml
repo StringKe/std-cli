@@ -109,3 +109,8 @@ run = "cargo run -p std-cli -- install run --prefix .std-cli/install-check --fro
 description = "Verify installed binaries and app bundles"
 env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
 run = "cargo run -p std-cli -- install verify --prefix .std-cli/install-check"
+
+[tasks.install-runtime-evidence]
+description = "Verify installed Plugin and Index runtime evidence"
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
+run = "cargo run -p std-cli -- install runtime-evidence --prefix .std-cli/install-check"

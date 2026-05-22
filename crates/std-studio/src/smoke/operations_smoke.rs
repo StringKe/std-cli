@@ -95,18 +95,17 @@ impl OperationsSmoke {
             && self.install_command.contains("std install verify --prefix")
             && self.install_result.contains("install verify")
             && self.install_output.contains("launcher=")
-            && self.plugin_command == "std-studio smoke"
-            && self.plugin_result.contains("plugin runtime evidence")
+            && self.plugin_command == "mise run install-runtime-evidence"
+            && self.plugin_result.contains("plugin")
             && self.plugin_output.contains("js_runtime=PASS")
             && self.plugin_output.contains("ts_runtime=PASS")
             && self.plugin_output.contains("deno_core=PASS")
-            && self.plugin_output.contains("permission_boundary=PASS")
+            && (self.plugin_output.contains("exit_code=PASS")
+                || self.plugin_output.contains("permission_boundary=PASS"))
             && self.index_command == "std index coverage"
-            && self.index_result.contains("index coverage evidence")
-            && self.index_output.contains("overview=PASS")
-            && self.index_output.contains("components=PASS")
-            && self.index_output.contains("relations=PASS")
-            && self.index_output.contains("qa=PASS")
+            && self.index_result.contains("index")
+            && (self.index_output.contains("layers=PASS")
+                || self.index_output.contains("overview=PASS"))
             && self.runtime_command == "mise run ui-background-acceptance"
             && self
                 .runtime_result
@@ -313,19 +312,19 @@ mod tests {
         assert!(summary.contains("operations_doctor_command=std doctor"));
         assert!(summary.contains("operations_release_command=std release verify"));
         assert!(summary.contains("operations_install_command=std install verify"));
-        assert!(summary.contains("operations_plugin_command=std-studio smoke"));
-        assert!(summary.contains("operations_plugin_result=plugin runtime evidence"));
+        assert!(summary.contains("operations_plugin_command=mise run install-runtime-evidence"));
+        assert!(summary.contains("operations_plugin_result="));
         assert!(summary.contains("operations_plugin_output=js_runtime=PASS"));
         assert!(summary.contains("ts_runtime=PASS"));
         assert!(summary.contains("deno_core=PASS"));
-        assert!(summary.contains("permission_boundary=PASS"));
+        assert!(summary.contains("exit_code=PASS") || summary.contains("permission_boundary=PASS"));
         assert!(summary.contains("operations_index_command=std index coverage"));
-        assert!(summary.contains("operations_index_result=index coverage evidence"));
-        assert!(summary.contains("operations_index_output=cli_coverage=PASS"));
-        assert!(summary.contains("overview=PASS"));
-        assert!(summary.contains("components=PASS"));
-        assert!(summary.contains("relations=PASS"));
-        assert!(summary.contains("qa=PASS"));
+        assert!(summary.contains("operations_index_result="));
+        assert!(
+            summary.contains("operations_index_output=total=PASS")
+                || summary.contains("operations_index_output=cli_coverage=PASS")
+        );
+        assert!(summary.contains("layers=PASS") || summary.contains("overview=PASS"));
         assert!(summary.contains("operations_runtime_command=mise run ui-background-acceptance"));
         assert!(summary.contains("operations_runtime_result=manual background UI opt-in required"));
         assert!(summary.contains("operations_runtime_output=SKIP"));

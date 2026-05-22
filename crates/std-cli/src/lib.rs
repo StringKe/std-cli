@@ -7,6 +7,7 @@ mod doctor;
 mod events;
 mod index;
 mod install;
+mod install_runtime_evidence;
 mod release;
 mod ui;
 mod workflow;
@@ -28,6 +29,7 @@ use doctor::doctor;
 use events::format_events;
 use index::{format_index_document, handle_files, handle_index, FilesCommand, IndexCommand};
 use install::{install_plan, install_run, install_verify};
+use install_runtime_evidence::install_runtime_evidence;
 use release::{release_package, release_plan, release_verify};
 use ui::{handle_ui, UiCommand};
 use workflow::{
@@ -188,6 +190,10 @@ pub enum InstallCommand {
         #[arg(long)]
         prefix: Option<PathBuf>,
     },
+    RuntimeEvidence {
+        #[arg(long)]
+        prefix: PathBuf,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -288,6 +294,7 @@ fn handle_install(core: &StdCore, command: InstallCommand) -> Result<String, Cli
             install_run(core, prefix.as_deref(), from.as_deref())
         }
         InstallCommand::Verify { prefix } => install_verify(core, prefix.as_deref()),
+        InstallCommand::RuntimeEvidence { prefix } => install_runtime_evidence(&prefix),
     }
 }
 

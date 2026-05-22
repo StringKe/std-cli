@@ -52,10 +52,10 @@ pub(crate) fn index_runbook() -> String {
 
 pub(crate) fn plugin_runbook() -> String {
     [
-        "std plugin check fixtures/plugins/studio-smoke/plugin.json",
-        "std plugin run studio-js-smoke",
-        "std plugin run studio-ts-smoke",
-        "std-studio smoke",
+        "mise run install-runtime-evidence",
+        ".std-cli/install-check/bin/std plugin run hello-js",
+        ".std-cli/install-check/bin/std plugin run plugin-typed-ts",
+        ".std-cli/install-check/runtime-evidence.txt",
     ]
     .join(" && ")
 }

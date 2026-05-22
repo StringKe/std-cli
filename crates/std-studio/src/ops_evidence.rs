@@ -110,15 +110,14 @@ impl OpsEvidence {
             },
             plugin: OpsGate {
                 title: "Plugin",
-                command: "std-studio smoke".to_string(),
+                command: "mise run install-runtime-evidence".to_string(),
                 steps: Vec::new(),
                 runbook: ops_runbook::plugin_runbook(),
-                status: OpsStatus::Manual,
-                evidence: "Plugin Manager JS/TS runtime, manifest, permission boundary smoke"
+                status: ops_plugin_evidence::plugin_status(&root),
+                evidence: ".std-cli/install-check/runtime-evidence.txt plus Plugin Manager smoke"
                     .to_string(),
                 result: ops_plugin_evidence::plugin_result(&root),
-                detail: "manual until installed binary JS and TS plugin runtime proof exists"
-                    .to_string(),
+                detail: "installed binary JS and TS plugin runtime proof".to_string(),
                 artifact: root
                     .join("crates/std-studio/src/smoke/plugin_smoke.rs")
                     .display()
@@ -130,12 +129,11 @@ impl OpsEvidence {
                 command: "std index coverage".to_string(),
                 steps: Vec::new(),
                 runbook: ops_runbook::index_runbook(),
-                status: OpsStatus::Manual,
-                evidence: "CLI coverage, Studio analysis smoke, Analysis Workbench UI contract"
+                status: ops_index_evidence::index_status(&root),
+                evidence: ".std-cli/install-check/runtime-evidence.txt plus Analysis Workbench"
                     .to_string(),
                 result: ops_index_evidence::index_result(&root),
-                detail: "manual until installed binary four-layer coverage proof exists"
-                    .to_string(),
+                detail: "installed binary four-layer index coverage proof".to_string(),
                 artifact: root
                     .join("crates/std-index/src/coverage.rs")
                     .display()

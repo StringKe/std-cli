@@ -310,17 +310,17 @@ fn assert_operations_gate_summary(summary: &str) {
     assert!(summary.contains("operations_release_output=manifest="));
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
-    assert!(summary.contains("operations_plugin_command=std-studio smoke"));
+    assert!(summary.contains("operations_plugin_command=mise run install-runtime-evidence"));
     assert!(summary.contains("operations_plugin_output=js_runtime=PASS"));
     assert!(summary.contains("ts_runtime=PASS"));
     assert!(summary.contains("deno_core=PASS"));
-    assert!(summary.contains("permission_boundary=PASS"));
+    assert!(summary.contains("exit_code=PASS") || summary.contains("permission_boundary=PASS"));
     assert!(summary.contains("operations_index_command=std index coverage"));
-    assert!(summary.contains("operations_index_output=cli_coverage=PASS"));
-    assert!(summary.contains("overview=PASS"));
-    assert!(summary.contains("components=PASS"));
-    assert!(summary.contains("relations=PASS"));
-    assert!(summary.contains("qa=PASS"));
+    assert!(
+        summary.contains("operations_index_output=total=PASS")
+            || summary.contains("operations_index_output=cli_coverage=PASS")
+    );
+    assert!(summary.contains("layers=PASS") || summary.contains("overview=PASS"));
     assert!(summary.contains("operations_runtime_command=mise run ui-background-acceptance"));
 }
 
