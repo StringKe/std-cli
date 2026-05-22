@@ -54,7 +54,9 @@ fn render_search_bar_contents(
                 .frame(false)
                 .interactive(!executing),
         );
-        response.request_focus();
+        if search_input_owns_egui_focus(state) {
+            response.request_focus();
+        }
         let a11y = AccessibilityContext::from_env();
         response.widget_info(|| {
             egui::WidgetInfo::labeled(
@@ -72,7 +74,7 @@ fn render_search_bar_contents(
                 a11y.focus_ring_width(),
             );
         }
-        if !executing && response.changed() {
+        if !executing && search_input_owns_egui_focus(state) && response.changed() {
             state.update_query(query_text);
         }
         if ime_composing {
@@ -92,6 +94,10 @@ fn search_input_width(available_width: f32, ime_composing: bool) -> f32 {
     } else {
         ui_metrics::search_input_width(available_width)
     }
+}
+
+fn search_input_owns_egui_focus(state: &LauncherState) -> bool {
+    !state.action_panel.open && state.focus_section != LauncherFocusSection::Feedback
 }
 
 fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context) {
@@ -307,6 +313,40 @@ mod tests {
 
         assert_ne!(state.focus_section, LauncherFocusSection::Search);
         assert!(!state.keyboard_focus_visible(LauncherFocusSection::Search));
+    }
+
+    #[test]
+    fn search_input_releases_egui_focus_to_action_panel_and_feedback() {
+        let mut state = LauncherState::new();
+        assert!(search_input_owns_egui_focus(&state));
+
+        state.update_query("index");
+        state.open_action_panel();
+
+        assert!(!search_input_owns_egui_focus(&state));
+
+        state.close_action_panel();
+        state.focus_section = LauncherFocusSection::Feedback;
+
+        assert!(!search_input_owns_egui_focus(&state));
+    }
+
+    #[test]
+    fn search_input_focus_request_is_conditional() {
+        let source = include_str!("ui_search.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let request_branch = production_source
+            .split("if search_input_owns_egui_focus(state)")
+            .nth(1)
+            .and_then(|body| {
+                body.split("let a11y = AccessibilityContext::from_env();")
+                    .next()
+            })
+            .unwrap();
+
+        assert!(request_branch.contains("response.request_focus();"));
+        assert!(production_source.contains("response.changed()"));
+        assert!(production_source.contains("search_input_owns_egui_focus(state)"));
     }
 
     #[test]
