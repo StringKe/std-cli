@@ -14,8 +14,7 @@ impl LauncherKeyboardReport {
             && self.user_enter_status == Some(ActionExecutionStatus::NeedsExternalRunner)
             && self.user_enter_route == "Enter>handle_keyboard_input_by_user>LauncherUser"
             && self.user_enter_deferred
-            && self.user_enter_defer_reason
-                == "external runner action requires explicit user trigger"
+            && self.user_enter_defer_reason == "STD_TEST_MODE blocked desktop open"
             && self.user_enter_feedback_visible
             && self.user_enter_feedback_title == std_egui::i18n::t("launcher.feedback.deferred")
             && self.user_enter_keeps_launcher_open

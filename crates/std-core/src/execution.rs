@@ -85,10 +85,18 @@ fn execute_registry_entry_with_test_mode(
         {
             execute_app_launch(core, entry, now)
         }
+        ActionType::AppLaunch
+            if user_desktop_open_blocked_by_test_mode(external_mode, test_mode) =>
+        {
+            Ok(test_mode_blocks_desktop_open(entry, now))
+        }
         ActionType::AppLaunch => Ok(needs_external_runner(entry, now)),
         ActionType::Custom(kind) if kind == "file" => match entry.metadata.get("path") {
             Some(path) if user_desktop_open_allowed_for_test_mode(external_mode, test_mode) => {
                 Ok(run_open_path(core, entry, path, now))
+            }
+            Some(_) if user_desktop_open_blocked_by_test_mode(external_mode, test_mode) => {
+                Ok(test_mode_blocks_desktop_open(entry, now))
             }
             Some(_) => Ok(needs_external_runner(entry, now)),
             None => Ok(needs_external_runner(entry, now)),
@@ -129,6 +137,16 @@ pub(crate) fn user_desktop_open_allowed_for_test_mode(
         external_mode,
         ExternalExecutionMode::DesktopAutomation | ExternalExecutionMode::LauncherUser
     ) && !test_mode
+}
+
+fn user_desktop_open_blocked_by_test_mode(
+    external_mode: ExternalExecutionMode,
+    test_mode: bool,
+) -> bool {
+    matches!(
+        external_mode,
+        ExternalExecutionMode::DesktopAutomation | ExternalExecutionMode::LauncherUser
+    ) && test_mode
 }
 
 #[cfg(test)]
@@ -270,6 +288,24 @@ fn needs_external_runner(
         output: Some(serde_json::json!({
             "deferred": true,
             "reason": "external runner action requires explicit user trigger",
+        })),
+        created_at,
+    }
+}
+
+fn test_mode_blocks_desktop_open(
+    entry: &RegistryEntry,
+    created_at: chrono::DateTime<chrono::Utc>,
+) -> ActionExecution {
+    let command = primary_command(entry);
+    ActionExecution {
+        action_id: entry.action.id,
+        action_name: entry.action.name.clone(),
+        status: ActionExecutionStatus::NeedsExternalRunner,
+        message: command,
+        output: Some(serde_json::json!({
+            "deferred": true,
+            "reason": "STD_TEST_MODE blocked desktop open",
         })),
         created_at,
     }

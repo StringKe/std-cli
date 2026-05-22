@@ -118,7 +118,7 @@ fn launcher_searches_wechat_by_macos_multilingual_names_without_launching() {
 }
 
 #[test]
-fn launcher_gui_enter_defers_external_runner_in_tests() {
+fn launcher_gui_enter_reports_test_mode_desktop_open_block_in_tests() {
     let temp = tempfile::tempdir().unwrap();
     let config = StdConfig {
         data_dir: temp.path().join("data"),
@@ -156,6 +156,15 @@ fn launcher_gui_enter_defers_external_runner_in_tests() {
             .get("deferred")
             .and_then(|value| value.as_bool()),
         Some(true)
+    );
+    assert_eq!(
+        gui_execution
+            .output
+            .as_ref()
+            .unwrap()
+            .get("reason")
+            .and_then(|value| value.as_str()),
+        Some("STD_TEST_MODE blocked desktop open")
     );
 }
 

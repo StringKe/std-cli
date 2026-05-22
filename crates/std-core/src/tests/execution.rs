@@ -176,6 +176,15 @@ fn launcher_user_app_open_is_blocked_by_test_mode_before_runner() {
         execution.message,
         format!("open {}", blocked_real_app_path())
     );
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .unwrap()
+            .get("reason")
+            .and_then(|value| value.as_str()),
+        Some("STD_TEST_MODE blocked desktop open")
+    );
     assert!(commands.lock().unwrap().is_empty());
 }
 
