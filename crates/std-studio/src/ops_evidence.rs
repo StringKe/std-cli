@@ -108,15 +108,16 @@ impl OpsEvidence {
             },
             runtime: OpsGate {
                 title: "Runtime",
-                command: "std-launcher --gui-hotkey-smoke Alt+Space 5000".to_string(),
+                command: "mise run ui-background-acceptance".to_string(),
                 steps: Vec::new(),
                 runbook: ops_runbook::runtime_runbook(),
                 status: OpsStatus::Manual,
-                evidence: "explicit opt-in desktop smoke".to_string(),
-                result: "manual desktop opt-in required".to_string(),
-                detail: "default tests must not open GUI or external runners".to_string(),
-                artifact: "STD_ALLOW_DESKTOP_AUTOMATION=1".to_string(),
-                output: "SKIP until explicit desktop opt-in".to_string(),
+                evidence: "isolated background UI harness plus install hotkey smoke".to_string(),
+                result: "manual background UI opt-in required".to_string(),
+                detail: "default tests must not open GUI, apps, Terminal, or external runners"
+                    .to_string(),
+                artifact: "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1".to_string(),
+                output: "SKIP until explicit background UI opt-in".to_string(),
             },
         }
     }

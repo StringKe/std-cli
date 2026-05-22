@@ -313,7 +313,7 @@ impl StudioSmokeReport {
                 .contains("operations_install_command=std install verify")
             && self
                 .operations_summary
-                .contains("operations_runtime_command=std-launcher --gui-hotkey-smoke")
+                .contains("operations_runtime_command=mise run ui-background-acceptance")
             && self
                 .operations_summary
                 .contains("release-package:std release package")

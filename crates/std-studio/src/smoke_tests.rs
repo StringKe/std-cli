@@ -241,6 +241,7 @@ fn assert_operations_summary(summary: &str) {
     assert!(summary.contains("operations_release_output=manifest="));
     assert!(summary.contains("operations_install_command=std install verify"));
     assert!(summary.contains("operations_install_output=std="));
+    assert!(summary.contains("operations_runtime_command=mise run ui-background-acceptance"));
     assert!(summary.contains("operations_visual_contract="));
     assert!(summary.contains(
         "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"

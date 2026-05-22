@@ -72,12 +72,10 @@ impl OperationsSmoke {
             && self.install_command.contains("std install verify --prefix")
             && self.install_result.contains("install verify")
             && self.install_output.contains("launcher=")
-            && self
-                .runtime_command
-                .contains("std-launcher --gui-hotkey-smoke")
+            && self.runtime_command == "mise run ui-background-acceptance"
             && self
                 .runtime_result
-                .contains("manual desktop opt-in required")
+                .contains("manual background UI opt-in required")
             && self.runtime_output.contains("SKIP")
             && self.step_summary.contains("release-build:")
             && self.step_summary.contains("release-package:")
@@ -207,10 +205,10 @@ mod tests {
             .contains("operations_install_command=std install verify"));
         assert!(smoke
             .summary()
-            .contains("operations_runtime_command=std-launcher --gui-hotkey-smoke"));
+            .contains("operations_runtime_command=mise run ui-background-acceptance"));
         assert!(smoke
             .summary()
-            .contains("operations_runtime_result=manual desktop opt-in required"));
+            .contains("operations_runtime_result=manual background UI opt-in required"));
         assert!(smoke.summary().contains("operations_runtime_output=SKIP"));
         assert!(smoke.summary().contains("operations_step_summary="));
         assert!(smoke.summary().contains("operations_visual_contract="));

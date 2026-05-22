@@ -77,18 +77,23 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
         &evidence.install.runbook,
         &["std install run", "std install verify"],
     );
-    assert!(evidence
-        .runtime
-        .command
-        .contains("std-launcher --gui-hotkey-smoke"));
+    assert_eq!(
+        evidence.runtime.command,
+        "mise run ui-background-acceptance"
+    );
     assert!(evidence
         .runtime
         .result
-        .contains("manual desktop opt-in required"));
+        .contains("manual background UI opt-in required"));
     assert!(evidence.runtime.output.contains("SKIP"));
     assert_runbook_contains(
         &evidence.runtime.runbook,
-        &["STD_ALLOW_DESKTOP_AUTOMATION=1", "STD_ALLOW_UI_PREVIEW=1"],
+        &[
+            "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1",
+            "mise run ui-background-acceptance",
+            "STD_ALLOW_DESKTOP_AUTOMATION=1",
+            "STD_ALLOW_UI_PREVIEW=1",
+        ],
     );
 }
 
