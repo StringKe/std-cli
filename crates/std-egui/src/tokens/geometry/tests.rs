@@ -172,6 +172,22 @@ fn launcher_sizes_export_search_geometry() {
 }
 
 #[test]
+fn launcher_sizes_export_action_panel_geometry() {
+    let scale = UiScale::new(1.5);
+
+    assert_eq!(LauncherSize::ACTION_PANEL_WIDTH, 320.0);
+    assert_eq!(LauncherSize::ACTION_PANEL_HEADER_HEIGHT, 44.0);
+    assert_eq!(LauncherSize::ACTION_PANEL_ROW_HEIGHT, 32.0);
+    assert_eq!(LauncherSize::ACTION_PANEL_ROW_STEP, 34.0);
+    assert_eq!(LauncherSize::ACTION_PANEL_SEARCH_HEIGHT, 28.0);
+    assert_eq!(LauncherSize::action_panel_width(scale, 700.0), 480.0);
+    assert_eq!(LauncherSize::action_panel_width(scale, 360.0), 360.0);
+    assert_eq!(LauncherSize::action_panel_height(scale, 3), 219.0);
+    assert_eq!(LauncherSize::action_panel_search_height(scale), 42.0);
+    assert_eq!(LauncherSize::action_panel_row_height(scale), 48.0);
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {

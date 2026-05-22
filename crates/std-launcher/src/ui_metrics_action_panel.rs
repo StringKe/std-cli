@@ -1,25 +1,19 @@
-use std_egui::tokens::UiScale;
-
-const ACTION_PANEL_WIDTH: f32 = 320.0;
-const ACTION_PANEL_HEADER_HEIGHT: f32 = 44.0;
-const ACTION_PANEL_ROW_HEIGHT: f32 = 32.0;
-const ACTION_PANEL_ROW_STEP: f32 = 34.0;
-const ACTION_PANEL_SEARCH_HEIGHT: f32 = 28.0;
+use std_egui::tokens::{LauncherSize, UiScale};
 
 pub(crate) fn width(scale: UiScale, anchor_width: f32) -> f32 {
-    scale.f32(ACTION_PANEL_WIDTH).min(anchor_width)
+    LauncherSize::action_panel_width(scale, anchor_width)
 }
 
 pub(crate) fn height(scale: UiScale, item_count: usize) -> f32 {
-    scale.f32(ACTION_PANEL_HEADER_HEIGHT) + scale.f32(ACTION_PANEL_ROW_STEP) * item_count as f32
+    LauncherSize::action_panel_height(scale, item_count)
 }
 
 pub(crate) fn search_height(scale: UiScale) -> f32 {
-    scale.f32(ACTION_PANEL_SEARCH_HEIGHT)
+    LauncherSize::action_panel_search_height(scale)
 }
 
 pub(crate) fn row_height(scale: UiScale) -> f32 {
-    scale.f32(ACTION_PANEL_ROW_HEIGHT)
+    LauncherSize::action_panel_row_height(scale)
 }
 
 #[cfg(test)]

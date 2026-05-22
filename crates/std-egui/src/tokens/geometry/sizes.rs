@@ -251,6 +251,11 @@ impl LauncherSize {
     pub const SEARCH_ICON_HANDLE_OUTSET: f32 = 9.0;
     pub const VOICE_INPUT_WIDTH_RESERVE: f32 = 112.0;
     pub const VOICE_INPUT_HEIGHT: f32 = 28.0;
+    pub const ACTION_PANEL_WIDTH: f32 = 320.0;
+    pub const ACTION_PANEL_HEADER_HEIGHT: f32 = 44.0;
+    pub const ACTION_PANEL_ROW_HEIGHT: f32 = 32.0;
+    pub const ACTION_PANEL_ROW_STEP: f32 = 34.0;
+    pub const ACTION_PANEL_SEARCH_HEIGHT: f32 = 28.0;
 
     pub fn panel_surface_width(scale: UiScale) -> f32 {
         scale.f32(Self::PANEL_WIDTH)
@@ -321,5 +326,22 @@ impl LauncherSize {
 
     pub fn voice_input_height(scale: UiScale) -> f32 {
         scale.f32(Self::VOICE_INPUT_HEIGHT)
+    }
+
+    pub fn action_panel_width(scale: UiScale, anchor_width: f32) -> f32 {
+        scale.f32(Self::ACTION_PANEL_WIDTH).min(anchor_width)
+    }
+
+    pub fn action_panel_height(scale: UiScale, item_count: usize) -> f32 {
+        scale.f32(Self::ACTION_PANEL_HEADER_HEIGHT)
+            + scale.f32(Self::ACTION_PANEL_ROW_STEP) * item_count as f32
+    }
+
+    pub fn action_panel_search_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ACTION_PANEL_SEARCH_HEIGHT)
+    }
+
+    pub fn action_panel_row_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ACTION_PANEL_ROW_HEIGHT)
     }
 }
