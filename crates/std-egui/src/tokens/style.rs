@@ -29,6 +29,18 @@ impl ThemeProfile {
         Self::from_applied(ctx, mode, &a11y)
     }
 
+    pub fn apply_with_reduce_motion(
+        ctx: &egui::Context,
+        mode: ThemeMode,
+        config_reduce_motion: bool,
+    ) -> Self {
+        let a11y = AccessibilityContext::from_env();
+        apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
+        let mut profile = Self::from_applied(ctx, mode, &a11y);
+        profile.reduce_motion = profile.reduce_motion || config_reduce_motion;
+        profile
+    }
+
     fn from_applied(ctx: &egui::Context, mode: ThemeMode, a11y: &AccessibilityContext) -> Self {
         Self {
             requested: mode,
@@ -362,5 +374,14 @@ mod tests {
         assert!(!ctx.style().visuals.dark_mode);
         assert_eq!(profile.focus_ring_width, 2);
         assert!(!profile.high_contrast);
+    }
+
+    #[test]
+    fn theme_profile_merges_config_reduce_motion() {
+        let ctx = egui::Context::default();
+
+        let profile = ThemeProfile::apply_with_reduce_motion(&ctx, ThemeMode::Light, true);
+
+        assert!(profile.reduce_motion);
     }
 }

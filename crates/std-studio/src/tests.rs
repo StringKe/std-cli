@@ -435,6 +435,9 @@ fn studio_saves_settings_through_shared_config_model() {
     studio
         .save_config_field_to(&config_path, "theme", "dark")
         .unwrap();
+    studio
+        .save_config_field_to(&config_path, "appearance.reduce_motion", "true")
+        .unwrap();
 
     let saved: StdConfig =
         serde_json::from_str(&std::fs::read_to_string(&config_path).unwrap()).unwrap();
@@ -446,9 +449,11 @@ fn studio_saves_settings_through_shared_config_model() {
     );
     assert!(studio.core.config.enable_ai);
     assert_eq!(studio.core.config.theme, "dark");
+    assert!(studio.core.config.reduce_motion());
     assert_eq!(saved.launcher_hotkey, "Cmd+Space");
     assert!(saved.enable_ai);
     assert_eq!(saved.theme, "dark");
+    assert!(saved.reduce_motion());
     assert!(studio.dashboard.action_count >= 3);
     assert!(studio
         .save_config_field_to(&config_path, "missing", "x")

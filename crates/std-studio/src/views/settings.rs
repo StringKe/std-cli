@@ -101,11 +101,10 @@ impl StudioEguiApp {
                 self.settings_reduce_motion,
             ) {
                 self.settings_reduce_motion = enabled;
-                self.status = if enabled {
-                    i18n::t("studio.settings.motion.reduced_on").to_string()
-                } else {
-                    i18n::t("studio.settings.motion.reduced_off").to_string()
-                };
+                self.save_setting(
+                    "appearance.reduce_motion",
+                    self.settings_reduce_motion.to_string(),
+                );
             }
         });
     }

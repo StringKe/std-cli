@@ -40,6 +40,13 @@ pub struct StdConfig {
     pub data_dir: PathBuf,
     pub enable_ai: bool,
     pub theme: String,
+    #[serde(default)]
+    pub appearance: AppearanceConfig,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AppearanceConfig {
+    pub reduce_motion: bool,
 }
 
 impl StdConfig {
@@ -75,6 +82,10 @@ impl StdConfig {
         fs::write(path, body)
     }
 
+    pub fn reduce_motion(&self) -> bool {
+        self.appearance.reduce_motion
+    }
+
     pub fn writable_config_path() -> PathBuf {
         env::var_os("STDCLI_CONFIG")
             .map(PathBuf::from)
@@ -89,6 +100,7 @@ impl Default for StdConfig {
             data_dir: default_data_dir(),
             enable_ai: false,
             theme: "system".to_string(),
+            appearance: AppearanceConfig::default(),
         }
     }
 }
@@ -115,6 +127,7 @@ mod tests {
         assert_eq!(cfg.launcher_hotkey, "Alt+Space");
         assert!(!cfg.enable_ai);
         assert_eq!(cfg.theme, "system");
+        assert!(!cfg.reduce_motion());
         assert!(cfg.workflows_dir().ends_with("workflows"));
         assert!(cfg.plugins_dir().ends_with("plugins"));
         assert!(cfg.apps_dir().ends_with("Applications"));
@@ -137,6 +150,9 @@ mod tests {
 
         config.set_field("launcher_hotkey", "Cmd+Space").unwrap();
         config.set_field("enable_ai", "true").unwrap();
+        config
+            .set_field("appearance.reduce_motion", "true")
+            .unwrap();
         config.set_field("data_dir", "/tmp/std-data").unwrap();
         config.save_to(&path).unwrap();
 
@@ -147,9 +163,11 @@ mod tests {
             Some("Cmd+Space")
         );
         assert!(loaded.enable_ai);
+        assert!(loaded.appearance.reduce_motion);
         assert_eq!(loaded.data_dir, PathBuf::from("/tmp/std-data"));
         assert!(config.set_field("missing", "value").is_err());
         assert!(config.set_field("enable_ai", "yes").is_err());
+        assert!(config.set_field("appearance.reduce_motion", "yes").is_err());
     }
 
     #[test]
@@ -161,7 +179,7 @@ mod tests {
         fs::write(
             &config_path,
             format!(
-                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\n",
+                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\nappearance:\n  reduce_motion: true\n",
                 data_dir.display()
             ),
         )
@@ -176,6 +194,7 @@ mod tests {
         assert_eq!(config.data_dir, data_dir);
         assert!(config.enable_ai);
         assert_eq!(config.theme, "dark");
+        assert!(config.reduce_motion());
     }
 
     #[test]
@@ -280,7 +299,7 @@ mod tests {
         fs::write(
             &config_path,
             format!(
-                "launcher_hotkey: Ctrl+Space\ndata_dir: {}\nenable_ai: false\ntheme: file\n",
+                "launcher_hotkey: Ctrl+Space\ndata_dir: {}\nenable_ai: false\ntheme: file\nappearance:\n  reduce_motion: false\n",
                 file_data_dir.display()
             ),
         )
@@ -290,6 +309,7 @@ mod tests {
         env::set_var("STDCLI_DATA_DIR", &env_data_dir);
         env::set_var("STDCLI_ENABLE_AI", "true");
         env::set_var("STDCLI_THEME", "env");
+        env::set_var("STD_REDUCE_MOTION", "true");
 
         let config = StdConfig::load_from(Some(temp.path()));
 
@@ -298,11 +318,13 @@ mod tests {
         env::remove_var("STDCLI_DATA_DIR");
         env::remove_var("STDCLI_ENABLE_AI");
         env::remove_var("STDCLI_THEME");
+        env::remove_var("STD_REDUCE_MOTION");
 
         assert_eq!(config.launcher_hotkey, "Cmd+K");
         assert_eq!(config.data_dir, env_data_dir);
         assert!(config.enable_ai);
         assert_eq!(config.theme, "env");
+        assert!(config.reduce_motion());
     }
 
     #[test]
@@ -314,6 +336,7 @@ mod tests {
         env::set_var("STD_DATA_DIR", &env_data_dir);
         env::set_var("STD_ENABLE_AI", "true");
         env::set_var("STD_THEME", "std-env");
+        env::set_var("STDCLI_REDUCE_MOTION", "true");
 
         let config = StdConfig::load_from(Some(temp.path()));
 
@@ -321,11 +344,13 @@ mod tests {
         env::remove_var("STD_DATA_DIR");
         env::remove_var("STD_ENABLE_AI");
         env::remove_var("STD_THEME");
+        env::remove_var("STDCLI_REDUCE_MOTION");
 
         assert_eq!(config.launcher_hotkey, "Alt+K");
         assert_eq!(config.data_dir, env_data_dir);
         assert!(config.enable_ai);
         assert_eq!(config.theme, "std-env");
+        assert!(config.reduce_motion());
     }
 
     #[test]

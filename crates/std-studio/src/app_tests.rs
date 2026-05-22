@@ -373,9 +373,8 @@ fn settings_appearance_exposes_reduce_motion_toggle() {
     assert!(settings.contains("studio.settings.motion.reduce.detail"));
     assert!(settings.contains("self.settings_reduce_motion"));
     assert!(settings.contains("settings_toggle::toggle_row"));
-    assert!(settings.contains("studio.settings.motion.reduced_on"));
-    assert!(settings.contains("studio.settings.motion.reduced_off"));
-    assert!(!settings.contains("self.save_setting(\"reduce_motion\""));
+    assert!(settings.contains("self.save_setting("));
+    assert!(settings.contains("\"appearance.reduce_motion\""));
     assert!(!settings.contains("ui.checkbox("));
     assert!(model.contains("motion_control: \"token-toggle-row\""));
 }

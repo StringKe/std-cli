@@ -8,6 +8,7 @@ impl StdConfig {
             "data_dir" => Some(self.data_dir.display().to_string()),
             "enable_ai" => Some(self.enable_ai.to_string()),
             "theme" => Some(self.theme.clone()),
+            "appearance.reduce_motion" => Some(self.appearance.reduce_motion.to_string()),
             _ => None,
         }
     }
@@ -22,6 +23,11 @@ impl StdConfig {
                     .map_err(|_| format!("enable_ai must be true or false: {value}"))?;
             }
             "theme" => self.theme = value.to_string(),
+            "appearance.reduce_motion" => {
+                self.appearance.reduce_motion = value.parse::<bool>().map_err(|_| {
+                    format!("appearance.reduce_motion must be true or false: {value}")
+                })?;
+            }
             _ => return Err(format!("unknown config key: {key}")),
         }
         Ok(())

@@ -148,13 +148,18 @@ impl StudioEguiApp {
         self.settings_hotkey = self.app.core.config.launcher_hotkey.clone();
         self.settings_data_dir = self.app.core.config.data_dir.display().to_string();
         self.settings_enable_ai = self.app.core.config.enable_ai;
+        self.settings_reduce_motion = self.app.core.config.reduce_motion();
         self.settings_theme = self.app.core.config.theme.clone();
     }
 }
 
 impl eframe::App for StudioEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.theme_profile = Some(ui::install_visuals(ctx, &self.app.core.config.theme));
+        self.theme_profile = Some(ui::install_visuals(
+            ctx,
+            &self.app.core.config.theme,
+            self.app.core.config.reduce_motion(),
+        ));
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);

@@ -80,6 +80,8 @@ fn apply_env_overrides(config: &mut StdConfig) -> Result<(), ConfigError> {
         ("STD_ENABLE_AI", "enable_ai"),
         ("STDCLI_THEME", "theme"),
         ("STD_THEME", "theme"),
+        ("STDCLI_REDUCE_MOTION", "appearance.reduce_motion"),
+        ("STD_REDUCE_MOTION", "appearance.reduce_motion"),
     ] {
         if let Ok(value) = env::var(env_key) {
             config.set_field(field, &value).map_err(|error| {

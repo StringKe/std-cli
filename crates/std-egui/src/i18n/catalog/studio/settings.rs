@@ -101,19 +101,15 @@ fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::ZhCn, "studio.settings.motion.reduce") => Some("减少动效"),
         (Locale::EnUs, "studio.settings.motion.reduce") => Some("Reduce motion"),
         (Locale::ZhCn, "studio.settings.motion.reduce.detail") => {
-            Some("本地预览动效降级，不写入共享 core 配置")
+            Some("保存到 appearance.reduce_motion，非必要动效瞬时切换")
         }
         (Locale::EnUs, "studio.settings.motion.reduce.detail") => {
-            Some("Local motion preview override, not shared core config")
+            Some("Saves appearance.reduce_motion and collapses nonessential motion")
         }
-        (Locale::ZhCn, "studio.settings.motion.reduced_on") => Some("已启用减少动效预览"),
-        (Locale::EnUs, "studio.settings.motion.reduced_on") => {
-            Some("Reduce motion preview enabled")
-        }
-        (Locale::ZhCn, "studio.settings.motion.reduced_off") => Some("已关闭减少动效预览"),
-        (Locale::EnUs, "studio.settings.motion.reduced_off") => {
-            Some("Reduce motion preview disabled")
-        }
+        (Locale::ZhCn, "studio.settings.motion.reduced_on") => Some("已启用减少动效"),
+        (Locale::EnUs, "studio.settings.motion.reduced_on") => Some("Reduce motion enabled"),
+        (Locale::ZhCn, "studio.settings.motion.reduced_off") => Some("已关闭减少动效"),
+        (Locale::EnUs, "studio.settings.motion.reduced_off") => Some("Reduce motion disabled"),
         (Locale::ZhCn, "studio.settings.hotkey.contract") => {
             Some("焦点与 IME 优先，热键只显式注册")
         }
@@ -202,10 +198,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.theme.contract" => Some("light / dark / system share one token set"),
         "studio.settings.motion.reduce" => Some("Reduce motion"),
         "studio.settings.motion.reduce.detail" => {
-            Some("Local motion preview override, not shared core config")
+            Some("Saves appearance.reduce_motion and collapses nonessential motion")
         }
-        "studio.settings.motion.reduced_on" => Some("Reduce motion preview enabled"),
-        "studio.settings.motion.reduced_off" => Some("Reduce motion preview disabled"),
+        "studio.settings.motion.reduced_on" => Some("Reduce motion enabled"),
+        "studio.settings.motion.reduced_off" => Some("Reduce motion disabled"),
         "studio.settings.hotkey.contract" => {
             Some("Focus and IME first, hotkeys register by explicit opt-in")
         }
