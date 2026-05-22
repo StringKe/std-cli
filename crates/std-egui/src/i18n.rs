@@ -26,6 +26,25 @@ pub fn translate(locale: Locale, key: &str) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::BTreeSet;
+
+    const CATALOG_SOURCES: [&str; 15] = [
+        include_str!("i18n/catalog/launcher/feedback.rs"),
+        include_str!("i18n/catalog/launcher/results.rs"),
+        include_str!("i18n/catalog/launcher/search.rs"),
+        include_str!("i18n/catalog/studio/analysis.rs"),
+        include_str!("i18n/catalog/studio/apps.rs"),
+        include_str!("i18n/catalog/studio/dashboard.rs"),
+        include_str!("i18n/catalog/studio/history.rs"),
+        include_str!("i18n/catalog/studio/memory.rs"),
+        include_str!("i18n/catalog/studio/operations.rs"),
+        include_str!("i18n/catalog/studio/plugins.rs"),
+        include_str!("i18n/catalog/studio/settings.rs"),
+        include_str!("i18n/catalog/studio/shell.rs"),
+        include_str!("i18n/catalog/studio/workflow_builder.rs"),
+        include_str!("i18n/catalog/studio/workflows.rs"),
+        include_str!("i18n/catalog/studio/workspace_panes.rs"),
+    ];
 
     #[test]
     fn launcher_strings_have_zh_cn_and_en_us_values() {
@@ -273,5 +292,35 @@ mod tests {
             translate(Locale::ZhCn, "studio.shell.pane_inactive"),
             "inactive"
         );
+    }
+
+    #[test]
+    fn i18n_catalog_keys_have_zh_cn_en_us_and_fallback_values() {
+        let keys = catalog_keys();
+        assert!(keys.len() > 100, "catalog key audit is too narrow");
+
+        for key in keys {
+            assert!(
+                catalog::translate(Locale::ZhCn, &key).is_some(),
+                "missing zh-CN key: {key}"
+            );
+            assert!(
+                catalog::translate(Locale::EnUs, &key).is_some(),
+                "missing en-US key: {key}"
+            );
+            assert!(
+                catalog::fallback(&key) != "UNKNOWN_I18N_KEY",
+                "missing fallback key: {key}"
+            );
+        }
+    }
+
+    fn catalog_keys() -> BTreeSet<String> {
+        CATALOG_SOURCES
+            .iter()
+            .flat_map(|source| source.split('"').skip(1).step_by(2))
+            .filter(|value| value.starts_with("launcher.") || value.starts_with("studio."))
+            .map(str::to_string)
+            .collect()
     }
 }
