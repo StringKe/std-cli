@@ -361,5 +361,6 @@ fn is_runtime_desktop_support_file(path: &Path) -> bool {
     path.ends_with("std-core/src/lib.rs")
         || path.ends_with("std-core/src/app_bundle.rs")
         || path.ends_with("std-core/src/bootstrap.rs")
+        || path.ends_with("std-cli/src/ui/background.rs")
         || path.ends_with("std-launcher/src/gui_smoke.rs")
 }

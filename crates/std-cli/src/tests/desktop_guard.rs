@@ -157,19 +157,27 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
             "mise task {task} must force desktop opt-ins off"
         );
     }
-    assert!(
-        !body.contains("STD_ALLOW_DESKTOP_AUTOMATION = \"1\""),
-        "mise default tasks must not opt into desktop automation"
-    );
-    assert!(
-        !body.contains("STD_ALLOW_UI_PREVIEW = \"1\""),
-        "mise default tasks must not opt into UI preview"
-    );
-    let manual = source_section(&body, "[tasks.ui-background-harness]", "[tasks.quality]");
-    let default = body.replace(manual, "");
+    let default = [
+        "[tasks.ui-background-harness]",
+        "[tasks.ui-background-smoke]",
+        "[tasks.ui-background-acceptance]",
+        "[tasks.ui-capture-matrix]",
+    ]
+    .into_iter()
+    .fold(body.clone(), |current, task| {
+        current.replace(source_section(&current, task, "\n[tasks."), "")
+    });
     assert!(
         !default.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""),
         "mise default tasks must not opt into background UI automation"
+    );
+    assert!(
+        !default.contains("STD_ALLOW_DESKTOP_AUTOMATION = \"1\""),
+        "mise default tasks must not opt into desktop automation"
+    );
+    assert!(
+        !default.contains("STD_ALLOW_UI_PREVIEW = \"1\""),
+        "mise default tasks must not opt into UI preview"
     );
 }
 
