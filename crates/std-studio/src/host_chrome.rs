@@ -1,4 +1,10 @@
-use crate::{host_chrome_drag, ui, workspace_panes::focused_workspace_spec, StudioEguiApp};
+use crate::{
+    host_chrome_drag,
+    host_window::{apply_host_window_command, HostWindowCommand},
+    ui,
+    workspace_panes::focused_workspace_spec,
+    StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -91,7 +97,7 @@ impl StudioEguiApp {
             }
         }
         self.pending_closeguard = Some(self.app.close_workspace_instance());
-        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        apply_host_window_command(ctx, HostWindowCommand::Close);
     }
 
     fn render_host_window_controls(&mut self, ui: &mut egui::Ui) {
@@ -114,8 +120,7 @@ impl StudioEguiApp {
             )
             .clicked()
             {
-                ui.ctx()
-                    .send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+                apply_host_window_command(ui.ctx(), HostWindowCommand::Minimize);
             }
             let maximize_label = if self.host_maximized {
                 i18n::t("studio.chrome.fit")
@@ -131,8 +136,10 @@ impl StudioEguiApp {
             .clicked()
             {
                 self.host_maximized = !self.host_maximized;
-                ui.ctx()
-                    .send_viewport_cmd(egui::ViewportCommand::Maximized(self.host_maximized));
+                apply_host_window_command(
+                    ui.ctx(),
+                    HostWindowCommand::Maximize(self.host_maximized),
+                );
             }
         });
     }
@@ -331,6 +338,23 @@ mod tests {
         assert_eq!(
             host_chrome_input_contract(),
             "drag_region=background-only,left-identity-area;controls_reserved=true"
+        );
+    }
+
+    #[test]
+    fn host_chrome_routes_system_controls_through_host_window_boundary() {
+        let source = include_str!("host_chrome.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("apply_host_window_command"));
+        assert!(production_source.contains("HostWindowCommand::Close"));
+        assert!(production_source.contains("HostWindowCommand::Minimize"));
+        assert!(production_source.contains("HostWindowCommand::Maximize"));
+        assert!(!production_source.contains("send_viewport_cmd"));
+        assert!(!production_source.contains("ViewportCommand::"));
+        assert_eq!(
+            std_studio::StudioWorkspacePolicy::studio_v1().host_window_command_boundary(),
+            crate::host_window::host_window_command_boundary_contract()
         );
     }
 }

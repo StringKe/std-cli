@@ -24,6 +24,7 @@ impl StudioWorkspacePolicy {
     pub const DOC_REFERENCE: &'static str = "docs/22 + docs/24";
     pub const VIEWPORT_TOUCHPOINTS: &'static [&'static str] = &[
         "src/viewport.rs",
+        "src/host_window.rs",
         "src/host_chrome.rs",
         "src/host_chrome_drag.rs",
         "src/preview.rs",
@@ -113,6 +114,14 @@ impl StudioWorkspacePolicy {
             Self::UI_COMPLETION_BOUNDARY,
             Self::MANUAL_UI_EVIDENCE_GATES.join("|")
         )
+    }
+
+    pub const fn host_window_command_boundary(self) -> &'static str {
+        match self.host_window {
+            HostWindowPolicy::SingleBorderlessEguiViewport => {
+                "host_window_commands=single-system-host-only;workspace_panes=internal-egui-only;commands=close|minimize|maximize"
+            }
+        }
     }
 }
 

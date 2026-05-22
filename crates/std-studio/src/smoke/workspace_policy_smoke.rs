@@ -58,7 +58,7 @@ impl WorkspacePolicySmoke {
             && self.doc_reference == "docs/22 + docs/24"
             && self.summary == "single egui host viewport, internal workspace panes"
             && self.viewport_touchpoints
-                == "src/viewport.rs|src/host_chrome.rs|src/host_chrome_drag.rs|src/preview.rs|src/preview_tests.rs"
+                == "src/viewport.rs|src/host_window.rs|src/host_chrome.rs|src/host_chrome_drag.rs|src/preview.rs|src/preview_tests.rs"
             && self.native_entrypoints == "src/native_app.rs|src/preview.rs"
             && self.forbidden_apis.contains("egui::Window::new")
             && self.forbidden_apis.contains("ViewportBuilder::default")

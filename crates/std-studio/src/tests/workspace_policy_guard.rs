@@ -197,8 +197,8 @@ fn allowed_viewport_pattern(file: &str, pattern: &str) -> bool {
     matches!(
         (file, pattern),
         ("src/viewport.rs", "ViewportBuilder::default")
-            | ("src/host_chrome.rs", "ViewportCommand::")
-            | ("src/host_chrome.rs", "send_viewport_cmd")
+            | ("src/host_window.rs", "ViewportCommand::")
+            | ("src/host_window.rs", "send_viewport_cmd")
             | ("src/host_chrome_drag.rs", "ViewportCommand::")
             | ("src/host_chrome_drag.rs", "send_viewport_cmd")
             | ("src/preview.rs", "ViewportCommand::")
@@ -214,10 +214,17 @@ fn required_viewport_patterns(file: &str) -> &'static [&'static str] {
             "HostWindowPolicy::SingleBorderlessEguiViewport",
             "with_decorations(false)",
         ],
-        "src/host_chrome.rs" => &[
+        "src/host_window.rs" => &[
+            "HostWindowCommand",
             "ViewportCommand::Close",
             "ViewportCommand::Minimized(true)",
             "ViewportCommand::Maximized",
+        ],
+        "src/host_chrome.rs" => &[
+            "apply_host_window_command",
+            "HostWindowCommand::Close",
+            "HostWindowCommand::Minimize",
+            "HostWindowCommand::Maximize",
             "open_current_pane_from_host_chrome",
         ],
         "src/host_chrome_drag.rs" => &["ViewportCommand::StartDrag"],

@@ -16,6 +16,7 @@ mod commands;
 mod context_help;
 mod host_chrome;
 mod host_chrome_drag;
+mod host_window;
 mod layout;
 mod native_app;
 mod operations;
