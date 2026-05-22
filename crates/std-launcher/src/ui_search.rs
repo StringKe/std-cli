@@ -287,7 +287,10 @@ mod tests {
 
         assert!(text.starts_with(i18n::t("launcher.search.running")));
         assert!(text.contains("Rebuild Index"));
-        assert_eq!(search_a11y_label(&state, &a11y), "Running Rebuild Index");
+        assert_eq!(
+            search_a11y_label(&state, &a11y),
+            i18n::t("launcher.a11y.running").replace("{action}", "Rebuild Index")
+        );
         assert_eq!(
             search_placeholder(&state),
             i18n::t("launcher.action.executing")

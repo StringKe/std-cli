@@ -217,10 +217,8 @@ fn result_semantics(state: &LauncherState) -> ResultSemantics {
         .unwrap_or_else(|| format!("{} none", input::enter().label()));
     ResultSemantics {
         search_reader_label: a11y.launcher_search_label(&state.view.query),
-        result_group_label: a11y.launcher_result_group_label(i18n::translate(
-            Locale::EnUs,
-            "launcher.results.group.action_workflow",
-        )),
+        result_group_label: a11y
+            .launcher_result_group_label(i18n::t("launcher.results.group.action_workflow")),
         selected_label,
         selected_reader_label,
         selected_position,

@@ -62,6 +62,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.empty.suggestion.studio.detail") => {
             Some("Continue in the full workspace")
         }
+        (Locale::ZhCn, "launcher.a11y.result") => {
+            Some("{title}，{subtitle}，{position} / {total}，按 Enter 运行")
+        }
+        (Locale::EnUs, "launcher.a11y.result") => {
+            Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
+        }
+        (Locale::ZhCn, "launcher.a11y.result_group") => Some("{group}，结果分组"),
+        (Locale::EnUs, "launcher.a11y.result_group") => Some("{group}, result group"),
+        (Locale::ZhCn, "launcher.a11y.action_panel") => Some("{selected} 的操作，列表 {count} 项"),
+        (Locale::EnUs, "launcher.a11y.action_panel") => {
+            Some("Actions for {selected}, list of {count}")
+        }
         _ => result_list_translate(locale, key),
     }
 }
@@ -129,6 +141,11 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.empty.suggestion.ask.detail" => Some("Start a natural language analysis query"),
         "launcher.empty.suggestion.studio.title" => Some("Open Studio"),
         "launcher.empty.suggestion.studio.detail" => Some("Continue in the full workspace"),
+        "launcher.a11y.result" => {
+            Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
+        }
+        "launcher.a11y.result_group" => Some("{group}, result group"),
+        "launcher.a11y.action_panel" => Some("Actions for {selected}, list of {count}"),
         _ => result_list_fallback(key),
     }
 }

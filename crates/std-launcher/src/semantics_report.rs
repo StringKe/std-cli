@@ -15,11 +15,13 @@ impl LauncherUiSemanticsReport {
             && self.empty_result_count > 0
             && self.empty_title == "Suggested Workflows"
             && self.empty_detail.contains("Press / for commands")
-            && self.search_reader_label.contains("Launcher, search field")
-            && self.result_group_label.contains("result group")
+            && self.search_reader_label.contains("index")
+            && self
+                .result_group_label
+                .contains(i18n::t("launcher.results.group.action_workflow"))
             && self
                 .selected_label
-                .contains(&format!("press {}", input::enter().label()))
+                .contains(&format!("{} ", input::enter().label()))
             && self.selected_reader_label == self.selected_label
             && self.selected_position.contains(" of ")
             && self.selected_keycap == input::launcher_result_keycap(0).unwrap()
@@ -35,8 +37,8 @@ impl LauncherUiSemanticsReport {
             && self
                 .action_panel_actions
                 .contains(i18n::t("launcher.action.open_in_studio"))
-            && self.action_panel_reader_label.contains("Actions for")
-            && self.action_panel_reader_label.contains("list of")
+            && self.action_panel_reader_label.contains("Rebuild Index")
+            && self.action_panel_reader_label.contains("3")
             && self
                 .action_panel_open_studio_command
                 .starts_with("studio-pane://")
@@ -55,7 +57,9 @@ impl LauncherUiSemanticsReport {
             && self.loading_progress == "2px Searching indeterminate"
             && self.loading_spinner_after_ms == 200
             && self.executing_search_text.starts_with("Running:")
-            && self.running_reader_label.starts_with("Running ")
+            && self
+                .running_reader_label
+                .starts_with(i18n::t("launcher.a11y.running").trim_end_matches("{action}"))
             && !self.executing_input_enabled
             && self.executing_cancel_shortcut
                 == format!(

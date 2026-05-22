@@ -40,6 +40,18 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.voice.placeholder") => Some("voice transcript"),
         (Locale::ZhCn, "launcher.voice.apply") => Some("应用"),
         (Locale::EnUs, "launcher.voice.apply") => Some("Apply"),
+        (Locale::ZhCn, "launcher.voice.empty_value") => Some("空"),
+        (Locale::EnUs, "launcher.voice.empty_value") => Some("empty"),
+        (Locale::ZhCn, "launcher.voice.input.a11y") => Some("{label}，文本框，当前值 {value}"),
+        (Locale::EnUs, "launcher.voice.input.a11y") => Some("{label}, text box, value {value}"),
+        (Locale::ZhCn, "launcher.a11y.search.empty") => Some("Launcher，搜索框，{placeholder}"),
+        (Locale::EnUs, "launcher.a11y.search.empty") => {
+            Some("Launcher, search field, {placeholder}")
+        }
+        (Locale::ZhCn, "launcher.a11y.search.query") => Some("Launcher，搜索框，{query}"),
+        (Locale::EnUs, "launcher.a11y.search.query") => Some("Launcher, search field, {query}"),
+        (Locale::ZhCn, "launcher.a11y.running") => Some("正在运行 {action}"),
+        (Locale::EnUs, "launcher.a11y.running") => Some("Running {action}"),
         _ => None,
     }
 }
@@ -64,6 +76,11 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.voice.label" => Some("Voice"),
         "launcher.voice.placeholder" => Some("voice transcript"),
         "launcher.voice.apply" => Some("Apply"),
+        "launcher.voice.empty_value" => Some("empty"),
+        "launcher.voice.input.a11y" => Some("{label}, text box, value {value}"),
+        "launcher.a11y.search.empty" => Some("Launcher, search field, {placeholder}"),
+        "launcher.a11y.search.query" => Some("Launcher, search field, {query}"),
+        "launcher.a11y.running" => Some("Running {action}"),
         _ => None,
     }
 }

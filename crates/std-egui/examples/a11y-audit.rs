@@ -3,9 +3,12 @@ use std_egui::{
     i18n::{self, Locale},
 };
 
-const REQUIRED_KEYS: [&str; 14] = [
+const REQUIRED_KEYS: [&str; 17] = [
     "launcher.empty.no_matches.title",
     "launcher.empty.no_matches.detail",
+    "launcher.a11y.search.query",
+    "launcher.a11y.result",
+    "launcher.a11y.action_panel",
     "launcher.feedback.failed",
     "launcher.feedback.deferred",
     "launcher.results.group.action_workflow",
@@ -66,9 +69,16 @@ impl A11yAuditReport {
     fn pass(&self) -> bool {
         self.required_keys == REQUIRED_KEYS.len()
             && self.missing.is_empty()
-            && self.search_label.contains("Launcher, search field")
-            && self.result_label.contains("press Enter to run")
-            && self.action_panel_label == "Actions for Rebuild Index, list of 3"
+            && self.search_label
+                == i18n::t("launcher.a11y.search.query").replace("{query}", "index")
+            && self
+                .result_label
+                .contains(i18n::t("launcher.results.kind.workflow"))
+            && self.result_label.contains(input_enter_label())
+            && self.action_panel_label
+                == i18n::t("launcher.a11y.action_panel")
+                    .replace("{selected}", "Rebuild Index")
+                    .replace("{count}", "3")
             && self.focus_ring_standard == 2.0
             && self.focus_ring_high_contrast == 3.0
             && self.docs23_contract == "docs/23#a11y-i18n-static-audit"
@@ -110,4 +120,8 @@ fn missing_i18n_keys() -> Vec<String> {
 fn missing_locale(locale: Locale, label: &str, key: &str) -> Option<String> {
     let value = i18n::translate(locale, key);
     (value == "UNKNOWN_I18N_KEY").then(|| format!("{label}:{key}"))
+}
+
+fn input_enter_label() -> &'static str {
+    "Enter"
 }

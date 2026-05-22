@@ -171,14 +171,13 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
 
 fn voice_input_a11y_label(transcript: &str) -> String {
     let value = if transcript.trim().is_empty() {
-        "empty"
+        i18n::t("launcher.voice.empty_value")
     } else {
         transcript.trim()
     };
-    format!(
-        "{}, text box, value {value}",
-        i18n::t("launcher.voice.label")
-    )
+    i18n::t("launcher.voice.input.a11y")
+        .replace("{label}", i18n::t("launcher.voice.label"))
+        .replace("{value}", value)
 }
 
 #[cfg(test)]
@@ -210,14 +209,15 @@ mod tests {
     fn voice_input_a11y_label_exposes_value() {
         assert_eq!(
             voice_input_a11y_label("open terminal"),
-            format!(
-                "{}, text box, value open terminal",
-                i18n::t("launcher.voice.label")
-            )
+            i18n::t("launcher.voice.input.a11y")
+                .replace("{label}", i18n::t("launcher.voice.label"))
+                .replace("{value}", "open terminal")
         );
         assert_eq!(
             voice_input_a11y_label("  "),
-            format!("{}, text box, value empty", i18n::t("launcher.voice.label"))
+            i18n::t("launcher.voice.input.a11y")
+                .replace("{label}", i18n::t("launcher.voice.label"))
+                .replace("{value}", i18n::t("launcher.voice.empty_value"))
         );
     }
 }

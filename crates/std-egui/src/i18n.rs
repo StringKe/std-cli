@@ -47,7 +47,7 @@ mod tests {
     ];
 
     #[test]
-    fn launcher_strings_have_zh_cn_and_en_us_values() {
+    fn launcher_search_strings_have_zh_cn_and_en_us_values() {
         assert_eq!(
             translate(Locale::EnUs, "launcher.empty.no_matches.title"),
             "No matches"
@@ -81,6 +81,10 @@ mod tests {
             translate(Locale::ZhCn, "launcher.search.ime_composing"),
             "输入法组合中"
         );
+    }
+
+    #[test]
+    fn launcher_feedback_strings_have_zh_cn_and_en_us_values() {
         assert_eq!(
             translate(Locale::EnUs, "launcher.feedback.failed"),
             "Unable to run"
@@ -109,6 +113,10 @@ mod tests {
             translate(Locale::ZhCn, "launcher.results.kind.clipboard"),
             "剪贴板"
         );
+    }
+
+    #[test]
+    fn launcher_action_strings_have_zh_cn_and_en_us_values() {
         assert_eq!(
             translate(Locale::ZhCn, "launcher.empty.suggestion.rebuild.title"),
             "重建 Index"
@@ -140,6 +148,18 @@ mod tests {
         assert_eq!(
             translate(Locale::ZhCn, "launcher.action.no_matches"),
             "没有匹配的操作"
+        );
+    }
+
+    #[test]
+    fn launcher_a11y_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.a11y.result"),
+            "{title}，{subtitle}，{position} / {total}，按 Enter 运行"
+        );
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.voice.input.a11y"),
+            "{label}, text box, value {value}"
         );
     }
 

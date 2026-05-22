@@ -1,3 +1,5 @@
+use crate::i18n;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AccessibilityContext {
     pub reduce_motion: bool,
@@ -26,10 +28,12 @@ impl AccessibilityContext {
 
     pub fn launcher_search_label(&self, query: &str) -> String {
         if query.trim().is_empty() {
-            "Launcher, search field, Search apps, workflows, memory, files".to_string()
-        } else {
-            format!("Launcher, search field, {}", query.trim())
+            return template(
+                "launcher.a11y.search.empty",
+                &[("{placeholder}", i18n::t("launcher.search.placeholder"))],
+            );
         }
+        template("launcher.a11y.search.query", &[("{query}", query.trim())])
     }
 
     pub fn launcher_result_label(
@@ -39,24 +43,46 @@ impl AccessibilityContext {
         position: usize,
         total: usize,
     ) -> String {
-        format!("{title}, {subtitle}, {position} of {total}, press Enter to run")
+        template(
+            "launcher.a11y.result",
+            &[
+                ("{title}", title),
+                ("{subtitle}", subtitle),
+                ("{position}", &position.to_string()),
+                ("{total}", &total.to_string()),
+            ],
+        )
     }
 
     pub fn launcher_result_group_label(&self, group: &str) -> String {
-        format!("{group}, result group")
+        template("launcher.a11y.result_group", &[("{group}", group)])
     }
 
     pub fn launcher_action_panel_label(&self, selected_item: &str, count: usize) -> String {
-        format!("Actions for {selected_item}, list of {count}")
+        template(
+            "launcher.a11y.action_panel",
+            &[
+                ("{selected}", selected_item),
+                ("{count}", &count.to_string()),
+            ],
+        )
     }
 
     pub fn launcher_running_label(&self, action: &str) -> String {
-        format!("Running {action}")
+        template("launcher.a11y.running", &[("{action}", action)])
     }
 
     pub fn launcher_completed_label(&self, message: &str) -> String {
         message.trim().to_string()
     }
+}
+
+fn template(key: &str, replacements: &[(&str, &str)]) -> String {
+    let mut text = i18n::t(key).to_string();
+    for (from, to) in replacements {
+        text = text.replace(from, to);
+    }
+    text
 }
 
 fn env_flag(name: &str) -> bool {
@@ -81,23 +107,35 @@ mod tests {
         assert!(a11y.launcher_search_label("").contains("Launcher"));
         assert_eq!(
             a11y.launcher_result_label("Rebuild Index", "Workflow", 1, 5),
-            "Rebuild Index, Workflow, 1 of 5, press Enter to run"
+            "Rebuild Index，Workflow，1 / 5，按 Enter 运行"
         );
         assert_eq!(
-            a11y.launcher_result_group_label("Action / Workflow"),
-            "Action / Workflow, result group"
+            a11y.launcher_result_group_label("操作 / Workflow"),
+            "操作 / Workflow，结果分组"
         );
         assert_eq!(
             a11y.launcher_action_panel_label("Rebuild Index", 3),
-            "Actions for Rebuild Index, list of 3"
+            "Rebuild Index 的操作，列表 3 项"
         );
         assert_eq!(
             a11y.launcher_running_label("Rebuild Index"),
-            "Running Rebuild Index"
+            "正在运行 Rebuild Index"
         );
         assert_eq!(
             a11y.launcher_completed_label("Index rebuilt"),
             "Index rebuilt"
+        );
+    }
+
+    #[test]
+    fn launcher_a11y_strings_have_en_us_fallbacks() {
+        assert_eq!(
+            i18n::translate(i18n::Locale::EnUs, "launcher.a11y.result"),
+            "{title}, {subtitle}, {position} of {total}, press Enter to run"
+        );
+        assert_eq!(
+            i18n::translate(i18n::Locale::EnUs, "launcher.a11y.action_panel"),
+            "Actions for {selected}, list of {count}"
         );
     }
 
