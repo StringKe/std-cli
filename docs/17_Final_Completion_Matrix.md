@@ -13,6 +13,7 @@
 - 真实截图 manifest 必须包含 `samples`、`opaque_samples`、`unique_colors`、`black_pixels`、`white_pixels`、`transparent_pixels`
 - 真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white-carrier`
 - 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
+- 默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app
 
 ## Core
 

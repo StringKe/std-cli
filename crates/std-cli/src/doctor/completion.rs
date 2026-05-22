@@ -26,7 +26,7 @@ const MANUAL_BLOCKERS: [&str; 6] = [
     "完成前必须重跑并保留当前证据",
 ];
 
-const CURRENT_EVIDENCE_RULES: [&str; 7] = [
+const CURRENT_EVIDENCE_RULES: [&str; 8] = [
     "历史 target/ui-evidence 路径不能作为完成证据",
     "历史 /tmp 截图不能作为完成证据",
     "真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出",
@@ -34,6 +34,7 @@ const CURRENT_EVIDENCE_RULES: [&str; 7] = [
     "真实截图 manifest 必须包含 `samples`、`opaque_samples`、`unique_colors`、`black_pixels`、`white_pixels`、`transparent_pixels`",
     "真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white-carrier`",
     "安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出",
+    "默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app",
 ];
 
 const STALE_EVIDENCE_PATTERNS: [&str; 4] = [
@@ -78,6 +79,7 @@ fn check_audit_doc(audit: &str) -> Result<(), CliError> {
         "每个门槛都必须有当前运行证据",
         "UI docs 18-24、Launcher、Studio、Core、Terminal、Plugin、Index、Workflow、Release、Install、Quality",
         "默认测试和 smoke 不得唤起 Terminal、App、文件或外部 runner",
+        "默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app",
         "只有显式 opt-in 才执行真实 GUI hotkey 或外部 runner 行为",
     ] {
         check_text(audit, required)?;

@@ -294,4 +294,4 @@ historical_context=true
 - UI docs 18-24、Launcher、Studio、Core、Terminal、Plugin、Index、Workflow、Release、Install、Quality 的 requirement-by-requirement completion audit
 
 ## 审计规则
-未验证即未完成。默认测试和 smoke 不得唤起 Terminal、App、文件或外部 runner。外部行为默认 `NeedsExternalRunner`。只有显式 opt-in 才执行真实 GUI hotkey 或外部 runner 行为。完成声明必须引用当前运行证据。
+未验证即未完成。默认测试和 smoke 不得唤起 Terminal、App、文件或外部 runner。默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app。外部行为默认 `NeedsExternalRunner`。只有显式 opt-in 才执行真实 GUI hotkey 或外部 runner 行为。完成声明必须引用当前运行证据。
