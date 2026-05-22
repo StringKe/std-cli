@@ -10,6 +10,7 @@ mod index;
 mod local_content;
 mod plugin;
 mod release;
+mod release_evidence;
 mod release_quality;
 mod support;
 mod ui_token_guard;

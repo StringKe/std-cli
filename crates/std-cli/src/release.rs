@@ -1,4 +1,5 @@
 mod checksum;
+mod evidence;
 mod files;
 pub(crate) mod macos;
 mod manifest;
@@ -7,6 +8,7 @@ mod quality;
 use crate::CliError;
 use checksum::sha256_file as sha256_release_file;
 use chrono::Utc;
+use evidence::{release_evidence, verify_release_evidence};
 use files::{copy_tree_files, project_root};
 use macos::{create_mac_app_bundle, default_app_bundles, verify_app_bundle};
 use manifest::{
@@ -67,6 +69,7 @@ pub(crate) fn release_package(
     let examples = package_examples(&layout.examples_dir)?;
     let quality = package_quality(&layout.quality_dir)?;
     let checksums = release_checksums(&binaries, &docs, &examples, &app_bundles, &quality)?;
+    let install_prefix = core.config.data_dir.join("install-check");
     let manifest = json!({
         "name": "std-cli",
         "version": version,
@@ -83,7 +86,8 @@ pub(crate) fn release_package(
         "examples": examples,
         "quality": quality,
         "checksums": checksums,
-        "install_command": format!("std install run --prefix {} --from {}", core.config.data_dir.join("install-check").display(), layout.bin_dir.display()),
+        "install_command": format!("std install run --prefix {} --from {}", install_prefix.display(), layout.bin_dir.display()),
+        "release_install_evidence": release_evidence(version, &dist_dir, &layout.bin_dir, &install_prefix),
     });
     let manifest_path = dist_dir.join("release-manifest.json");
     fs::write(&manifest_path, serde_json::to_string_pretty(&manifest)?)?;
@@ -117,10 +121,11 @@ pub(crate) fn release_verify(dist_dir: &Path) -> Result<String, CliError> {
     }
     verify_release_metadata(&manifest)?;
     let quality = verify_quality_manifest(&manifest)?;
+    let evidence = verify_release_evidence(&manifest)?;
     let checksums = verify_release_checksums(&manifest)?;
     verify_install_command(&manifest)?;
     Ok(format!(
-        "release verify PASS\nversion={version}\ndist_dir={}\nbinaries={binaries}\napp_bundles={app_bundles}\ndocs={docs}\nexamples={examples}\nquality={quality}\nchecksums={checksums}\nmetadata=PASS\ninstall_command=PASS",
+        "release verify PASS\nversion={version}\ndist_dir={}\nbinaries={binaries}\napp_bundles={app_bundles}\ndocs={docs}\nexamples={examples}\nquality={quality}\nchecksums={checksums}\nmetadata=PASS\ninstall_command=PASS\nrelease_install_evidence={evidence}",
         dist_dir.display()
     ))
 }
