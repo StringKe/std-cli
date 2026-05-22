@@ -1,3 +1,4 @@
+mod background_acceptance;
 mod completion;
 mod dylint;
 mod report;

@@ -1,4 +1,5 @@
 use crate::{
+    doctor::background_acceptance::check_background_acceptance_manifest,
     doctor::ui_capture::check_ui_capture_scripts,
     doctor::workspace::{check_text, find_workspace_root, read_required},
     CliError,
@@ -431,7 +432,8 @@ fn check_desktop_automation_boundary(root: &std::path::Path) -> Result<(), CliEr
     check_text(&quality_doc, "隔离 harness")?;
     let guard = read_required(&root.join("crates/std-cli/tests/external_runner_guard.rs"))?;
     check_text(&guard, "binary_test_mode_blocks_dangerous_command_text")?;
-    check_text(&guard, "binary_test_mode_blocks_registered_app_launch")
+    check_text(&guard, "binary_test_mode_blocks_registered_app_launch")?;
+    check_background_acceptance_manifest()
 }
 
 #[cfg(test)]
