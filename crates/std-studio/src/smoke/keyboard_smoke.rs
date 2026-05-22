@@ -70,9 +70,11 @@ impl StudioKeyboardSmoke {
             && self.analysis_qa_focus
                 == shortcut_path(input::studio_analysis_qa_focus(), "coverage>query")
             && self.sidebar_tree_label == "Workflow Builder, group 2, level 1, 3 of 8"
-            && self
-                .dnd_pickup_announcement
-                .contains("use Alt+Up Alt+Down to move")
+            && self.dnd_pickup_announcement.contains(&format!(
+                "use {} {} to move",
+                input::studio_workflow_step_move_up().label(),
+                input::studio_workflow_step_move_down().label()
+            ))
             && self.dnd_drop_announcement == "Moved Collect context to position 3"
             && self.batch_progress_announcements == "0%,5%,10%,15%"
             && self.keyboard_contract.contains("docs/20#studio-shortcuts")
@@ -198,7 +200,11 @@ fn sidebar_tree_node_label(
 }
 
 fn dnd_pickup_announcement(item: &str) -> String {
-    format!("Picked up {item}, use Alt+Up Alt+Down to move")
+    format!(
+        "Picked up {item}, use {} {} to move",
+        input::studio_workflow_step_move_up().label(),
+        input::studio_workflow_step_move_down().label()
+    )
 }
 
 fn dnd_drop_announcement(item: &str, position: usize) -> String {

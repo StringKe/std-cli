@@ -36,7 +36,7 @@ impl KeyBinding {
             Self::ModOnlyNamed(key) => {
                 format!("{}+{}", primary_modifier_label(), named_key_label(key))
             }
-            Self::AltNamed(key) => format!("Alt+{}", named_key_label(key)),
+            Self::AltNamed(key) => format!("{}+{}", alt_modifier_label(), named_key_label(key)),
             Self::Ctrl(key) => format!("Ctrl+{}", key.to_ascii_uppercase()),
             Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
@@ -103,6 +103,14 @@ pub fn primary_modifier_label() -> &'static str {
         "⌘"
     } else {
         "Ctrl"
+    }
+}
+
+pub fn alt_modifier_label() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "⌥"
+    } else {
+        "Alt"
     }
 }
 
@@ -345,8 +353,15 @@ mod tests {
     }
 
     fn assert_studio_workflow_bindings() {
-        assert_eq!(studio_workflow_step_move_up().label(), "Alt+Up");
-        assert_eq!(studio_workflow_step_move_down().label(), "Alt+Down");
+        let alt = alt_modifier_label();
+        assert_eq!(studio_workflow_step_move_up().label(), format!("{alt}+Up"));
+        assert_eq!(
+            studio_workflow_step_move_down().label(),
+            format!("{alt}+Down")
+        );
+        if cfg!(target_os = "macos") {
+            assert_eq!(studio_workflow_step_move_up().label(), "⌥+Up");
+        }
         assert!(studio_workflow_test().label().ends_with("+Enter"));
         assert!(studio_workflow_simulate().label().ends_with("+Shift+Enter"));
         assert!(studio_workflow_save().label().ends_with("+S"));

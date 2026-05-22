@@ -8,7 +8,7 @@ use crate::{
 };
 use eframe::egui;
 use std::path::Path;
-use std_egui::i18n;
+use std_egui::{i18n, input};
 
 impl StudioEguiApp {
     pub(crate) fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
@@ -46,7 +46,7 @@ impl StudioEguiApp {
             ui::section_header(
                 ui,
                 i18n::t("studio.workflow_builder.steps.title"),
-                i18n::t("studio.workflow_builder.steps.detail"),
+                &workflow_step_shortcuts_detail(),
             );
             if self.app.planned_workflow.is_some() {
                 self.render_planned_steps(ui);
@@ -400,5 +400,27 @@ impl StudioEguiApp {
                 None
             }
         }
+    }
+}
+
+fn workflow_step_shortcuts_detail() -> String {
+    format!(
+        "{} {}",
+        input::studio_workflow_step_move_up().label(),
+        input::studio_workflow_step_move_down().label()
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn workflow_step_shortcuts_detail_uses_platform_labels() {
+        let detail = workflow_step_shortcuts_detail();
+
+        assert!(detail.contains(&input::studio_workflow_step_move_up().label()));
+        assert!(detail.contains(&input::studio_workflow_step_move_down().label()));
+        assert!(!detail.contains("Alt+Up Alt+Down"));
     }
 }
