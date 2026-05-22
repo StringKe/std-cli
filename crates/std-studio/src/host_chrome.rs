@@ -78,6 +78,22 @@ impl StudioEguiApp {
         id
     }
 
+    fn close_host_window_from_chrome(&mut self, ctx: &egui::Context) {
+        debug_assert!(!self.app.workspace_policy.allows_native_child_windows());
+        debug_assert!(!self.app.workspace_policy.allows_detached_panels());
+        let closeguard = self.app.prepare_workspace_closeguard();
+        match self.app.save_workspace_closeguard(&closeguard) {
+            Ok(path) => {
+                self.status = format!("workspace closeguard saved {}", path.display());
+            }
+            Err(error) => {
+                self.status = format!("workspace closeguard save failed: {error}");
+            }
+        }
+        self.pending_closeguard = Some(self.app.close_workspace_instance());
+        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+    }
+
     fn render_host_window_controls(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             if host_control(
@@ -88,8 +104,7 @@ impl StudioEguiApp {
             )
             .clicked()
             {
-                self.pending_closeguard = Some(self.app.close_workspace_instance());
-                ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
+                self.close_host_window_from_chrome(ui.ctx());
             }
             if host_control(
                 ui,
@@ -237,11 +252,24 @@ fn paint_maximize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std_studio::StudioPane;
+    use std_core::{StdConfig, StdCore};
+    use std_studio::{StudioPane, WorkspacePaneKind};
+
+    fn test_app() -> StudioEguiApp {
+        let temp = tempfile::tempdir().unwrap();
+        let core = StdCore::with_config(StdConfig {
+            data_dir: temp.keep(),
+            ..StdConfig::default()
+        });
+        StudioEguiApp {
+            app: std_studio::StudioApp::with_core(core),
+            ..StudioEguiApp::default()
+        }
+    }
 
     #[test]
     fn host_chrome_open_current_pane_uses_internal_workspace_pane() {
-        let mut app = StudioEguiApp::default();
+        let mut app = test_app();
         app.app.switch_pane(StudioPane::Plugins);
 
         let id = app.open_current_pane_from_host_chrome();
@@ -255,7 +283,7 @@ mod tests {
 
     #[test]
     fn host_chrome_open_current_pane_deduplicates_same_workspace() {
-        let mut app = StudioEguiApp::default();
+        let mut app = test_app();
         app.app.switch_pane(StudioPane::Plugins);
 
         let first = app.open_current_pane_from_host_chrome();
@@ -266,10 +294,40 @@ mod tests {
     }
 
     #[test]
+    fn host_chrome_close_persists_workspace_closeguard_before_viewport_close() {
+        let mut app = test_app();
+        app.app.switch_pane(StudioPane::Plugins);
+        let plugin = app.open_current_pane_from_host_chrome();
+        app.app.switch_pane(StudioPane::Settings);
+        let settings = app.open_current_pane_from_host_chrome();
+        let ctx = egui::Context::default();
+
+        app.close_host_window_from_chrome(&ctx);
+
+        let pending = app.pending_closeguard.as_ref().unwrap();
+        let saved = app.app.load_workspace_closeguard().unwrap();
+        assert_eq!(app.app.open_workspace_panes().count(), 0);
+        assert_eq!(&saved, pending);
+        assert_eq!(saved.focused_pane, Some(settings));
+        assert!(saved
+            .panes
+            .iter()
+            .any(|pane| pane.id == plugin
+                && pane.kind == WorkspacePaneKind::Pane(StudioPane::Plugins)));
+        assert!(saved.panes.iter().any(|pane| pane.id == settings
+            && pane.kind == WorkspacePaneKind::Pane(StudioPane::Settings)));
+        assert!(app.status.contains("workspace closeguard saved"));
+        assert!(!app.app.workspace_policy.allows_native_child_windows());
+        assert!(!app.app.workspace_policy.allows_detached_panels());
+    }
+
+    #[test]
     fn host_chrome_drag_region_does_not_cover_controls() {
         let source = include_str!("host_chrome.rs");
 
         assert!(source.contains("install_host_chrome_drag_region"));
+        assert!(source.contains("close_host_window_from_chrome"));
+        assert!(source.contains("save_workspace_closeguard"));
         assert!(!source.contains("ui.id().with(\"host_drag\")"));
         assert_eq!(
             host_chrome_input_contract(),
