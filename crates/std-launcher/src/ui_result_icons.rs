@@ -15,9 +15,11 @@ pub(crate) fn paint(
     };
     let stroke = egui::Stroke::new(1.5, color);
     match icon_label {
-        "APP" | "FIL" => paint_window(ui, rect, stroke),
+        "APP" => paint_window(ui, rect, stroke),
+        "FIL" => paint_file(ui, rect, stroke),
         "WF" => paint_workflow(ui, rect, stroke),
-        "MEM" | "CLP" => paint_document(ui, rect, stroke),
+        "MEM" => paint_document(ui, rect, stroke),
+        "CLP" => paint_clipboard(ui, rect, stroke),
         "SK" => paint_skill(ui, rect, stroke),
         _ => paint_command(ui, rect, stroke),
     }
@@ -80,6 +82,69 @@ fn paint_document(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     }
 }
 
+fn paint_file(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let inner = rect.shrink(rect.width() * 0.24);
+    let fold = inner.width() * 0.26;
+    let points = vec![
+        inner.left_top(),
+        egui::pos2(inner.right() - fold, inner.top()),
+        egui::pos2(inner.right(), inner.top() + fold),
+        inner.right_bottom(),
+        inner.left_bottom(),
+        inner.left_top(),
+    ];
+    ui.painter().add(egui::Shape::line(points, stroke));
+    ui.painter().line_segment(
+        [
+            egui::pos2(inner.right() - fold, inner.top()),
+            egui::pos2(inner.right() - fold, inner.top() + fold),
+        ],
+        stroke,
+    );
+    ui.painter().line_segment(
+        [
+            egui::pos2(inner.right() - fold, inner.top() + fold),
+            egui::pos2(inner.right(), inner.top() + fold),
+        ],
+        stroke,
+    );
+}
+
+fn paint_clipboard(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
+    let inner = rect.shrink(rect.width() * 0.25);
+    ui.painter().rect_stroke(
+        inner,
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+    let clip = egui::Rect::from_center_size(
+        egui::pos2(inner.center().x, inner.top()),
+        egui::vec2(inner.width() * 0.48, inner.height() * 0.22),
+    );
+    ui.painter().rect_stroke(
+        clip,
+        egui::CornerRadius::same(2),
+        stroke,
+        egui::StrokeKind::Inside,
+    );
+    for y in [0.48, 0.66] {
+        ui.painter().line_segment(
+            [
+                egui::pos2(
+                    inner.left() + inner.width() * 0.22,
+                    inner.top() + inner.height() * y,
+                ),
+                egui::pos2(
+                    inner.right() - inner.width() * 0.22,
+                    inner.top() + inner.height() * y,
+                ),
+            ],
+            stroke,
+        );
+    }
+}
+
 fn paint_skill(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let center = rect.center();
     let radius = rect.width() * 0.25;
@@ -132,7 +197,9 @@ mod tests {
         let source = include_str!("ui_result_icons.rs");
 
         assert!(source.contains("paint_window"));
+        assert!(source.contains("paint_file"));
         assert!(source.contains("paint_workflow"));
+        assert!(source.contains("paint_clipboard"));
         assert!(source.contains("paint_command"));
         assert!(source.contains("Color::fg_secondary(ctx)"));
         assert!(source.contains("Color::accent_base(ctx)"));
