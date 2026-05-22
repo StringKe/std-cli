@@ -3,7 +3,6 @@ use std_studio::{StudioApp, StudioPane, WorkspacePaneId};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StudioCommandAction {
-    SwitchPane(StudioPane),
     OpenWorkspace(StudioPane),
     FocusWorkspace(WorkspacePaneId),
     OpenSettings,
@@ -29,7 +28,7 @@ pub(crate) fn command_palette_items(app: &StudioApp) -> Vec<StudioCommandItem> {
             ),
             detail: i18n::t("studio.shell.command.switch_workspace").to_string(),
             shortcut: input::enter().label(),
-            action: StudioCommandAction::SwitchPane(pane),
+            action: StudioCommandAction::OpenWorkspace(pane),
         })
         .collect::<Vec<_>>();
     items.push(StudioCommandItem {
@@ -50,6 +49,7 @@ pub(crate) fn command_palette_items(app: &StudioApp) -> Vec<StudioCommandItem> {
 pub(crate) fn quick_open_items(app: &StudioApp) -> Vec<StudioCommandItem> {
     let mut items = app
         .open_workspace_panes()
+        .filter(|pane| pane.kind.closable())
         .map(|pane| StudioCommandItem {
             title: pane.title.clone(),
             detail: pane.kind.content_key().to_string(),
@@ -167,7 +167,7 @@ mod tests {
 
         assert_eq!(
             selected_action(&items, 0),
-            Some(StudioCommandAction::SwitchPane(StudioPane::Dashboard))
+            Some(StudioCommandAction::OpenWorkspace(StudioPane::Dashboard))
         );
         assert_eq!(selected_action(&items, usize::MAX), None);
     }

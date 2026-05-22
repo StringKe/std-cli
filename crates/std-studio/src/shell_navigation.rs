@@ -67,7 +67,10 @@ impl StudioEguiApp {
         );
     }
 
-    fn open_workspace_pane_for_nav(&mut self, pane: StudioPane) -> std_studio::WorkspacePaneId {
+    pub(crate) fn open_workspace_pane_for_nav(
+        &mut self,
+        pane: StudioPane,
+    ) -> std_studio::WorkspacePaneId {
         match pane {
             StudioPane::Workflows => self
                 .app

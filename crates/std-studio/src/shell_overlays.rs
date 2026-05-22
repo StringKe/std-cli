@@ -10,7 +10,6 @@ use std_egui::{
     i18n, input,
     tokens::{Color, Elevation, Radius, Space},
 };
-use std_studio::StudioPane;
 
 const HOST_OVERLAY_X: f32 = 0.0;
 const HOST_OVERLAY_Y: f32 = 96.0;
@@ -146,7 +145,6 @@ impl StudioEguiApp {
 
     fn apply_command_action(&mut self, action: StudioCommandAction) {
         match action {
-            StudioCommandAction::SwitchPane(pane) => self.app.switch_pane(pane),
             StudioCommandAction::FocusWorkspace(id) => {
                 if self.app.focus_workspace_pane(id) {
                     self.pending_workspace_focus = Some(id);
@@ -154,18 +152,8 @@ impl StudioEguiApp {
                 }
             }
             StudioCommandAction::OpenWorkspace(pane) => {
-                let id = match pane {
-                    StudioPane::Workflows => self
-                        .app
-                        .open_workflow_builder(self.app.core.config.workflows_dir()),
-                    StudioPane::Analysis => self
-                        .app
-                        .open_analysis_workbench(std::path::PathBuf::from(&self.analysis.path)),
-                    StudioPane::Plugins => self.app.open_plugin_manager_pane(),
-                    StudioPane::Memory => self.app.open_memory_browser_pane(),
-                    StudioPane::History => self.app.open_execution_history_pane(),
-                    _ => self.app.open_workspace_pane(pane),
-                };
+                let id = self.open_workspace_pane_for_nav(pane);
+                self.pending_workspace_focus = Some(id);
                 self.status = format!("opened workspace pane {}", id.value());
             }
             StudioCommandAction::OpenSettings => {
@@ -259,7 +247,7 @@ mod tests {
         let mut app = StudioEguiApp::default();
         app.layout.open_command_palette();
         app.layout.overlay_selected = 0;
-        let before_pane = app.app.active_pane;
+        let before_pane = app.app.focused_pane;
 
         let _ = ctx.run(ime_preedit_overlay_input(), |ctx| {
             app.handle_overlay_keyboard(ctx);
@@ -267,7 +255,7 @@ mod tests {
 
         assert!(app.layout.command_palette_open);
         assert_eq!(app.layout.overlay_selected, 0);
-        assert_eq!(app.app.active_pane, before_pane);
+        assert_eq!(app.app.focused_pane, before_pane);
         assert!(app.status.is_empty());
     }
 

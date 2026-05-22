@@ -27,7 +27,7 @@ impl StudioContextHelp {
     pub(crate) fn from_app(app: &std_studio::StudioApp) -> Self {
         focused_workspace_spec(app)
             .map(|spec| context_help_for_spec(&spec))
-            .unwrap_or_else(|| context_help_for_main_pane(app.active_pane))
+            .unwrap_or_else(context_help_for_dashboard_workspace)
     }
 
     #[cfg(test)]
@@ -85,10 +85,11 @@ fn context_help_for_spec(spec: &StudioWorkspaceSpec) -> StudioContextHelp {
     }
 }
 
-fn context_help_for_main_pane(pane: std_studio::StudioPane) -> StudioContextHelp {
+fn context_help_for_dashboard_workspace() -> StudioContextHelp {
+    let pane = std_studio::StudioPane::Dashboard;
     StudioContextHelp {
         title: pane.label().to_string(),
-        detail: format!("{} main workspace", pane.content_key()),
+        detail: format!("{} workspace pane", pane.content_key()),
         signals: vec![
             format!("content {}", pane.content_key()),
             "internal workspace panes stay inside the Studio host".to_string(),
@@ -214,14 +215,14 @@ mod tests {
     fn context_help_a11y_label_exposes_scope_and_shortcut_count() {
         let help = StudioContextHelp {
             title: "Dashboard".to_string(),
-            detail: "dashboard main workspace".to_string(),
+            detail: "dashboard workspace pane".to_string(),
             signals: vec!["content dashboard".to_string()],
             shortcuts: vec![shortcut(input::studio_context_help(), "Open context help")],
         };
 
         assert_eq!(
             context_help_a11y_label(&help),
-            "Context help, Dashboard, dashboard main workspace, 1 shortcuts"
+            "Context help, Dashboard, dashboard workspace pane, 1 shortcuts"
         );
     }
 }

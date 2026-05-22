@@ -18,8 +18,8 @@ fn workspace_commands_are_consumed_by_main_app_state() {
 
     app.consume_workspace_commands();
 
-    assert_eq!(app.app.focused_pane, None);
-    assert_eq!(app.app.open_workspace_panes().count(), 0);
+    assert_eq!(app.app.focused_pane, Some(WorkspacePaneId::new(1)));
+    assert_eq!(app.app.open_workspace_panes().count(), 1);
     assert!(app.status.contains("closed workspace pane"));
 }
 
