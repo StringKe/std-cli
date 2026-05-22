@@ -94,6 +94,22 @@ mod tests {
             "Action / Workflow"
         );
         assert_eq!(
+            translate(Locale::ZhCn, "launcher.results.group.action_workflow"),
+            "操作 / Workflow"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.results.searching.title"),
+            "搜索中"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.results.matches_suffix"),
+            "个匹配"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.results.kind.clipboard"),
+            "剪贴板"
+        );
+        assert_eq!(
             translate(Locale::ZhCn, "launcher.empty.suggestion.rebuild.title"),
             "重建 Index"
         );

@@ -109,7 +109,7 @@ impl LauncherSurfaceSmokeReport {
             && self.matches_state.contains("grouped")
             && self
                 .action_bar_preview
-                .contains("breadcrumb=Command > Rebuild Index")
+                .contains("breadcrumb=命令 > Rebuild Index")
             && self
                 .action_bar_preview
                 .contains("primary=std index rebuild .")

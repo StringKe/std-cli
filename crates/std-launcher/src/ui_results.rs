@@ -255,7 +255,7 @@ mod tests {
         assert!(view.result_overflowed());
         assert_eq!(
             i18n::t("launcher.results.overflow_hint"),
-            "200+ matches, refine your query"
+            "超过 200 个匹配，请细化查询"
         );
     }
 

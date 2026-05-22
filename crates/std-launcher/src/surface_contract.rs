@@ -67,7 +67,7 @@ impl LauncherSurfaceContract {
                 .contains(&format!("primary_shortcut={}", input::enter().label()))
             && self.action_bar.contains("height=36")
             && self.action_bar.contains("left=breadcrumb+primary-command")
-            && self.action_bar.contains("breadcrumb=Command > Rebuild Index")
+            && self.action_bar.contains("breadcrumb=命令 > Rebuild Index")
             && self
                 .action_bar
                 .contains(&format!("actions={}", input::launcher_action_panel().label()))

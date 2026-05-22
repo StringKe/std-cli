@@ -277,7 +277,7 @@ mod tests {
         assert_eq!(
             ActionBarPreviewSummary::from_preview(&preview),
             ActionBarPreviewSummary {
-                breadcrumb: "Command > Rebuild Index".to_string(),
+                breadcrumb: "命令 > Rebuild Index".to_string(),
                 primary: "std index rebuild .".to_string()
             }
         );
@@ -298,7 +298,7 @@ mod tests {
         assert_eq!(
             ActionBarPreviewSummary::from_preview(&preview),
             ActionBarPreviewSummary {
-                breadcrumb: "Memory > Memory".to_string(),
+                breadcrumb: "记忆 > Memory".to_string(),
                 primary: "Pinned workspace memory".to_string()
             }
         );
