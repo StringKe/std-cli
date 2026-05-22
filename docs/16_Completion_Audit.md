@@ -34,17 +34,7 @@ error=none
 
 该证据覆盖默认隐藏、真实全局快捷键、关闭只隐藏、隐藏后 hotkey runtime 仍注册、二次唤起。
 
-当前显式 UI 预览截图证据（均为 766 x 506 PNG）：
-
-```text
-target/ui-evidence/launcher-light-results-refined.png
-target/ui-evidence/launcher-dark-results-refined.png
-target/ui-evidence/launcher-light-no-results-refined.png
-target/ui-evidence/launcher-light-defer-refined.png
-target/ui-evidence/launcher-light-error-refined.png
-```
-
-该证据覆盖 light / dark、搜索结果、无结果、defer 和错误状态的当前真实渲染。仍需补齐焦点环、A11y、reduce motion 和安装版截图审计。
+当前截图证据：未完成。旧 `target/ui-evidence` 截图不得列入已验证证据；下一次验收必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 的 manifest，并由 `std doctor` 校验 PNG 文件、字节数和 capture matrix 完整性。
 
 ### macOS app 多语言名称
 
@@ -172,24 +162,7 @@ history_count=1
 - Index 分析和 coverage
 - 10 个 Studio workspace pane 模型入口
 
-安装版 `.app` 已验证真实 UI 可视渲染：
-
-```text
-open /tmp/std-cli-install-current/Applications/std Studio.app
-pgrep -fl std-studio
-/private/tmp/std-cli-install-current/Applications/std Studio.app/Contents/MacOS/std-studio
-
-screencapture -x /tmp/std-studio-installed-ui.png
-file /tmp/std-studio-installed-ui.png
-PNG image data, 3840 x 2160, 8-bit/color RGBA, non-interlaced
-
-System Events window name
-std-cli Studio
-```
-
-截图 `/tmp/std-studio-installed-ui.png` 可视确认 Dashboard、侧边导航、Context、Next Gates、Runtime、Last Status 和状态栏均已真实渲染，但截图仍需要按 docs/18-24 重新验收视觉质量、light/dark、焦点、IME、动效、A11y 和 workspace pane 交互。
-
-当前验证启动的 `std-studio` 进程已关闭，无遗留进程。
+当前 Studio 截图证据：未完成。旧 `/tmp` 截图不得列入已验证证据；下一次验收必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 的 manifest，并覆盖 light / dark、Dashboard、Workflow、Analysis、Plugin、Operations、Settings、panes 等场景。
 
 ### Terminal CLI runtime
 

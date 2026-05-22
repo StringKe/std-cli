@@ -46,11 +46,7 @@
 - `visible_after_close=false`
 - `resident_after_close=true`
 - `second_event_received=true`
-- `target/ui-evidence/launcher-light-results-refined.png` 为 766 x 506 PNG
-- `target/ui-evidence/launcher-dark-results-refined.png` 为 766 x 506 PNG
-- `target/ui-evidence/launcher-light-no-results-refined.png` 为 766 x 506 PNG
-- `target/ui-evidence/launcher-light-defer-refined.png` 为 766 x 506 PNG
-- `target/ui-evidence/launcher-light-error-refined.png` 为 766 x 506 PNG
+- `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 本轮 manifest 校验：未完成
 
 已覆盖：
 
@@ -60,12 +56,11 @@
 - 关闭只隐藏
 - 隐藏后再次唤起
 - 外部行为默认 defer
-- light / dark 截图
-- 搜索结果、无结果、defer、错误状态截图
 
 缺口：
 
 - Launcher 截图仍需按 docs/18-21 做像素级审计，不得只用文件存在判定完成
+- Launcher light / dark、搜索结果、无结果、defer、错误状态截图需要本轮 capture matrix manifest
 - 真实全局热键安装包验收仍需单独显式运行，不进入默认回归门禁
 - 焦点环、IME、A11y、reduce motion 和安装版 UI 需要真实证据
 
@@ -89,8 +84,7 @@
 - `plugin_ts_status=Completed`
 - `operations_release_result=release verify evidence 7/7 present`
 - `operations_install_result=install verify evidence 5/5 present`
-- `/tmp/std-studio-installed-ui.png` 为 3840 x 2160 非空截图
-- System Events 窗口名为 `std-cli Studio`
+- `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 本轮 Studio manifest 校验：未完成
 
 已覆盖：
 
@@ -102,7 +96,6 @@
 - QA、Doctor、Release、Install 状态面板
 - Settings
 - workspace pane 模型
-- 真实 UI 渲染
 
 缺口：
 

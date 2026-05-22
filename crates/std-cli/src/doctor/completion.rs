@@ -33,6 +33,13 @@ const CURRENT_EVIDENCE_RULES: [&str; 4] = [
     "安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出",
 ];
 
+const STALE_EVIDENCE_PATTERNS: [&str; 4] = [
+    "target/ui-evidence/",
+    "/tmp/std-studio-installed-ui.png",
+    "screencapture -x /tmp/",
+    "PNG image data, 3840 x 2160",
+];
+
 pub(crate) struct CompletionDoctor {
     pub(crate) audit: &'static str,
     pub(crate) matrix: &'static str,
@@ -78,6 +85,7 @@ fn check_audit_doc(audit: &str) -> Result<(), CliError> {
     for required in CURRENT_EVIDENCE_RULES {
         check_text(audit, required)?;
     }
+    reject_stale_evidence_paths(audit)?;
     Ok(())
 }
 
@@ -108,6 +116,18 @@ fn check_matrix_doc(matrix: &str) -> Result<(), CliError> {
     for required in CURRENT_EVIDENCE_RULES {
         check_text(matrix, required)?;
     }
+    reject_stale_evidence_paths(matrix)?;
+    Ok(())
+}
+
+fn reject_stale_evidence_paths(text: &str) -> Result<(), CliError> {
+    for stale in STALE_EVIDENCE_PATTERNS {
+        if text.contains(stale) {
+            return Err(CliError::Doctor(format!(
+                "stale UI evidence path must not appear in completion evidence: {stale}"
+            )));
+        }
+    }
     Ok(())
 }
 
@@ -127,5 +147,17 @@ mod tests {
         assert!(report
             .blockers
             .contains(&"Studio UI 仍需按 docs/18-24 重新验收"));
+    }
+
+    #[test]
+    fn completion_gate_rejects_stale_ui_evidence_paths() {
+        let error = reject_stale_evidence_paths(
+            "evidence=target/ui-evidence/launcher-light-results-refined.png",
+        )
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("stale UI evidence path must not appear"));
     }
 }
