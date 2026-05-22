@@ -50,6 +50,9 @@ impl Default for StudioLayoutState {
 
 impl StudioLayoutState {
     pub(crate) fn handle_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
         if std_egui::input::studio_sidebar_toggle().pressed(ctx) {
             self.sidebar_open = !self.sidebar_open;
         }
@@ -216,6 +219,52 @@ mod tests {
         assert_eq!(layout.overlay_selected, 1);
         layout.move_overlay_selection(9, 3);
         assert_eq!(layout.overlay_selected, 2);
+    }
+
+    #[test]
+    fn studio_layout_global_shortcuts_respect_ime_preedit_frame() {
+        let ctx = egui::Context::default();
+        let mut layout = StudioLayoutState::default();
+
+        let _ = ctx.run(ime_preedit_global_shortcut_input(), |ctx| {
+            layout.handle_keyboard(ctx);
+        });
+
+        assert!(layout.sidebar_open);
+        assert!(!layout.inspector_open);
+        assert!(!layout.bottom_panel_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
+    }
+
+    fn ime_preedit_global_shortcut_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("gong".to_string())),
+                egui::Event::Key {
+                    key: egui::Key::P,
+                    physical_key: Some(egui::Key::P),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers {
+                        command: true,
+                        shift: true,
+                        ..Default::default()
+                    },
+                },
+                egui::Event::Key {
+                    key: egui::Key::B,
+                    physical_key: Some(egui::Key::B),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers {
+                        command: true,
+                        ..Default::default()
+                    },
+                },
+            ],
+            ..Default::default()
+        }
     }
 
     #[test]
