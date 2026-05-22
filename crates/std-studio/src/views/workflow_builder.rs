@@ -1,63 +1,17 @@
 use crate::{
     ui,
     views::{
-        workflow_builder_ai, workflow_builder_metrics, workflow_builder_properties,
-        workflow_builder_run, workflow_builder_status, workflow_builder_toolbar,
-        workflow_builder_trace, workflow_rows,
+        workflow_builder_ai, workflow_builder_properties, workflow_builder_run,
+        workflow_builder_toolbar, workflow_rows,
     },
     StudioEguiApp,
 };
 use eframe::egui;
 use std::path::Path;
-use std_egui::{i18n, tokens::Space};
+use std_egui::i18n;
 
 impl StudioEguiApp {
-    pub(crate) fn render_workflow_builder(&mut self, ui: &mut egui::Ui) {
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.workflow_builder.title"),
-                i18n::t("studio.workflow_builder.detail"),
-            );
-            self.render_builder_toolbar(ui);
-            ui.add_space(Space::XS as f32);
-            workflow_builder_status::render(ui, self);
-            ui.add_space(Space::XS as f32);
-            self.render_builder_workspace(ui);
-            ui.add_space(Space::XS as f32);
-            workflow_builder_trace::render(ui, self);
-            ui.add_space(Space::XS as f32);
-            self.render_ai_assist_panel(ui);
-        });
-    }
-
-    fn render_builder_workspace(&mut self, ui: &mut egui::Ui) {
-        let available_width = ui.available_width();
-        let Some((left_width, right_width)) =
-            workflow_builder_metrics::builder_columns(available_width)
-        else {
-            self.render_builder_steps(ui);
-            ui.add_space(workflow_builder_metrics::BUILDER_PANEL_GAP);
-            self.render_step_properties(ui);
-            return;
-        };
-        ui.horizontal_top(|ui| {
-            ui.set_min_width(available_width);
-            ui.allocate_ui_with_layout(
-                workflow_builder_metrics::builder_pane_size(left_width),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_builder_steps(ui),
-            );
-            ui.add_space(workflow_builder_metrics::BUILDER_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                workflow_builder_metrics::builder_pane_size(right_width),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_step_properties(ui),
-            );
-        });
-    }
-
-    fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_builder_toolbar(&mut self, ui: &mut egui::Ui) {
         let run_control = workflow_builder_run::WorkflowRunControl::from_execution(
             self.app.last_workflow_execution.as_ref(),
         );
@@ -87,7 +41,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn render_builder_steps(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_builder_steps(&mut self, ui: &mut egui::Ui) {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -149,7 +103,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn render_step_properties(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_step_properties(&mut self, ui: &mut egui::Ui) {
         ui::subtle_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -194,13 +148,13 @@ impl StudioEguiApp {
         self.apply_planned_step_actions(actions);
     }
 
-    fn render_ai_assist_panel(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_ai_assist_panel(&mut self, ui: &mut egui::Ui) {
         if let Some(action) = workflow_builder_ai::render(ui, &mut self.workflow_goal) {
             self.apply_workflow_ai_action(action);
         }
     }
 
-    fn preview_active_workflow(&mut self) {
+    pub(crate) fn preview_active_workflow(&mut self) {
         if let Some(path) = self.workflow_selected_path.clone() {
             self.preview_workflow_path(&path);
         } else {
@@ -208,7 +162,7 @@ impl StudioEguiApp {
         }
     }
 
-    fn run_active_workflow(&mut self) {
+    pub(crate) fn run_active_workflow(&mut self) {
         if let Some(path) = self.workflow_selected_path.clone() {
             self.run_workflow_path(&path);
         } else {
