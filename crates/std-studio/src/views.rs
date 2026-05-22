@@ -34,6 +34,10 @@ pub(crate) mod workflow_builder_trace;
 mod workflow_rows;
 mod workflows;
 
+pub(crate) fn workflow_builder_step_visual_contract() -> &'static str {
+    workflow_rows::builder_step_visual_contract()
+}
+
 pub(crate) fn schema_label(schema: Option<&serde_json::Value>) -> String {
     match schema {
         Some(serde_json::Value::Object(object)) => object

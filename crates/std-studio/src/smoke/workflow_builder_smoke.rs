@@ -1,4 +1,6 @@
-use crate::views::{workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace};
+use crate::views::{
+    self, workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace,
+};
 use std_egui::input;
 use std_studio::StudioApp;
 
@@ -100,7 +102,7 @@ fn builder_visual_contract() -> String {
     [
         "builder_visual=single-pane-workbench",
         "flow=goal-input|plan|save|simulate|test|trace",
-        "steps=list|selected-row|keyboard-reorder",
+        views::workflow_builder_step_visual_contract(),
         "properties=step-name|parameters-json|index|add|update|move|remove",
         "debug=dry-run|execution|trace",
         "bottom-panel=batch-debug|logs|problems|performance",

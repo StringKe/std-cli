@@ -201,7 +201,9 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
     assert!(summary.contains("success>success>success>success"));
     assert!(summary.contains("builder_visual_contract=builder_visual=single-pane-workbench"));
     assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
-    assert!(summary.contains("steps=list|selected-row|keyboard-reorder"));
+    assert!(summary.contains(
+        "steps=list|selected-row|keyboard-reorder|grabber-6px|selected-accent-rail-4px|type-chip"
+    ));
     assert!(summary.contains("properties=step-name|parameters-json|index|add|update|move|remove"));
     assert!(summary.contains("debug=dry-run|execution|trace"));
     assert!(summary.contains("bottom-panel=batch-debug|logs|problems|performance"));
