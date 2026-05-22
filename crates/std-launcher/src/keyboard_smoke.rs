@@ -75,7 +75,7 @@ impl LauncherState {
             token_delete_query: token_delete.after_delete,
             token_delete_normalized_query: token_delete.normalized_after_delete,
             enter_window,
-            ui_handler_contract: "ui-handler=cancel-before-ime,ime-before-enter",
+            ui_handler_contract: "ui-handler=ime-before-cancel-enter",
             ime_visible_state_contract:
                 "ime-visible-state=search-preedit-visible,enter-owned-by-ime",
             model_contract:

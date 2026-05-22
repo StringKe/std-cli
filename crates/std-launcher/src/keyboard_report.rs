@@ -68,7 +68,7 @@ impl LauncherKeyboardReport {
             && self.token_delete_query == "open terminal"
             && self.token_delete_normalized_query == "open terminal"
             && self.enter_window.pass()
-            && self.ui_handler_contract == "ui-handler=cancel-before-ime,ime-before-enter"
+            && self.ui_handler_contract == "ui-handler=ime-before-cancel-enter"
             && self.ime_visible_state_contract
                 == "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
             && self.model_contract

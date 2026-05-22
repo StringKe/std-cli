@@ -28,14 +28,14 @@ fn launcher_ui_keyboard_uses_input_ime_guard_before_actions() {
     let direct_trigger_index = source.find("pressed_mod_number(ctx, 9)").unwrap();
 
     assert!(!source.contains("tokens::ime_composing"));
-    assert!(cancel_index < guard_index);
+    assert!(guard_index < cancel_index);
     assert!(guard_index < enter_index);
     assert!(guard_index < action_panel_index);
     assert!(guard_index < direct_trigger_index);
 }
 
 #[test]
-fn launcher_ui_cancel_remains_available_during_ime_composition() {
+fn launcher_ui_cancel_respects_ime_composition() {
     let source = include_str!("ui_keyboard.rs");
     let cancel_index = source
         .find("input::launcher_cancel().pressed(ctx)")
@@ -43,8 +43,8 @@ fn launcher_ui_cancel_remains_available_during_ime_composition() {
     let cancel_route_index = source.find("LauncherKey::CancelExecuting, false").unwrap();
     let guard_index = source.find("input::ime_composing(ctx)").unwrap();
 
-    assert!(cancel_index < guard_index);
-    assert!(cancel_route_index < guard_index);
+    assert!(guard_index < cancel_index);
+    assert!(guard_index < cancel_route_index);
 }
 
 #[test]
@@ -209,7 +209,7 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
     );
     assert_eq!(
         report.ui_handler_contract,
-        "ui-handler=cancel-before-ime,ime-before-enter"
+        "ui-handler=ime-before-cancel-enter"
     );
     assert_eq!(
         report.ime_visible_state_contract,
@@ -219,7 +219,7 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
         report.real_interaction_contract,
         "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
     );
-    assert!(summary.contains("ui_handler_contract=ui-handler=cancel-before-ime,ime-before-enter"));
+    assert!(summary.contains("ui_handler_contract=ui-handler=ime-before-cancel-enter"));
     assert!(summary.contains(
         "ime_visible_state_contract=ime-visible-state=search-preedit-visible,enter-owned-by-ime"
     ));

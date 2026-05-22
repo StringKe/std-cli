@@ -11,11 +11,11 @@ pub(crate) fn handle_search_shortcuts(
     state: &mut LauncherState,
     hide_requested: &mut bool,
 ) {
-    if input::launcher_cancel().pressed(ctx) {
-        state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+    if input::ime_composing(ctx) {
         return;
     }
-    if input::ime_composing(ctx) {
+    if input::launcher_cancel().pressed(ctx) {
+        state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
         return;
     }
     if input::mod_arrow_down().pressed(ctx) {
@@ -86,6 +86,7 @@ mod tests {
     #[test]
     fn ui_keyboard_routes_executing_enter_and_cancel_before_normal_trigger() {
         let source = include_str!("ui_keyboard.rs");
+        let guard_index = source.find("input::ime_composing(ctx)").unwrap();
         let cancel_index = source
             .find("input::launcher_cancel().pressed(ctx)")
             .unwrap();
@@ -95,6 +96,7 @@ mod tests {
             .find("state.handle_keyboard_input_by_user(key, false)")
             .unwrap();
 
+        assert!(guard_index < cancel_index);
         assert!(cancel_index < enter_index);
         assert!(executing_index < user_trigger_index);
     }
@@ -104,6 +106,7 @@ mod tests {
         let ctx = egui::Context::default();
         let mut state = LauncherState::new();
         state.update_query("index");
+        state.view.preview_executing();
         let before_query = state.view.query.clone();
         let before_selected = state.view.selected;
         let mut hide_requested = false;
@@ -114,6 +117,7 @@ mod tests {
 
         assert_eq!(state.view.query, before_query);
         assert_eq!(state.view.selected, before_selected);
+        assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);
         assert!(state.view.feedback.is_none());
         assert!(!state.action_panel.open);
         assert!(!hide_requested);
@@ -129,6 +133,16 @@ mod tests {
                     pressed: true,
                     repeat: false,
                     modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::Key {
+                    key: egui::Key::C,
+                    physical_key: Some(egui::Key::C),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers {
+                        ctrl: true,
+                        ..Default::default()
+                    },
                 },
                 egui::Event::Key {
                     key: egui::Key::ArrowDown,
