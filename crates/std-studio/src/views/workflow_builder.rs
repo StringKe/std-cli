@@ -218,19 +218,20 @@ impl StudioEguiApp {
 
     pub(crate) fn open_workflow_history(&mut self) {
         self.app.open_execution_history_pane();
-        self.layout.open_bottom_panel();
+        self.open_batch_debug_panel();
         self.status = "workflow history opened".to_string();
     }
 
     pub(crate) fn cancel_active_workflow(&mut self) {
         match self.app.cancel_last_workflow_execution() {
             Ok(execution) => {
-                self.layout.open_bottom_panel();
-                self.status = format!(
+                let status = format!(
                     "cancelled {} steps={}",
                     execution.workflow_name,
                     execution.results.len()
                 );
+                self.open_batch_debug_panel();
+                self.status = status;
             }
             Err(error) => self.status = error.to_string(),
         }
@@ -250,12 +251,13 @@ impl StudioEguiApp {
         match self.app.planned_workflow.clone() {
             Some(workflow) => match self.app.preview_workflow(&workflow) {
                 Ok(preview) => {
-                    self.layout.open_bottom_panel();
-                    self.status = format!(
+                    let status = format!(
                         "dry-run {} steps={}",
                         preview.workflow_name,
                         preview.steps.len()
-                    )
+                    );
+                    self.open_batch_debug_panel();
+                    self.status = status;
                 }
                 Err(error) => self.status = error.to_string(),
             },
@@ -276,12 +278,13 @@ impl StudioEguiApp {
     pub(crate) fn preview_workflow_path(&mut self, path: &Path) {
         match self.app.preview_workflow_path(path) {
             Ok(preview) => {
-                self.layout.open_bottom_panel();
-                self.status = format!(
+                let status = format!(
                     "dry-run {} steps={}",
                     preview.workflow_name,
                     preview.steps.len()
-                )
+                );
+                self.open_batch_debug_panel();
+                self.status = status;
             }
             Err(error) => self.status = error.to_string(),
         }
@@ -290,12 +293,13 @@ impl StudioEguiApp {
     pub(crate) fn run_workflow_path(&mut self, path: &Path) {
         match self.app.run_workflow_path(path) {
             Ok(execution) => {
-                self.layout.open_bottom_panel();
-                self.status = format!(
+                let status = format!(
                     "run {:?} steps={}",
                     execution.status,
                     execution.results.len()
-                )
+                );
+                self.open_batch_debug_panel();
+                self.status = status;
             }
             Err(error) => self.status = error.to_string(),
         }
@@ -304,12 +308,13 @@ impl StudioEguiApp {
     pub(crate) fn run_planned_workflow(&mut self) {
         match self.app.run_planned_workflow() {
             Ok(execution) => {
-                self.layout.open_bottom_panel();
-                self.status = format!(
+                let status = format!(
                     "run planned {:?} steps={}",
                     execution.status,
                     execution.results.len()
-                )
+                );
+                self.open_batch_debug_panel();
+                self.status = status;
             }
             Err(error) => self.status = error.to_string(),
         }

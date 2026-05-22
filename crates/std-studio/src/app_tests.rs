@@ -203,6 +203,7 @@ fn workspace_commands_drive_main_workspace_and_workflow_preview() {
         .lock()
         .unwrap()
         .push(StudioWorkspaceCommand::ShowInMain(StudioPane::Workflows));
+    app.bottom_panel_tab = crate::bottom_panel::BottomPanelTab::Problems;
     app.workspace_commands
         .lock()
         .unwrap()
@@ -215,11 +216,16 @@ fn workspace_commands_drive_main_workspace_and_workflow_preview() {
     assert_eq!(app.app.active_pane, StudioPane::Workflows);
     assert!(app.app.workflow_debug.is_some());
     assert!(app.layout.bottom_panel_open);
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::BatchDebug
+    );
     let preview_panel = app.bottom_panel_snapshot();
     assert_eq!(preview_panel.title, "Workspace Preview");
     assert_eq!(preview_panel.rows.len(), 1);
     assert!(app.status.contains("workspace preview"));
 
+    app.bottom_panel_tab = crate::bottom_panel::BottomPanelTab::Logs;
     app.workspace_commands
         .lock()
         .unwrap()
@@ -228,6 +234,10 @@ fn workspace_commands_drive_main_workspace_and_workflow_preview() {
 
     assert!(app.app.last_workflow_execution.is_some());
     assert!(app.layout.bottom_panel_open);
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::BatchDebug
+    );
     let run_panel = app.bottom_panel_snapshot();
     assert_eq!(run_panel.title, "Workspace Preview");
     assert_eq!(run_panel.rows.len(), 1);
@@ -236,11 +246,18 @@ fn workspace_commands_drive_main_workspace_and_workflow_preview() {
 
 #[test]
 fn workflow_history_action_opens_history_pane_and_bottom_panel() {
-    let mut app = StudioEguiApp::default();
+    let mut app = StudioEguiApp {
+        bottom_panel_tab: crate::bottom_panel::BottomPanelTab::Performance,
+        ..Default::default()
+    };
 
     app.open_workflow_history();
 
     assert!(app.layout.bottom_panel_open);
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::BatchDebug
+    );
     assert!(app.status.contains("workflow history opened"));
     let focused = focused_workspace_spec(&app.app).unwrap();
     assert_eq!(focused.content_key, "history");
@@ -252,11 +269,17 @@ fn batch_run_opens_bottom_panel_with_report_state() {
 
     let body = app.batch_json.clone();
     let report = app.app.run_batch_json(&body).unwrap();
-    app.layout.open_bottom_panel();
-    app.status = format!("batch {:?} steps={}", report.status, report.steps.len());
+    let status = format!("batch {:?} steps={}", report.status, report.steps.len());
+    app.bottom_panel_tab = crate::bottom_panel::BottomPanelTab::Logs;
+    app.open_batch_debug_panel();
+    app.status = status;
 
     assert!(app.app.last_batch_report.is_some());
     assert!(app.layout.bottom_panel_open);
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::BatchDebug
+    );
     let panel = app.bottom_panel_snapshot();
     assert_eq!(panel.title, "Batch Debug");
     assert_eq!(panel.rows.len(), 2);

@@ -69,6 +69,10 @@ fn workflow_preview_seeds_builder_runtime_state() {
     assert!(app.app.last_workflow_execution.is_some());
     assert_eq!(app.app.open_workspace_panes().count(), 2);
     assert!(app.layout.bottom_panel_open);
+    assert_eq!(
+        app.bottom_panel_tab,
+        crate::bottom_panel::BottomPanelTab::BatchDebug
+    );
 }
 
 #[test]

@@ -83,6 +83,11 @@ pub(crate) struct BottomPanelRow {
 }
 
 impl StudioEguiApp {
+    pub(crate) fn open_batch_debug_panel(&mut self) {
+        self.layout.open_bottom_panel();
+        self.bottom_panel_tab = BottomPanelTab::BatchDebug;
+    }
+
     pub(crate) fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             let tabs = BottomPanelTabModel::for_selected(self.bottom_panel_tab);
@@ -420,5 +425,19 @@ mod tests {
             .rows
             .iter()
             .any(|row| row.name == "Workspace panes"));
+    }
+
+    #[test]
+    fn workflow_run_helper_opens_batch_debug_even_from_other_tabs() {
+        let mut app = StudioEguiApp {
+            bottom_panel_tab: BottomPanelTab::Problems,
+            ..Default::default()
+        };
+
+        app.open_batch_debug_panel();
+
+        assert!(app.layout.bottom_panel_open);
+        assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
+        assert_eq!(app.bottom_panel_snapshot().title, "Batch Debug");
     }
 }
