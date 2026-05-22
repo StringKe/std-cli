@@ -174,6 +174,12 @@ impl StudioSmokeReport {
                 .contains("theme_control=segmented-control")
             && self
                 .pane_settings_contract
+                .contains("zoom_levels=0.85|1.00|1.25|1.50")
+            && self
+                .pane_settings_contract
+                .contains("zoom_control=segmented-control")
+            && self
+                .pane_settings_contract
                 .contains("motion_control=token-toggle-row")
             && self
                 .pane_settings_contract

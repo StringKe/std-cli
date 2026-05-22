@@ -94,6 +94,12 @@ impl StudioEguiApp {
             ui.add_space(Space::SM as f32);
             self.render_theme_profile(ui);
             ui.add_space(Space::SM as f32);
+            ui.label(i18n::t("studio.settings.zoom.label"));
+            if let Some(scale) = settings_rows::ui_scale_control(ui, &self.settings_ui_scale) {
+                self.settings_ui_scale = scale.to_string();
+                self.save_setting("appearance.ui_scale", self.settings_ui_scale.clone());
+            }
+            ui.add_space(Space::SM as f32);
             if let ToggleRowEvent::Toggle(enabled) = settings_toggle::toggle_row(
                 ui,
                 i18n::t("studio.settings.motion.reduce"),

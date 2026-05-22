@@ -66,6 +66,8 @@ pub(crate) struct SettingsContract {
     pub(crate) hotkey_control: &'static str,
     pub(crate) theme_modes: Vec<&'static str>,
     pub(crate) theme_control: &'static str,
+    pub(crate) zoom_levels: Vec<&'static str>,
+    pub(crate) zoom_control: &'static str,
     pub(crate) motion_control: &'static str,
     pub(crate) contrast_control: &'static str,
     pub(crate) transparency_control: &'static str,
@@ -86,6 +88,8 @@ pub(crate) fn settings_contract() -> SettingsContract {
         hotkey_control: "token-binding-row",
         theme_modes: vec!["system", "dark", "light"],
         theme_control: "segmented-control",
+        zoom_levels: vec!["0.85", "1.00", "1.25", "1.50"],
+        zoom_control: "segmented-control",
         motion_control: "token-toggle-row",
         contrast_control: "token-toggle-row",
         transparency_control: "token-toggle-row",
@@ -121,6 +125,8 @@ mod tests {
         assert_eq!(contract.hotkey_control, "token-binding-row");
         assert_eq!(contract.theme_modes, vec!["system", "dark", "light"]);
         assert_eq!(contract.theme_control, "segmented-control");
+        assert_eq!(contract.zoom_levels, vec!["0.85", "1.00", "1.25", "1.50"]);
+        assert_eq!(contract.zoom_control, "segmented-control");
         assert_eq!(contract.motion_control, "token-toggle-row");
         assert_eq!(contract.contrast_control, "token-toggle-row");
         assert_eq!(contract.transparency_control, "token-toggle-row");

@@ -89,6 +89,8 @@ fn apply_env_overrides(config: &mut StdConfig) -> Result<(), ConfigError> {
             "appearance.reduce_transparency",
         ),
         ("STD_REDUCE_TRANSPARENCY", "appearance.reduce_transparency"),
+        ("STDCLI_UI_SCALE", "appearance.ui_scale"),
+        ("STD_UI_ZOOM", "appearance.ui_scale"),
     ] {
         if let Ok(value) = env::var(env_key) {
             config.set_field(field, &value).map_err(|error| {

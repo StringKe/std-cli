@@ -444,6 +444,9 @@ fn studio_saves_settings_through_shared_config_model() {
     studio
         .save_config_field_to(&config_path, "appearance.reduce_transparency", "true")
         .unwrap();
+    studio
+        .save_config_field_to(&config_path, "appearance.ui_scale", "1.25")
+        .unwrap();
 
     let saved: StdConfig =
         serde_json::from_str(&std::fs::read_to_string(&config_path).unwrap()).unwrap();
@@ -458,12 +461,14 @@ fn studio_saves_settings_through_shared_config_model() {
     assert!(studio.core.config.reduce_motion());
     assert!(studio.core.config.high_contrast());
     assert!(studio.core.config.reduce_transparency());
+    assert_eq!(studio.core.config.ui_scale(), 1.25);
     assert_eq!(saved.launcher_hotkey, "Cmd+Space");
     assert!(saved.enable_ai);
     assert_eq!(saved.theme, "dark");
     assert!(saved.reduce_motion());
     assert!(saved.high_contrast());
     assert!(saved.reduce_transparency());
+    assert_eq!(saved.ui_scale(), 1.25);
     assert!(studio.dashboard.action_count >= 3);
     assert!(studio
         .save_config_field_to(&config_path, "missing", "x")

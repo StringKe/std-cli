@@ -112,6 +112,21 @@ pub(crate) fn theme_mode_control(ui: &mut egui::Ui, current: &str) -> Option<&'s
     selected
 }
 
+pub(crate) fn ui_scale_control(ui: &mut egui::Ui, current: &str) -> Option<&'static str> {
+    let current = normalized_ui_scale(current);
+    let mut selected = None;
+    ui.horizontal(|ui| {
+        for scale in ["0.85", "1.00", "1.25", "1.50"] {
+            let label = format!("{}x", scale.trim_end_matches('0').trim_end_matches('.'));
+            let response = segmented_button(ui, &label, scale == current);
+            if response.clicked() {
+                selected = Some(scale);
+            }
+        }
+    });
+    selected
+}
+
 fn normalized_theme_mode(value: &str) -> &str {
     match value.trim().to_ascii_lowercase().as_str() {
         "dark" => "dark",
@@ -121,6 +136,10 @@ fn normalized_theme_mode(value: &str) -> &str {
 }
 
 fn theme_mode_button(ui: &mut egui::Ui, mode: &'static str, selected: bool) -> egui::Response {
+    segmented_button(ui, theme_mode_label(mode), selected)
+}
+
+fn segmented_button(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
     let ctx = ui.ctx().clone();
     let fill = if selected {
         Color::accent_weak(&ctx)
@@ -134,7 +153,7 @@ fn theme_mode_button(ui: &mut egui::Ui, mode: &'static str, selected: bool) -> e
     };
     ui.add(
         egui::Button::new(
-            egui::RichText::new(theme_mode_label(mode))
+            egui::RichText::new(label)
                 .font(Text::body())
                 .color(Color::fg_primary(&ctx)),
         )
@@ -142,6 +161,15 @@ fn theme_mode_button(ui: &mut egui::Ui, mode: &'static str, selected: bool) -> e
         .stroke(stroke)
         .corner_radius(egui::CornerRadius::same(Radius::SM)),
     )
+}
+
+fn normalized_ui_scale(value: &str) -> &str {
+    match value.trim() {
+        "0.85" => "0.85",
+        "1.25" => "1.25",
+        "1.5" | "1.50" => "1.50",
+        _ => "1.00",
+    }
 }
 
 fn theme_mode_label(mode: &str) -> &'static str {

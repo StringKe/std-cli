@@ -404,6 +404,19 @@ fn settings_appearance_exposes_reduce_transparency_toggle() {
 }
 
 #[test]
+fn settings_appearance_exposes_ui_zoom_control() {
+    let settings = include_str!("views/settings.rs");
+    let rows = include_str!("views/settings_rows.rs");
+    let model = include_str!("views/settings_model.rs");
+
+    assert!(settings.contains("studio.settings.zoom.label"));
+    assert!(settings.contains("settings_rows::ui_scale_control"));
+    assert!(settings.contains("\"appearance.ui_scale\""));
+    assert!(rows.contains("[\"0.85\", \"1.00\", \"1.25\", \"1.50\"]"));
+    assert!(model.contains("zoom_control: \"segmented-control\""));
+}
+
+#[test]
 fn settings_ai_provider_uses_token_toggle_row() {
     let settings = include_str!("views/settings.rs");
     let toggle = include_str!("views/settings_toggle.rs");

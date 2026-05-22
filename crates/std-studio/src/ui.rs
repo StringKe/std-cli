@@ -7,6 +7,7 @@ pub(crate) fn install_visuals(
     config_reduce_motion: bool,
     config_high_contrast: bool,
     config_reduce_transparency: bool,
+    config_ui_scale: f32,
 ) -> ThemeProfile {
     ThemeProfile::apply_with_accessibility(
         ctx,
@@ -14,6 +15,7 @@ pub(crate) fn install_visuals(
         config_reduce_motion,
         config_high_contrast,
         config_reduce_transparency,
+        config_ui_scale,
     )
 }
 

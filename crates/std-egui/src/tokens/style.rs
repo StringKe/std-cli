@@ -35,7 +35,7 @@ impl ThemeProfile {
         mode: ThemeMode,
         config_reduce_motion: bool,
     ) -> Self {
-        Self::apply_with_accessibility(ctx, mode, config_reduce_motion, false, false)
+        Self::apply_with_accessibility(ctx, mode, config_reduce_motion, false, false, 1.0)
     }
 
     pub fn apply_with_accessibility(
@@ -44,6 +44,7 @@ impl ThemeProfile {
         config_reduce_motion: bool,
         config_high_contrast: bool,
         config_reduce_transparency: bool,
+        config_ui_scale: f32,
     ) -> Self {
         let a11y = AccessibilityContext::from_env();
         let a11y = AccessibilityContext {
@@ -51,7 +52,7 @@ impl ThemeProfile {
             reduce_transparency: a11y.reduce_transparency || config_reduce_transparency,
             ..a11y
         };
-        apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
+        apply_theme_with_scale(ctx, mode, UiScale::from_config(config_ui_scale), &a11y);
         let mut profile = Self::from_applied(ctx, mode, &a11y);
         profile.reduce_motion = profile.reduce_motion || config_reduce_motion;
         profile
@@ -407,7 +408,7 @@ mod tests {
         let ctx = egui::Context::default();
 
         let profile =
-            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, true, false);
+            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, true, false, 1.0);
 
         assert!(profile.high_contrast);
         assert_eq!(profile.focus_ring_width, 3);
@@ -422,9 +423,19 @@ mod tests {
         let ctx = egui::Context::default();
 
         let profile =
-            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Dark, false, false, true);
+            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Dark, false, false, true, 1.0);
 
         assert!(profile.reduce_transparency);
         assert_eq!(profile.effective, EffectiveTheme::Dark);
+    }
+
+    #[test]
+    fn theme_profile_uses_config_ui_scale_for_text_and_spacing() {
+        let ctx = egui::Context::default();
+
+        ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, false, false, 1.25);
+
+        assert_eq!(ctx.style().text_styles[&TextStyle::Body].size, 16.25);
+        assert_eq!(ctx.style().spacing.indent, 20.0);
     }
 }

@@ -34,7 +34,7 @@ impl fmt::Display for ConfigError {
 
 impl Error for ConfigError {}
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct StdConfig {
     pub launcher_hotkey: String,
     pub data_dir: PathBuf,
@@ -44,11 +44,23 @@ pub struct StdConfig {
     pub appearance: AppearanceConfig,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct AppearanceConfig {
     pub reduce_motion: bool,
     pub high_contrast: bool,
     pub reduce_transparency: bool,
+    pub ui_scale: f32,
+}
+
+impl Default for AppearanceConfig {
+    fn default() -> Self {
+        Self {
+            reduce_motion: false,
+            high_contrast: false,
+            reduce_transparency: false,
+            ui_scale: 1.0,
+        }
+    }
 }
 
 impl StdConfig {
@@ -96,6 +108,10 @@ impl StdConfig {
         self.appearance.reduce_transparency
     }
 
+    pub fn ui_scale(&self) -> f32 {
+        self.appearance.ui_scale
+    }
+
     pub fn writable_config_path() -> PathBuf {
         env::var_os("STDCLI_CONFIG")
             .map(PathBuf::from)
@@ -140,6 +156,7 @@ mod tests {
         assert!(!cfg.reduce_motion());
         assert!(!cfg.high_contrast());
         assert!(!cfg.reduce_transparency());
+        assert_eq!(cfg.ui_scale(), 1.0);
         assert!(cfg.workflows_dir().ends_with("workflows"));
         assert!(cfg.plugins_dir().ends_with("plugins"));
         assert!(cfg.apps_dir().ends_with("Applications"));
@@ -171,6 +188,7 @@ mod tests {
         config
             .set_field("appearance.reduce_transparency", "true")
             .unwrap();
+        config.set_field("appearance.ui_scale", "1.25").unwrap();
         config.set_field("data_dir", "/tmp/std-data").unwrap();
         config.save_to(&path).unwrap();
 
@@ -184,6 +202,7 @@ mod tests {
         assert!(loaded.appearance.reduce_motion);
         assert!(loaded.appearance.high_contrast);
         assert!(loaded.appearance.reduce_transparency);
+        assert_eq!(loaded.appearance.ui_scale, 1.25);
         assert_eq!(loaded.data_dir, PathBuf::from("/tmp/std-data"));
         assert!(config.set_field("missing", "value").is_err());
         assert!(config.set_field("enable_ai", "yes").is_err());
@@ -192,6 +211,7 @@ mod tests {
         assert!(config
             .set_field("appearance.reduce_transparency", "yes")
             .is_err());
+        assert!(config.set_field("appearance.ui_scale", "3.0").is_err());
     }
 
     #[test]
@@ -203,7 +223,7 @@ mod tests {
         fs::write(
             &config_path,
             format!(
-                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\nappearance:\n  reduce_motion: true\n  high_contrast: true\n  reduce_transparency: true\n",
+                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\nappearance:\n  reduce_motion: true\n  high_contrast: true\n  reduce_transparency: true\n  ui_scale: 1.25\n",
                 data_dir.display()
             ),
         )
@@ -221,6 +241,7 @@ mod tests {
         assert!(config.reduce_motion());
         assert!(config.high_contrast());
         assert!(config.reduce_transparency());
+        assert_eq!(config.ui_scale(), 1.25);
     }
 
     #[test]

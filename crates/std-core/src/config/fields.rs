@@ -13,6 +13,7 @@ impl StdConfig {
             "appearance.reduce_transparency" => {
                 Some(self.appearance.reduce_transparency.to_string())
             }
+            "appearance.ui_scale" => Some(self.appearance.ui_scale.to_string()),
             _ => None,
         }
     }
@@ -41,6 +42,15 @@ impl StdConfig {
                 self.appearance.reduce_transparency = value.parse::<bool>().map_err(|_| {
                     format!("appearance.reduce_transparency must be true or false: {value}")
                 })?;
+            }
+            "appearance.ui_scale" => {
+                let parsed = value
+                    .parse::<f32>()
+                    .map_err(|_| format!("appearance.ui_scale must be 0.85..1.5: {value}"))?;
+                if !(0.85..=1.5).contains(&parsed) {
+                    return Err(format!("appearance.ui_scale must be 0.85..1.5: {value}"));
+                }
+                self.appearance.ui_scale = parsed;
             }
             _ => return Err(format!("unknown config key: {key}")),
         }

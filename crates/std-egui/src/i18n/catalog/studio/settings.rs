@@ -72,6 +72,8 @@ fn translate_appearance(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.theme.contract") => {
             Some("light / dark / system share one token set")
         }
+        (Locale::ZhCn, "studio.settings.zoom.label") => Some("界面缩放"),
+        (Locale::EnUs, "studio.settings.zoom.label") => Some("UI zoom"),
         (Locale::ZhCn, "studio.settings.motion.reduce") => Some("减少动效"),
         (Locale::EnUs, "studio.settings.motion.reduce") => Some("Reduce motion"),
         (Locale::ZhCn, "studio.settings.motion.reduce.detail") => {
@@ -222,6 +224,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.theme.light" => Some("Light"),
         "studio.settings.theme.active" => Some("Active theme"),
         "studio.settings.theme.contract" => Some("light / dark / system share one token set"),
+        "studio.settings.zoom.label" => Some("UI zoom"),
         "studio.settings.motion.reduce" => Some("Reduce motion"),
         "studio.settings.motion.reduce.detail" => {
             Some("Saves appearance.reduce_motion and collapses nonessential motion")

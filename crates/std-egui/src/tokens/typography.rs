@@ -25,6 +25,14 @@ impl UiScale {
             .unwrap_or_default()
     }
 
+    pub fn from_config(value: f32) -> Self {
+        std::env::var("STD_UI_ZOOM")
+            .ok()
+            .and_then(|zoom| zoom.parse::<f32>().ok())
+            .map(Self::new)
+            .unwrap_or_else(|| Self::new(value))
+    }
+
     pub fn value(self) -> f32 {
         self.value
     }
@@ -220,6 +228,15 @@ mod tests {
         assert_eq!(UiScale::from_env().value(), 1.25);
 
         std::env::remove_var("STD_UI_ZOOM");
+    }
+
+    #[test]
+    fn ui_scale_uses_config_zoom_when_env_is_absent() {
+        let _guard = env_lock();
+        std::env::remove_var("STD_UI_ZOOM");
+
+        assert_eq!(UiScale::from_config(1.2).value(), 1.2);
+        assert_eq!(UiScale::from_config(2.0).value(), 1.5);
     }
 
     #[test]
