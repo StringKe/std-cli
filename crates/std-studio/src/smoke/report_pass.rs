@@ -33,6 +33,9 @@ impl StudioSmokeReport {
             && self
                 .pane_focus_label
                 .contains("sequence=open>focus>switch>close>reopen>restore")
+            && self.pane_focus_label.contains("counts=before-close:")
+            && self.pane_focus_label.contains("after-close:")
+            && self.pane_focus_label.contains("after-reopen:")
             && self.pane_focus_label.contains("state_preserved=true")
             && self
                 .pane_focus_label

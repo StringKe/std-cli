@@ -50,6 +50,9 @@ fn assert_workspace_tab_summary(summary: &str) {
     assert!(summary.contains("pane_focus_label=strategy=internal-egui-workspace-panes"));
     assert!(summary.contains("host=single-borderless-egui-viewport"));
     assert!(summary.contains("sequence=open>focus>switch>close>reopen>restore"));
+    assert!(summary.contains("counts=before-close:"));
+    assert!(summary.contains("after-close:"));
+    assert!(summary.contains("after-reopen:"));
     assert!(summary.contains("state_preserved=true"));
     assert!(summary.contains("focused="));
     assert!(summary.contains("title=Plugin Manager"));
@@ -294,7 +297,7 @@ fn assert_operations_completion_summary(summary: &str) {
 fn assert_operations_contract_summary(summary: &str) {
     assert!(summary.contains("operations_visual_contract="));
     assert!(summary.contains(
-        "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence"
+        "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence"
     ));
     assert!(summary.contains("gates=QA|Doctor|Release|Install"));
     assert!(summary.contains("Runtime"));

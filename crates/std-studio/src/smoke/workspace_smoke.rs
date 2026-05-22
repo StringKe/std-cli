@@ -50,11 +50,14 @@ pub(crate) fn run_workspace_pane_smoke(
     let state_preserved_after_focus = pane_lines(studio, plugin)
         .iter()
         .any(|line| line.contains("action=reload,search,manifest_check,preview,run"));
+    let open_count_before_close = studio.open_workspace_panes().count();
     let closed = studio.close_workspace_pane(close_target);
+    let open_count_after_close = studio.open_workspace_panes().count();
     let closed_removed = !studio
         .open_workspace_panes()
         .any(|pane| pane.id == close_target);
     let reopened = studio.open_memory_browser_pane();
+    let open_count_after_reopen = studio.open_workspace_panes().count();
     let reopened_restored = reopened == close_target
         && pane_title(studio, reopened) == "Memory Browser"
         && pane_lines(studio, reopened)
@@ -95,14 +98,17 @@ pub(crate) fn run_workspace_pane_smoke(
     let host_policy = studio.app_workspace_policy_report();
     let main_path_contract = workspace_main_path_contract();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
-    let focus_label = workspace_management_evidence(
+    let focus_label = workspace_management_evidence(WorkspaceManagementEvidence {
         plugin,
         reopened,
-        &restored_title,
+        restored_title: &restored_title,
+        open_count_before_close,
+        open_count_after_close,
+        open_count_after_reopen,
         reopened_restored,
         state_preserved_after_focus,
-        &tabs_contract,
-    );
+        tabs_contract: &tabs_contract,
+    });
     WorkspacePaneSmoke {
         opened,
         focus_switched,
@@ -141,18 +147,30 @@ fn workspace_main_path_contract() -> String {
     .join(",")
 }
 
-fn workspace_management_evidence(
-    focused: WorkspacePaneId,
+struct WorkspaceManagementEvidence<'a> {
+    plugin: WorkspacePaneId,
     reopened: WorkspacePaneId,
-    restored_title: &str,
+    restored_title: &'a str,
+    open_count_before_close: usize,
+    open_count_after_close: usize,
+    open_count_after_reopen: usize,
     reopened_restored: bool,
     state_preserved_after_focus: bool,
-    tabs_contract: &str,
-) -> String {
+    tabs_contract: &'a str,
+}
+
+fn workspace_management_evidence(evidence: WorkspaceManagementEvidence<'_>) -> String {
     format!(
-        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_restored={reopened_restored},tabs={tabs_contract}",
-        focused.value(),
-        reopened.value()
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,counts=before-close:{}|after-close:{}|after-reopen:{},state_preserved={},forbidden=native-child-windows:false|detached-panels:false,focused={},title={},reopened_memory={},reopened_restored={},tabs={}",
+        evidence.open_count_before_close,
+        evidence.open_count_after_close,
+        evidence.open_count_after_reopen,
+        evidence.state_preserved_after_focus,
+        evidence.plugin.value(),
+        evidence.restored_title,
+        evidence.reopened.value(),
+        evidence.reopened_restored,
+        evidence.tabs_contract
     )
 }
 
