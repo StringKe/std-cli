@@ -85,7 +85,11 @@ impl LauncherSmokeReport {
 
 impl LauncherWindowSmokeReport {
     pub fn pass(&self) -> bool {
-        self.hidden_commands == vec![LauncherWindowCommand::SetVisible(false)]
+        self.hidden_commands
+            == vec![
+                LauncherWindowCommand::ResizeToHiddenHost,
+                LauncherWindowCommand::SetVisible(false),
+            ]
             && self.shown_commands
                 == vec![
                     LauncherWindowCommand::ResizeToPanel,
@@ -98,6 +102,9 @@ impl LauncherWindowSmokeReport {
             && self
                 .host_positioning_contract
                 .contains("outer-position-0.28-monitor-anchor")
+            && self
+                .host_positioning_contract
+                .contains("hide:resize-to-1x1>hidden")
             && self
                 .host_positioning_contract
                 .contains("host_background=none")
@@ -129,6 +136,7 @@ pub fn format_window_commands(commands: &[LauncherWindowCommand]) -> String {
             LauncherWindowCommand::Focus => "Focus",
             LauncherWindowCommand::PositionForPanel => "PositionForPanel",
             LauncherWindowCommand::ResizeToPanel => "ResizeToPanel",
+            LauncherWindowCommand::ResizeToHiddenHost => "ResizeToHiddenHost",
         })
         .collect::<Vec<_>>()
         .join(",")

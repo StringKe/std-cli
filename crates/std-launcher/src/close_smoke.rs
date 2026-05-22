@@ -55,7 +55,11 @@ impl LauncherCloseSmokeReport {
             && !self.focused_after
             && !self.action_panel_open_after
             && !self.voice_active_after
-            && self.commands == vec![LauncherWindowCommand::SetVisible(false)]
+            && self.commands
+                == vec![
+                    LauncherWindowCommand::ResizeToHiddenHost,
+                    LauncherWindowCommand::SetVisible(false),
+                ]
             && self.visible_after_reopen
             && self.focused_after_reopen
             && self.reopen_commands
@@ -96,6 +100,7 @@ fn format_close_commands(commands: &[LauncherWindowCommand]) -> String {
             LauncherWindowCommand::Focus => "Focus",
             LauncherWindowCommand::PositionForPanel => "PositionForPanel",
             LauncherWindowCommand::ResizeToPanel => "ResizeToPanel",
+            LauncherWindowCommand::ResizeToHiddenHost => "ResizeToHiddenHost",
         })
         .collect::<Vec<_>>()
         .join(",")
@@ -113,7 +118,10 @@ mod tests {
         assert!(!report.visible_after);
         assert_eq!(
             report.commands,
-            vec![LauncherWindowCommand::SetVisible(false)]
+            vec![
+                LauncherWindowCommand::ResizeToHiddenHost,
+                LauncherWindowCommand::SetVisible(false),
+            ]
         );
         assert!(report.visible_after_reopen);
         assert!(report.focused_after_reopen);

@@ -13,6 +13,7 @@ pub struct LauncherController {
 pub enum LauncherWindowCommand {
     PositionForPanel,
     ResizeToPanel,
+    ResizeToHiddenHost,
     SetVisible(bool),
     Focus,
 }
@@ -80,7 +81,10 @@ impl LauncherController {
                 LauncherWindowCommand::Focus,
             ]
         } else {
-            vec![LauncherWindowCommand::SetVisible(false)]
+            vec![
+                LauncherWindowCommand::ResizeToHiddenHost,
+                LauncherWindowCommand::SetVisible(false),
+            ]
         }
     }
 }

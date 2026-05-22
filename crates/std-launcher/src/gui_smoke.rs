@@ -404,6 +404,7 @@ fn format_window_commands(commands: &[LauncherWindowCommand]) -> String {
             LauncherWindowCommand::Focus => "Focus",
             LauncherWindowCommand::PositionForPanel => "PositionForPanel",
             LauncherWindowCommand::ResizeToPanel => "ResizeToPanel",
+            LauncherWindowCommand::ResizeToHiddenHost => "ResizeToHiddenHost",
         })
         .collect::<Vec<_>>()
         .join(",")

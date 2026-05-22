@@ -145,7 +145,7 @@ fn assert_trigger_summary(summary: &str) {
     assert!(summary.contains("pinned_enter_window_commands=none"));
     assert!(summary.contains("enter_window=completed_status=Completed"));
     assert!(summary.contains("completed_hide=true"));
-    assert!(summary.contains("completed_commands=Visible(false)"));
+    assert!(summary.contains("completed_commands=ResizeToHiddenHost,Visible(false)"));
     assert!(summary.contains("deferred_status=NeedsExternalRunner"));
     assert!(summary.contains("deferred_hide=false"));
     assert!(summary.contains("deferred_commands=none"));

@@ -33,7 +33,7 @@ pub fn launcher_viewport_frame_contract() -> String {
 }
 
 pub fn launcher_host_positioning_contract() -> &'static str {
-    "host_positioning=resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
+    "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
 }
 
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
@@ -86,7 +86,7 @@ mod tests {
         );
         assert_eq!(
             launcher_host_positioning_contract(),
-            "host_positioning=resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
+            "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
         );
     }
 }

@@ -142,7 +142,7 @@ impl LauncherEnterWindowReport {
     pub fn pass(&self) -> bool {
         self.completed_status == Some(ActionExecutionStatus::Completed)
             && self.completed_hide_requested
-            && self.completed_window_commands == "Visible(false)"
+            && self.completed_window_commands == "ResizeToHiddenHost,Visible(false)"
             && self.deferred_status == Some(ActionExecutionStatus::NeedsExternalRunner)
             && !self.deferred_hide_requested
             && self.deferred_window_commands == "none"

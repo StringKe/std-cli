@@ -18,6 +18,9 @@ pub(crate) fn apply_window_commands(
             LauncherWindowCommand::ResizeToPanel => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
             }
+            LauncherWindowCommand::ResizeToHiddenHost => {
+                ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(hidden_host_size()));
+            }
             LauncherWindowCommand::SetVisible(visible) => {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(*visible));
             }
@@ -49,6 +52,10 @@ fn launcher_window_position_for_monitor(
     egui::pos2(x, y)
 }
 
+pub(crate) fn hidden_host_size() -> egui::Vec2 {
+    egui::vec2(1.0, 1.0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -67,8 +74,13 @@ mod tests {
     fn launcher_window_host_contract_forbids_visible_host_gap_positioning() {
         assert_eq!(
             std_launcher::launcher_host_positioning_contract(),
-            "host_positioning=resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
+            "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
         );
+    }
+
+    #[test]
+    fn launcher_hidden_host_collapses_to_one_pixel() {
+        assert_eq!(hidden_host_size(), egui::vec2(1.0, 1.0));
     }
 
     #[test]

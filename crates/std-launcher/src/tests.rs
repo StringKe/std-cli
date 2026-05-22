@@ -46,7 +46,10 @@ fn launcher_controller_toggles_visibility() {
     assert_eq!(controller.hotkey.display(), "Control+Space");
     assert_eq!(
         LauncherController::window_commands(true, controller.visible),
-        vec![LauncherWindowCommand::SetVisible(false)]
+        vec![
+            LauncherWindowCommand::ResizeToHiddenHost,
+            LauncherWindowCommand::SetVisible(false)
+        ]
     );
 
     controller.start_voice_input();
@@ -181,7 +184,13 @@ fn launcher_hotkey_toggle_returns_window_show_commands() {
     };
     let shown = state.handle_hotkey_toggle();
 
-    assert_eq!(hidden, vec![LauncherWindowCommand::SetVisible(false)]);
+    assert_eq!(
+        hidden,
+        vec![
+            LauncherWindowCommand::ResizeToHiddenHost,
+            LauncherWindowCommand::SetVisible(false)
+        ]
+    );
     assert_eq!(
         shown,
         vec![
@@ -306,7 +315,10 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
     assert!(report.pass(), "{summary}");
     assert_eq!(
         report.hidden_commands,
-        vec![LauncherWindowCommand::SetVisible(false)]
+        vec![
+            LauncherWindowCommand::ResizeToHiddenHost,
+            LauncherWindowCommand::SetVisible(false)
+        ]
     );
     assert_eq!(
         report.shown_commands,
@@ -318,10 +330,12 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
         ]
     );
     assert!(summary.contains("launcher_window_smoke PASS"));
+    assert!(summary.contains("hidden_commands=ResizeToHiddenHost,Visible(false)"));
     assert!(summary.contains("shown_commands=ResizeToPanel,PositionForPanel,Visible(true),Focus"));
     assert!(summary.contains(
-        "host_positioning=resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus"
+        "host_positioning=show:resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus"
     ));
+    assert!(summary.contains("hide:resize-to-1x1>hidden"));
     assert!(summary.contains("native_host=transparent"));
     assert!(summary.contains("panel_surface=opaque-bg-surface-0"));
     assert!(summary.contains("host_background=none"));
