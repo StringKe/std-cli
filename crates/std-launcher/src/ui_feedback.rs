@@ -55,7 +55,13 @@ pub(crate) struct FeedbackRenderResult {
 pub(crate) enum FeedbackCommand {
     #[default]
     None,
-    Trigger(usize),
+    Trigger(FeedbackTrigger),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct FeedbackTrigger {
+    pub(crate) index: usize,
+    pub(crate) action: LauncherFeedbackAction,
 }
 
 fn render_contents(
@@ -166,7 +172,7 @@ fn render_actions(
                         )
                         .clicked()
                         {
-                            command = FeedbackCommand::Trigger(index);
+                            command = feedback_trigger(index, LauncherFeedbackAction::Copy);
                         }
                     }
                     LauncherFeedbackAction::Retry => {
@@ -178,7 +184,7 @@ fn render_actions(
                         )
                         .clicked()
                         {
-                            command = FeedbackCommand::Trigger(index);
+                            command = feedback_trigger(index, LauncherFeedbackAction::Retry);
                         }
                     }
                     LauncherFeedbackAction::OpenStudio => {
@@ -193,7 +199,7 @@ fn render_actions(
                         )
                         .clicked()
                         {
-                            command = FeedbackCommand::Trigger(index);
+                            command = feedback_trigger(index, LauncherFeedbackAction::OpenStudio);
                         }
                     }
                 }
@@ -201,6 +207,10 @@ fn render_actions(
         },
     );
     command
+}
+
+fn feedback_trigger(index: usize, action: LauncherFeedbackAction) -> FeedbackCommand {
+    FeedbackCommand::Trigger(FeedbackTrigger { index, action })
 }
 
 fn feedback_actions_width(feedback: &LauncherFeedback) -> f32 {

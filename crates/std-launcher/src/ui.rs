@@ -117,11 +117,13 @@ pub(crate) fn render_launcher_panel(
             render_voice(ui, state, voice_transcript);
             let feedback = ui_feedback::render(ui, state);
             match feedback.command {
-                ui_feedback::FeedbackCommand::Trigger(index) => {
+                ui_feedback::FeedbackCommand::Trigger(trigger) => {
                     state.focus_section = std_launcher::LauncherFocusSection::Feedback;
-                    state.view.selected_feedback_action = index;
+                    state.view.selected_feedback_action = trigger.index;
                     if let Some(execution) = state.trigger_feedback_action() {
-                        ui.ctx().copy_text(execution.message);
+                        if trigger.action == std_egui::LauncherFeedbackAction::Copy {
+                            ui.ctx().copy_text(execution.message);
+                        }
                     }
                 }
                 ui_feedback::FeedbackCommand::None => {}
@@ -229,6 +231,22 @@ mod tests {
         assert!(production_source.contains("ActionPanelCommand::Triggered(execution)"));
         assert!(production_source.contains("ui_keyboard::execution_hides_launcher(&execution)"));
         assert!(production_source.contains("ui.ctx().copy_text(execution.message)"));
+    }
+
+    #[test]
+    fn launcher_feedback_mouse_copy_is_limited_to_copy_action() {
+        let source = include_str!("ui.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let feedback_branch = production_source
+            .split("FeedbackCommand::Trigger(trigger)")
+            .nth(1)
+            .and_then(|body| body.split("FeedbackCommand::None").next())
+            .unwrap();
+
+        assert!(feedback_branch.contains("trigger.index"));
+        assert!(feedback_branch.contains("trigger.action"));
+        assert!(feedback_branch.contains("LauncherFeedbackAction::Copy"));
+        assert!(feedback_branch.contains("ui.ctx().copy_text(execution.message)"));
     }
 
     #[test]

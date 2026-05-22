@@ -258,7 +258,7 @@ fn retry_click_uses_launcher_user_execution_path() {
 
     let shell = include_str!("ui.rs");
 
-    assert!(production_source.contains("FeedbackCommand::Trigger(index)"));
+    assert!(production_source.contains("feedback_trigger(index, LauncherFeedbackAction::Retry)"));
     assert!(shell.contains("state.trigger_feedback_action()"));
     assert!(!production_source.contains("state.trigger_selected();"));
 }
@@ -269,8 +269,9 @@ fn copy_click_uses_shared_feedback_copy_model() {
     let production_source = source.split("#[cfg(test)]").next().unwrap();
     let shell = include_str!("ui.rs");
 
-    assert!(production_source.contains("FeedbackCommand::Trigger(index)"));
+    assert!(production_source.contains("feedback_trigger(index, LauncherFeedbackAction::Copy)"));
     assert!(shell.contains("state.trigger_feedback_action()"));
+    assert!(shell.contains("trigger.action == std_egui::LauncherFeedbackAction::Copy"));
     assert!(shell.contains("ui.ctx().copy_text(execution.message)"));
     assert!(!production_source.contains("ui.ctx().copy_text(feedback.summary())"));
 }
@@ -281,7 +282,8 @@ fn feedback_render_returns_commands_instead_of_mutating_launcher_state() {
     let production_source = source.split("#[cfg(test)]").next().unwrap();
 
     assert!(production_source.contains("pub(crate) enum FeedbackCommand"));
-    assert!(production_source.contains("Trigger(usize)"));
+    assert!(production_source.contains("Trigger(FeedbackTrigger)"));
+    assert!(production_source.contains("pub(crate) action: LauncherFeedbackAction"));
     assert!(!production_source.contains("state.trigger_selected_by_user();"));
     assert!(!production_source.contains("state.open_studio_execution_history_from_feedback();"));
     assert!(!production_source.contains("state.copy_feedback_to_clipboard_model()"));
