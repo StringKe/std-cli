@@ -10,6 +10,7 @@ mod ui_capture_png;
 mod ui_capture_scripts;
 #[cfg(test)]
 mod ui_capture_tests;
+mod ui_checks;
 mod ui_tokens;
 mod workspace;
 
