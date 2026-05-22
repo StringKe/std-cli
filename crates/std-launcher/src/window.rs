@@ -1,6 +1,8 @@
 use eframe::egui;
 use std_launcher::LauncherWindowCommand;
 
+const WINDOW_VERTICAL_ANCHOR: f32 = 0.28;
+
 pub(crate) fn apply_window_commands(
     ctx: &egui::Context,
     commands: &[LauncherWindowCommand],
@@ -42,7 +44,8 @@ fn launcher_window_position_for_monitor(
     viewport_size: egui::Vec2,
 ) -> egui::Pos2 {
     let x = ((monitor_size.x - viewport_size.x) * 0.5).max(0.0);
-    let y = (monitor_size.y * 0.28).min((monitor_size.y - viewport_size.y).max(0.0));
+    let y =
+        (monitor_size.y * WINDOW_VERTICAL_ANCHOR).min((monitor_size.y - viewport_size.y).max(0.0));
     egui::pos2(x, y)
 }
 
@@ -58,6 +61,14 @@ mod tests {
         );
 
         assert_eq!(position, egui::pos2(360.0, 252.0));
+    }
+
+    #[test]
+    fn launcher_window_host_contract_forbids_carrier_viewport_positioning() {
+        assert_eq!(
+            std_launcher::launcher_host_positioning_contract(),
+            "host_positioning=resize-panel-window>outer-position-0.28-monitor-anchor>visible>focus;native_window=panel-sized-transparent-host;panel_origin=0x0;carrier_background=none"
+        );
     }
 
     #[test]

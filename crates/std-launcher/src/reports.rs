@@ -23,6 +23,7 @@ pub struct LauncherWindowSmokeReport {
     pub focused: bool,
     pub elapsed_ms: u128,
     pub budget_ms: u128,
+    pub host_positioning_contract: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -90,19 +91,26 @@ impl LauncherWindowSmokeReport {
                 ]
             && self.final_visible
             && self.focused
+            && self
+                .host_positioning_contract
+                .contains("outer-position-0.28-monitor-anchor")
+            && self
+                .host_positioning_contract
+                .contains("carrier_background=none")
             && self.elapsed_ms <= self.budget_ms
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_window_smoke {}\nhidden_commands={}\nshown_commands={}\nfinal_visible={}\nfocused={}\nelapsed_ms={}\nbudget_window_ms={}",
+            "launcher_window_smoke {}\nhidden_commands={}\nshown_commands={}\nfinal_visible={}\nfocused={}\nelapsed_ms={}\nbudget_window_ms={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             format_window_commands(&self.hidden_commands),
             format_window_commands(&self.shown_commands),
             self.final_visible,
             self.focused,
             self.elapsed_ms,
-            self.budget_ms
+            self.budget_ms,
+            self.host_positioning_contract
         )
     }
 }

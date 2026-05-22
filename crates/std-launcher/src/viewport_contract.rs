@@ -31,6 +31,10 @@ pub fn launcher_viewport_frame_contract() -> String {
     "viewport_frame=transparent_fill,no_stroke".to_string()
 }
 
+pub fn launcher_host_positioning_contract() -> &'static str {
+    "host_positioning=resize-panel-window>outer-position-0.28-monitor-anchor>visible>focus;native_window=panel-sized-transparent-host;panel_origin=0x0;carrier_background=none"
+}
+
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
         "native=panel-surface,transparent=true,decorations=false,visible={visible},size={}x{}",
@@ -76,6 +80,10 @@ mod tests {
         assert_eq!(
             launcher_viewport_frame_contract(),
             "viewport_frame=transparent_fill,no_stroke"
+        );
+        assert_eq!(
+            launcher_host_positioning_contract(),
+            "host_positioning=resize-panel-window>outer-position-0.28-monitor-anchor>visible>focus;native_window=panel-sized-transparent-host;panel_origin=0x0;carrier_background=none"
         );
     }
 }
