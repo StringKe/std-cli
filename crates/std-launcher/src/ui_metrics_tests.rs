@@ -85,26 +85,16 @@ fn result_row_layout_reserves_icon_text_and_right_hint_regions() {
 
 #[test]
 fn panel_rect_anchors_to_upper_screen_region() {
-    let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1440.0, 900.0));
-    let rect = panel_rect_for_available(available, 720.0, 320.0, window_margin(), true);
+    let position = screen_anchor_position(egui::vec2(1440.0, 900.0), egui::vec2(720.0, 320.0));
 
-    assert_eq!(rect.width(), 720.0);
-    assert_eq!(rect.min.x, 360.0);
-    assert_eq!(rect.min.y, 252.0);
+    assert_eq!(position, egui::pos2(360.0, 252.0));
 }
 
 #[test]
-fn panel_width_caps_at_docs_max_on_large_available_region() {
-    let width = panel_width_for_available(1440.0, window_margin());
+fn panel_surface_width_matches_docs_width_without_carrier_viewport() {
+    let width = panel_surface_width();
 
     assert_eq!(width, 720.0);
-}
-
-#[test]
-fn panel_width_uses_docs_ratio_on_medium_available_region() {
-    let width = panel_width_for_available(1000.0, window_margin());
-
-    assert_eq!(width, 550.0);
 }
 
 #[test]
@@ -132,18 +122,6 @@ fn panel_rect_matches_native_host_window_height() {
 }
 
 #[test]
-fn panel_rect_centers_inside_wide_available_region() {
-    let mut state = LauncherState::new();
-    state.update_query("index");
-    let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1000.0, 900.0));
-    let rect = panel_rect(available, &state);
-
-    assert_eq!(rect.width(), 550.0);
-    assert_eq!(rect.center().x, available.center().x);
-    assert!(rect.width() < available.width());
-}
-
-#[test]
 fn collapsed_panel_rect_matches_native_host_window() {
     let mut state = LauncherState::new();
     state.view.results.clear();
@@ -159,15 +137,16 @@ fn collapsed_panel_rect_matches_native_host_window() {
 }
 
 #[test]
-fn panel_rect_clamps_when_viewport_is_short() {
+fn panel_rect_uses_available_panel_surface_when_window_is_short() {
     let mut state = LauncherState::new();
     state.update_query("index");
     state.view.preview_executing();
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(800.0, 240.0));
     let rect = panel_rect(available, &state);
 
-    assert!(rect.min.y >= 0.0);
-    assert!(rect.max.y <= available.bottom());
+    assert_eq!(rect.min, available.min);
+    assert_eq!(rect.width(), PANEL_WIDTH);
+    assert_eq!(rect.max.y, available.bottom());
 }
 
 #[test]

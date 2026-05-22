@@ -40,9 +40,7 @@ pub use keyboard::{
     launcher_execution_hides_window, LauncherEnterWindowReport, LauncherFocusSection,
     LauncherFocusSource, LauncherKey, LauncherKeyboardReport,
 };
-pub use layout_contract::{
-    panel_width_for_available, PANEL_MIN_WIDTH, PANEL_VIEWPORT_WIDTH_RATIO, PANEL_WIDTH,
-};
+pub use layout_contract::{panel_surface_width, PANEL_WIDTH};
 pub use query_mode::{LauncherQueryMode, LauncherQueryRequest};
 pub use reports::{
     format_window_commands, LauncherPerformanceReport, LauncherSmokeReport,

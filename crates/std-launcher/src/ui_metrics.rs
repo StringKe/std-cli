@@ -10,6 +10,7 @@ const RESULT_ROW_HEIGHT: f32 = 36.0;
 const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
+#[cfg(test)]
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
 
 pub(crate) fn scale() -> UiScale {
@@ -34,35 +35,33 @@ pub(crate) fn panel_inner_padding_for_state(state: &LauncherState) -> f32 {
 
 pub(crate) fn panel_rect(available: egui::Rect, state: &LauncherState) -> egui::Rect {
     let margin = window_margin();
-    let panel_width = panel_width_for_available(available.width(), margin);
     let body_height = body_height(state, available.height());
+    let panel_width = panel_surface_width().min(available.width() - margin * 2.0);
     let panel_height = panel_height(state, body_height).min(available.height() - margin * 2.0);
-    panel_rect_for_available(available, panel_width, panel_height, margin, false)
+    panel_surface_rect(available, panel_width, panel_height, margin)
 }
 
-fn panel_width_for_available(available_width: f32, margin: f32) -> f32 {
-    std_launcher::panel_width_for_available(available_width, margin, UiScale::from_env().value())
+fn panel_surface_width() -> f32 {
+    std_launcher::panel_surface_width(UiScale::from_env().value())
 }
 
-fn panel_rect_for_available(
+fn panel_surface_rect(
     available: egui::Rect,
     panel_width: f32,
     panel_height: f32,
     margin: f32,
-    anchor_to_screen: bool,
 ) -> egui::Rect {
-    let target_top = if anchor_to_screen {
-        available.top() + available.height() * PANEL_VERTICAL_ANCHOR
-    } else {
-        available.top() + margin
-    };
-    let min_y = available.top() + margin;
-    let max_y = available.bottom() - margin - panel_height;
-    let top = target_top.clamp(min_y, max_y.max(min_y));
     egui::Rect::from_min_size(
-        egui::pos2(available.center().x - panel_width * 0.5, top),
+        egui::pos2(available.left() + margin, available.top() + margin),
         egui::vec2(panel_width, panel_height),
     )
+}
+
+#[cfg(test)]
+fn screen_anchor_position(monitor_size: egui::Vec2, panel_size: egui::Vec2) -> egui::Pos2 {
+    let x = ((monitor_size.x - panel_size.x) * 0.5).max(0.0);
+    let y = (monitor_size.y * PANEL_VERTICAL_ANCHOR).min((monitor_size.y - panel_size.y).max(0.0));
+    egui::pos2(x, y)
 }
 
 pub(crate) fn result_row_size(available_width: f32) -> egui::Vec2 {

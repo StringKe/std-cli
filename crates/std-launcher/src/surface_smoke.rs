@@ -194,7 +194,7 @@ fn viewport_frame_contract() -> String {
 
 fn native_host_window_contract() -> String {
     let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH, 64.0));
-    let panel_width = crate::panel_width_for_available(PANEL_WIDTH, 0.0, 1.0);
+    let panel_width = crate::panel_surface_width(1.0);
     if size == "native=panel-surface,transparent=true,decorations=false,visible=false,size=720x64"
         && panel_width == PANEL_WIDTH
     {
@@ -204,7 +204,7 @@ fn native_host_window_contract() -> String {
 }
 
 fn capture_window_contract() -> String {
-    let panel_width = crate::panel_width_for_available(PANEL_WIDTH, 0.0, 1.0);
+    let panel_width = crate::panel_surface_width(1.0);
     let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH, 360.0));
     if preview
         == "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x360"
