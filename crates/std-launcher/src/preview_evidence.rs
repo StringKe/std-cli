@@ -15,15 +15,17 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     let surface = preview_surface_summary(theme);
     let affordance = LauncherAffordanceSummary::for_scenario(scenario.state);
     let state_surface = PreviewStateSurface::for_state(&state, scenario.state);
+    let no_match_fallback = PreviewNoMatchFallback::for_state(&state, scenario.state);
     let carrier = PreviewCarrierSurface::for_state(&state);
     let passes = valid
         && preview_surface_passes(&surface, scenario.theme)
         && affordance.passes(scenario.state)
         && state_surface.passes(scenario.state)
+        && no_match_fallback.passes(scenario.state)
         && carrier.passes()
         && feedback_status_icon_passes(scenario.state);
     format!(
-        "{}={}:phase={:?},results={},feedback={},{},{},{},{},{}",
+        "{}={}:phase={:?},results={},feedback={},{},{},{},{},{},{}",
         scenario.label(),
         if passes { "PASS" } else { "FAIL" },
         state.view.phase,
@@ -36,6 +38,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
             .unwrap_or("none"),
         affordance.summary(),
         state_surface.summary(),
+        no_match_fallback.summary(),
         carrier.summary(),
         feedback_status_icon_summary(scenario.state),
         surface.summary()
@@ -173,6 +176,42 @@ struct PreviewCarrierSurface {
     clear_color: String,
     viewport_frame: String,
     panel_only: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreviewNoMatchFallback {
+    visible: bool,
+    selected: bool,
+    enter_keycap: bool,
+    button_semantics: bool,
+}
+
+impl PreviewNoMatchFallback {
+    fn for_state(state: &LauncherState, state_name: &str) -> Self {
+        let visible = state_name == "no-results"
+            && state.view.phase == std_egui::LauncherPhase::NoMatches
+            && state.no_match_fallback_query().is_some();
+        Self {
+            visible,
+            selected: visible,
+            enter_keycap: visible,
+            button_semantics: visible,
+        }
+    }
+
+    fn passes(&self, state_name: &str) -> bool {
+        if state_name != "no-results" {
+            return !self.visible && !self.selected && !self.enter_keycap && !self.button_semantics;
+        }
+        self.visible && self.selected && self.enter_keycap && self.button_semantics
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "no_match_fallback=ask_ai_row,visible={},selected={},enter_keycap={},button_semantics={}",
+            self.visible, self.selected, self.enter_keycap, self.button_semantics
+        )
+    }
 }
 
 impl PreviewCarrierSurface {

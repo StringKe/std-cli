@@ -22,7 +22,7 @@ pub(crate) fn render_no_results(
         return None;
     }
 
-    let fallback = render_no_matches(ui, trimmed);
+    let fallback = render_no_matches(ui, trimmed, true);
     let enter_pressed = !input::ime_composing(ui.ctx()) && input::enter().pressed(ui.ctx());
     if fallback.clicked() || enter_pressed {
         std_launcher::ask_ai_fallback_query(trimmed).map(EmptyAction::AskAi)
@@ -112,7 +112,7 @@ fn empty_action_id() -> egui::Id {
     egui::Id::new("launcher_empty_query_action")
 }
 
-fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
+fn render_no_matches(ui: &mut egui::Ui, query: &str, selected: bool) -> egui::Response {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::md() as f32);
     ui.vertical_centered(|ui| {
@@ -135,6 +135,7 @@ fn render_no_matches(ui: &mut egui::Ui, query: &str) -> egui::Response {
     ask_ai_row(
         ui,
         &format!("{} \"{}\"", i18n::t("launcher.empty.ask_ai"), query),
+        selected,
     )
 }
 
@@ -149,7 +150,7 @@ fn render_no_matches_icon(ui: &mut egui::Ui, ctx: &egui::Context) {
         .line_segment([geometry.handle_start, geometry.handle_end], stroke);
 }
 
-fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
+fn ask_ai_row(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response {
     let ctx = ui.ctx().clone();
     let response = ui.allocate_response(
         egui::vec2(ui.available_width(), ui_metrics::ask_ai_row_height()),
@@ -162,7 +163,9 @@ fn ask_ai_row(ui: &mut egui::Ui, label: &str) -> egui::Response {
             ask_ai_a11y_label(label),
         )
     });
-    let fill = if response.hovered() {
+    let fill = if selected {
+        Color::accent_weak(&ctx)
+    } else if response.hovered() {
         Color::bg_surface_2(&ctx)
     } else {
         Color::bg_surface_1(&ctx)
@@ -263,5 +266,17 @@ mod tests {
             ask_ai_a11y_label("Ask AI about \"missing\""),
             "Ask AI about \"missing\", fallback action, press Enter"
         );
+    }
+
+    #[test]
+    fn ask_ai_fallback_is_selected_enter_target_for_no_matches() {
+        let source = include_str!("ui_empty.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("render_no_matches(ui, trimmed, true)"));
+        assert!(production_source
+            .contains("fn ask_ai_row(ui: &mut egui::Ui, label: &str, selected: bool)"));
+        assert!(production_source.contains("if selected {\n        Color::accent_weak(&ctx)"));
+        assert!(production_source.contains("keycap(ui, &input::enter().label())"));
     }
 }

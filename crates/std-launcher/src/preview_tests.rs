@@ -110,6 +110,9 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
 
     assert!(summary.contains("suggested=3"));
     assert!(summary.contains("ask_ai=true"));
+    assert!(summary.contains("no_match_fallback=ask_ai_row,visible=true"));
+    assert!(summary.contains("no_match_fallback=ask_ai_row,visible=true,selected=true"));
+    assert!(summary.contains("enter_keycap=true,button_semantics=true"));
     assert!(summary.contains("feedback_actions=Copy,Retry"));
     assert!(summary.contains("feedback_actions=Copy,Retry,OpenStudio"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
