@@ -5,7 +5,7 @@ use std_launcher::{
     hotkey_smoke, HotkeySmokeReport, LauncherActionPanelSmokeReport,
     LauncherAppLocalizationSmokeReport, LauncherCloseSmokeReport, LauncherKeyboardReport,
     LauncherSmokeReport, LauncherState, LauncherSurfaceSmokeReport, LauncherUiSemanticsReport,
-    LauncherWindowSmokeReport,
+    LauncherUserEnterSmokeReport, LauncherWindowSmokeReport,
 };
 
 enum LauncherCliSmoke {
@@ -16,6 +16,7 @@ enum LauncherCliSmoke {
     ActionPanel(LauncherActionPanelSmokeReport),
     AppLocalization(LauncherAppLocalizationSmokeReport),
     Close(LauncherCloseSmokeReport),
+    UserEnter(LauncherUserEnterSmokeReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
     Surface(Box<LauncherSurfaceSmokeReport>),
     Preview(LauncherPreviewSmokeReport),
@@ -50,6 +51,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
             Ok(true)
         }
         Some(LauncherCliSmoke::Close(report)) => {
+            println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::UserEnter(report)) => {
             println!("{}", report.summary());
             Ok(true)
         }
@@ -121,6 +126,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
             LauncherAppLocalizationSmokeReport::run(),
         )),
         Some("--close-smoke") => Some(LauncherCliSmoke::Close(LauncherState::close_smoke())),
+        Some("--user-enter-smoke") => Some(LauncherCliSmoke::UserEnter(
+            LauncherUserEnterSmokeReport::run(),
+        )),
         Some("--ui-semantics-smoke") => {
             let query = args
                 .get(2)
@@ -208,6 +216,25 @@ mod tests {
             .summary()
             .contains("fixture_scope=local_apps_dir_only"));
         assert!(report.summary().contains("system_apps_scanned=false"));
+    }
+
+    #[test]
+    fn user_enter_smoke_reports_launcher_user_route_without_desktop_open() {
+        let args = vec!["std-launcher".to_string(), "--user-enter-smoke".to_string()];
+        let Some(LauncherCliSmoke::UserEnter(report)) = smoke_from_args(args) else {
+            panic!("expected user enter smoke");
+        };
+
+        assert!(report.pass(), "{}", report.summary());
+        assert!(report.summary().contains("launcher_user_enter_smoke PASS"));
+        assert!(report
+            .summary()
+            .contains("route=Enter>handle_keyboard_input_by_user"));
+        assert!(report.summary().contains("mode=LauncherUser"));
+        assert!(report.summary().contains("status=NeedsExternalRunner"));
+        assert!(report
+            .summary()
+            .contains("real_execution_gate=installed-hotkey-or-background-ui-acceptance"));
     }
 
     #[test]

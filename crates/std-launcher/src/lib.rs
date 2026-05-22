@@ -27,6 +27,7 @@ mod studio_intent;
 mod suggested;
 mod surface_contract;
 mod surface_smoke;
+mod user_enter_smoke;
 mod viewport_contract;
 mod voice;
 
@@ -66,6 +67,7 @@ pub use studio_intent::{StudioLaunchIntent, StudioLaunchTarget};
 pub use suggested::{suggested_workflow_rows, SuggestedWorkflowRow};
 pub use surface_contract::LauncherSurfaceContract;
 pub use surface_smoke::LauncherSurfaceSmokeReport;
+pub use user_enter_smoke::LauncherUserEnterSmokeReport;
 pub use viewport_contract::{
     launcher_clear_color_contract, launcher_host_positioning_contract,
     launcher_panel_native_options, launcher_panel_viewport, launcher_viewport_frame_contract,
