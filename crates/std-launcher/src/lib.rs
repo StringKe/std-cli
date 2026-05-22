@@ -19,6 +19,7 @@ mod query_mode;
 mod reports;
 mod semantics;
 mod semantics_executing;
+mod semantics_report;
 mod shortcut_help;
 mod studio_intent;
 mod suggested;

@@ -5,7 +5,7 @@ use std_egui::{
     i18n::{self, Locale},
     input,
     motion::MotionContext,
-    LauncherFeedback, LauncherPhase, LauncherResultMode,
+    LauncherFeedback,
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 
@@ -20,12 +20,16 @@ pub struct LauncherUiSemanticsReport {
     pub empty_result_count: usize,
     pub empty_title: String,
     pub empty_detail: String,
+    pub search_reader_label: String,
+    pub result_group_label: String,
     pub selected_label: String,
+    pub selected_reader_label: String,
     pub selected_position: String,
     pub selected_keycap: String,
     pub selected_action_hint: String,
     pub action_bar_hint: String,
     pub action_panel_actions: String,
+    pub action_panel_reader_label: String,
     pub action_panel_open_studio_command: String,
     pub no_results_label: String,
     pub no_results_detail: String,
@@ -37,17 +41,21 @@ pub struct LauncherUiSemanticsReport {
     pub loading_progress: String,
     pub loading_spinner_after_ms: u128,
     pub executing_search_text: String,
+    pub running_reader_label: String,
     pub executing_input_enabled: bool,
     pub executing_cancel_shortcut: String,
     pub executing_background_shortcut: String,
     pub defer_feedback_label: String,
     pub defer_actions: String,
     pub failed_feedback_label: String,
+    pub completion_reader_label: String,
     pub error_actions: String,
     pub feedback_keyboard_path: String,
     pub error_open_studio_target: String,
     pub error_open_studio_command: String,
     pub shortcut_help_summary: String,
+    pub docs23_contract: String,
+    pub locale_contract: String,
     pub reduce_motion: bool,
     pub launcher_enter_ms: u128,
     pub focus_ring_width: u32,
@@ -78,12 +86,16 @@ impl LauncherState {
             empty_result_count: empty.result_count,
             empty_title: empty.title,
             empty_detail: empty.detail,
+            search_reader_label: result.search_reader_label,
+            result_group_label: result.result_group_label,
             selected_label: result.selected_label,
+            selected_reader_label: result.selected_reader_label,
             selected_position: result.selected_position,
             selected_keycap: result.selected_keycap,
             selected_action_hint: result.selected_action_hint,
             action_bar_hint: result.action_bar_hint,
             action_panel_actions: action_panel.actions,
+            action_panel_reader_label: action_panel.reader_label,
             action_panel_open_studio_command: action_panel.open_studio_command,
             no_results_label: no_results.label,
             no_results_detail: no_results.detail,
@@ -95,17 +107,23 @@ impl LauncherState {
             loading_progress: loading.progress,
             loading_spinner_after_ms: 200,
             executing_search_text: executing.search_text,
+            running_reader_label: feedback.running_label,
             executing_input_enabled: executing.input_enabled,
             executing_cancel_shortcut: executing.cancel_shortcut,
             executing_background_shortcut: executing.background_shortcut,
             defer_feedback_label: feedback.defer_label,
             defer_actions: "Copy,Retry".to_string(),
             failed_feedback_label: feedback.failed_label,
+            completion_reader_label: feedback.completion_label,
             error_actions: "Copy,Retry,Open Studio".to_string(),
             feedback_keyboard_path: feedback.keyboard_path,
             error_open_studio_target: feedback.open_studio_target,
             error_open_studio_command: feedback.open_studio_command,
             shortcut_help_summary: shortcut_help_semantics(),
+            docs23_contract: "docs/23#launcher-screen-reader".to_string(),
+            locale_contract: format!("{:?},{:?}", Locale::ZhCn, Locale::EnUs)
+                .replace("ZhCn", "zh-CN")
+                .replace("EnUs", "en-US"),
             reduce_motion: motion.is_reduced(),
             launcher_enter_ms: motion.launcher_enter().as_millis(),
             focus_ring_width: a11y.focus_ring_width() as u32,
@@ -114,7 +132,10 @@ impl LauncherState {
 }
 
 struct ResultSemantics {
+    search_reader_label: String,
+    result_group_label: String,
     selected_label: String,
+    selected_reader_label: String,
     selected_position: String,
     selected_keycap: String,
     selected_action_hint: String,
@@ -146,6 +167,8 @@ struct LoadingSemantics {
 struct FeedbackSemantics {
     defer_label: String,
     failed_label: String,
+    running_label: String,
+    completion_label: String,
     open_studio_target: String,
     open_studio_command: String,
     keyboard_path: String,
@@ -153,15 +176,17 @@ struct FeedbackSemantics {
 
 struct ActionPanelSemantics {
     actions: String,
+    reader_label: String,
     open_studio_command: String,
 }
 
 fn result_semantics(state: &LauncherState) -> ResultSemantics {
+    let a11y = AccessibilityContext::from_env();
     let selected_label = state
         .view
         .selected_result()
         .map(|result| {
-            AccessibilityContext::from_env().launcher_result_label(
+            a11y.launcher_result_label(
                 &result.action.name,
                 &result.action.description,
                 state.view.selected + 1,
@@ -169,6 +194,7 @@ fn result_semantics(state: &LauncherState) -> ResultSemantics {
             )
         })
         .unwrap_or_else(|| "No matches".to_string());
+    let selected_reader_label = selected_label.clone();
     let selected_position = if state.view.results.is_empty() {
         "0 of 0".to_string()
     } else {
@@ -190,7 +216,13 @@ fn result_semantics(state: &LauncherState) -> ResultSemantics {
         .map(|preview| format!("{} {}", input::enter().label(), preview.primary_command))
         .unwrap_or_else(|| format!("{} none", input::enter().label()));
     ResultSemantics {
+        search_reader_label: a11y.launcher_search_label(&state.view.query),
+        result_group_label: a11y.launcher_result_group_label(i18n::translate(
+            Locale::EnUs,
+            "launcher.results.group.action_workflow",
+        )),
         selected_label,
+        selected_reader_label,
         selected_position,
         selected_keycap,
         selected_action_hint,
@@ -262,6 +294,7 @@ fn loading_semantics() -> LoadingSemantics {
 fn feedback_semantics() -> FeedbackSemantics {
     let defer_feedback = LauncherFeedback::from_execution(&deferred_execution());
     let failed_feedback = LauncherFeedback::from_execution(&failed_execution());
+    let a11y = AccessibilityContext::from_env();
     let mut failed_state = LauncherState::new();
     failed_state.view.feedback = Some(failed_feedback.clone());
     let studio_intent = failed_state.open_studio_execution_history_from_feedback();
@@ -284,6 +317,11 @@ fn feedback_semantics() -> FeedbackSemantics {
     FeedbackSemantics {
         defer_label: feedback_label(&defer_feedback),
         failed_label: feedback_label(&failed_feedback),
+        running_label: a11y.launcher_running_label(&failed_feedback.action_name),
+        completion_label: a11y.launcher_completed_label(&format!(
+            "{} {}",
+            defer_feedback.title, defer_feedback.detail
+        )),
         open_studio_target: format!("{:?}", studio_intent.target),
         open_studio_command: studio_intent.command,
         keyboard_path: format!(
@@ -313,141 +351,19 @@ fn action_panel_semantics(query: &str) -> ActionPanelSemantics {
         .join(",");
     state.update_action_panel_query("studio");
     let _ = state.trigger_action_panel_selection();
+    let selected_item = state
+        .view
+        .selected_result()
+        .map(|result| result.action.name.as_str())
+        .unwrap_or("No matches");
     ActionPanelSemantics {
-        actions,
+        reader_label: AccessibilityContext::from_env()
+            .launcher_action_panel_label(selected_item, state.action_panel.items.len()),
         open_studio_command: state
             .studio_intent
             .map(|intent| intent.command)
             .unwrap_or_else(|| "none".to_string()),
-    }
-}
-
-impl LauncherUiSemanticsReport {
-    pub fn pass(&self) -> bool {
-        self.search_focused
-            && self.result_count > 0
-            && self.result_phase == "WithResults"
-            && self.result_mode == "Matches"
-            && self.empty_phase == "Empty"
-            && self.empty_mode == "SuggestedWorkflows"
-            && self.empty_result_count > 0
-            && self.empty_title == "Suggested Workflows"
-            && self.empty_detail.contains("Press / for commands")
-            && self
-                .selected_label
-                .contains(&format!("press {}", input::enter().label()))
-            && self.selected_position.contains(" of ")
-            && self.selected_keycap == input::launcher_result_keycap(0).unwrap()
-            && self
-                .selected_action_hint
-                .starts_with(&format!("{} ", input::enter().label()))
-            && self.action_bar_hint
-                == format!(
-                    "{} {}",
-                    i18n::translate(Locale::EnUs, "launcher.action.actions"),
-                    input::launcher_action_panel().label()
-                )
-            && self.action_panel_actions.contains("Open in Studio")
-            && self
-                .action_panel_open_studio_command
-                .starts_with("studio-pane://")
-            && self.no_results_label == "No matches"
-            && self.no_results_detail.contains("Try a different keyword")
-            && self.no_results_fallback.contains("Ask AI about")
-            && self.no_results_phase
-                == format!(
-                    "{:?}/{:?}",
-                    LauncherPhase::NoMatches,
-                    LauncherResultMode::NoMatches
-                )
-            && self.no_results_enter_query == "? no-such-launcher-result"
-            && self.no_results_ime_enter_blocked
-            && self.loading_label.contains("Searching registry")
-            && self.loading_progress == "2px Searching indeterminate"
-            && self.loading_spinner_after_ms == 200
-            && self.executing_search_text.starts_with("Running:")
-            && !self.executing_input_enabled
-            && self.executing_cancel_shortcut
-                == format!(
-                    "{} {}",
-                    i18n::translate(Locale::EnUs, "launcher.action.cancel"),
-                    input::launcher_cancel().label()
-                )
-            && self.executing_background_shortcut
-                == format!(
-                    "{} {}",
-                    i18n::translate(Locale::EnUs, "launcher.action.background"),
-                    input::enter().label()
-                )
-            && self
-                .defer_feedback_label
-                .contains(std_egui::i18n::t("launcher.feedback.deferred"))
-            && self.defer_actions == "Copy,Retry"
-            && self
-                .failed_feedback_label
-                .contains(std_egui::i18n::t("launcher.feedback.failed"))
-            && self.error_actions == "Copy,Retry,Open Studio"
-            && self.feedback_keyboard_path.contains(&format!(
-                "{}:Retry>{}:OpenStudio>{}:studio-pane://history",
-                input::arrow_down().label(),
-                input::arrow_down().label(),
-                input::enter().label()
-            ))
-            && self.error_open_studio_target == "ExecutionHistory"
-            && self.error_open_studio_command == "studio-pane://history"
-            && self.shortcut_help_summary.contains("trigger=?")
-            && self
-                .shortcut_help_summary
-                .contains(&input::launcher_action_panel().label())
-            && !self.shortcut_help_summary.contains("Mod+")
-            && (!self.reduce_motion || self.launcher_enter_ms == 0)
-    }
-
-    pub fn summary(&self) -> String {
-        format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nselected_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nshortcut_help={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
-            if self.pass() { "PASS" } else { "FAIL" },
-            self.search_focused,
-            self.result_count,
-            self.result_phase,
-            self.result_mode,
-            self.empty_phase,
-            self.empty_mode,
-            self.empty_result_count,
-            self.empty_title,
-            self.empty_detail,
-            self.selected_label,
-            self.selected_position,
-            self.selected_keycap,
-            self.selected_action_hint,
-            self.action_bar_hint,
-            self.action_panel_actions,
-            self.action_panel_open_studio_command,
-            self.no_results_label,
-            self.no_results_detail,
-            self.no_results_fallback,
-            self.no_results_phase,
-            self.no_results_enter_query,
-            self.no_results_ime_enter_blocked,
-            self.loading_label,
-            self.loading_progress,
-            self.loading_spinner_after_ms,
-            self.executing_search_text,
-            self.executing_input_enabled,
-            self.executing_cancel_shortcut,
-            self.executing_background_shortcut,
-            self.defer_feedback_label,
-            self.defer_actions,
-            self.failed_feedback_label,
-            self.error_actions,
-            self.feedback_keyboard_path,
-            self.error_open_studio_target,
-            self.error_open_studio_command,
-            self.shortcut_help_summary,
-            self.reduce_motion,
-            self.launcher_enter_ms,
-            self.focus_ring_width
-        )
+        actions,
     }
 }
 

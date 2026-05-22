@@ -45,6 +45,18 @@ impl AccessibilityContext {
     pub fn launcher_result_group_label(&self, group: &str) -> String {
         format!("{group}, result group")
     }
+
+    pub fn launcher_action_panel_label(&self, selected_item: &str, count: usize) -> String {
+        format!("Actions for {selected_item}, list of {count}")
+    }
+
+    pub fn launcher_running_label(&self, action: &str) -> String {
+        format!("Running {action}")
+    }
+
+    pub fn launcher_completed_label(&self, message: &str) -> String {
+        message.trim().to_string()
+    }
 }
 
 fn env_flag(name: &str) -> bool {
@@ -74,6 +86,18 @@ mod tests {
         assert_eq!(
             a11y.launcher_result_group_label("Action / Workflow"),
             "Action / Workflow, result group"
+        );
+        assert_eq!(
+            a11y.launcher_action_panel_label("Rebuild Index", 3),
+            "Actions for Rebuild Index, list of 3"
+        );
+        assert_eq!(
+            a11y.launcher_running_label("Rebuild Index"),
+            "Running Rebuild Index"
+        );
+        assert_eq!(
+            a11y.launcher_completed_label("Index rebuilt"),
+            "Index rebuilt"
         );
     }
 
