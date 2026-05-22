@@ -119,7 +119,11 @@ fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> 
     }
     let launcher = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
     check_text(&launcher, "pub(crate) theme_profile: Option<ThemeProfile>")?;
-    check_text(&launcher, "ThemeProfile::apply(ctx, self.theme_mode)")?;
+    check_text(&launcher, "ThemeProfile::apply_with_accessibility(")?;
+    check_text(&launcher, "config.reduce_motion()")?;
+    check_text(&launcher, "config.high_contrast()")?;
+    check_text(&launcher, "config.reduce_transparency()")?;
+    check_text(&launcher, "config.ui_scale()")?;
     let studio = read_required(&root.join("crates/std-studio/src/main.rs"))?;
     check_text(&studio, "pub(crate) theme_profile: Option<ThemeProfile>")?;
     check_text(&studio, "self.theme_profile = Some(ui::install_visuals")?;
@@ -181,7 +185,9 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     let launcher_app = read_required(&root.join("crates/std-launcher/src/app.rs"))?;
     check_text(&launcher_app, "ui::render_launcher_viewport")?;
     let launcher_metrics = read_required(&root.join("crates/std-launcher/src/ui_metrics.rs"))?;
-    check_text(&launcher_metrics, "scale.f32(PANEL_WIDTH)")?;
+    let launcher_layout =
+        read_required(&root.join("crates/std-launcher/src/ui_metrics_layout.rs"))?;
+    check_text(&launcher_layout, "scale.f32(PANEL_WIDTH)")?;
     let launcher_metrics_tests =
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(
@@ -190,9 +196,9 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=panel_surface,no_carrier_background",
-        "capture_window=panel_surface,opt_in_only,no_carrier_background",
-        "capture_surface=native_panel_surface,no_carrier_background,no_shadow_clip",
+        "native_host_window=transparent_carrier,panel_surface=opaque,no_carrier_background",
+        "capture_window=transparent_carrier,opt_in_only,panel_surface=opaque,no_carrier_background",
+        "capture_surface=opaque_panel_surface,transparent_carrier,no_carrier_background,no_shadow_clip",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -233,7 +239,7 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
-        "native-panel-surface,opt-in-only",
+        "transparent-carrier,opaque-panel-surface,opt-in-only",
         "no-default-window",
         "preview_surface_summary",
         "preview_size_summary",

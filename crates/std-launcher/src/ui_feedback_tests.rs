@@ -105,6 +105,7 @@ fn feedback_surface_stacks_text_above_actions() {
 #[test]
 fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
     let metrics = include_str!("ui_metrics.rs");
+    let layout = include_str!("ui_metrics_layout.rs");
     let source = include_str!("ui_feedback.rs");
 
     let scale = std_egui::tokens::UiScale::default();
@@ -118,9 +119,8 @@ fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
     assert!(metrics.contains("feedback_panel_height_for_scale"));
     assert!(metrics.contains("feedback_text_height()"));
     assert!(metrics.contains("feedback_action_height()"));
-    assert!(
-        metrics.contains("feedback_panel_height_for_scale(scale) + scale.f32(Space::XS as f32)")
-    );
+    assert!(layout.contains("scale.f32(Space::XS as f32)"));
+    assert!(layout.contains("feedback_panel_height_for_scale(scale)"));
     assert!(metrics.contains("feedback_action_height_for_scale"));
     assert!(!metrics.contains("scale.f32(66.0)"));
     assert!(source.contains("ui_metrics::feedback_action_height()"));

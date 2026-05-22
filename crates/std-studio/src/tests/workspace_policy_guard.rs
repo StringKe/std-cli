@@ -282,9 +282,9 @@ fn hardcoded_color_patterns() -> &'static [&'static str] {
         concat!("Color32", "::from_rgb"),
         concat!("Color32", "::from_rgba"),
         "from_black_alpha",
-        "#000",
-        "#fff",
-        "#FFF",
+        concat!("#00", "0"),
+        concat!("#ff", "f"),
+        concat!("#FF", "F"),
     ]
 }
 

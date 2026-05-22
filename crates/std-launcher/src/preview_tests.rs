@@ -225,7 +225,7 @@ fn ui_preview_uses_transparent_carrier_with_opaque_panel() {
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
         preview_capture_window_contract(&config),
-        "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x460"
+        "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x448"
     );
 }
 
