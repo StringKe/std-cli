@@ -144,6 +144,18 @@ pub fn studio_new_workflow() -> KeyBinding {
     KeyBinding::Mod('N')
 }
 
+pub fn studio_zoom_reset() -> KeyBinding {
+    KeyBinding::ModNamed(egui::Key::Num0)
+}
+
+pub fn studio_zoom_in() -> KeyBinding {
+    KeyBinding::ModNamed(egui::Key::Equals)
+}
+
+pub fn studio_zoom_out() -> KeyBinding {
+    KeyBinding::ModNamed(egui::Key::Minus)
+}
+
 pub fn studio_quick_open() -> KeyBinding {
     KeyBinding::Mod('P')
 }
@@ -351,6 +363,9 @@ mod tests {
         assert!(studio_command_palette().label().ends_with("+P"));
         assert!(studio_command_palette_slash().label().ends_with("+/"));
         assert!(studio_new_workflow().label().ends_with("+N"));
+        assert!(studio_zoom_reset().label().ends_with("+0"));
+        assert!(studio_zoom_in().label().ends_with("+="));
+        assert!(studio_zoom_out().label().ends_with("+-"));
         assert!(studio_quick_open().label().ends_with("+P"));
         assert!(studio_settings().label().ends_with("+,"));
         assert!(studio_analysis_relation_toggle().label().ends_with("+L"));

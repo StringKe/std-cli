@@ -9,6 +9,7 @@ pub(crate) struct StudioKeyboardSmoke {
     pub(crate) command_palette_path: String,
     pub(crate) quick_open_path: String,
     pub(crate) new_workflow_path: String,
+    pub(crate) zoom_path: String,
     pub(crate) workspace_focus_path: String,
     pub(crate) analysis_focus_path: String,
     pub(crate) analysis_qa_focus: String,
@@ -28,6 +29,12 @@ impl StudioKeyboardSmoke {
         let command_palette_path = open_command_palette(&mut layout);
         let quick_open_path = open_quick_open(&mut layout);
         let new_workflow_path = shortcut_path(input::studio_new_workflow(), "closed>builder");
+        let zoom_path = format!(
+            "{}|{}|{}:1.00>1.05>1.00>1.00",
+            input::studio_zoom_in().label(),
+            input::studio_zoom_out().label(),
+            input::studio_zoom_reset().label()
+        );
         let workspace_focus_path = workspace_focus_cycle(studio);
         let (analysis_focus_path, analysis_qa_focus) = analysis_focus_paths();
         let sidebar_tree_label = sidebar_tree_node_label("Workflow Builder", 2, 1, 3, 8);
@@ -42,6 +49,7 @@ impl StudioKeyboardSmoke {
             command_palette_path,
             quick_open_path,
             new_workflow_path,
+            zoom_path,
             workspace_focus_path,
             analysis_focus_path,
             analysis_qa_focus,
@@ -70,6 +78,13 @@ impl StudioKeyboardSmoke {
                 == shortcut_path(input::studio_quick_open(), "command>quick-open")
             && self.new_workflow_path
                 == shortcut_path(input::studio_new_workflow(), "closed>builder")
+            && self.zoom_path
+                == format!(
+                    "{}|{}|{}:1.00>1.05>1.00>1.00",
+                    input::studio_zoom_in().label(),
+                    input::studio_zoom_out().label(),
+                    input::studio_zoom_reset().label()
+                )
             && self.workspace_focus_path == "dashboard>plugins>settings>dashboard"
             && self.analysis_focus_path == "target>tabs>content>query>coverage>target"
             && self.analysis_qa_focus
@@ -91,13 +106,14 @@ impl StudioKeyboardSmoke {
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_keyboard_smoke={status}\nstudio_sidebar_toggle_path={}\nstudio_inspector_toggle_path={}\nstudio_bottom_panel_toggle_path={}\nstudio_command_palette_path={}\nstudio_quick_open_path={}\nstudio_new_workflow_path={}\nstudio_workspace_focus_path={}\nstudio_analysis_focus_path={}\nstudio_analysis_qa_focus={}\nstudio_sidebar_tree_label={}\nstudio_dnd_pickup_announcement={}\nstudio_dnd_drop_announcement={}\nstudio_batch_progress_announcements={}\nstudio_keyboard_contract={}",
+            "studio_keyboard_smoke={status}\nstudio_sidebar_toggle_path={}\nstudio_inspector_toggle_path={}\nstudio_bottom_panel_toggle_path={}\nstudio_command_palette_path={}\nstudio_quick_open_path={}\nstudio_new_workflow_path={}\nstudio_zoom_path={}\nstudio_workspace_focus_path={}\nstudio_analysis_focus_path={}\nstudio_analysis_qa_focus={}\nstudio_sidebar_tree_label={}\nstudio_dnd_pickup_announcement={}\nstudio_dnd_drop_announcement={}\nstudio_batch_progress_announcements={}\nstudio_keyboard_contract={}",
             self.sidebar_toggle_path,
             self.inspector_toggle_path,
             self.bottom_panel_toggle_path,
             self.command_palette_path,
             self.quick_open_path,
             self.new_workflow_path,
+            self.zoom_path,
             self.workspace_focus_path,
             self.analysis_focus_path,
             self.analysis_qa_focus,

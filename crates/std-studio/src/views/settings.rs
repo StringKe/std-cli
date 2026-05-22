@@ -296,7 +296,7 @@ impl StudioEguiApp {
         ]
     }
 
-    fn save_setting(&mut self, key: &str, value: String) {
+    pub(crate) fn save_setting(&mut self, key: &str, value: String) {
         match self.app.save_config_field(key, &value) {
             Ok(path) => {
                 self.status = format!("{} {}", i18n::t("studio.settings.saved"), path.display())

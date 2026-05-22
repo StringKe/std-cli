@@ -50,6 +50,7 @@ mod workspace_pane_content;
 mod workspace_panes;
 mod workspace_policy_evidence;
 mod workspace_tabs;
+mod zoom;
 
 use analysis_state::AnalysisUiState;
 use bottom_panel_model::BottomPanelTab;
@@ -72,6 +73,7 @@ use studio_smoke_cli::{
     surface_smoke_from_args, theme_smoke_from_args, workspace_policy_smoke_from_args,
 };
 use workspace_panes::{StudioWorkspaceCommand, WorkspaceCommandQueue};
+use zoom::StudioZoomAction;
 
 pub(crate) struct StudioEguiApp {
     pub(crate) app: StudioApp,
@@ -191,6 +193,7 @@ impl eframe::App for StudioEguiApp {
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
         self.handle_workflow_creation_keyboard(ctx);
+        self.handle_zoom_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
         self.handle_bottom_panel_keyboard(ctx);
         self.handle_workflow_builder_keyboard(ctx);
@@ -227,6 +230,22 @@ impl StudioEguiApp {
             self.create_workflow_from_form();
             self.layout.close_overlays();
         }
+    }
+
+    fn handle_zoom_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        let action = if std_egui::input::studio_zoom_in().pressed(ctx) {
+            StudioZoomAction::In
+        } else if std_egui::input::studio_zoom_out().pressed(ctx) {
+            StudioZoomAction::Out
+        } else if std_egui::input::studio_zoom_reset().pressed(ctx) {
+            StudioZoomAction::Reset
+        } else {
+            return;
+        };
+        self.apply_zoom_shortcut(action);
     }
 
     fn handle_workspace_tab_keyboard(&mut self, ctx: &egui::Context) {

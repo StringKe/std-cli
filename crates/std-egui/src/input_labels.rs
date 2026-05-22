@@ -36,6 +36,7 @@ pub fn named_key_label(key: egui::Key) -> &'static str {
             }
         }
         egui::Key::Comma => ",",
+        egui::Key::Equals => "=",
         egui::Key::Enter => {
             if cfg!(target_os = "macos") {
                 "↵"
@@ -44,6 +45,8 @@ pub fn named_key_label(key: egui::Key) -> &'static str {
             }
         }
         egui::Key::Escape => "Esc",
+        egui::Key::Minus => "-",
+        egui::Key::Num0 => "0",
         egui::Key::Questionmark => "?",
         egui::Key::Slash => "/",
         egui::Key::Tab => {

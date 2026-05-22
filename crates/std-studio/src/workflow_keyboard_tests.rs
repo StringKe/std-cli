@@ -1,6 +1,9 @@
 use crate::{workspace_panes::focused_workspace_spec, StudioEguiApp};
+use std::sync::Mutex;
 use std_core::{StdConfig, StdCore};
 use std_studio::{StudioApp, StudioPane};
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn mod_n_creates_workflow_and_opens_builder_from_raw_input() {
@@ -36,6 +39,58 @@ fn mod_n_respects_ime_composing_guard() {
 
     assert_eq!(app.app.open_workspace_panes().count(), 0);
     assert!(app.status.is_empty());
+}
+
+#[test]
+fn zoom_shortcuts_update_config_and_settings_state_from_raw_input() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let config_path = temp.path().join("std-cli.json");
+    std::env::set_var("STDCLI_CONFIG", &config_path);
+    let ctx = eframe::egui::Context::default();
+    let mut app = test_app();
+
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::Equals), |ctx| {
+        app.handle_zoom_keyboard(ctx);
+    });
+    assert_eq!(app.app.core.config.ui_scale(), 1.05);
+    assert_eq!(app.settings_ui_scale, "1.05");
+    assert!(app.status.contains(&config_path.display().to_string()));
+
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::Minus), |ctx| {
+        app.handle_zoom_keyboard(ctx);
+    });
+    assert_eq!(app.app.core.config.ui_scale(), 1.0);
+    assert_eq!(app.settings_ui_scale, "1.00");
+
+    app.app.core.config.appearance.ui_scale = 1.25;
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::Num0), |ctx| {
+        app.handle_zoom_keyboard(ctx);
+    });
+    assert_eq!(app.app.core.config.ui_scale(), 1.0);
+    assert_eq!(app.settings_ui_scale, "1.00");
+    assert!(config_path.exists());
+    std::env::remove_var("STDCLI_CONFIG");
+}
+
+#[test]
+fn zoom_shortcuts_respect_ime_composing_guard() {
+    let _guard = ENV_LOCK.lock().unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    std::env::set_var("STDCLI_CONFIG", temp.path().join("std-cli.json"));
+    let ctx = eframe::egui::Context::default();
+    let mut app = test_app();
+
+    let _ = ctx.run(ime_preedit_input(), |ctx| {
+        app.handle_zoom_keyboard(ctx);
+    });
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::Equals), |ctx| {
+        app.handle_zoom_keyboard(ctx);
+    });
+
+    assert_eq!(app.app.core.config.ui_scale(), 1.0);
+    assert!(app.status.is_empty());
+    std::env::remove_var("STDCLI_CONFIG");
 }
 
 fn test_app() -> StudioEguiApp {

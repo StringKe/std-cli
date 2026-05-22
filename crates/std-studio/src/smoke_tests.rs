@@ -367,6 +367,12 @@ fn assert_keyboard_summary(summary: &str) {
         "studio_new_workflow_path={}:closed>builder",
         input::studio_new_workflow().label()
     )));
+    assert!(summary.contains(&format!(
+        "studio_zoom_path={}|{}|{}:1.00>1.05>1.00>1.00",
+        input::studio_zoom_in().label(),
+        input::studio_zoom_out().label(),
+        input::studio_zoom_reset().label()
+    )));
     assert!(summary.contains("studio_workspace_focus_path=dashboard>plugins>settings>dashboard"));
     assert!(
         summary.contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target")
