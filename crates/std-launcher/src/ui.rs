@@ -101,10 +101,18 @@ pub(crate) fn render_launcher_panel(
             ui.add_space(Space::xs() as f32);
             hide_requested |= render_body(ui, state, body_height);
             ui.add_space(Space::xs() as f32);
-            let action_bar_rect = ui_action_bar::render(ui, state, hotkey_status, resident_status);
+            let action_bar = ui_action_bar::render(ui, state, hotkey_status, resident_status);
+            match action_bar.command {
+                ui_action_bar::ActionBarCommand::CancelExecuting => state.cancel_executing(),
+                ui_action_bar::ActionBarCommand::MoveExecutingToBackground => {
+                    state.move_executing_to_background();
+                    hide_requested = true;
+                }
+                ui_action_bar::ActionBarCommand::None => {}
+            }
             render_voice(ui, state, voice_transcript);
             ui_feedback::render(ui, state);
-            ui_action_panel::render(ui.ctx(), action_bar_rect, state);
+            ui_action_panel::render(ui.ctx(), action_bar.rect, state);
         });
     hide_requested
 }

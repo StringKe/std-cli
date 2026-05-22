@@ -15,9 +15,10 @@ pub(crate) fn render(
     state: &LauncherState,
     _hotkey_status: &str,
     _resident_status: &str,
-) -> egui::Rect {
+) -> ActionBarRenderResult {
     let ctx = ui.ctx().clone();
     let width = ui.available_width();
+    let mut command = ActionBarCommand::None;
     let (rect, _response) = ui.allocate_exact_size(
         egui::vec2(width, ui_metrics::action_bar_height()),
         egui::Sense::hover(),
@@ -40,28 +41,83 @@ pub(crate) fn render(
             ui.allocate_ui_with_layout(
                 egui::vec2(right_width, ui_metrics::action_bar_content_height()),
                 egui::Layout::right_to_left(egui::Align::Center),
-                |ui| render_action_hints(ui, state),
+                |ui| command = render_action_hints(ui, state),
             );
         });
     });
-    rect
+    ActionBarRenderResult { rect, command }
 }
 
-fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ActionBarRenderResult {
+    pub(crate) rect: egui::Rect,
+    pub(crate) command: ActionBarCommand,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ActionBarCommand {
+    None,
+    CancelExecuting,
+    MoveExecutingToBackground,
+}
+
+fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) -> ActionBarCommand {
     match action_bar_hint_mode(state) {
-        ActionBarHintMode::Cancel => {
-            keycap(ui, &input::launcher_cancel().label());
-            quiet_label(ui, i18n::t("launcher.action.cancel"));
-            keycap(ui, &input::enter().label());
-            quiet_label(ui, i18n::t("launcher.action.background"));
-        }
+        ActionBarHintMode::Cancel => render_executing_controls(ui),
         ActionBarHintMode::RunActions => {
             keycap(ui, &input::launcher_action_panel().label());
             quiet_label(ui, i18n::t("launcher.action.actions"));
             keycap(ui, &input::enter().label());
             quiet_label(ui, i18n::t("launcher.action.run"));
+            ActionBarCommand::None
         }
     }
+}
+
+fn render_executing_controls(ui: &mut egui::Ui) -> ActionBarCommand {
+    let mut command = ActionBarCommand::None;
+    if action_bar_control(
+        ui,
+        i18n::t("launcher.action.background"),
+        &input::enter().label(),
+    )
+    .clicked()
+    {
+        command = ActionBarCommand::MoveExecutingToBackground;
+    }
+    if action_bar_control(
+        ui,
+        i18n::t("launcher.action.cancel"),
+        &input::launcher_cancel().label(),
+    )
+    .clicked()
+    {
+        command = ActionBarCommand::CancelExecuting;
+    }
+    command
+}
+
+fn action_bar_control(ui: &mut egui::Ui, label: &str, shortcut: &str) -> egui::Response {
+    let ctx = ui.ctx().clone();
+    let text = format!("{label} {shortcut}");
+    let response = ui.add(
+        egui::Button::new(
+            egui::RichText::new(text)
+                .font(Text::caption())
+                .color(Color::fg_primary(&ctx)),
+        )
+        .fill(Color::bg_surface_1(&ctx))
+        .stroke(egui::Stroke::new(1.0, Color::stroke_border(&ctx)))
+        .corner_radius(egui::CornerRadius::same(std_egui::tokens::Radius::sm())),
+    );
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            format!("{label}, shortcut {shortcut}"),
+        )
+    });
+    response
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -174,6 +230,16 @@ mod tests {
                 input::enter().label(),
             ]
         );
+    }
+
+    #[test]
+    fn executing_action_bar_exposes_clickable_controls() {
+        let source = include_str!("ui_action_bar.rs");
+
+        assert!(source.contains("ActionBarCommand::CancelExecuting"));
+        assert!(source.contains("ActionBarCommand::MoveExecutingToBackground"));
+        assert!(source.contains("WidgetType::Button"));
+        assert!(source.contains("shortcut {shortcut}"));
     }
 
     #[test]
