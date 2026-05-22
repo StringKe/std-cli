@@ -5,6 +5,7 @@ pub(crate) fn quality_runbook() -> String {
         "mise run dylint",
         "mise run dylint-test",
         "mise run file-limits",
+        "mise run a11y-audit",
         "mise run test",
         "mise run deny",
         "mise run machete",

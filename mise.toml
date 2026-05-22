@@ -31,6 +31,11 @@ description = "Enforce Rust source and config file length gates"
 env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
 run = "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib"
 
+[tasks.a11y-audit]
+description = "Run static accessibility and i18n audit"
+env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
+run = "cargo run -p std-egui --example a11y-audit"
+
 [tasks.test]
 description = "Run workspace tests"
 env = { STD_TEST_MODE = "1", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
@@ -69,6 +74,7 @@ depends = [
     "dylint",
     "dylint-test",
     "file-limits",
+    "a11y-audit",
     "test",
     "deny",
     "machete",

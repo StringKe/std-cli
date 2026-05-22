@@ -98,6 +98,7 @@ fn check_quality_configs(root: &Path) -> Result<ConfigScan, CliError> {
         "cargo dylint --workspace --all -- --all-targets",
         "cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml",
         "cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib",
+        "cargo run -p std-egui --example a11y-audit",
         "cargo deny check",
         "cargo machete",
     ] {

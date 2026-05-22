@@ -217,6 +217,7 @@
 - `cargo fmt --all --check` PASS
 - `cargo clippy --workspace --all-targets -- -D warnings` PASS
 - `cargo dylint --workspace --all -- --all-targets` PASS
+- `cargo run -p std-egui --example a11y-audit` PASS
 - `cargo test --workspace -- --test-threads=1` PASS
 - `cargo deny check` PASS
 - `cargo machete` PASS

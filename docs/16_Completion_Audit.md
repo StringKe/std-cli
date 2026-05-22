@@ -95,6 +95,9 @@ cargo +nightly-2025-09-18 test --manifest-path crates/file_too_long/Cargo.toml
 cargo test -p std-cli workspace_file_limits_cover_sources_and_configs --lib
 PASS
 
+cargo run -p std-egui --example a11y-audit
+PASS
+
 cargo test --workspace -- --test-threads=1
 PASS
 

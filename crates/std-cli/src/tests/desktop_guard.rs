@@ -138,6 +138,7 @@ fn mise_quality_keeps_default_tests_in_desktop_safe_mode() {
         "dylint",
         "dylint-test",
         "file-limits",
+        "a11y-audit",
         "test",
         "deny",
         "machete",

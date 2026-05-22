@@ -20,6 +20,7 @@ pub(crate) fn quality_steps() -> Vec<OpsStep> {
         ("dylint", "mise run dylint"),
         ("dylint-test", "mise run dylint-test"),
         ("file-limits", "mise run file-limits"),
+        ("a11y-audit", "mise run a11y-audit"),
         ("test", "mise run test"),
         ("deny", "mise run deny"),
         ("machete", "mise run machete"),
