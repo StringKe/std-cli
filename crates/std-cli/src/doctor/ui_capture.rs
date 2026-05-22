@@ -51,6 +51,16 @@ const STUDIO_CAPTURE_STATES: &[(&str, &str)] = &[
     ("dark", "panes"),
 ];
 
+struct CaptureManifestEntry<'a> {
+    path: &'a str,
+    declared_bytes: usize,
+    declared_width: u32,
+    declared_height: u32,
+    surface: &'a str,
+    theme: &'a str,
+    scenario: &'a str,
+}
+
 pub(crate) fn check_ui_capture_scripts(root: &std::path::Path) -> Result<(), CliError> {
     check_window_capture_script(root)?;
     check_matrix_capture_script(root)?;
@@ -110,6 +120,9 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)",
         "capture_rule=pid+process-name+window-title",
         "completion_rule=current-run-png-only",
+        "/usr/bin/sips -g pixelWidth",
+        "/usr/bin/sips -g pixelHeight",
+        "width=$width height=$height",
         "record_capture launcher",
         "record_capture studio",
         "manifest=$manifest",
@@ -170,6 +183,8 @@ fn verify_capture_line(
         .ok_or_else(|| CliError::Doctor(format!("capture manifest missing {prefix}")))?;
     let path = capture_field(line, "path=")?;
     let bytes = capture_field(line, "bytes=")?;
+    let width = capture_dimension(line, "width=", surface, theme, scenario)?;
+    let height = capture_dimension(line, "height=", surface, theme, scenario)?;
     let expected_name = format!("{surface}-{theme}-{scenario}.png");
     if !path.ends_with(&expected_name) {
         return Err(CliError::Doctor(format!(
@@ -186,37 +201,74 @@ fn verify_capture_line(
             ))
         })?;
     if let Some(root) = root {
-        verify_capture_png(root, path, declared_bytes, surface, theme, scenario)?;
+        let entry = CaptureManifestEntry {
+            path,
+            declared_bytes,
+            declared_width: width,
+            declared_height: height,
+            surface,
+            theme,
+            scenario,
+        };
+        verify_capture_png(root, &entry)?;
     }
     Ok(())
 }
 
-fn verify_capture_png(
-    root: &Path,
-    path: &str,
-    declared_bytes: usize,
-    surface: &str,
-    theme: &str,
-    scenario: &str,
-) -> Result<(), CliError> {
-    let png_path = capture_path(root, path);
+fn verify_capture_png(root: &Path, entry: &CaptureManifestEntry<'_>) -> Result<(), CliError> {
+    let png_path = capture_path(root, entry.path);
     let bytes = fs::read(&png_path).map_err(|error| {
         CliError::Doctor(format!(
-            "unable to read capture png for {surface} {theme} {scenario}: {error}"
+            "unable to read capture png for {} {} {}: {error}",
+            entry.surface, entry.theme, entry.scenario
         ))
     })?;
-    if bytes.len() != declared_bytes {
+    if bytes.len() != entry.declared_bytes {
         return Err(CliError::Doctor(format!(
-            "capture manifest byte count mismatch for {surface} {theme} {scenario}: declared={declared_bytes} actual={}",
+            "capture manifest byte count mismatch for {} {} {}: declared={} actual={}",
+            entry.surface,
+            entry.theme,
+            entry.scenario,
+            entry.declared_bytes,
             bytes.len()
         )));
     }
     if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
         return Err(CliError::Doctor(format!(
-            "capture file must be PNG for {surface} {theme} {scenario}"
+            "capture file must be PNG for {} {} {}",
+            entry.surface, entry.theme, entry.scenario
+        )));
+    }
+    let (actual_width, actual_height) = png_dimensions(&bytes)?;
+    if actual_width != entry.declared_width || actual_height != entry.declared_height {
+        return Err(CliError::Doctor(format!(
+            "capture manifest dimensions mismatch for {} {} {}: declared={}x{} actual={}x{}",
+            entry.surface,
+            entry.theme,
+            entry.scenario,
+            entry.declared_width,
+            entry.declared_height,
+            actual_width,
+            actual_height
         )));
     }
     Ok(())
+}
+
+fn png_dimensions(bytes: &[u8]) -> Result<(u32, u32), CliError> {
+    if bytes.len() < 24 || !bytes.starts_with(b"\x89PNG\r\n\x1a\n") || &bytes[12..16] != b"IHDR" {
+        return Err(CliError::Doctor(
+            "capture file must contain PNG IHDR dimensions".to_string(),
+        ));
+    }
+    let width = u32::from_be_bytes(bytes[16..20].try_into().unwrap());
+    let height = u32::from_be_bytes(bytes[20..24].try_into().unwrap());
+    if width == 0 || height == 0 {
+        return Err(CliError::Doctor(
+            "capture PNG dimensions must be positive".to_string(),
+        ));
+    }
+    Ok((width, height))
 }
 
 fn capture_path(root: &Path, path: &str) -> PathBuf {
@@ -234,6 +286,24 @@ fn capture_field<'a>(line: &'a str, key: &str) -> Result<&'a str, CliError> {
     line.split_whitespace()
         .find_map(|part| part.strip_prefix(key))
         .ok_or_else(|| CliError::Doctor(format!("capture manifest field missing: {key}")))
+}
+
+fn capture_dimension(
+    line: &str,
+    key: &str,
+    surface: &str,
+    theme: &str,
+    scenario: &str,
+) -> Result<u32, CliError> {
+    capture_field(line, key)?
+        .parse::<u32>()
+        .ok()
+        .filter(|value| *value > 0)
+        .ok_or_else(|| {
+            CliError::Doctor(format!(
+                "capture manifest {key} must be positive for {surface} {theme} {scenario}"
+            ))
+        })
 }
 
 #[cfg(test)]
@@ -261,7 +331,7 @@ mod tests {
         let png_bytes = sample_png_bytes().len();
         let manifest = sample_manifest().replace(
             &format!(
-                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes}\n"
+                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=1 height=1\n"
             ),
             "",
         );
@@ -277,9 +347,9 @@ mod tests {
         let png_bytes = sample_png_bytes().len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1 height=1"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1 height=1",
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
@@ -319,15 +389,30 @@ mod tests {
         let png_bytes = sample_png_bytes().len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1 height=1"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1 height=1",
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
         assert!(error
             .to_string()
             .contains("capture file must be PNG for studio light panes"));
+    }
+
+    #[test]
+    fn ui_capture_manifest_with_root_rejects_dimension_mismatch() {
+        let temp = tempfile::tempdir().unwrap();
+        write_sample_pngs(temp.path());
+        let manifest = sample_manifest().replace(
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1 height=1",
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=2 height=1",
+        );
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        assert!(error.to_string().contains(
+            "capture manifest dimensions mismatch for studio light panes: declared=2x1 actual=1x1"
+        ));
     }
 
     fn sample_manifest() -> String {
@@ -343,12 +428,12 @@ mod tests {
         ];
         for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
             lines.push(format!(
-                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={png_bytes}"
+                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={png_bytes} width=1 height=1"
             ));
         }
         for (theme, scenario) in STUDIO_CAPTURE_STATES {
             lines.push(format!(
-                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={png_bytes}"
+                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={png_bytes} width=1 height=1"
             ));
         }
         lines.join("\n")
@@ -365,6 +450,6 @@ mod tests {
     }
 
     fn sample_png_bytes() -> &'static [u8] {
-        b"\x89PNG\r\n\x1a\nstd-cli-ui-capture"
+        b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR\0\0\0\x01\0\0\0\x01"
     }
 }

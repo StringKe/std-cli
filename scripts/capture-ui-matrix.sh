@@ -39,7 +39,9 @@ record_capture() {
   scenario="$3"
   output="$4"
   bytes=$(wc -c <"$output" | tr -d ' ')
-  echo "$surface theme=$theme scenario=$scenario path=$output bytes=$bytes" >>"$manifest"
+  width=$(/usr/bin/sips -g pixelWidth "$output" 2>/dev/null | /usr/bin/awk '/pixelWidth/ {print $2}')
+  height=$(/usr/bin/sips -g pixelHeight "$output" 2>/dev/null | /usr/bin/awk '/pixelHeight/ {print $2}')
+  echo "$surface theme=$theme scenario=$scenario path=$output bytes=$bytes width=$width height=$height" >>"$manifest"
 }
 
 pids=""
