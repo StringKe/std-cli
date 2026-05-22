@@ -65,7 +65,7 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
                         .font(Text::footnote())
                         .color(Color::fg_secondary(ctx)),
                 )
-                .truncate(),
+                .wrap(),
             );
         },
     );

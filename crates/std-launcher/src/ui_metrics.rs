@@ -134,11 +134,11 @@ pub(crate) fn action_summary_label_height() -> f32 {
 }
 
 pub(crate) fn feedback_text_height() -> f32 {
-    scale().f32(40.0)
+    scale().f32(58.0)
 }
 
 pub(crate) fn feedback_detail_height() -> f32 {
-    scale().f32(18.0)
+    scale().f32(36.0)
 }
 
 pub(crate) fn search_bar_min_height() -> f32 {
@@ -322,7 +322,7 @@ fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
         height += scale.f32(44.0) + scale.f32(Space::XS as f32);
     }
     if state.view.feedback.is_some() {
-        height += scale.f32(48.0) + scale.f32(Space::XS as f32);
+        height += scale.f32(66.0) + scale.f32(Space::XS as f32);
     }
     height
 }
