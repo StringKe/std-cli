@@ -67,6 +67,8 @@ pub struct LauncherKeyboardReport {
     pub ime_enter_owned_by_ime: bool,
     pub ime_composition_path: String,
     pub ime_preedit_query_unchanged: bool,
+    pub ime_preedit_visible_text: String,
+    pub ime_preedit_cleared_after_commit: bool,
     pub ime_commit_query: String,
     pub ime_commit_trigger_status: Option<ActionExecutionStatus>,
     pub empty_suggestion_keyboard_path: String,
@@ -115,14 +117,18 @@ impl LauncherState {
         self.handle_keyboard_input_with_external_runner(key, ime_composing, true)
     }
 
-    pub fn handle_ime_preedit(&mut self, _preedit: &str) {
-        // IME preedit is candidate text, not committed query text.
+    pub fn handle_ime_preedit(&mut self, preedit: impl Into<String>) {
+        let preedit = preedit.into();
+        self.ime_preedit = (!preedit.is_empty()).then_some(preedit);
+        self.focus_section = LauncherFocusSection::Search;
+        self.focus_source = LauncherFocusSource::Keyboard;
     }
 
     pub fn handle_ime_commit(
         &mut self,
         committed: impl Into<String>,
     ) -> Option<std_types::ActionPreview> {
+        self.ime_preedit = None;
         self.update_query(committed)
     }
 

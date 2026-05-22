@@ -158,6 +158,8 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
     assert!(report.ime_escape_blocked);
     assert!(report.ime_enter_owned_by_ime);
     assert!(report.ime_preedit_query_unchanged);
+    assert_eq!(report.ime_preedit_visible_text, "zhong");
+    assert!(report.ime_preedit_cleared_after_commit);
     assert_eq!(report.ime_commit_query, "rebuild index");
     assert_eq!(
         report.ime_composition_path,
@@ -170,6 +172,8 @@ fn assert_ime_guard(report: &LauncherKeyboardReport, summary: &str) {
     assert!(summary.contains("ime_action_panel_selection_unchanged=true"));
     assert!(summary.contains("ime_enter_owned_by_ime=true"));
     assert!(summary.contains("ime_preedit_query_unchanged=true"));
+    assert!(summary.contains("ime_preedit_visible_text=zhong"));
+    assert!(summary.contains("ime_preedit_cleared_after_commit=true"));
     assert!(summary.contains("ime_commit_query=rebuild index"));
     assert!(summary
         .contains("ime_composition_path=zh-preedit(index)>blocked>commit(rebuild index)>enter"));
@@ -222,7 +226,7 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
     );
     assert_eq!(
         report.ime_visible_state_contract,
-        "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+        "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
     );
     assert_eq!(
         report.real_interaction_contract,
@@ -230,7 +234,7 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
     );
     assert!(summary.contains("ui_handler_contract=ui-handler=ime-before-cancel-enter"));
     assert!(summary.contains(
-        "ime_visible_state_contract=ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+        "ime_visible_state_contract=ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
     ));
     assert!(summary.contains(
         "model_contract=model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"

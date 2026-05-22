@@ -77,8 +77,8 @@ fn render_search_bar_contents(
         if !executing && search_input_owns_egui_focus(state) && response.changed() {
             state.update_query(query_text);
         }
-        if ime_composing {
-            render_ime_composing_chip(ui, &ctx);
+        if ime_composing || state.ime_preedit.is_some() {
+            render_ime_composing_chip(ui, &ctx, state.ime_preedit.as_deref());
         }
         render_mode_tag(ui, state);
     });
@@ -102,7 +102,8 @@ fn search_input_owns_egui_focus(state: &LauncherState) -> bool {
         && state.focus_section != LauncherFocusSection::Feedback
 }
 
-fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context) {
+fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context, preedit: Option<&str>) {
+    let label = ime_composing_label(preedit);
     let response = egui::Frame::new()
         .fill(Color::accent_weak(ctx))
         .stroke(egui::Stroke::new(1.0, Color::accent_base(ctx)))
@@ -111,19 +112,22 @@ fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context) {
         .show(ui, |ui| {
             ui.set_width(ui_metrics::search_ime_chip_width());
             ui.label(
-                egui::RichText::new(i18n::t("launcher.search.ime_composing"))
+                egui::RichText::new(label.as_str())
                     .font(Text::caption())
                     .color(Color::fg_primary(ctx)),
             );
         })
         .response;
     response.widget_info(|| {
-        egui::WidgetInfo::labeled(
-            egui::WidgetType::Label,
-            ui.is_enabled(),
-            i18n::t("launcher.search.ime_composing"),
-        )
+        egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), label.as_str())
     });
+}
+
+fn ime_composing_label(preedit: Option<&str>) -> String {
+    match preedit.filter(|value| !value.trim().is_empty()) {
+        Some(preedit) => format!("{} {}", i18n::t("launcher.search.ime_composing"), preedit),
+        None => i18n::t("launcher.search.ime_composing").to_string(),
+    }
 }
 
 fn search_bar_text(state: &LauncherState) -> String {
@@ -278,7 +282,7 @@ fn render_executing_indicator(ui: &mut egui::Ui, ctx: &egui::Context) {
 
 #[cfg(test)]
 fn search_ime_visible_state_contract() -> &'static str {
-    "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+    "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
 }
 
 #[cfg(test)]
@@ -434,11 +438,19 @@ mod tests {
     fn search_ui_contract_requires_visible_ime_state() {
         assert_eq!(
             search_ime_visible_state_contract(),
-            "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+            "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
         );
         assert!(
             search_input_width(420.0, true) < search_input_width(420.0, false),
             "IME state chip must reserve stable width in the search row"
+        );
+        assert_eq!(
+            ime_composing_label(None),
+            i18n::t("launcher.search.ime_composing")
+        );
+        assert_eq!(
+            ime_composing_label(Some("zhong")),
+            format!("{} zhong", i18n::t("launcher.search.ime_composing"))
         );
     }
 

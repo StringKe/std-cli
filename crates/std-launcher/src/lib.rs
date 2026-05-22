@@ -80,6 +80,7 @@ pub struct LauncherState {
     pub action_panel: ActionPanel,
     pub focus_section: LauncherFocusSection,
     pub focus_source: LauncherFocusSource,
+    pub ime_preedit: Option<String>,
     pub empty_suggestion_selected: usize,
     pub studio_intent: Option<StudioLaunchIntent>,
 }
@@ -97,6 +98,7 @@ impl Default for LauncherState {
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
             focus_source: LauncherFocusSource::Keyboard,
+            ime_preedit: None,
             empty_suggestion_selected: 0,
             studio_intent: None,
         }
@@ -119,6 +121,7 @@ impl LauncherState {
             action_panel: ActionPanel::closed(),
             focus_section: LauncherFocusSection::Search,
             focus_source: LauncherFocusSource::Keyboard,
+            ime_preedit: None,
             empty_suggestion_selected: 0,
             studio_intent: None,
         }
@@ -157,6 +160,7 @@ impl LauncherState {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Search;
         self.focus_source = LauncherFocusSource::Keyboard;
+        self.ime_preedit = None;
         self.controller.hide();
     }
 
@@ -164,6 +168,7 @@ impl LauncherState {
         self.action_panel.close();
         self.focus_section = LauncherFocusSection::Search;
         self.focus_source = LauncherFocusSource::Keyboard;
+        self.ime_preedit = None;
         self.view.update_query(&self.core, query);
         self.empty_suggestion_selected = 0;
         self.view.preview.clone()

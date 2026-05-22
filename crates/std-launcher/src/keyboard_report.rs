@@ -42,6 +42,8 @@ impl LauncherKeyboardReport {
             && self.ime_escape_blocked
             && self.ime_enter_owned_by_ime
             && self.ime_preedit_query_unchanged
+            && self.ime_preedit_visible_text == "zhong"
+            && self.ime_preedit_cleared_after_commit
             && self.ime_commit_query == "rebuild index"
             && self.ime_composition_path == "zh-preedit(index)>blocked>commit(rebuild index)>enter"
             && self.ime_commit_trigger_status.is_some()
@@ -78,7 +80,7 @@ impl LauncherKeyboardReport {
             && self.enter_window.pass()
             && self.ui_handler_contract == "ui-handler=ime-before-cancel-enter"
             && self.ime_visible_state_contract
-                == "ime-visible-state=search-preedit-visible,enter-owned-by-ime"
+                == "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
             && self.model_contract
                 == "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
             && self.real_interaction_contract
@@ -87,7 +89,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_defer_reason={}\nuser_enter_open_contract={}\nuser_enter_feedback_visible={}\nuser_enter_feedback_title={}\nuser_enter_keeps_launcher_open={}\nuser_enter_window_commands={}\npinned_enter_status={}\npinned_enter_keeps_launcher_open={}\npinned_enter_window_commands={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ncompletion_focus_contract={}\nfocus_visible_contract={}\nshortcut_help_contract={}\nnormalized_query={}\ntoken_delete_query={}\ntoken_delete_normalized_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_defer_reason={}\nuser_enter_open_contract={}\nuser_enter_feedback_visible={}\nuser_enter_feedback_title={}\nuser_enter_keeps_launcher_open={}\nuser_enter_window_commands={}\npinned_enter_status={}\npinned_enter_keeps_launcher_open={}\npinned_enter_window_commands={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_preedit_visible_text={}\nime_preedit_cleared_after_commit={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ncompletion_focus_contract={}\nfocus_visible_contract={}\nshortcut_help_contract={}\nnormalized_query={}\ntoken_delete_query={}\ntoken_delete_normalized_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -115,6 +117,8 @@ impl LauncherKeyboardReport {
             self.ime_enter_owned_by_ime,
             self.ime_composition_path,
             self.ime_preedit_query_unchanged,
+            self.ime_preedit_visible_text,
+            self.ime_preedit_cleared_after_commit,
             self.ime_commit_query,
             status_label(self.ime_commit_trigger_status.as_ref()),
             self.empty_suggestion_keyboard_path,

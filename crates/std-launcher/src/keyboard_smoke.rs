@@ -65,6 +65,8 @@ impl LauncherState {
             ime_enter_owned_by_ime: ime.enter_owned_by_ime,
             ime_composition_path: ime.composition_path,
             ime_preedit_query_unchanged: ime.preedit_query_unchanged,
+            ime_preedit_visible_text: ime.preedit_visible_text,
+            ime_preedit_cleared_after_commit: ime.preedit_cleared_after_commit,
             ime_commit_query: ime.commit_query,
             ime_commit_trigger_status: ime.commit_trigger_status,
             empty_suggestion_keyboard_path,
@@ -82,7 +84,7 @@ impl LauncherState {
             enter_window,
             ui_handler_contract: "ui-handler=ime-before-cancel-enter",
             ime_visible_state_contract:
-                "ime-visible-state=search-preedit-visible,enter-owned-by-ime",
+                "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime",
             model_contract:
                 "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
             real_interaction_contract:
@@ -176,6 +178,8 @@ struct ImeEvidence {
     enter_owned_by_ime: bool,
     composition_path: String,
     preedit_query_unchanged: bool,
+    preedit_visible_text: String,
+    preedit_cleared_after_commit: bool,
     commit_query: String,
     commit_trigger_status: Option<ActionExecutionStatus>,
 }
@@ -202,7 +206,9 @@ fn ime_evidence(state: &mut LauncherState) -> ImeEvidence {
     let query_before_preedit = commit_state.view.query.clone();
     commit_state.handle_ime_preedit("zhong");
     let preedit_query_unchanged = commit_state.view.query == query_before_preedit;
+    let preedit_visible_text = commit_state.ime_preedit.clone().unwrap_or_default();
     commit_state.handle_ime_commit("rebuild index");
+    let preedit_cleared_after_commit = commit_state.ime_preedit.is_none();
     let commit_query = commit_state.view.query.clone();
     let composition_path =
         format!("zh-preedit({query_before_preedit})>blocked>commit({commit_query})>enter");
@@ -217,6 +223,8 @@ fn ime_evidence(state: &mut LauncherState) -> ImeEvidence {
         enter_owned_by_ime,
         composition_path,
         preedit_query_unchanged,
+        preedit_visible_text,
+        preedit_cleared_after_commit,
         commit_query,
         commit_trigger_status,
     }
