@@ -66,12 +66,13 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                     render_progress(ui, i18n::t("launcher.results.searching"));
                     return;
                 }
-                if let Some(EmptyAction::AskAi(query)) = ui_empty::render_no_results(
+                if let Some(EmptyAction::AskAi) = ui_empty::render_no_results(
                     ui,
                     &state.view.query,
                     state.empty_suggestion_selected,
                 ) {
-                    state.update_query(query);
+                    state.mark_pointer_focus(LauncherFocusSection::Results);
+                    state.trigger_no_match_fallback();
                 }
                 if let Some(EmptyAction::SetQuery(query)) = ui_empty::take_empty_query_action(ui) {
                     state.update_query(query);
@@ -298,5 +299,21 @@ mod tests {
         let nl_index = source.find("ui_result_nl::render(ui, suggestion)").unwrap();
 
         assert!(help_index < nl_index);
+    }
+
+    #[test]
+    fn no_match_click_uses_same_fallback_model_as_enter() {
+        let source = include_str!("ui_results.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let ask_ai_branch = production_source
+            .split("EmptyAction::AskAi")
+            .nth(1)
+            .and_then(|body| body.split("EmptyAction::SetQuery").next())
+            .unwrap();
+
+        assert!(production_source.contains("EmptyAction::AskAi"));
+        assert!(ask_ai_branch.contains("state.trigger_no_match_fallback()"));
+        assert!(!ask_ai_branch.contains("state.update_query(query)"));
+        assert!(ask_ai_branch.contains("state.mark_pointer_focus(LauncherFocusSection::Results)"));
     }
 }

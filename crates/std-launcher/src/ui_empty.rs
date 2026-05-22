@@ -7,7 +7,7 @@ use std_egui::{
 use std_launcher::{suggested_workflow_rows, SuggestedWorkflowRow};
 
 pub(crate) enum EmptyAction {
-    AskAi(String),
+    AskAi,
     SetQuery(String),
 }
 
@@ -23,11 +23,7 @@ pub(crate) fn render_no_results(
     }
 
     let fallback = render_no_matches(ui, trimmed, true);
-    if fallback.clicked() {
-        std_launcher::ask_ai_fallback_query(trimmed).map(EmptyAction::AskAi)
-    } else {
-        None
-    }
+    fallback.clicked().then_some(EmptyAction::AskAi)
 }
 
 fn render_empty_query(ui: &mut egui::Ui, selected_suggestion: usize) {
@@ -204,6 +200,16 @@ mod tests {
             state.no_match_fallback_query().as_deref(),
             Some("? missing workflow")
         );
+    }
+
+    #[test]
+    fn ask_ai_click_reports_intent_not_query_rewrite() {
+        let source = include_str!("ui_empty.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("then_some(EmptyAction::AskAi)"));
+        assert!(!production_source.contains("ask_ai_fallback_query"));
+        assert!(!production_source.contains("EmptyAction::AskAi(String)"));
     }
 
     #[test]
