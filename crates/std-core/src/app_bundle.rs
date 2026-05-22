@@ -76,12 +76,15 @@ struct AppProfile {
 impl AppProfile {
     fn read(path: &Path) -> Option<Self> {
         let bundle_name = path.file_stem()?.to_str()?.to_string();
-        let mut names = read_info_plist_names(path);
-        names.extend(read_localized_info_plist_names(path));
+        let mut display_names = read_display_info_plist_names(path);
+        display_names.extend(read_localized_info_plist_names(path));
+        display_names.push(bundle_name.clone());
+        let mut names = display_names.clone();
+        names.extend(read_alias_info_plist_names(path));
         names.push(bundle_name.clone());
         names.extend(derived_aliases(&names));
         names = unique_non_empty(names);
-        let display_name = names
+        let display_name = unique_non_empty(display_names)
             .first()
             .cloned()
             .unwrap_or_else(|| bundle_name.clone());
@@ -93,21 +96,43 @@ impl AppProfile {
     }
 }
 
-fn read_info_plist_names(path: &Path) -> Vec<String> {
-    let plist_path = path.join("Contents").join("Info.plist");
-    let Ok(value) = Value::from_file(plist_path) else {
+fn read_display_info_plist_names(path: &Path) -> Vec<String> {
+    let Some(value) = read_info_plist_value(path) else {
         return Vec::new();
     };
     let Some(dict) = value.as_dictionary() else {
         return Vec::new();
     };
-    bundle_name_fields(dict)
+    bundle_display_name_fields(dict)
+}
+
+fn read_alias_info_plist_names(path: &Path) -> Vec<String> {
+    let Some(value) = read_info_plist_value(path) else {
+        return Vec::new();
+    };
+    let Some(dict) = value.as_dictionary() else {
+        return Vec::new();
+    };
+    bundle_alias_fields(dict)
         .into_iter()
         .chain(bundle_url_schemes(dict))
         .collect()
 }
 
-fn bundle_name_fields(dict: &Dictionary) -> Vec<String> {
+fn read_info_plist_value(path: &Path) -> Option<Value> {
+    let plist_path = path.join("Contents").join("Info.plist");
+    Value::from_file(plist_path).ok()
+}
+
+fn bundle_display_name_fields(dict: &Dictionary) -> Vec<String> {
+    ["CFBundleDisplayName", "CFBundleName", "CFBundleExecutable"]
+        .into_iter()
+        .filter_map(|key| dict.get(key).and_then(Value::as_string))
+        .map(ToString::to_string)
+        .collect()
+}
+
+fn bundle_alias_fields(dict: &Dictionary) -> Vec<String> {
     [
         "CFBundleDisplayName",
         "CFBundleName",

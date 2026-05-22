@@ -65,6 +65,39 @@ fn core_searches_wechat_app_by_english_pinyin_and_chinese_names() {
     assert!(preview.subtitle.contains(wechat_chinese_name()));
 }
 
+#[test]
+fn core_prefers_localized_app_name_over_bundle_identifier() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("Weixin.app");
+    write_localized_only_wechat_bundle(&app);
+    let core = StdCore::with_config(config);
+
+    core.register_local_content_actions().unwrap();
+    let test_path = app.display().to_string();
+    let chinese_results = core.search(wechat_chinese_name(), 10).unwrap();
+    let english_results = core.search("wechat", 10).unwrap();
+    let bundle_results = core.search("com.tencent.xinwechat", 10).unwrap();
+    let chinese = find_app_result(&chinese_results, &test_path);
+    let english = find_app_result(&english_results, &test_path);
+    let bundle = find_app_result(&bundle_results, &test_path);
+    let preview = core.preview_action(chinese.action.id).unwrap();
+
+    assert_eq!(chinese.action.id, english.action.id);
+    assert_eq!(chinese.action.id, bundle.action.id);
+    assert_eq!(
+        chinese.action.name,
+        format!("Open App: {}", wechat_chinese_name())
+    );
+    assert_ne!(chinese.action.name, "Open App: com.tencent.xinWeChat");
+    assert!(preview.metadata["aliases"].contains("com.tencent.xinWeChat"));
+    assert!(preview.metadata["aliases"].contains("wechat"));
+    assert!(preview.metadata["aliases"].contains("weixin"));
+}
+
 fn write_escaped_unicode_app_bundle(app: &std::path::Path) {
     fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     fs::write(
@@ -94,6 +127,25 @@ fn write_wechat_bundle(app: &std::path::Path) {
 <key>CFBundleDisplayName</key><string>WeChat</string>
 <key>CFBundleName</key><string>Weixin</string>
 <key>CFBundleExecutable</key><string>WeChat</string>
+<key>CFBundleIdentifier</key><string>com.tencent.xinWeChat</string>
+</dict></plist>"#,
+    )
+    .unwrap();
+    fs::write(
+        app.join("Contents")
+            .join("Resources")
+            .join("zh_CN.lproj")
+            .join("InfoPlist.strings"),
+        "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
+    )
+    .unwrap();
+}
+
+fn write_localized_only_wechat_bundle(app: &std::path::Path) {
+    fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
+    fs::write(
+        app.join("Contents").join("Info.plist"),
+        r#"<plist><dict>
 <key>CFBundleIdentifier</key><string>com.tencent.xinWeChat</string>
 </dict></plist>"#,
     )
