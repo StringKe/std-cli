@@ -2,6 +2,7 @@ use crate::app::LauncherApp;
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
+use std_launcher::LauncherState;
 
 const HARNESS_TITLE: &str = "std-cli Background UI Harness";
 
@@ -20,13 +21,20 @@ struct BackgroundHarnessApp {
 impl BackgroundHarnessApp {
     fn new(timeout_ms: u64) -> Self {
         let mut app = LauncherApp::default();
-        app.state.update_query("index");
+        app.state = visible_harness_state();
         Self {
             app,
             started_at: Instant::now(),
             timeout_ms,
         }
     }
+}
+
+fn visible_harness_state() -> LauncherState {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    state
 }
 
 impl eframe::App for BackgroundHarnessApp {
@@ -127,5 +135,14 @@ mod tests {
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
+    }
+
+    #[test]
+    fn background_harness_shows_launcher_panel_inside_visible_window() {
+        let state = visible_harness_state();
+
+        assert!(state.controller.visible);
+        assert!(!state.view.results.is_empty());
+        assert!(crate::ui_metrics::panel_is_only_visible_surface(&state));
     }
 }
