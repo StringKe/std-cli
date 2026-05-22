@@ -2,6 +2,13 @@ use eframe::egui;
 use std_egui::tokens::LauncherSize;
 use std_launcher::LauncherWindowCommand;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LauncherHostWindowCommand {
+    CancelClose,
+    Close,
+    SyncInnerSize,
+}
+
 pub(crate) fn apply_window_commands(
     ctx: &egui::Context,
     commands: &[LauncherWindowCommand],
@@ -30,6 +37,24 @@ pub(crate) fn apply_window_commands(
     }
 }
 
+pub(crate) fn apply_host_window_command(
+    ctx: &egui::Context,
+    command: LauncherHostWindowCommand,
+    viewport_size: egui::Vec2,
+) {
+    match command {
+        LauncherHostWindowCommand::CancelClose => {
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+        }
+        LauncherHostWindowCommand::Close => {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
+        LauncherHostWindowCommand::SyncInnerSize => {
+            ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(viewport_size));
+        }
+    }
+}
+
 pub(crate) fn launcher_window_position(
     ctx: &egui::Context,
     viewport_size: egui::Vec2,
@@ -53,6 +78,11 @@ pub(crate) fn hidden_host_size() -> egui::Vec2 {
 }
 
 #[cfg(test)]
+pub(crate) fn launcher_host_window_command_boundary_contract() -> &'static str {
+    "launcher_host_window_commands=single-transparent-host-only;commands=cancel-close|close|sync-inner-size;launcher_window_commands=show|hide|focus|resize"
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -71,6 +101,26 @@ mod tests {
         assert_eq!(
             std_launcher::launcher_host_positioning_contract(),
             "host_positioning=show:resize-to-transparent-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=16px"
+        );
+    }
+
+    #[test]
+    fn launcher_host_window_commands_are_limited_to_system_host_controls() {
+        assert_eq!(
+            launcher_host_window_command_boundary_contract(),
+            "launcher_host_window_commands=single-transparent-host-only;commands=cancel-close|close|sync-inner-size;launcher_window_commands=show|hide|focus|resize"
+        );
+        assert_eq!(
+            LauncherHostWindowCommand::CancelClose,
+            LauncherHostWindowCommand::CancelClose
+        );
+        assert_eq!(
+            LauncherHostWindowCommand::Close,
+            LauncherHostWindowCommand::Close
+        );
+        assert_eq!(
+            LauncherHostWindowCommand::SyncInnerSize,
+            LauncherHostWindowCommand::SyncInnerSize
         );
     }
 

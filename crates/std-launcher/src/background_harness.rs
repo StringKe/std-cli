@@ -1,5 +1,6 @@
 use crate::app::LauncherApp;
 use crate::ui;
+use crate::window::{apply_host_window_command, LauncherHostWindowCommand};
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
@@ -48,7 +49,11 @@ impl eframe::App for BackgroundHarnessApp {
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.app.update(ctx, frame);
         if self.started_at.elapsed() >= Duration::from_millis(self.timeout_ms) {
-            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            apply_host_window_command(
+                ctx,
+                LauncherHostWindowCommand::Close,
+                ui::launcher_window_inner_size(&self.app.state),
+            );
         } else {
             ctx.request_repaint_after(Duration::from_millis(100));
         }

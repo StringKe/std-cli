@@ -1,6 +1,6 @@
 use crate::resident::{ResidentCommand, ResidentEntry};
 use crate::ui;
-use crate::window::apply_window_commands;
+use crate::window::{apply_host_window_command, apply_window_commands, LauncherHostWindowCommand};
 use eframe::egui;
 use std::time::Duration;
 use std_egui::{
@@ -37,7 +37,7 @@ impl eframe::App for LauncherApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.apply_theme_profile(ctx);
         if ctx.input(|input| input.viewport().close_requested()) && !self.allow_close {
-            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+            self.apply_host_window_command(ctx, LauncherHostWindowCommand::CancelClose);
             let commands = self.state.handle_escape_hide();
             self.apply_window_commands_for_current_state(ctx, &commands);
         }
@@ -60,7 +60,9 @@ impl eframe::App for LauncherApp {
                     let commands = self.state.handle_escape_hide();
                     self.apply_window_commands_for_current_state(ctx, &commands);
                 }
-                ResidentCommand::Quit => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+                ResidentCommand::Quit => {
+                    self.apply_host_window_command(ctx, LauncherHostWindowCommand::Close);
+                }
             }
         }
 
@@ -191,9 +193,11 @@ impl LauncherApp {
     }
 
     fn sync_viewport_size(&self, ctx: &egui::Context) {
-        ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize(
-            ui::launcher_window_inner_size(&self.state),
-        ));
+        self.apply_host_window_command(ctx, LauncherHostWindowCommand::SyncInnerSize);
+    }
+
+    fn apply_host_window_command(&self, ctx: &egui::Context, command: LauncherHostWindowCommand) {
+        apply_host_window_command(ctx, command, ui::launcher_window_inner_size(&self.state));
     }
 }
 
@@ -285,5 +289,21 @@ mod tests {
         assert!(source.contains("apply_window_commands_for_current_state"));
         assert!(!source.contains(&stale_viewport_binding));
         assert!(source.contains("ui::launcher_window_inner_size(&self.state)"));
+    }
+
+    #[test]
+    fn launcher_app_routes_host_commands_through_window_boundary() {
+        let source = include_str!("app.rs");
+        let production_source = source.split("#[cfg(test)]\nmod tests").next().unwrap();
+
+        assert!(production_source.contains("apply_host_window_command"));
+        assert!(production_source.contains("LauncherHostWindowCommand::CancelClose"));
+        assert!(production_source.contains("LauncherHostWindowCommand::Close"));
+        assert!(production_source.contains("LauncherHostWindowCommand::SyncInnerSize"));
+        assert!(!production_source.contains("send_viewport_cmd"));
+        assert_eq!(
+            crate::window::launcher_host_window_command_boundary_contract(),
+            "launcher_host_window_commands=single-transparent-host-only;commands=cancel-close|close|sync-inner-size;launcher_window_commands=show|hide|focus|resize"
+        );
     }
 }
