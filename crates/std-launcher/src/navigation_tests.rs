@@ -113,6 +113,19 @@ fn pointer_result_selection_suppresses_keyboard_focus_ring() {
 }
 
 #[test]
+fn pointer_action_panel_focus_suppresses_keyboard_focus_ring() {
+    let mut state = LauncherState::new();
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+
+    state.mark_pointer_focus(LauncherFocusSection::ActionPanel);
+
+    assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+    assert_eq!(state.focus_source, LauncherFocusSource::Pointer);
+    assert!(!state.keyboard_focus_visible(LauncherFocusSection::ActionPanel));
+}
+
+#[test]
 fn tab_keys_include_action_panel_when_it_is_open() {
     let mut state = LauncherState::new();
     state.update_query("terminal");

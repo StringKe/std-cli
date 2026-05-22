@@ -71,7 +71,7 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
     if response.changed() {
         state.update_action_panel_query(state.action_panel.query.clone());
     }
-    if state.focus_section == LauncherFocusSection::ActionPanel {
+    if state.keyboard_focus_visible(LauncherFocusSection::ActionPanel) {
         let a11y = AccessibilityContext::from_env();
         draw_focus_ring(
             ui,
@@ -190,6 +190,18 @@ mod tests {
         state.open_action_panel();
 
         assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+        assert!(state.keyboard_focus_visible(LauncherFocusSection::ActionPanel));
+    }
+
+    #[test]
+    fn action_panel_focus_ring_suppresses_pointer_focus() {
+        let mut state = LauncherState::new();
+        state.update_query("terminal");
+        state.open_action_panel();
+        state.mark_pointer_focus(LauncherFocusSection::ActionPanel);
+
+        assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
+        assert!(!state.keyboard_focus_visible(LauncherFocusSection::ActionPanel));
     }
 
     #[test]
