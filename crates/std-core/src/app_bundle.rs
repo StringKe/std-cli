@@ -38,10 +38,11 @@ fn discover_apps_in_dir(dir: &Path) -> Vec<RegistryEntry> {
 
 fn app_registry_entry(path: PathBuf) -> Option<RegistryEntry> {
     let profile = AppProfile::read(&path)?;
+    let description = app_description(&path, &profile.names);
     let mut registry_entry = RegistryEntry::from_action(
         Action::new(
             format!("Open App: {}", profile.display_name),
-            format!("Launch macOS app at {}", path.display()),
+            description,
             "When opening this local macOS application",
             ActionType::AppLaunch,
         ),
@@ -57,6 +58,13 @@ fn app_registry_entry(path: PathBuf) -> Option<RegistryEntry> {
         .metadata
         .insert("aliases".to_string(), profile.names.join(","));
     Some(registry_entry)
+}
+
+fn app_description(path: &Path, names: &[String]) -> String {
+    if names.is_empty() {
+        return format!("Launch macOS app at {}", path.display());
+    }
+    format!("Aliases: {} / Path: {}", names.join(", "), path.display())
 }
 
 struct AppProfile {

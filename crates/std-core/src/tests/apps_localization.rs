@@ -52,6 +52,10 @@ fn core_searches_wechat_app_by_english_pinyin_and_chinese_names() {
     assert_eq!(english.action.id, pinyin.action.id);
     assert_eq!(english.action.id, chinese.action.id);
     assert_eq!(chinese.action.name, "Open App: WeChat");
+    assert!(chinese.action.description.contains("Aliases:"));
+    assert!(chinese.action.description.contains("wechat"));
+    assert!(chinese.action.description.contains("weixin"));
+    assert!(chinese.action.description.contains(wechat_chinese_name()));
     assert!(preview.subtitle.contains("Aliases:"));
     assert!(preview.metadata["aliases"].contains("wechat"));
     assert!(preview.metadata["aliases"].contains("weixin"));
