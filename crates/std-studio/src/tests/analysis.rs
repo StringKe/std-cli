@@ -67,6 +67,10 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
     );
     assert!(model.coverage_layers.iter().all(|layer| layer.complete));
     assert!(model
+        .coverage_layers
+        .iter()
+        .all(|layer| layer.status_label() == "PASS"));
+    assert!(model
         .tabs
         .iter()
         .any(|tab| tab.tab == AnalysisWorkbenchTab::Components && tab.count >= 1));
@@ -91,6 +95,25 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
     assert_eq!(
         model.inspection_summary.as_ref().unwrap().entity,
         "workbench-project"
+    );
+}
+
+#[test]
+fn analysis_coverage_layers_expose_fail_text_for_incomplete_index() {
+    let model = AnalysisWorkbenchViewModel::build(None, None, None, &[], None);
+
+    assert_eq!(
+        model
+            .coverage_layers
+            .iter()
+            .map(|layer| (layer.key, layer.status_label()))
+            .collect::<Vec<_>>(),
+        [
+            ("overview", "FAIL"),
+            ("components", "FAIL"),
+            ("relations", "FAIL"),
+            ("history", "FAIL")
+        ]
     );
 }
 

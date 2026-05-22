@@ -149,7 +149,11 @@ fn render_coverage_layers(ui: &mut egui::Ui, model: &AnalysisWorkbenchViewModel)
             } else {
                 ui::warn_bg(ui.ctx())
             };
-            ui::chip(ui, &format!("{} {}", layer.label, layer.count), fill);
+            ui::chip(
+                ui,
+                &format!("{} {} {}", layer.label, layer.count, layer.status_label()),
+                fill,
+            );
         }
     });
 }

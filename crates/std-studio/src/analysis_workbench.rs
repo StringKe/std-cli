@@ -75,6 +75,16 @@ pub struct AnalysisCoverageLayer {
     pub count: usize,
 }
 
+impl AnalysisCoverageLayer {
+    pub fn status_label(&self) -> &'static str {
+        if self.complete {
+            "PASS"
+        } else {
+            "FAIL"
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalysisSearchHit {
     pub title: String,

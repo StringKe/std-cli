@@ -22,11 +22,11 @@ pub(crate) fn run_analysis_workbench_smoke(
         .first()
         .map(|item| {
             format!(
-                "overview={},components={},relations={},history={}",
-                item.coverage.entity_overview,
-                item.coverage.component_digest,
-                item.coverage.symbol_relation_index,
-                item.coverage.historical_context
+                "overview:{},components:{},relations:{},history:{}",
+                coverage_status(item.coverage.entity_overview),
+                coverage_status(item.coverage.component_digest),
+                coverage_status(item.coverage.symbol_relation_index),
+                coverage_status(item.coverage.historical_context)
             )
         })
         .unwrap_or_else(|| "missing".to_string());
@@ -64,7 +64,24 @@ fn analysis_visual_contract(
     relations: usize,
 ) -> String {
     format!(
-        "toolbar=target-path|re-index|qa-input;tabs=Overview|Components|Symbols|Relations|Q&A;overview=target|index|activity;coverage=overview|components|relations|history;symbols=search-hits:{};qa=sources:{};components={};relations={}",
+        "toolbar=target-path|re-index|qa-input;tabs=Overview|Components|Symbols|Relations|Q&A;overview=target|index|activity;coverage=overview:PASS|components:PASS|relations:PASS|history:PASS;symbols=search-hits:{};qa=sources:{};components={};relations={}",
         search_hits, answer_sources, components, relations
     )
+}
+
+fn coverage_status(pass: bool) -> &'static str {
+    if pass {
+        "PASS"
+    } else {
+        "FAIL"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn coverage_status_uses_text_not_bool_only() {
+        assert_eq!(super::coverage_status(true), "PASS");
+        assert_eq!(super::coverage_status(false), "FAIL");
+    }
 }

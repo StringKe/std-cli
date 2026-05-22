@@ -154,6 +154,7 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
     let mut x = rect.left() + row_metrics::TEXT_INSET_X;
     let y = rect.bottom() - row_metrics::CHIP_ROW_Y_19;
     for (label, pass) in chips {
+        let label = coverage_chip_label(label, pass);
         let width = (label.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
             + row_metrics::MATCH_CHIP_TEXT_PAD)
             .clamp(
@@ -170,7 +171,7 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
         row_paint::paint_chip(
             ui,
             chip_rect,
-            label,
+            &label,
             if pass {
                 ui::ok_bg(ui.ctx())
             } else {
@@ -179,6 +180,10 @@ fn paint_coverage_chips(ui: &mut egui::Ui, rect: egui::Rect, coverage: &IndexCov
         );
         x += width + row_metrics::CHIP_GAP;
     }
+}
+
+fn coverage_chip_label(label: &str, pass: bool) -> String {
+    format!("{label} {}", if pass { "PASS" } else { "FAIL" })
 }
 
 fn paint_chips(ui: &mut egui::Ui, start_x: f32, y: f32, labels: &[String]) {
@@ -199,5 +204,17 @@ fn paint_chips(ui: &mut egui::Ui, start_x: f32, y: f32, labels: &[String]) {
         );
         row_paint::paint_chip(ui, chip_rect, label, Color::bg_surface_2(ui.ctx()));
         x += width + row_metrics::CHIP_GAP;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn coverage_chip_label_includes_text_status() {
+        assert_eq!(
+            super::coverage_chip_label("overview", true),
+            "overview PASS"
+        );
+        assert_eq!(super::coverage_chip_label("history", false), "history FAIL");
     }
 }

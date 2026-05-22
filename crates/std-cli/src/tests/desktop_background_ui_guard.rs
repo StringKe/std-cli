@@ -109,6 +109,50 @@ fn default_tests_never_use_desktop_event_delivery() {
     }
 }
 
+#[test]
+fn background_ui_acceptance_matches_background_click_design() {
+    let root = workspace_root();
+    let runner = fs::read_to_string(root.join("scripts/background-ui-smoke.swift")).unwrap();
+    let docs = fs::read_to_string(root.join("docs/14_Code_Quality.md")).unwrap();
+
+    for required in [
+        "CGEvent.tapCreateForPid",
+        "place: .headInsertEventTap",
+        "eventsOfInterest: focusEventMask()",
+        "raw == 13 || raw == 19 || raw == 20",
+        "NSEvent.otherEvent",
+        "with: .appKitDefined",
+        "subtype: subtype",
+        "sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 1)",
+        "postCenterPrimer(to: config.harnessPid, windowId: config.windowId, window: window)",
+        "postKeySmoke(to: config.harnessPid, windowId: config.windowId)",
+        "sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 2)",
+        "event.postToPid(pid)",
+        "finalFrontmostPid == previousPid",
+    ] {
+        assert!(
+            runner.contains(required),
+            "background runner must keep non-frontmost event delivery: {required}"
+        );
+    }
+
+    for required in [
+        "真正打开可见预览窗口必须显式设置",
+        "后台 UI 自动化验收使用 macOS AX / CGEvent / postToPid 方案",
+        "浮动光标不是输入机制",
+        "先装 per-process event tap",
+        "center primer",
+        "只能投递到 harness window center",
+        "PASS 输出必须包含 `frontmost_preserved=true`",
+        "不能 fallback 到前台点击真实桌面",
+    ] {
+        assert!(
+            docs.contains(required),
+            "background UI docs must preserve safe background testing model: {required}"
+        );
+    }
+}
+
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
