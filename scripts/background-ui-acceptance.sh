@@ -19,6 +19,7 @@ window_id=""
 bundle_id=""
 window_title=""
 harness_token=""
+smoke_command=""
 
 while IFS= read -r line; do
   case "$line" in
@@ -27,6 +28,7 @@ while IFS= read -r line; do
     bundle_id=*) bundle_id=${line#bundle_id=} ;;
     window_title=*) window_title=${line#window_title=} ;;
     harness_token=*) harness_token=${line#harness_token=} ;;
+    smoke_command=*) smoke_command=${line#smoke_command=} ;;
   esac
 done <<EOF
 $output
@@ -49,6 +51,12 @@ fi
 
 if [ "$window_title" != "std-cli Background UI Harness $harness_token" ]; then
   echo "background_ui_acceptance FAIL reason=window_title outside whitelist" >&2
+  exit 1
+fi
+
+expected_smoke_command="STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid $harness_pid --window-id $window_id --bundle-id $bundle_id --window-title \"$window_title\" --harness-token $harness_token"
+if [ "$smoke_command" != "$expected_smoke_command" ]; then
+  echo "background_ui_acceptance FAIL reason=smoke_command identity mismatch" >&2
   exit 1
 fi
 

@@ -200,6 +200,8 @@ fn assert_background_harness_contract(root: &Path) {
         "bundle_id outside whitelist",
         "window_title outside whitelist",
         "harness_token missing",
+        "smoke_command identity mismatch",
+        "expected_smoke_command=",
         "--harness-token",
         "cargo run -p std-cli -- ui background-smoke",
     ] {
