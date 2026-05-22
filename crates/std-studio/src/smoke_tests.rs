@@ -63,6 +63,10 @@ fn assert_workspace_tab_summary(summary: &str) {
     assert!(summary.contains("keyboard_close=true"));
     assert!(summary.contains("工作区面板标签，Dashboard"));
     assert!(summary.contains("关闭工作区面板，插件管理"));
+    assert!(summary.contains("closeguard=disk_roundtrip=true"));
+    assert!(summary.contains("saved=true"));
+    assert!(summary.contains("restored_count=3"));
+    assert!(summary.contains("native_terms=false"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
 }
 

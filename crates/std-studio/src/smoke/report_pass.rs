@@ -50,6 +50,12 @@ impl StudioSmokeReport {
             && self.pane_focus_label.contains("工作区面板标签，Dashboard")
             && self.pane_focus_label.contains("关闭工作区面板，插件管理")
             && self
+                .pane_focus_label
+                .contains("closeguard=disk_roundtrip=true")
+            && self.pane_focus_label.contains("saved=true")
+            && self.pane_focus_label.contains("restored_count=3")
+            && self.pane_focus_label.contains("native_terms=false")
+            && self
                 .pane_host_policy
                 .contains("single-borderless-egui-viewport")
             && self

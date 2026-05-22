@@ -99,6 +99,7 @@ pub(crate) fn run_workspace_pane_smoke(
     let host_policy = studio.app_workspace_policy_report();
     let main_path_contract = workspace_main_path_contract();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
+    let closeguard_roundtrip = closeguard_roundtrip_evidence(studio);
     let focus_label = workspace_management_evidence(WorkspaceManagementEvidence {
         plugin,
         reopened,
@@ -109,6 +110,7 @@ pub(crate) fn run_workspace_pane_smoke(
         reopened_restored,
         state_preserved_after_focus,
         tabs_contract: &tabs_contract,
+        closeguard_roundtrip: &closeguard_roundtrip,
     });
     WorkspacePaneSmoke {
         opened,
@@ -161,11 +163,12 @@ struct WorkspaceManagementEvidence<'a> {
     reopened_restored: bool,
     state_preserved_after_focus: bool,
     tabs_contract: &'a str,
+    closeguard_roundtrip: &'a str,
 }
 
 fn workspace_management_evidence(evidence: WorkspaceManagementEvidence<'_>) -> String {
     format!(
-        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,counts=before-close:{}|after-close:{}|after-reopen:{},state_preserved={},forbidden=native-child-windows:false|detached-panels:false,focused={},title={},reopened_memory={},reopened_restored={},tabs={}",
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,counts=before-close:{}|after-close:{}|after-reopen:{},state_preserved={},forbidden=native-child-windows:false|detached-panels:false,focused={},title={},reopened_memory={},reopened_restored={},tabs={},closeguard={}",
         evidence.open_count_before_close,
         evidence.open_count_after_close,
         evidence.open_count_after_reopen,
@@ -174,8 +177,56 @@ fn workspace_management_evidence(evidence: WorkspaceManagementEvidence<'_>) -> S
         evidence.restored_title,
         evidence.reopened.value(),
         evidence.reopened_restored,
-        evidence.tabs_contract
+        evidence.tabs_contract,
+        evidence.closeguard_roundtrip
     )
+}
+
+fn closeguard_roundtrip_evidence(studio: &StudioApp) -> String {
+    match closeguard_roundtrip_evidence_result(studio) {
+        Ok(evidence) => evidence,
+        Err(error) => format!("disk_roundtrip=FAIL,error={error}"),
+    }
+}
+
+fn closeguard_roundtrip_evidence_result(studio: &StudioApp) -> Result<String, std::io::Error> {
+    let mut isolated = StudioApp::with_core(studio.core.clone());
+    let dashboard = isolated.open_workspace_pane(StudioPane::Dashboard);
+    let workflow = isolated.open_workflow_builder(std::path::PathBuf::from(
+        "workspace-smoke/closeguard-workflow.json",
+    ));
+    let plugins = isolated.open_plugin_manager_pane();
+    isolated.focus_workspace_pane(workflow);
+    let path = isolated.close_workspace_instance_to_disk()?;
+    let body = std::fs::read_to_string(&path)?;
+    let body_has_native = body.contains("native_window") || body.contains("detached");
+    isolated.workspace_panes.clear();
+    isolated.restore_workspace_closeguard_from_disk()?;
+    let restored_ids = isolated
+        .open_workspace_panes()
+        .map(|pane| pane.id.value().to_string())
+        .collect::<Vec<_>>()
+        .join("|");
+    let restored = isolated.open_workspace_panes().count() == 3
+        && isolated.focused_pane == Some(workflow)
+        && isolated
+            .open_workspace_panes()
+            .any(|pane| pane.id == dashboard)
+        && isolated
+            .open_workspace_panes()
+            .any(|pane| pane.id == plugins)
+        && !body_has_native;
+    Ok(format!(
+        "disk_roundtrip={},saved=true,restored_count={},focused={},ids={},native_terms={}",
+        restored,
+        isolated.open_workspace_panes().count(),
+        isolated
+            .focused_pane
+            .map(|id| id.value().to_string())
+            .unwrap_or_else(|| "none".to_string()),
+        restored_ids,
+        body_has_native
+    ))
 }
 
 fn workspace_content_keys(studio: &StudioApp) -> String {
