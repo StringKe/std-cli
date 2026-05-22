@@ -8,20 +8,10 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     i18n,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, NavigationSize, Radius, Space, Text},
 };
 use std_studio::StudioPane;
 
-const NAV_ROW_HEIGHT: f32 = 28.0;
-const PANE_ROW_HEIGHT: f32 = 36.0;
-const ICON_SIZE: f32 = Space::MD as f32;
-const ICON_RAIL_WIDTH: f32 = Space::XL as f32;
-const ICON_RAIL_HEIGHT: f32 = NAV_ROW_HEIGHT;
-const PANE_CLOSE_SIZE: f32 = Space::LG as f32;
-const PANE_CLOSE_CENTER_INSET: f32 = Space::SM as f32 + Space::TWO_XS as f32 / 2.0;
-const PANE_STATE_CENTER_X: f32 = Space::XS as f32 + Space::TWO_XS as f32 / 2.0;
-const PANE_STATE_RADIUS: f32 = 3.0;
-const CLOSE_GLYPH_HALF: f32 = Space::XS as f32 / 2.0;
 #[cfg(test)]
 const TEST_NAV_WIDTH: f32 = Space::LG as f32 * 10.0;
 
@@ -149,7 +139,7 @@ struct PaneRowAction {
 
 fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> egui::Response {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), NAV_ROW_HEIGHT),
+        NavigationSize::nav_row_size(ui.available_width()),
         egui::Sense::click(),
     );
     response.widget_info(|| {
@@ -171,17 +161,14 @@ fn nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, selected: bool) -> 
 }
 
 fn nav_icon_button(ui: &mut egui::Ui, pane: StudioPane, selected: bool) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ICON_RAIL_WIDTH, ICON_RAIL_HEIGHT),
-        egui::Sense::click(),
-    );
+    let (rect, response) =
+        ui.allocate_exact_size(NavigationSize::icon_rail_size(), egui::Sense::click());
     response.widget_info(|| {
         egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), pane.label())
     });
     if ui.is_rect_visible(rect) {
         paint_nav_bg(ui, rect, response.hovered(), selected);
-        let icon_rect =
-            egui::Rect::from_center_size(rect.center(), egui::vec2(ICON_SIZE, ICON_SIZE));
+        let icon_rect = egui::Rect::from_center_size(rect.center(), NavigationSize::icon_size());
         shell_icons::paint_pane_icon(ui, icon_rect, pane, selected);
     }
     response
@@ -189,7 +176,7 @@ fn nav_icon_button(ui: &mut egui::Ui, pane: StudioPane, selected: bool) -> egui:
 
 fn pane_manager_row(ui: &mut egui::Ui, title: &str, open: bool, focused: bool) -> PaneRowAction {
     let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), PANE_ROW_HEIGHT),
+        NavigationSize::pane_row_size(ui.available_width()),
         egui::Sense::click(),
     );
     let close_rect = pane_close_rect(rect);
@@ -227,8 +214,11 @@ fn paint_pane_state(ui: &egui::Ui, rect: egui::Rect, open: bool, focused: bool) 
     } else {
         Color::fg_tertiary(ui.ctx())
     };
-    ui.painter()
-        .circle_filled(pane_state_center(rect), PANE_STATE_RADIUS, color);
+    ui.painter().circle_filled(
+        pane_state_center(rect),
+        NavigationSize::pane_state_radius(),
+        color,
+    );
 }
 
 fn paint_pane_title(
@@ -266,7 +256,7 @@ fn paint_close_control(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
         .rect_filled(rect, egui::CornerRadius::same(Radius::SM), fill);
     let stroke = egui::Stroke::new(1.5, Color::fg_secondary(ui.ctx()));
     let center = rect.center();
-    let half = CLOSE_GLYPH_HALF;
+    let half = NavigationSize::close_glyph_half();
     ui.painter().line_segment(
         [
             egui::pos2(center.x - half, center.y - half),
@@ -298,22 +288,28 @@ fn paint_nav_bg(ui: &egui::Ui, rect: egui::Rect, hovered: bool, selected: bool) 
 fn nav_row_icon_rect(rect: egui::Rect) -> egui::Rect {
     egui::Rect::from_center_size(
         egui::pos2(
-            rect.left() + Space::SM as f32 + ICON_SIZE / 2.0,
+            rect.left() + Space::sm() as f32 + NavigationSize::icon_size().x / 2.0,
             rect.center().y,
         ),
-        egui::vec2(ICON_SIZE, ICON_SIZE),
+        NavigationSize::icon_size(),
     )
 }
 
 fn pane_close_rect(rect: egui::Rect) -> egui::Rect {
     egui::Rect::from_center_size(
-        egui::pos2(rect.right() - PANE_CLOSE_CENTER_INSET, rect.center().y),
-        egui::vec2(PANE_CLOSE_SIZE, PANE_CLOSE_SIZE),
+        egui::pos2(
+            rect.right() - NavigationSize::pane_close_center_inset(),
+            rect.center().y,
+        ),
+        NavigationSize::pane_close_size(),
     )
 }
 
 fn pane_state_center(rect: egui::Rect) -> egui::Pos2 {
-    egui::pos2(rect.left() + PANE_STATE_CENTER_X, rect.center().y)
+    egui::pos2(
+        rect.left() + NavigationSize::pane_state_center_x(),
+        rect.center().y,
+    )
 }
 
 fn push_workspace_command(commands: &WorkspaceCommandQueue, command: StudioWorkspaceCommand) {
@@ -328,39 +324,43 @@ mod tests {
 
     #[test]
     fn navigation_rows_match_documented_studio_metrics() {
-        assert_eq!(NAV_ROW_HEIGHT, 28.0);
-        assert_eq!(PANE_ROW_HEIGHT, 36.0);
-        assert_eq!(ICON_RAIL_WIDTH, Space::XL as f32);
-        assert_eq!(PANE_CLOSE_SIZE, Space::LG as f32);
+        assert_eq!(NavigationSize::nav_row_size(TEST_NAV_WIDTH).y, 28.0);
+        assert_eq!(NavigationSize::pane_row_size(TEST_NAV_WIDTH).y, 36.0);
+        assert_eq!(NavigationSize::icon_rail_size().x, Space::xl() as f32);
+        assert_eq!(NavigationSize::pane_close_size().x, Space::lg() as f32);
     }
 
     #[test]
     fn nav_row_icon_rect_uses_centered_token_size() {
-        let rect =
-            egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(TEST_NAV_WIDTH, NAV_ROW_HEIGHT));
+        let rect = egui::Rect::from_min_size(
+            egui::Pos2::ZERO,
+            NavigationSize::nav_row_size(TEST_NAV_WIDTH),
+        );
         let icon = nav_row_icon_rect(rect);
+        let expected_icon = NavigationSize::icon_size();
 
-        assert_eq!(icon.width(), ICON_SIZE);
-        assert_eq!(icon.height(), ICON_SIZE);
+        assert_eq!(icon.width(), expected_icon.x);
+        assert_eq!(icon.height(), expected_icon.y);
         assert_eq!(icon.center().y, rect.center().y);
-        assert_eq!(icon.left(), Space::SM as f32);
+        assert_eq!(icon.left(), Space::sm() as f32);
     }
 
     #[test]
     fn pane_manager_controls_have_stable_token_geometry() {
         let rect = egui::Rect::from_min_size(
             egui::Pos2::ZERO,
-            egui::vec2(TEST_NAV_WIDTH, PANE_ROW_HEIGHT),
+            NavigationSize::pane_row_size(TEST_NAV_WIDTH),
         );
         let close = pane_close_rect(rect);
         let state = pane_state_center(rect);
+        let expected_close = NavigationSize::pane_close_size();
 
-        assert_eq!(close.width(), Space::LG as f32);
-        assert_eq!(close.height(), Space::LG as f32);
+        assert_eq!(close.width(), expected_close.x);
+        assert_eq!(close.height(), expected_close.y);
         assert_eq!(close.center().y, rect.center().y);
         assert_eq!(state.y, rect.center().y);
-        assert_eq!(state.x, PANE_STATE_CENTER_X);
-        assert_eq!(CLOSE_GLYPH_HALF, Space::XS as f32 / 2.0);
+        assert_eq!(state.x, NavigationSize::pane_state_center_x());
+        assert_eq!(NavigationSize::close_glyph_half(), Space::xs() as f32 / 2.0);
     }
 
     #[test]

@@ -139,6 +139,53 @@ impl OverlaySize {
     }
 }
 
+pub struct NavigationSize;
+
+impl NavigationSize {
+    pub const ROW_HEIGHT: f32 = 28.0;
+    pub const PANE_ROW_HEIGHT: f32 = 36.0;
+    pub const PANE_STATE_RADIUS: f32 = 3.0;
+
+    pub fn nav_row_size(width: f32) -> egui::Vec2 {
+        egui::vec2(width, UiScale::from_env().f32(Self::ROW_HEIGHT))
+    }
+
+    pub fn icon_rail_size() -> egui::Vec2 {
+        egui::vec2(
+            Space::xl() as f32,
+            UiScale::from_env().f32(Self::ROW_HEIGHT),
+        )
+    }
+
+    pub fn icon_size() -> egui::Vec2 {
+        egui::vec2(Space::md() as f32, Space::md() as f32)
+    }
+
+    pub fn pane_row_size(width: f32) -> egui::Vec2 {
+        egui::vec2(width, UiScale::from_env().f32(Self::PANE_ROW_HEIGHT))
+    }
+
+    pub fn pane_close_size() -> egui::Vec2 {
+        egui::vec2(Space::lg() as f32, Space::lg() as f32)
+    }
+
+    pub fn pane_close_center_inset() -> f32 {
+        Space::sm() as f32 + Space::two_xs() as f32 / 2.0
+    }
+
+    pub fn pane_state_center_x() -> f32 {
+        Space::xs() as f32 + Space::two_xs() as f32 / 2.0
+    }
+
+    pub fn pane_state_radius() -> f32 {
+        UiScale::from_env().f32(Self::PANE_STATE_RADIUS)
+    }
+
+    pub fn close_glyph_half() -> f32 {
+        Space::xs() as f32 / 2.0
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -256,6 +303,22 @@ mod tests {
             OverlaySize::context_help_grid_spacing(),
             egui::vec2(16.0, 8.0)
         );
+    }
+
+    #[test]
+    fn navigation_sizes_export_studio_shell_geometry() {
+        assert_eq!(NavigationSize::nav_row_size(240.0), egui::vec2(240.0, 28.0));
+        assert_eq!(NavigationSize::icon_rail_size(), egui::vec2(32.0, 28.0));
+        assert_eq!(NavigationSize::icon_size(), egui::vec2(16.0, 16.0));
+        assert_eq!(
+            NavigationSize::pane_row_size(240.0),
+            egui::vec2(240.0, 36.0)
+        );
+        assert_eq!(NavigationSize::pane_close_size(), egui::vec2(24.0, 24.0));
+        assert_eq!(NavigationSize::pane_close_center_inset(), 14.0);
+        assert_eq!(NavigationSize::pane_state_center_x(), 10.0);
+        assert_eq!(NavigationSize::pane_state_radius(), 3.0);
+        assert_eq!(NavigationSize::close_glyph_half(), 4.0);
     }
 
     #[test]
