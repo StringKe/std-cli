@@ -288,7 +288,7 @@ impl StudioSmokeReport {
                 .contains("enable_state=enabled")
             && self
                 .plugin_inspector_contract
-                .contains("review_prompt=visible")
+                .contains("review_prompt=none")
             && self.plugin_inspector_contract.contains("audit_log=visible")
             && self
                 .plugin_visual_contract

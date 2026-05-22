@@ -249,7 +249,7 @@ fn assert_plugin_manager_visual_summary(summary: &str) {
     assert!(summary.contains("runtime_panel=status|runtime|exit|duration|boundary"));
     assert!(summary.contains("plugin_inspector_contract=description=visible"));
     assert!(summary.contains("commands=1;enable_state=enabled"));
-    assert!(summary.contains("review_prompt=visible;audit_log=visible"));
+    assert!(summary.contains("review_prompt=none;audit_log=visible"));
     assert!(summary.contains("plugin_visual_contract=list=name|version|status|source|enable"));
     assert!(summary.contains("status_bar=manifest=1/1 PASS"));
     assert!(summary.contains("inspector=description|permissions|commands|audit-log"));

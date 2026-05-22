@@ -46,7 +46,7 @@ impl PluginInspectorModel {
             self.permissions.len(),
             self.commands.len(),
             self.enable_state,
-            presence(&self.review_prompt),
+            review_prompt_presence(&self.review_prompt),
             presence(&self.audit_log)
         )
     }
@@ -136,6 +136,14 @@ fn presence(value: &str) -> &'static str {
     }
 }
 
+fn review_prompt_presence(value: &str) -> &'static str {
+    if value == "none" {
+        "none"
+    } else {
+        presence(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -182,7 +190,7 @@ mod tests {
         assert_eq!(model.review_prompt, "none");
         assert_eq!(
             model.contract(),
-            "description=visible;permissions=1;commands=1;enable_state=enabled;review_prompt=visible;audit_log=visible"
+            "description=visible;permissions=1;commands=1;enable_state=enabled;review_prompt=none;audit_log=visible"
         );
     }
 
@@ -236,5 +244,6 @@ mod tests {
             model.review_prompt,
             "review permissions before enable: manifest UNKNOWN"
         );
+        assert!(model.contract().contains("review_prompt=visible"));
     }
 }
