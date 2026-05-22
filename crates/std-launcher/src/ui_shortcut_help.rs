@@ -1,20 +1,23 @@
 use crate::ui_parts::{keycap, quiet_label};
 use eframe::egui;
-use std_egui::tokens::{Color, Radius, Space, Text};
+use std_egui::{
+    i18n,
+    tokens::{Color, Radius, Space, Text},
+};
 use std_launcher::launcher_shortcut_help_rows;
 
 pub(crate) fn render(ui: &mut egui::Ui) {
     let ctx = ui.ctx().clone();
     ui.add_space(Space::xs() as f32);
     ui.label(
-        egui::RichText::new("Keyboard shortcuts")
+        egui::RichText::new(i18n::t("launcher.shortcut_help.title"))
             .font(Text::body())
             .color(Color::fg_primary(&ctx))
             .strong(),
     );
     ui.add_space(Space::xs() as f32);
     for row in launcher_shortcut_help_rows() {
-        shortcut_row(ui, &row.key, row.action);
+        shortcut_row(ui, &row.key, &row.action);
         ui.add_space(Space::two_xs() as f32);
     }
 }
@@ -53,6 +56,8 @@ mod tests {
 
         assert!(implementation.contains("keycap(ui, shortcut)"));
         assert!(implementation.contains("WidgetInfo::labeled"));
+        assert!(implementation.contains("launcher.shortcut_help.title"));
         assert!(!implementation.contains("on_hover_text"));
+        assert!(!implementation.contains("Keyboard shortcuts"));
     }
 }

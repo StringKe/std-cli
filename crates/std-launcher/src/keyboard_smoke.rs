@@ -3,6 +3,7 @@ use crate::{
     LauncherKeyboardReport, LauncherState,
 };
 use std_core::{StdConfig, StdCore};
+use std_egui::i18n;
 use std_types::ActionExecutionStatus;
 
 impl LauncherState {
@@ -139,7 +140,8 @@ fn shortcut_help_contract() -> String {
         && !crate::launcher_shortcut_help_visible(&help_state.view.query);
     let summary = crate::launcher_shortcut_help_summary();
     format!(
-        "trigger=?;title=Keyboard shortcuts;help_visible={help_visible};nl_action_visible={nl_visible};{}",
+        "trigger=?;title={};help_visible={help_visible};nl_action_visible={nl_visible};{}",
+        i18n::t("launcher.shortcut_help.title"),
         summary
     )
 }

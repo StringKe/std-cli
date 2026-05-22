@@ -62,7 +62,12 @@ impl LauncherKeyboardReport {
             && self
                 .shortcut_help_contract
                 .contains("nl_action_visible=false")
-            && self.shortcut_help_contract.contains("Keyboard")
+            && self
+                .shortcut_help_contract
+                .contains(std_egui::i18n::t("launcher.shortcut_help.title"))
+            && self
+                .shortcut_help_contract
+                .contains(std_egui::i18n::t("launcher.shortcut_help.move_selection"))
             && !self.shortcut_help_contract.contains("Mod+")
             && self.normalized_query == "open terminal now"
             && self.token_delete_query == "open terminal"

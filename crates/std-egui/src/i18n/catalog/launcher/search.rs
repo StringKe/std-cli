@@ -36,6 +36,38 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.action.executing") => Some("Executing selected action"),
         (Locale::ZhCn, "launcher.action.command_hint") => Some("按 / 查看命令"),
         (Locale::EnUs, "launcher.action.command_hint") => Some("Press / for commands"),
+        (Locale::ZhCn, "launcher.shortcut_help.title") => Some("键盘快捷键"),
+        (Locale::EnUs, "launcher.shortcut_help.title") => Some("Keyboard shortcuts"),
+        (Locale::ZhCn, "launcher.shortcut_help.move_selection") => Some("移动选择"),
+        (Locale::EnUs, "launcher.shortcut_help.move_selection") => Some("Move selection"),
+        (Locale::ZhCn, "launcher.shortcut_help.jump_bounds") => Some("跳到首个或末个结果"),
+        (Locale::EnUs, "launcher.shortcut_help.jump_bounds") => {
+            Some("Jump to first or last result")
+        }
+        (Locale::ZhCn, "launcher.shortcut_help.move_focus") => {
+            Some("在搜索、结果和操作之间移动焦点")
+        }
+        (Locale::EnUs, "launcher.shortcut_help.move_focus") => {
+            Some("Move focus between search, results, and actions")
+        }
+        (Locale::ZhCn, "launcher.shortcut_help.run_primary") => Some("运行选中主操作"),
+        (Locale::EnUs, "launcher.shortcut_help.run_primary") => Some("Run selected primary action"),
+        (Locale::ZhCn, "launcher.shortcut_help.open_action_panel") => Some("打开 Action Panel"),
+        (Locale::EnUs, "launcher.shortcut_help.open_action_panel") => Some("Open Action Panel"),
+        (Locale::ZhCn, "launcher.shortcut_help.run_by_index") => Some("按序号运行结果"),
+        (Locale::EnUs, "launcher.shortcut_help.run_by_index") => Some("Run result by index"),
+        (Locale::ZhCn, "launcher.shortcut_help.delete_token") => Some("删除上一个查询片段"),
+        (Locale::EnUs, "launcher.shortcut_help.delete_token") => {
+            Some("Delete previous query token")
+        }
+        (Locale::ZhCn, "launcher.shortcut_help.ask_planner") => Some("询问自然语言规划器"),
+        (Locale::EnUs, "launcher.shortcut_help.ask_planner") => {
+            Some("Ask natural language planner")
+        }
+        (Locale::ZhCn, "launcher.shortcut_help.clear_or_hide") => Some("清空查询或隐藏 Launcher"),
+        (Locale::EnUs, "launcher.shortcut_help.clear_or_hide") => {
+            Some("Clear query or hide Launcher")
+        }
         (Locale::ZhCn, "launcher.voice.label") => Some("语音"),
         (Locale::EnUs, "launcher.voice.label") => Some("Voice"),
         (Locale::ZhCn, "launcher.voice.placeholder") => Some("语音转写"),
@@ -76,6 +108,18 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.action.control.a11y" => Some("{label}, shortcut {shortcut}"),
         "launcher.action.executing" => Some("Executing selected action"),
         "launcher.action.command_hint" => Some("Press / for commands"),
+        "launcher.shortcut_help.title" => Some("Keyboard shortcuts"),
+        "launcher.shortcut_help.move_selection" => Some("Move selection"),
+        "launcher.shortcut_help.jump_bounds" => Some("Jump to first or last result"),
+        "launcher.shortcut_help.move_focus" => {
+            Some("Move focus between search, results, and actions")
+        }
+        "launcher.shortcut_help.run_primary" => Some("Run selected primary action"),
+        "launcher.shortcut_help.open_action_panel" => Some("Open Action Panel"),
+        "launcher.shortcut_help.run_by_index" => Some("Run result by index"),
+        "launcher.shortcut_help.delete_token" => Some("Delete previous query token"),
+        "launcher.shortcut_help.ask_planner" => Some("Ask natural language planner"),
+        "launcher.shortcut_help.clear_or_hide" => Some("Clear query or hide Launcher"),
         "launcher.voice.label" => Some("Voice"),
         "launcher.voice.placeholder" => Some("voice transcript"),
         "launcher.voice.apply" => Some("Apply"),

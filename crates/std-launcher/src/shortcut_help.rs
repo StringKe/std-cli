@@ -1,9 +1,9 @@
-use std_egui::input;
+use std_egui::{i18n, input};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LauncherShortcutHelpRow {
     pub key: String,
-    pub action: &'static str,
+    pub action: String,
 }
 
 pub fn launcher_shortcut_help_visible(query: &str) -> bool {
@@ -18,7 +18,7 @@ pub fn launcher_shortcut_help_rows() -> Vec<LauncherShortcutHelpRow> {
                 input::arrow_up().label(),
                 input::arrow_down().label()
             ),
-            action: "Move selection",
+            action: i18n::t("launcher.shortcut_help.move_selection").to_string(),
         },
         LauncherShortcutHelpRow {
             key: format!(
@@ -26,35 +26,35 @@ pub fn launcher_shortcut_help_rows() -> Vec<LauncherShortcutHelpRow> {
                 input::mod_arrow_up().label(),
                 input::mod_arrow_down().label()
             ),
-            action: "Jump to first or last result",
+            action: i18n::t("launcher.shortcut_help.jump_bounds").to_string(),
         },
         LauncherShortcutHelpRow {
             key: format!("{} / {}", input::tab().label(), input::shift_tab().label()),
-            action: "Move focus between search, results, and actions",
+            action: i18n::t("launcher.shortcut_help.move_focus").to_string(),
         },
         LauncherShortcutHelpRow {
             key: input::enter().label(),
-            action: "Run selected primary action",
+            action: i18n::t("launcher.shortcut_help.run_primary").to_string(),
         },
         LauncherShortcutHelpRow {
             key: input::launcher_action_panel().label(),
-            action: "Open Action Panel",
+            action: i18n::t("launcher.shortcut_help.open_action_panel").to_string(),
         },
         LauncherShortcutHelpRow {
             key: launcher_index_range_label(),
-            action: "Run result by index",
+            action: i18n::t("launcher.shortcut_help.run_by_index").to_string(),
         },
         LauncherShortcutHelpRow {
             key: input::launcher_delete_previous_token().label(),
-            action: "Delete previous query token",
+            action: i18n::t("launcher.shortcut_help.delete_token").to_string(),
         },
         LauncherShortcutHelpRow {
             key: "? text".to_string(),
-            action: "Ask natural language planner",
+            action: i18n::t("launcher.shortcut_help.ask_planner").to_string(),
         },
         LauncherShortcutHelpRow {
             key: input::escape().label(),
-            action: "Clear query or hide Launcher",
+            action: i18n::t("launcher.shortcut_help.clear_or_hide").to_string(),
         },
     ]
 }
@@ -128,5 +128,14 @@ mod tests {
         assert!(!summary.contains("Mod+"));
         assert!(summary.contains(&input::launcher_action_panel().label()));
         assert!(summary.contains(&launcher_index_range_label()));
+    }
+
+    #[test]
+    fn shortcut_help_rows_use_localized_actions() {
+        let rows = launcher_shortcut_help_rows();
+
+        assert_eq!(rows[0].action, "移动选择");
+        assert_eq!(rows[4].action, "打开 Action Panel");
+        assert!(!rows.iter().any(|row| row.action == "Move selection"));
     }
 }
