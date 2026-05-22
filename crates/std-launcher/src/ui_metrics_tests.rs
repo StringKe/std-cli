@@ -1,9 +1,10 @@
 use super::*;
+use std_launcher::PANEL_WIDTH;
 
 #[test]
 fn initial_window_size_scales_with_ui_zoom() {
-    let base = initial_window_inner_size_for_scale(UiScale::default());
-    let zoomed = initial_window_inner_size_for_scale(UiScale::new(1.5));
+    let base = crate::ui_metrics_layout::initial_window_inner_size_for_scale(UiScale::default());
+    let zoomed = crate::ui_metrics_layout::initial_window_inner_size_for_scale(UiScale::new(1.5));
 
     assert_eq!(base, egui::vec2(720.0, 64.0));
     assert_eq!(zoomed, egui::vec2(1080.0, 96.0));
@@ -13,10 +14,17 @@ fn initial_window_size_scales_with_ui_zoom() {
 fn expanded_window_size_scales_with_ui_zoom() {
     let mut state = LauncherState::new();
     state.update_query("index");
-    let body_height = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::new(1.5));
-    let height = panel_height_for_scale(&state, body_height, UiScale::new(1.5));
+    let body_height = crate::ui_metrics_layout::body_height_for_scale(
+        &state,
+        DEFAULT_VIEWPORT_HEIGHT,
+        UiScale::new(1.5),
+    );
+    let height =
+        crate::ui_metrics_layout::panel_height_for_scale(&state, body_height, UiScale::new(1.5));
 
-    assert!(height > initial_window_inner_size_for_scale(UiScale::new(1.5)).y);
+    assert!(
+        height > crate::ui_metrics_layout::initial_window_inner_size_for_scale(UiScale::new(1.5)).y
+    );
 }
 
 #[test]
@@ -199,9 +207,13 @@ fn collapsed_launcher_uses_docs_search_bar_height_without_outer_padding() {
 fn native_host_window_height_includes_panel_inner_padding() {
     let mut state = LauncherState::new();
     state.update_query("index");
-    let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
+    let body = crate::ui_metrics_layout::body_height_for_scale(
+        &state,
+        DEFAULT_VIEWPORT_HEIGHT,
+        UiScale::default(),
+    );
     let expected = Space::MD as f32 * 2.0
-        + search_section_height_for_scale(UiScale::default())
+        + crate::ui_metrics_layout::search_section_height_for_scale(UiScale::default())
         + Space::XS as f32
         + body
         + Space::XS as f32
@@ -216,8 +228,10 @@ fn expanded_panel_height_budget_matches_rendered_sections_without_clipping() {
         let mut state = LauncherState::new();
         crate::preview::apply_preview_scenario(&mut state, scenario);
         let viewport = window_inner_size(&state);
-        let body = body_height_for_scale(&state, viewport.y, UiScale::default());
-        let budget = layout_budget_for_scale(&state, body, UiScale::default());
+        let body =
+            crate::ui_metrics_layout::body_height_for_scale(&state, viewport.y, UiScale::default());
+        let budget =
+            crate::ui_metrics_layout::layout_budget_for_scale(&state, body, UiScale::default());
         let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
         let panel = panel_rect(available, &state);
 
@@ -232,7 +246,7 @@ fn feedback_status_height_budget_covers_rendered_panel() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "defer");
     let scale = UiScale::default();
-    let budget = launcher_status_height_for_scale(&state, scale);
+    let budget = crate::ui_metrics_layout::launcher_status_height_for_scale(&state, scale);
     let rendered_panel = feedback_panel_height_for_scale(scale);
     let rendered_budget = rendered_panel + scale.f32(Space::XS as f32);
 
@@ -247,7 +261,11 @@ fn body_height_counts_virtual_group_header_slots() {
     let mut state = LauncherState::new();
     state.update_query("terminal");
     let slots = result_list_slot_count(&state);
-    let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
+    let body = crate::ui_metrics_layout::body_height_for_scale(
+        &state,
+        DEFAULT_VIEWPORT_HEIGHT,
+        UiScale::default(),
+    );
 
     assert!(slots > state.view.results.len());
     assert_eq!(
@@ -304,11 +322,19 @@ fn empty_suggested_workflows_panel_uses_full_native_height() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "empty");
     let viewport = window_inner_size(&state);
-    let body = body_height_for_scale(&state, viewport.y, UiScale::default());
+    let body =
+        crate::ui_metrics_layout::body_height_for_scale(&state, viewport.y, UiScale::default());
     let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
     let panel = panel_rect(available, &state);
 
-    assert!(body <= viewport.y - panel_content_height_for_scale(&state, 0.0, UiScale::default()));
+    assert!(
+        body <= viewport.y
+            - crate::ui_metrics_layout::panel_content_height_for_scale(
+                &state,
+                0.0,
+                UiScale::default()
+            )
+    );
     assert_eq!(panel.height(), viewport.y);
     assert!(panel_is_only_visible_surface(&state));
 }

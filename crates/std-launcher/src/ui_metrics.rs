@@ -2,15 +2,13 @@ use eframe::egui;
 use std_egui::tokens::{Space, UiScale};
 use std_egui::LauncherPhase;
 use std_launcher::LauncherState;
-use std_launcher::PANEL_WIDTH;
 
-const SEARCH_HEIGHT: f32 = 64.0;
-const ACTION_BAR_HEIGHT: f32 = 36.0;
+pub(crate) const SEARCH_HEIGHT: f32 = 64.0;
+pub(crate) const ACTION_BAR_HEIGHT: f32 = 36.0;
 const RESULT_ROW_HEIGHT: f32 = 36.0;
-const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
-const MAX_RESULT_ROWS: f32 = 6.0;
-const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
-const VOICE_ROW_HEIGHT: f32 = 44.0;
+pub(crate) const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
+pub(crate) const MAX_RESULT_ROWS: f32 = 6.0;
+pub(crate) const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 #[cfg(test)]
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
 
@@ -280,16 +278,11 @@ pub(crate) fn action_panel_row_height() -> f32 {
 }
 
 pub(crate) fn initial_window_inner_size() -> egui::Vec2 {
-    initial_window_inner_size_for_scale(UiScale::from_env())
+    crate::ui_metrics_layout::initial_window_inner_size_for_scale(UiScale::from_env())
 }
 
 pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
-    let scale = UiScale::from_env();
-    let body_height = body_height_for_scale(state, DEFAULT_VIEWPORT_HEIGHT, scale);
-    egui::vec2(
-        scale.f32(PANEL_WIDTH),
-        panel_height_for_scale(state, body_height, scale),
-    )
+    crate::ui_metrics_layout::window_inner_size_for_scale(state, UiScale::from_env())
 }
 
 pub(crate) fn panel_is_only_visible_surface(state: &LauncherState) -> bool {
@@ -344,15 +337,19 @@ fn panel_surface_geometry(state: &LauncherState) -> PanelSurfaceGeometry {
 }
 
 pub(crate) fn panel_height(state: &LauncherState, body_height: f32) -> f32 {
-    panel_height_for_scale(state, body_height, UiScale::from_env())
+    crate::ui_metrics_layout::panel_height_for_scale(state, body_height, UiScale::from_env())
 }
 
 pub(crate) fn panel_content_height(state: &LauncherState, body_height: f32) -> f32 {
-    panel_content_height_for_scale(state, body_height, UiScale::from_env())
+    crate::ui_metrics_layout::panel_content_height_for_scale(
+        state,
+        body_height,
+        UiScale::from_env(),
+    )
 }
 
 pub(crate) fn body_height(state: &LauncherState, viewport_height: f32) -> f32 {
-    body_height_for_scale(state, viewport_height, UiScale::from_env())
+    crate::ui_metrics_layout::body_height_for_scale(state, viewport_height, UiScale::from_env())
 }
 
 pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
@@ -362,111 +359,17 @@ pub(crate) fn panel_is_expanded(state: &LauncherState) -> bool {
         || state.action_panel.open
 }
 
-fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(
-        scale.f32(PANEL_WIDTH),
-        collapsed_panel_height_for_scale(scale),
-    )
-}
-
-fn panel_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
-    if !panel_is_expanded(state) {
-        return collapsed_panel_height_for_scale(scale);
-    }
-    layout_budget_for_scale(state, body_height, scale).total_height
-}
-
-fn panel_content_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
-    layout_budget_for_scale(state, body_height, scale).content_height
-}
-
-fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiScale) -> f32 {
-    if !panel_is_expanded(state) {
-        return 0.0;
-    }
-    let visible_height = result_list_visible_height(state, scale);
-    let desired = visible_height + scale.f32(Space::SM as f32);
-    desired.clamp(
-        scale.f32(128.0),
-        body_height_available(state, viewport_height, scale),
-    )
-}
-
-fn body_height_available(state: &LauncherState, viewport_height: f32, scale: UiScale) -> f32 {
-    let chrome = panel_content_height_for_scale(state, 0.0, scale);
-    (viewport_height - chrome).max(scale.f32(128.0))
-}
-
 #[cfg(test)]
 fn result_list_slot_count(state: &LauncherState) -> usize {
     state.view.results.len() + crate::ui_results::group_count(&state.view.results)
 }
 
-fn result_list_visible_height(state: &LauncherState, scale: UiScale) -> f32 {
+pub(crate) fn result_list_visible_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
     let row_count = state.view.results.len().min(MAX_RESULT_ROWS as usize);
     let group_count = crate::ui_results::group_count(&state.view.results).min(row_count);
     let group_height = group_count as f32 * scale.f32(GROUP_HEADER_ROW_HEIGHT);
     let row_height = row_count as f32 * scale.f32(RESULT_ROW_HEIGHT);
     group_height + row_height
-}
-
-fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(SEARCH_HEIGHT)
-}
-
-struct LauncherLayoutBudget {
-    content_height: f32,
-    total_height: f32,
-}
-
-fn layout_budget_for_scale(
-    state: &LauncherState,
-    body_height: f32,
-    scale: UiScale,
-) -> LauncherLayoutBudget {
-    let padding = scale.f32(Space::MD as f32);
-    let content = launcher_content_height_for_scale(state, body_height, scale);
-    LauncherLayoutBudget {
-        content_height: content,
-        total_height: content + padding * 2.0,
-    }
-}
-
-fn launcher_content_height_for_scale(
-    state: &LauncherState,
-    body_height: f32,
-    scale: UiScale,
-) -> f32 {
-    search_section_height_for_scale(scale)
-        + scale.f32(Space::XS as f32)
-        + body_height
-        + scale.f32(Space::XS as f32)
-        + scale.f32(ACTION_BAR_HEIGHT)
-        + launcher_status_height_for_scale(state, scale)
-}
-
-fn search_section_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(Space::SM as f32) * 2.0 + scale.f32(SEARCH_BAR_MIN_CONTENT_HEIGHT)
-}
-
-const SEARCH_BAR_MIN_CONTENT_HEIGHT: f32 = 40.0;
-
-fn launcher_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
-    voice_status_height_for_scale(state, scale) + feedback_status_height_for_scale(state, scale)
-}
-
-fn voice_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
-    if state.controller.voice_active {
-        return scale.f32(Space::XS as f32) + scale.f32(VOICE_ROW_HEIGHT);
-    }
-    0.0
-}
-
-fn feedback_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
-    if state.view.feedback.is_some() {
-        return scale.f32(Space::XS as f32) + feedback_panel_height_for_scale(scale);
-    }
-    0.0
 }
 
 #[cfg(test)]
