@@ -114,9 +114,20 @@ fn selected_feedback_action_shows_enter_keycap() {
 #[test]
 fn feedback_status_uses_icon_and_text_not_color_only() {
     let source = include_str!("ui_feedback.rs");
+    let production_source = source.split("#[cfg(test)]").next().unwrap();
+    let icon_source = production_source
+        .split("fn render_status_icon")
+        .nth(1)
+        .and_then(|body| body.split("fn render_actions").next())
+        .unwrap();
 
     assert!(source.contains("fn render_status_icon"));
     assert!(source.contains("feedback_icon_label"));
+    assert!(icon_source.contains("ui_metrics::feedback_icon_size()"));
+    assert!(icon_source.contains("ui_metrics::feedback_icon_geometry(rect)"));
+    assert!(!icon_source.contains("egui::pos2(center.x"));
+    assert!(!icon_source.contains("Space::xs() as f32"));
+    assert!(!icon_source.contains("1.5, feedback_stroke"));
     assert!(source.contains("launcher.feedback.icon.completed"));
     assert!(source.contains("launcher.feedback.icon.deferred"));
     assert!(source.contains("launcher.feedback.icon.failed"));

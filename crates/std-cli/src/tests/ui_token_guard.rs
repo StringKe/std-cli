@@ -22,6 +22,49 @@ fn launcher_and_studio_ui_do_not_hardcode_theme_colors() {
     );
 }
 
+#[test]
+fn launcher_feedback_icon_uses_metrics_not_inline_geometry() {
+    let root = workspace_root();
+    let feedback = fs::read_to_string(root.join("crates/std-launcher/src/ui_feedback.rs")).unwrap();
+    let production = feedback.split("#[cfg(test)]").next().unwrap();
+    let icon_source = production
+        .split("fn render_status_icon")
+        .nth(1)
+        .and_then(|body| body.split("fn render_actions").next())
+        .unwrap();
+    let metrics = fs::read_to_string(root.join("crates/std-launcher/src/ui_metrics.rs")).unwrap();
+
+    for required in [
+        "ui_metrics::feedback_icon_size()",
+        "ui_metrics::feedback_icon_geometry(rect)",
+    ] {
+        assert!(
+            icon_source.contains(required),
+            "feedback icon must route geometry through ui_metrics: {required}"
+        );
+    }
+    for forbidden in [
+        "egui::pos2(center.x",
+        "Space::xs() as f32",
+        "egui::vec2(Space::md() as f32",
+        "Stroke::new(1.5, feedback_stroke",
+    ] {
+        assert!(
+            !icon_source.contains(forbidden),
+            "feedback icon must not inline visual geometry: {forbidden}"
+        );
+    }
+    assert!(metrics.contains("pub(crate) struct FeedbackIconGeometry"));
+}
+
+fn workspace_root() -> &'static Path {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+}
+
 fn scan_product_ui_sources(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;

@@ -72,10 +72,8 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
 }
 
 fn render_status_icon(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
-    let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(Space::md() as f32, Space::md() as f32),
-        egui::Sense::hover(),
-    );
+    let (rect, response) =
+        ui.allocate_exact_size(ui_metrics::feedback_icon_size(), egui::Sense::hover());
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Other,
@@ -83,55 +81,30 @@ fn render_status_icon(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &Launche
             feedback_icon_label(feedback),
         )
     });
-    let stroke = egui::Stroke::new(1.5, feedback_stroke(ctx, feedback));
-    let center = rect.center();
+    let geometry = ui_metrics::feedback_icon_geometry(rect);
+    let stroke = egui::Stroke::new(geometry.stroke_width, feedback_stroke(ctx, feedback));
     match feedback_kind(feedback) {
         FeedbackKind::Completed => {
-            ui.painter().line_segment(
-                [
-                    egui::pos2(center.x - 4.0, center.y),
-                    egui::pos2(center.x, center.y + 4.0),
-                ],
-                stroke,
-            );
-            ui.painter().line_segment(
-                [
-                    egui::pos2(center.x, center.y + 4.0),
-                    egui::pos2(center.x + 8.0, center.y - 4.0),
-                ],
-                stroke,
-            );
+            ui.painter()
+                .line_segment([geometry.check_start, geometry.check_mid], stroke);
+            ui.painter()
+                .line_segment([geometry.check_mid, geometry.check_end], stroke);
         }
         FeedbackKind::Failed => {
             ui.painter()
-                .circle_stroke(center, Space::xs() as f32, stroke);
-            ui.painter().line_segment(
-                [
-                    egui::pos2(center.x - 4.0, center.y - 4.0),
-                    egui::pos2(center.x + 4.0, center.y + 4.0),
-                ],
-                stroke,
-            );
-            ui.painter().line_segment(
-                [
-                    egui::pos2(center.x + 4.0, center.y - 4.0),
-                    egui::pos2(center.x - 4.0, center.y + 4.0),
-                ],
-                stroke,
-            );
+                .circle_stroke(geometry.center, geometry.radius, stroke);
+            ui.painter()
+                .line_segment([geometry.cross_a_start, geometry.cross_a_end], stroke);
+            ui.painter()
+                .line_segment([geometry.cross_b_start, geometry.cross_b_end], stroke);
         }
         FeedbackKind::Deferred => {
             ui.painter()
-                .circle_stroke(center, Space::xs() as f32, stroke);
-            ui.painter().line_segment(
-                [
-                    egui::pos2(center.x, center.y - 4.0),
-                    egui::pos2(center.x, center.y),
-                ],
-                stroke,
-            );
+                .circle_stroke(geometry.center, geometry.radius, stroke);
             ui.painter()
-                .circle_filled(egui::pos2(center.x, center.y + 4.0), 1.5, stroke.color);
+                .line_segment([geometry.alert_top, geometry.alert_mid], stroke);
+            ui.painter()
+                .circle_filled(geometry.alert_dot, geometry.dot_radius, stroke.color);
         }
     }
 }

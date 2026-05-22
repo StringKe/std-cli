@@ -141,6 +141,51 @@ pub(crate) fn feedback_detail_height() -> f32 {
     scale().f32(36.0)
 }
 
+pub(crate) struct FeedbackIconGeometry {
+    pub(crate) center: egui::Pos2,
+    pub(crate) radius: f32,
+    pub(crate) stroke_width: f32,
+    pub(crate) check_start: egui::Pos2,
+    pub(crate) check_mid: egui::Pos2,
+    pub(crate) check_end: egui::Pos2,
+    pub(crate) cross_a_start: egui::Pos2,
+    pub(crate) cross_a_end: egui::Pos2,
+    pub(crate) cross_b_start: egui::Pos2,
+    pub(crate) cross_b_end: egui::Pos2,
+    pub(crate) alert_top: egui::Pos2,
+    pub(crate) alert_mid: egui::Pos2,
+    pub(crate) alert_dot: egui::Pos2,
+    pub(crate) dot_radius: f32,
+}
+
+pub(crate) fn feedback_icon_size() -> egui::Vec2 {
+    let scale = scale();
+    egui::vec2(scale.f32(Space::MD as f32), scale.f32(Space::MD as f32))
+}
+
+pub(crate) fn feedback_icon_geometry(rect: egui::Rect) -> FeedbackIconGeometry {
+    let scale = scale();
+    let center = rect.center();
+    let radius = scale.f32(Space::XS as f32);
+    let half = scale.f32(Space::TWO_XS as f32);
+    FeedbackIconGeometry {
+        center,
+        radius,
+        stroke_width: scale.f32(1.5),
+        check_start: egui::pos2(center.x - half, center.y),
+        check_mid: egui::pos2(center.x, center.y + half),
+        check_end: egui::pos2(center.x + radius, center.y - half),
+        cross_a_start: egui::pos2(center.x - half, center.y - half),
+        cross_a_end: egui::pos2(center.x + half, center.y + half),
+        cross_b_start: egui::pos2(center.x + half, center.y - half),
+        cross_b_end: egui::pos2(center.x - half, center.y + half),
+        alert_top: egui::pos2(center.x, center.y - half),
+        alert_mid: center,
+        alert_dot: egui::pos2(center.x, center.y + half),
+        dot_radius: scale.f32(1.5),
+    }
+}
+
 pub(crate) fn search_bar_min_height() -> f32 {
     crate::ui_metrics_search::search_bar_min_height(scale())
 }
