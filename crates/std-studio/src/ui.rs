@@ -5,8 +5,14 @@ pub(crate) fn install_visuals(
     ctx: &egui::Context,
     theme: &str,
     config_reduce_motion: bool,
+    config_high_contrast: bool,
 ) -> ThemeProfile {
-    ThemeProfile::apply_with_reduce_motion(ctx, ThemeMode::resolve(theme), config_reduce_motion)
+    ThemeProfile::apply_with_accessibility(
+        ctx,
+        ThemeMode::resolve(theme),
+        config_reduce_motion,
+        config_high_contrast,
+    )
 }
 
 pub(crate) fn panel_alt(ctx: &egui::Context) -> egui::Color32 {

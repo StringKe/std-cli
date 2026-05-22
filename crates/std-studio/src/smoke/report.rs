@@ -177,6 +177,9 @@ impl StudioSmokeReport {
                 .contains("motion_control=token-toggle-row")
             && self
                 .pane_settings_contract
+                .contains("contrast_control=token-toggle-row")
+            && self
+                .pane_settings_contract
                 .contains("ai_control=token-toggle-row")
             && self
                 .pane_settings_contract

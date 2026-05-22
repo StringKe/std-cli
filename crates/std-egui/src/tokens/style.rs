@@ -34,7 +34,20 @@ impl ThemeProfile {
         mode: ThemeMode,
         config_reduce_motion: bool,
     ) -> Self {
+        Self::apply_with_accessibility(ctx, mode, config_reduce_motion, false)
+    }
+
+    pub fn apply_with_accessibility(
+        ctx: &egui::Context,
+        mode: ThemeMode,
+        config_reduce_motion: bool,
+        config_high_contrast: bool,
+    ) -> Self {
         let a11y = AccessibilityContext::from_env();
+        let a11y = AccessibilityContext {
+            high_contrast: a11y.high_contrast || config_high_contrast,
+            ..a11y
+        };
         apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
         let mut profile = Self::from_applied(ctx, mode, &a11y);
         profile.reduce_motion = profile.reduce_motion || config_reduce_motion;
@@ -383,5 +396,19 @@ mod tests {
         let profile = ThemeProfile::apply_with_reduce_motion(&ctx, ThemeMode::Light, true);
 
         assert!(profile.reduce_motion);
+    }
+
+    #[test]
+    fn theme_profile_merges_config_high_contrast() {
+        let ctx = egui::Context::default();
+
+        let profile = ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, true);
+
+        assert!(profile.high_contrast);
+        assert_eq!(profile.focus_ring_width, 3);
+        assert_eq!(
+            ctx.style().visuals.selection.bg_fill,
+            palette::LIGHT_ACCENT_WEAK_HC
+        );
     }
 }

@@ -106,6 +106,18 @@ impl StudioEguiApp {
                     self.settings_reduce_motion.to_string(),
                 );
             }
+            if let ToggleRowEvent::Toggle(enabled) = settings_toggle::toggle_row(
+                ui,
+                i18n::t("studio.settings.contrast.high"),
+                i18n::t("studio.settings.contrast.high.detail"),
+                self.settings_high_contrast,
+            ) {
+                self.settings_high_contrast = enabled;
+                self.save_setting(
+                    "appearance.high_contrast",
+                    self.settings_high_contrast.to_string(),
+                );
+            }
         });
     }
 

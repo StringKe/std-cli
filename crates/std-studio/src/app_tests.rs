@@ -380,6 +380,18 @@ fn settings_appearance_exposes_reduce_motion_toggle() {
 }
 
 #[test]
+fn settings_appearance_exposes_high_contrast_toggle() {
+    let settings = include_str!("views/settings.rs");
+    let model = include_str!("views/settings_model.rs");
+
+    assert!(settings.contains("studio.settings.contrast.high"));
+    assert!(settings.contains("studio.settings.contrast.high.detail"));
+    assert!(settings.contains("self.settings_high_contrast"));
+    assert!(settings.contains("\"appearance.high_contrast\""));
+    assert!(model.contains("contrast_control: \"token-toggle-row\""));
+}
+
+#[test]
 fn settings_ai_provider_uses_token_toggle_row() {
     let settings = include_str!("views/settings.rs");
     let toggle = include_str!("views/settings_toggle.rs");

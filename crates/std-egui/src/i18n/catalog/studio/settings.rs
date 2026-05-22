@@ -5,6 +5,10 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
 }
 
 fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
+    translate_appearance(locale, key).or_else(|| translate_runtime(locale, key))
+}
+
+fn translate_appearance(locale: Locale, key: &str) -> Option<&'static str> {
     match (locale, key) {
         (Locale::ZhCn, "studio.settings.title") => Some("设置"),
         (Locale::EnUs, "studio.settings.title") => Some("Settings"),
@@ -50,36 +54,6 @@ fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.category.about") => Some("About"),
         (Locale::ZhCn, "studio.settings.category.about.detail") => Some("产品与宿主策略"),
         (Locale::EnUs, "studio.settings.category.about.detail") => Some("Product and host policy"),
-        (Locale::ZhCn, "studio.settings.runtime.title") => Some("运行时"),
-        (Locale::EnUs, "studio.settings.runtime.title") => Some("Runtime"),
-        (Locale::ZhCn, "studio.settings.runtime.detail") => Some("Launcher 与 AI"),
-        (Locale::EnUs, "studio.settings.runtime.detail") => Some("Launcher and AI"),
-        (Locale::ZhCn, "studio.settings.hotkey.label") => Some("Launcher 快捷键"),
-        (Locale::EnUs, "studio.settings.hotkey.label") => Some("Launcher hotkey"),
-        (Locale::ZhCn, "studio.settings.hotkey.save") => Some("保存快捷键"),
-        (Locale::EnUs, "studio.settings.hotkey.save") => Some("Save Hotkey"),
-        (Locale::ZhCn, "studio.settings.hotkey.registry.title") => Some("快捷键列表"),
-        (Locale::EnUs, "studio.settings.hotkey.registry.title") => Some("Shortcut Registry"),
-        (Locale::ZhCn, "studio.settings.hotkey.registry.detail") => Some("来源与默认值可见"),
-        (Locale::EnUs, "studio.settings.hotkey.registry.detail") => {
-            Some("Source and defaults visible")
-        }
-        (Locale::ZhCn, "studio.settings.hotkey.reset") => Some("重置"),
-        (Locale::EnUs, "studio.settings.hotkey.reset") => Some("Reset"),
-        (Locale::ZhCn, "studio.settings.hotkey.row") => Some("快捷键"),
-        (Locale::EnUs, "studio.settings.hotkey.row") => Some("Shortcut"),
-        (Locale::ZhCn, "studio.settings.ai.enable") => Some("启用 AI planner"),
-        (Locale::EnUs, "studio.settings.ai.enable") => Some("Enable AI planner"),
-        (Locale::ZhCn, "studio.settings.ai.detail") => Some("保存后同步 Planner 与 Studio 状态栏"),
-        (Locale::EnUs, "studio.settings.ai.detail") => {
-            Some("Saves planner state and Studio status bar")
-        }
-        (Locale::ZhCn, "studio.settings.ai.save") => Some("保存 AI"),
-        (Locale::EnUs, "studio.settings.ai.save") => Some("Save AI"),
-        (Locale::ZhCn, "studio.settings.toggle.on") => Some("开启"),
-        (Locale::EnUs, "studio.settings.toggle.on") => Some("On"),
-        (Locale::ZhCn, "studio.settings.toggle.off") => Some("关闭"),
-        (Locale::EnUs, "studio.settings.toggle.off") => Some("Off"),
         (Locale::ZhCn, "studio.settings.theme.label") => Some("主题"),
         (Locale::EnUs, "studio.settings.theme.label") => Some("Theme"),
         (Locale::ZhCn, "studio.settings.theme.save") => Some("保存主题"),
@@ -110,6 +84,50 @@ fn translate_primary(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.motion.reduced_on") => Some("Reduce motion enabled"),
         (Locale::ZhCn, "studio.settings.motion.reduced_off") => Some("已关闭减少动效"),
         (Locale::EnUs, "studio.settings.motion.reduced_off") => Some("Reduce motion disabled"),
+        (Locale::ZhCn, "studio.settings.contrast.high") => Some("高对比度"),
+        (Locale::EnUs, "studio.settings.contrast.high") => Some("High contrast"),
+        (Locale::ZhCn, "studio.settings.contrast.high.detail") => {
+            Some("保存到 appearance.high_contrast，提升文字、边框与焦点环")
+        }
+        (Locale::EnUs, "studio.settings.contrast.high.detail") => {
+            Some("Saves appearance.high_contrast for text, borders, and focus rings")
+        }
+        _ => None,
+    }
+}
+
+fn translate_runtime(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
+        (Locale::ZhCn, "studio.settings.runtime.title") => Some("运行时"),
+        (Locale::EnUs, "studio.settings.runtime.title") => Some("Runtime"),
+        (Locale::ZhCn, "studio.settings.runtime.detail") => Some("Launcher 与 AI"),
+        (Locale::EnUs, "studio.settings.runtime.detail") => Some("Launcher and AI"),
+        (Locale::ZhCn, "studio.settings.hotkey.label") => Some("Launcher 快捷键"),
+        (Locale::EnUs, "studio.settings.hotkey.label") => Some("Launcher hotkey"),
+        (Locale::ZhCn, "studio.settings.hotkey.save") => Some("保存快捷键"),
+        (Locale::EnUs, "studio.settings.hotkey.save") => Some("Save Hotkey"),
+        (Locale::ZhCn, "studio.settings.hotkey.registry.title") => Some("快捷键列表"),
+        (Locale::EnUs, "studio.settings.hotkey.registry.title") => Some("Shortcut Registry"),
+        (Locale::ZhCn, "studio.settings.hotkey.registry.detail") => Some("来源与默认值可见"),
+        (Locale::EnUs, "studio.settings.hotkey.registry.detail") => {
+            Some("Source and defaults visible")
+        }
+        (Locale::ZhCn, "studio.settings.hotkey.reset") => Some("重置"),
+        (Locale::EnUs, "studio.settings.hotkey.reset") => Some("Reset"),
+        (Locale::ZhCn, "studio.settings.hotkey.row") => Some("快捷键"),
+        (Locale::EnUs, "studio.settings.hotkey.row") => Some("Shortcut"),
+        (Locale::ZhCn, "studio.settings.ai.enable") => Some("启用 AI planner"),
+        (Locale::EnUs, "studio.settings.ai.enable") => Some("Enable AI planner"),
+        (Locale::ZhCn, "studio.settings.ai.detail") => Some("保存后同步 Planner 与 Studio 状态栏"),
+        (Locale::EnUs, "studio.settings.ai.detail") => {
+            Some("Saves planner state and Studio status bar")
+        }
+        (Locale::ZhCn, "studio.settings.ai.save") => Some("保存 AI"),
+        (Locale::EnUs, "studio.settings.ai.save") => Some("Save AI"),
+        (Locale::ZhCn, "studio.settings.toggle.on") => Some("开启"),
+        (Locale::EnUs, "studio.settings.toggle.on") => Some("On"),
+        (Locale::ZhCn, "studio.settings.toggle.off") => Some("关闭"),
+        (Locale::EnUs, "studio.settings.toggle.off") => Some("Off"),
         (Locale::ZhCn, "studio.settings.hotkey.contract") => {
             Some("焦点与 IME 优先，热键只显式注册")
         }
@@ -202,6 +220,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         }
         "studio.settings.motion.reduced_on" => Some("Reduce motion enabled"),
         "studio.settings.motion.reduced_off" => Some("Reduce motion disabled"),
+        "studio.settings.contrast.high" => Some("High contrast"),
+        "studio.settings.contrast.high.detail" => {
+            Some("Saves appearance.high_contrast for text, borders, and focus rings")
+        }
         "studio.settings.hotkey.contract" => {
             Some("Focus and IME first, hotkeys register by explicit opt-in")
         }
