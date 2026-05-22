@@ -10,8 +10,6 @@ use crate::{
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 
-const PLUGIN_PANEL_GAP: f32 = Space::SM as f32;
-
 impl StudioEguiApp {
     pub(crate) fn render_plugins(&mut self, ui: &mut egui::Ui) {
         ui::section_header(
@@ -35,38 +33,6 @@ impl StudioEguiApp {
             manager.last_execution.as_ref(),
         );
         plugin_status_bar::render(ui, &summary);
-    }
-
-    fn render_plugin_workspace(&mut self, ui: &mut egui::Ui) {
-        let available_width = ui.available_width();
-        if available_width < 900.0 {
-            self.render_plugin_manifests(ui);
-            ui.add_space(PLUGIN_PANEL_GAP);
-            self.render_plugin_actions(ui);
-            ui.add_space(PLUGIN_PANEL_GAP);
-            self.render_plugin_inspector(ui);
-            return;
-        }
-        let column_width = (available_width - PLUGIN_PANEL_GAP * 2.0) / 3.0;
-        ui.horizontal_top(|ui| {
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_plugin_manifests(ui),
-            );
-            ui.add_space(PLUGIN_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_plugin_actions(ui),
-            );
-            ui.add_space(PLUGIN_PANEL_GAP);
-            ui.allocate_ui_with_layout(
-                egui::vec2(column_width, 0.0),
-                egui::Layout::top_down(egui::Align::Min),
-                |ui| self.render_plugin_inspector(ui),
-            );
-        });
     }
 
     fn render_plugin_toolbar(&mut self, ui: &mut egui::Ui) {
@@ -99,7 +65,7 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_plugin_manifests(&self, ui: &mut egui::Ui) {
+    pub(crate) fn render_plugin_manifests(&self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -120,7 +86,7 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_plugin_actions(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_plugin_actions(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(
                 ui,
@@ -156,7 +122,7 @@ impl StudioEguiApp {
         });
     }
 
-    fn render_plugin_inspector(&mut self, ui: &mut egui::Ui) {
+    pub(crate) fn render_plugin_inspector(&mut self, ui: &mut egui::Ui) {
         let model = selected_inspector_model(&self.app.plugin_manager);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui::section_header(

@@ -9,6 +9,7 @@ pub(crate) mod plugin_inspector_model;
 mod plugin_list_model;
 mod plugin_rows;
 mod plugin_status_bar;
+mod plugin_workspace_shell;
 mod plugins;
 pub(crate) mod row_metrics;
 pub(crate) mod row_paint;
