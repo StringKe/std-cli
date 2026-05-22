@@ -11,6 +11,10 @@ pub(crate) struct StudioKeyboardSmoke {
     pub(crate) workspace_focus_path: String,
     pub(crate) analysis_focus_path: String,
     pub(crate) analysis_qa_focus: String,
+    pub(crate) sidebar_tree_label: String,
+    pub(crate) dnd_pickup_announcement: String,
+    pub(crate) dnd_drop_announcement: String,
+    pub(crate) batch_progress_announcements: String,
     pub(crate) keyboard_contract: String,
 }
 
@@ -24,6 +28,10 @@ impl StudioKeyboardSmoke {
         let quick_open_path = open_quick_open(&mut layout);
         let workspace_focus_path = workspace_focus_cycle(studio);
         let (analysis_focus_path, analysis_qa_focus) = analysis_focus_paths();
+        let sidebar_tree_label = sidebar_tree_node_label("Workflow Builder", 2, 1, 3, 8);
+        let dnd_pickup_announcement = dnd_pickup_announcement("Collect context");
+        let dnd_drop_announcement = dnd_drop_announcement("Collect context", 3);
+        let batch_progress_announcements = batch_progress_announcements([0, 1, 5, 6, 10, 14, 15]);
 
         Self {
             sidebar_toggle_path,
@@ -34,7 +42,11 @@ impl StudioKeyboardSmoke {
             workspace_focus_path,
             analysis_focus_path,
             analysis_qa_focus,
-            keyboard_contract: "docs/20#studio-shortcuts".to_string(),
+            sidebar_tree_label,
+            dnd_pickup_announcement,
+            dnd_drop_announcement,
+            batch_progress_announcements,
+            keyboard_contract: "docs/20#studio-shortcuts,docs/23#studio-screen-reader".to_string(),
         }
     }
 
@@ -57,13 +69,22 @@ impl StudioKeyboardSmoke {
             && self.analysis_focus_path == "target>tabs>content>query>coverage>target"
             && self.analysis_qa_focus
                 == shortcut_path(input::studio_analysis_qa_focus(), "coverage>query")
-            && self.keyboard_contract == "docs/20#studio-shortcuts"
+            && self.sidebar_tree_label == "Workflow Builder, group 2, level 1, 3 of 8"
+            && self
+                .dnd_pickup_announcement
+                .contains("use Alt+Up Alt+Down to move")
+            && self.dnd_drop_announcement == "Moved Collect context to position 3"
+            && self.batch_progress_announcements == "0%,5%,10%,15%"
+            && self.keyboard_contract.contains("docs/20#studio-shortcuts")
+            && self
+                .keyboard_contract
+                .contains("docs/23#studio-screen-reader")
     }
 
     pub(crate) fn summary(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_keyboard_smoke={status}\nstudio_sidebar_toggle_path={}\nstudio_inspector_toggle_path={}\nstudio_bottom_panel_toggle_path={}\nstudio_command_palette_path={}\nstudio_quick_open_path={}\nstudio_workspace_focus_path={}\nstudio_analysis_focus_path={}\nstudio_analysis_qa_focus={}\nstudio_keyboard_contract={}",
+            "studio_keyboard_smoke={status}\nstudio_sidebar_toggle_path={}\nstudio_inspector_toggle_path={}\nstudio_bottom_panel_toggle_path={}\nstudio_command_palette_path={}\nstudio_quick_open_path={}\nstudio_workspace_focus_path={}\nstudio_analysis_focus_path={}\nstudio_analysis_qa_focus={}\nstudio_sidebar_tree_label={}\nstudio_dnd_pickup_announcement={}\nstudio_dnd_drop_announcement={}\nstudio_batch_progress_announcements={}\nstudio_keyboard_contract={}",
             self.sidebar_toggle_path,
             self.inspector_toggle_path,
             self.bottom_panel_toggle_path,
@@ -72,6 +93,10 @@ impl StudioKeyboardSmoke {
             self.workspace_focus_path,
             self.analysis_focus_path,
             self.analysis_qa_focus,
+            self.sidebar_tree_label,
+            self.dnd_pickup_announcement,
+            self.dnd_drop_announcement,
+            self.batch_progress_announcements,
             self.keyboard_contract,
         )
     }
@@ -162,6 +187,33 @@ fn analysis_focus_paths() -> (String, String) {
     )
 }
 
+fn sidebar_tree_node_label(
+    title: &str,
+    group: usize,
+    depth: usize,
+    position: usize,
+    total: usize,
+) -> String {
+    format!("{title}, group {group}, level {depth}, {position} of {total}")
+}
+
+fn dnd_pickup_announcement(item: &str) -> String {
+    format!("Picked up {item}, use Alt+Up Alt+Down to move")
+}
+
+fn dnd_drop_announcement(item: &str, position: usize) -> String {
+    format!("Moved {item} to position {position}")
+}
+
+fn batch_progress_announcements(progress: impl IntoIterator<Item = u8>) -> String {
+    progress
+        .into_iter()
+        .filter(|value| value % 5 == 0)
+        .map(|value| format!("{value}%"))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
 fn shortcut_path(binding: input::KeyBinding, path: &str) -> String {
     format!("{}:{path}", binding.label())
 }
@@ -205,5 +257,14 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target"));
+        assert!(smoke
+            .summary()
+            .contains("studio_sidebar_tree_label=Workflow Builder, group 2, level 1, 3 of 8"));
+        assert!(smoke
+            .summary()
+            .contains("studio_dnd_pickup_announcement=Picked up Collect context"));
+        assert!(smoke
+            .summary()
+            .contains("studio_batch_progress_announcements=0%,5%,10%,15%"));
     }
 }

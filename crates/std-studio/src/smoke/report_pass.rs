@@ -301,6 +301,18 @@ impl StudioSmokeReport {
             && self
                 .keyboard_summary
                 .contains("studio_keyboard_contract=docs/20#studio-shortcuts")
+            && self
+                .keyboard_summary
+                .contains("docs/23#studio-screen-reader")
+            && self
+                .keyboard_summary
+                .contains("studio_sidebar_tree_label=Workflow Builder, group 2, level 1, 3 of 8")
+            && self
+                .keyboard_summary
+                .contains("studio_dnd_pickup_announcement=Picked up Collect context")
+            && self
+                .keyboard_summary
+                .contains("studio_batch_progress_announcements=0%,5%,10%,15%")
     }
 
     fn operations_contract_pass(&self) -> bool {

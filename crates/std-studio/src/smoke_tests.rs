@@ -308,4 +308,11 @@ fn assert_keyboard_summary(summary: &str) {
     );
     assert!(summary.contains("studio_analysis_qa_focus=?:coverage>query"));
     assert!(summary.contains("studio_keyboard_contract=docs/20#studio-shortcuts"));
+    assert!(summary.contains("docs/23#studio-screen-reader"));
+    assert!(
+        summary.contains("studio_sidebar_tree_label=Workflow Builder, group 2, level 1, 3 of 8")
+    );
+    assert!(summary.contains("studio_dnd_pickup_announcement=Picked up Collect context"));
+    assert!(summary.contains("studio_dnd_drop_announcement=Moved Collect context to position 3"));
+    assert!(summary.contains("studio_batch_progress_announcements=0%,5%,10%,15%"));
 }
