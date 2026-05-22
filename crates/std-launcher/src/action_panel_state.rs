@@ -56,9 +56,7 @@ impl LauncherState {
             ActionPanelItem::Run => {
                 self.trigger_selected_with_external_runner(allow_external_runner)
             }
-            ActionPanelItem::ReviewFirst => {
-                self.trigger_selected_with_external_runner(allow_external_runner)
-            }
+            ActionPanelItem::ReviewFirst => Some(self.review_action_panel_command()),
             ActionPanelItem::Defer => self.trigger_selected(),
             ActionPanelItem::OpenInStudio => {
                 self.open_selected_action_in_studio()?;

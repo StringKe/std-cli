@@ -149,6 +149,7 @@ fn action_panel_default_enter_on_review_first_still_defers_external_runner() {
         "Review first"
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert!(execution.action_name.starts_with("Review Command:"));
     assert_eq!(
         state
             .view
@@ -157,6 +158,38 @@ fn action_panel_default_enter_on_review_first_still_defers_external_runner() {
             .map(|feedback| feedback.deferred),
         Some(true)
     );
+}
+
+#[test]
+fn review_first_shows_command_without_triggering_external_action() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    let execution = state
+        .handle_keyboard_input(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(
+        state.action_panel.selected_item().unwrap().title(),
+        "Review first"
+    );
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .and_then(|output| output.get("reason"))
+            .and_then(|value| value.as_str()),
+        Some("review command before running external action")
+    );
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
 }
 
 #[test]
@@ -178,7 +211,8 @@ fn action_panel_selection_api_separates_default_and_user_enter_routes() {
     assert!(default_route < false_route);
     assert!(user_route < true_route);
     assert!(source.contains("ActionPanelItem::Run"));
-    assert!(source.contains("self.trigger_selected_with_external_runner(allow_external_runner)"));
+    assert!(source.contains("ActionPanelItem::Run =>"));
+    assert!(source.contains("self.review_action_panel_command()"));
     assert!(source.contains("ActionPanelItem::ReviewFirst =>"));
 }
 

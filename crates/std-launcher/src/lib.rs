@@ -4,6 +4,7 @@
 
 mod action_bar_preview;
 mod action_panel;
+mod action_panel_review;
 mod action_panel_smoke;
 mod action_panel_state;
 mod close_smoke;
@@ -324,30 +325,6 @@ impl LauncherState {
         self.view.selected_feedback_action = 0;
         self.view.phase = std_egui::LauncherPhase::Feedback;
         Some(execution)
-    }
-
-    pub(crate) fn complete_action_panel_copy(&mut self, command: String) -> ActionExecution {
-        let action_name = self
-            .view
-            .selected_result()
-            .map(|result| result.action.name.clone())
-            .unwrap_or_else(|| "Selected Action".to_string());
-        let execution = ActionExecution {
-            action_id: self
-                .view
-                .selected_result()
-                .map(|result| result.action.id)
-                .unwrap_or_default(),
-            action_name: format!("Copy Command: {action_name}"),
-            status: ActionExecutionStatus::Completed,
-            message: command.clone(),
-            output: Some(serde_json::json!({ "copied": command })),
-            created_at: chrono::Utc::now(),
-        };
-        self.view.last_execution = Some(execution.clone());
-        self.view.feedback = Some(std_egui::LauncherFeedback::from_execution(&execution));
-        self.view.selected_feedback_action = 0;
-        execution
     }
 
     pub fn performance_report(&self) -> LauncherPerformanceReport {
