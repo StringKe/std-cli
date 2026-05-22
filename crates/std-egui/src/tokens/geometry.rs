@@ -2,6 +2,7 @@ mod base;
 mod elevation;
 mod launcher;
 mod sizes;
+pub mod studio_rows;
 
 pub use base::{Radius, Space};
 pub use elevation::Elevation;

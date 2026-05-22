@@ -2,6 +2,7 @@ use super::{
     elevation::elevation_blur, ControlSize, Elevation, FocusRing, HostChromeSize, LauncherSize,
     NavigationSize, OverlaySize, Radius, Space, StudioSize,
 };
+use crate::tokens::studio_rows;
 use crate::{a11y::AccessibilityContext, tokens::typography::UiScale};
 
 #[test]
@@ -124,6 +125,23 @@ fn studio_sizes_export_workflow_builder_geometry() {
         StudioSize::workflow_builder_pane_size(320.0),
         egui::vec2(320.0, 0.0)
     );
+}
+
+#[test]
+fn studio_row_sizes_export_workspace_row_metrics() {
+    assert_eq!(studio_rows::FILE_ROW_HEIGHT, 58.0);
+    assert_eq!(studio_rows::BUILDER_STEP_ROW_HEIGHT, 48.0);
+    assert_eq!(studio_rows::PLUGIN_LIST_ROW_HEIGHT, 88.0);
+    assert_eq!(studio_rows::ANALYSIS_COVERAGE_ROW_HEIGHT, 78.0);
+    assert_eq!(studio_rows::DASHBOARD_MEMORY_ROW_HEIGHT, 78.0);
+    assert_eq!(studio_rows::SETTINGS_BINDING_ROW_HEIGHT, 64.0);
+    assert_eq!(studio_rows::OPS_STEP_ROW_HEIGHT, 66.0);
+    assert_eq!(studio_rows::TEXT_INSET_X, 12.0);
+    assert_eq!(studio_rows::STATUS_CHIP_HEIGHT, 22.0);
+    assert_eq!(studio_rows::status_chip_y_offset(), 11.0);
+    assert_eq!(studio_rows::DASHBOARD_STEP_CHIP_HEIGHT, 24.0);
+    assert_eq!(studio_rows::dashboard_step_chip_y_offset(), 12.0);
+    assert_eq!(studio_rows::HISTORY_TIMELINE_PAYLOAD_LIMIT, 92);
 }
 
 #[test]

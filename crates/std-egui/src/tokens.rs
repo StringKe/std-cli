@@ -7,6 +7,7 @@ mod theme_smoke;
 mod typography;
 
 pub use color::{Color, EffectiveTheme, ThemeMode};
+pub use geometry::studio_rows;
 pub use geometry::{
     ControlSize, Elevation, FocusRing, HostChromeSize, LauncherSize, NavigationSize, OverlaySize,
     Radius, Space, StudioSize,

@@ -1,0 +1,48 @@
+use std_egui::tokens::studio_rows;
+
+pub(crate) const TEXT_INSET_X: f32 = studio_rows::TEXT_INSET_X;
+pub(crate) const CLIP_INSET_X: f32 = studio_rows::CLIP_INSET_X;
+pub(crate) const WIDE_CLIP_INSET_X: f32 = studio_rows::WIDE_CLIP_INSET_X;
+pub(crate) const CHIP_GAP: f32 = studio_rows::CHIP_GAP;
+pub(crate) const SELECTED_STRIP_WIDTH: f32 = studio_rows::SELECTED_STRIP_WIDTH;
+pub(crate) const BUILDER_GRABBER_WIDTH: f32 = studio_rows::BUILDER_GRABBER_WIDTH;
+pub(crate) const BUILDER_SELECTED_RAIL_WIDTH: f32 = studio_rows::BUILDER_SELECTED_RAIL_WIDTH;
+pub(crate) const FILE_ACTION_WIDTH: f32 = studio_rows::FILE_ACTION_WIDTH;
+pub(crate) const FILE_ACTION_HEIGHT: f32 = studio_rows::FILE_ACTION_HEIGHT;
+pub(crate) const FILE_ACTION_RIGHT_INSET: f32 = studio_rows::FILE_ACTION_RIGHT_INSET;
+pub(crate) const FILE_ACTION_Y_OFFSET: f32 = studio_rows::file_action_y_offset();
+pub(crate) const STATUS_CHIP_WIDTH: f32 = studio_rows::STATUS_CHIP_WIDTH;
+pub(crate) const PLUGIN_STATUS_CHIP_WIDTH: f32 = studio_rows::PLUGIN_STATUS_CHIP_WIDTH;
+pub(crate) const STATUS_CHIP_HEIGHT: f32 = studio_rows::STATUS_CHIP_HEIGHT;
+pub(crate) const STATUS_CHIP_Y_OFFSET: f32 = studio_rows::status_chip_y_offset();
+pub(crate) const BUILDER_INDEX_WIDTH: f32 = studio_rows::BUILDER_INDEX_WIDTH;
+pub(crate) const BUILDER_INDEX_HEIGHT: f32 = studio_rows::builder_index_height();
+pub(crate) const BUILDER_TYPE_CHIP_MIN_WIDTH: f32 = studio_rows::BUILDER_TYPE_CHIP_MIN_WIDTH;
+pub(crate) const BUILDER_TYPE_CHIP_MAX_WIDTH: f32 = studio_rows::BUILDER_TYPE_CHIP_MAX_WIDTH;
+pub(crate) const FILE_RIGHT_CLIP_INSET: f32 = studio_rows::FILE_RIGHT_CLIP_INSET;
+pub(crate) const MATCH_CHIP_HEIGHT: f32 = studio_rows::MATCH_CHIP_HEIGHT;
+pub(crate) const MATCH_CHIP_CHAR_WIDTH: f32 = studio_rows::MATCH_CHIP_CHAR_WIDTH;
+pub(crate) const MATCH_CHIP_TEXT_PAD: f32 = studio_rows::MATCH_CHIP_TEXT_PAD;
+pub(crate) const MATCH_CHIP_MIN_WIDTH: f32 = studio_rows::MATCH_CHIP_MIN_WIDTH;
+pub(crate) const MATCH_CHIP_MAX_WIDTH: f32 = studio_rows::MATCH_CHIP_MAX_WIDTH;
+pub(crate) const PLUGIN_META_CHIP_BOTTOM_INSET: f32 = studio_rows::PLUGIN_META_CHIP_BOTTOM_INSET;
+pub(crate) const PLUGIN_MATCH_CHIP_BOTTOM_INSET: f32 = studio_rows::PLUGIN_MATCH_CHIP_BOTTOM_INSET;
+pub(crate) const ANALYSIS_CHIP_MIN_WIDTH: f32 = studio_rows::ANALYSIS_CHIP_MIN_WIDTH;
+pub(crate) const ANALYSIS_CHIP_MAX_WIDTH: f32 = studio_rows::ANALYSIS_CHIP_MAX_WIDTH;
+pub(crate) const ANALYSIS_COVERAGE_CHIP_MIN_WIDTH: f32 =
+    studio_rows::ANALYSIS_COVERAGE_CHIP_MIN_WIDTH;
+pub(crate) const ANALYSIS_COVERAGE_CHIP_MAX_WIDTH: f32 =
+    studio_rows::ANALYSIS_COVERAGE_CHIP_MAX_WIDTH;
+pub(crate) const APP_CHIP_MIN_WIDTH: f32 = studio_rows::APP_CHIP_MIN_WIDTH;
+pub(crate) const APP_CHIP_MAX_WIDTH: f32 = studio_rows::APP_CHIP_MAX_WIDTH;
+pub(crate) const HISTORY_CHIP_MIN_WIDTH: f32 = studio_rows::HISTORY_CHIP_MIN_WIDTH;
+pub(crate) const HISTORY_CHIP_MAX_WIDTH: f32 = studio_rows::HISTORY_CHIP_MAX_WIDTH;
+pub(crate) const HISTORY_STEP_CHIP_MAX_WIDTH: f32 = studio_rows::HISTORY_STEP_CHIP_MAX_WIDTH;
+pub(crate) const MEMORY_CHIP_MAX_WIDTH: f32 = studio_rows::MEMORY_CHIP_MAX_WIDTH;
+pub(crate) const DASHBOARD_STEP_CHIP_WIDTH: f32 = studio_rows::DASHBOARD_STEP_CHIP_WIDTH;
+pub(crate) const DASHBOARD_STEP_CHIP_HEIGHT: f32 = studio_rows::DASHBOARD_STEP_CHIP_HEIGHT;
+pub(crate) const DASHBOARD_STEP_CHIP_Y_OFFSET: f32 = studio_rows::dashboard_step_chip_y_offset();
+pub(crate) const SETTINGS_BINDING_EDIT_WIDTH: f32 = studio_rows::SETTINGS_BINDING_EDIT_WIDTH;
+pub(crate) const SETTINGS_BINDING_SAVE_WIDTH: f32 = studio_rows::SETTINGS_BINDING_SAVE_WIDTH;
+pub(crate) const SETTINGS_SHORTCUT_BINDING_X: f32 = studio_rows::SETTINGS_SHORTCUT_BINDING_X;
+pub(crate) const SETTINGS_SHORTCUT_RESET_WIDTH: f32 = studio_rows::SETTINGS_SHORTCUT_RESET_WIDTH;
