@@ -4,7 +4,7 @@ use crate::{
 };
 use eframe::egui;
 use std_egui::{
-    i18n,
+    i18n, input,
     tokens::{Color, Elevation, Radius, Space},
 };
 use std_launcher::LauncherState;
@@ -179,11 +179,18 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
                         voice_input_a11y_label(voice_transcript),
                     )
                 });
+                if voice_apply_pressed(&ctx) {
+                    state.apply_voice_transcript(voice_transcript.as_str());
+                }
                 if quiet_button(ui, i18n::t("launcher.voice.apply")).clicked() {
                     state.apply_voice_transcript(voice_transcript.as_str());
                 }
             });
         });
+}
+
+fn voice_apply_pressed(ctx: &egui::Context) -> bool {
+    !input::ime_composing(ctx) && input::enter().pressed(ctx)
 }
 
 fn voice_input_a11y_label(transcript: &str) -> String {
@@ -302,9 +309,53 @@ mod tests {
         assert_eq!(voice_transcript, "open notes");
     }
 
+    #[test]
+    fn voice_enter_applies_transcript_without_triggering_results() {
+        let ctx = egui::Context::default();
+        let mut state = LauncherState::new();
+        state.start_voice_input();
+        let mut voice_transcript = "open notes".to_string();
+
+        let _ = ctx.run(enter_key_input(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                render_voice(ui, &mut state, &mut voice_transcript);
+            });
+        });
+
+        assert!(!state.controller.voice_active);
+        assert_eq!(state.view.query, "open notes");
+        assert!(state.view.last_execution.is_none());
+    }
+
+    #[test]
+    fn voice_enter_is_owned_by_ime_while_composing() {
+        let source = include_str!("ui.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let voice_apply_branch = production_source
+            .split("fn voice_apply_pressed")
+            .nth(1)
+            .unwrap();
+
+        assert!(voice_apply_branch.contains("!input::ime_composing(ctx)"));
+        assert!(voice_apply_branch.contains("input::enter().pressed(ctx)"));
+    }
+
     fn voice_text_input(text: &str) -> egui::RawInput {
         egui::RawInput {
             events: vec![egui::Event::Text(text.to_string())],
+            ..Default::default()
+        }
+    }
+
+    fn enter_key_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: Some(egui::Key::Enter),
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
             ..Default::default()
         }
     }

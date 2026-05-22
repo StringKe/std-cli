@@ -83,7 +83,7 @@ fn render_search_bar_contents(
         render_mode_tag(ui, state);
     });
 
-    if !executing {
+    if !executing && !state.controller.voice_active {
         ui_keyboard::handle_search_shortcuts(&ctx, state, hide_requested);
     }
 }
@@ -339,6 +339,15 @@ mod tests {
         state.start_voice_input();
 
         assert!(!search_input_owns_egui_focus(&state));
+    }
+
+    #[test]
+    fn search_shortcuts_pause_while_voice_input_is_active() {
+        let source = include_str!("ui_search.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(production_source.contains("if !executing && !state.controller.voice_active"));
+        assert!(production_source.contains("ui_keyboard::handle_search_shortcuts"));
     }
 
     #[test]
