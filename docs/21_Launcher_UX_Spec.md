@@ -102,7 +102,7 @@
 - 默认分组顺序：Action / Workflow > App / File > Clipboard > Memory > Skill > Other
 - 用户可在 Settings 自定义顺序
 - 同分组内按 score 降序
-- 分组标题 `text/footnote` `fg/tertiary` uppercase + 1px 上 divider，**不参与键盘选中**
+- 分组标题 `text/footnote` `fg/tertiary` 保留可读标题大小写 + 1px 上 divider，**不参与键盘选中**
 
 **项渲染**：
 

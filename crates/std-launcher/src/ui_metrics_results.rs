@@ -15,7 +15,7 @@ const RESULT_TEXT_RIGHT_GAP: f32 = 12.0;
 const RESULT_DIRECT_KEYCAP_WIDTH: f32 = 44.0;
 const RESULT_PRIMARY_KEYCAP_WIDTH: f32 = 52.0;
 const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
-const RESULT_RIGHT_GAP: f32 = 6.0;
+const RESULT_RIGHT_GAP: f32 = 8.0;
 
 pub(crate) fn loading_progress_height(scale: UiScale) -> f32 {
     scale.f32(LOADING_PROGRESS_HEIGHT)
@@ -189,7 +189,7 @@ pub(crate) fn result_row_layout_metrics_for_scale(scale: UiScale, width: f32) ->
 pub(crate) fn result_right_affordance_metrics_for_scale(
     scale: UiScale,
     width: f32,
-) -> (f32, f32, f32) {
+) -> (f32, f32, f32, f32) {
     let row = egui::Rect::from_min_size(egui::Pos2::ZERO, result_row_size(scale, width));
     let layout = result_row_layout(scale, row);
     let affordance = result_right_affordance_layout(scale, layout.right_rect, true);
@@ -197,5 +197,6 @@ pub(crate) fn result_right_affordance_metrics_for_scale(
         affordance.direct_keycap.width(),
         affordance.action_label.unwrap().width(),
         affordance.primary_keycap.unwrap().width(),
+        affordance.primary_keycap.unwrap().left() - affordance.action_label.unwrap().right(),
     )
 }

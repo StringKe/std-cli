@@ -90,7 +90,7 @@ fn result_right_affordance_layout_reserves_fixed_keycap_and_action_regions() {
             UiScale::new(1.5),
             720.0
         ),
-        (66.0, 108.0, 78.0)
+        (66.0, 102.0, 78.0, 12.0)
     );
 }
 
