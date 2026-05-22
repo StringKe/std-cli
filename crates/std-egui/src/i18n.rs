@@ -28,8 +28,9 @@ mod tests {
     use super::*;
     use std::collections::BTreeSet;
 
-    const CATALOG_SOURCES: [&str; 15] = [
+    const CATALOG_SOURCES: [&str; 16] = [
         include_str!("i18n/catalog/launcher/feedback.rs"),
+        include_str!("i18n/catalog/launcher/preview.rs"),
         include_str!("i18n/catalog/launcher/results.rs"),
         include_str!("i18n/catalog/launcher/search.rs"),
         include_str!("i18n/catalog/studio/analysis.rs"),
@@ -112,6 +113,20 @@ mod tests {
         assert_eq!(
             translate(Locale::ZhCn, "launcher.results.kind.clipboard"),
             "剪贴板"
+        );
+    }
+
+    #[test]
+    fn launcher_preview_strings_have_zh_cn_and_en_us_values() {
+        assert_eq!(translate(Locale::EnUs, "launcher.preview.title"), "Preview");
+        assert_eq!(translate(Locale::ZhCn, "launcher.preview.title"), "预览");
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.preview.examples"),
+            "Examples"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.preview.a11y"),
+            "预览，{title}，{command}"
         );
     }
 

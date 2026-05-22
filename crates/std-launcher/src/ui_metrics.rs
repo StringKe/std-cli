@@ -134,6 +134,10 @@ pub(crate) fn action_summary_label_height() -> f32 {
     scale().f32(18.0)
 }
 
+pub(crate) fn preview_panel_height_for_scale(scale: UiScale) -> f32 {
+    scale.f32(86.0)
+}
+
 pub(crate) fn feedback_text_height() -> f32 {
     feedback_text_height_for_scale(scale())
 }
