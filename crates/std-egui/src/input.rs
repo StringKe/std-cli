@@ -278,8 +278,7 @@ pub fn ime_composing(ctx: &egui::Context) -> bool {
 
 fn ime_composing_from_events(input: &egui::InputState) -> Option<bool> {
     input.events.iter().fold(None, |state, event| match event {
-        egui::Event::Ime(egui::ImeEvent::Enabled)
-        | egui::Event::Ime(egui::ImeEvent::Preedit(_)) => Some(true),
+        egui::Event::Ime(egui::ImeEvent::Preedit(_)) => Some(true),
         egui::Event::Ime(egui::ImeEvent::Commit(_))
         | egui::Event::Ime(egui::ImeEvent::Disabled) => Some(false),
         _ => state,
@@ -391,6 +390,9 @@ mod tests {
     fn ime_composing_persists_until_commit_or_disabled() {
         let ctx = egui::Context::default();
 
+        run_with_ime_event(&ctx, egui::ImeEvent::Enabled);
+        assert!(!ime_composing(&ctx));
+
         run_with_ime_event(&ctx, egui::ImeEvent::Preedit("zhong".to_string()));
         assert!(ime_composing(&ctx));
 
@@ -400,7 +402,7 @@ mod tests {
         run_with_ime_event(&ctx, egui::ImeEvent::Commit("中".to_string()));
         assert!(!ime_composing(&ctx));
 
-        run_with_ime_event(&ctx, egui::ImeEvent::Enabled);
+        run_with_ime_event(&ctx, egui::ImeEvent::Preedit("zhong".to_string()));
         assert!(ime_composing(&ctx));
 
         run_with_ime_event(&ctx, egui::ImeEvent::Disabled);
