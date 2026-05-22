@@ -11,7 +11,7 @@ enum LauncherCliSmoke {
     Launcher(LauncherSmokeReport),
     Hotkey(HotkeySmokeReport),
     Window(LauncherWindowSmokeReport),
-    Keyboard(LauncherKeyboardReport),
+    Keyboard(Box<LauncherKeyboardReport>),
     ActionPanel(LauncherActionPanelSmokeReport),
     Close(LauncherCloseSmokeReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
@@ -97,8 +97,8 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 .map(String::as_str)
                 .filter(|query| !query.trim().is_empty())
                 .unwrap_or("index");
-            Some(LauncherCliSmoke::Keyboard(LauncherState::keyboard_smoke(
-                query,
+            Some(LauncherCliSmoke::Keyboard(Box::new(
+                LauncherState::keyboard_smoke(query),
             )))
         }
         Some("--action-panel-smoke") => {

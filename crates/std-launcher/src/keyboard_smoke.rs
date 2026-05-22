@@ -23,8 +23,8 @@ impl LauncherState {
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
         let focus_after_shift_tab = state.focus_section;
         let action_panel_focus_path = action_panel_focus_path(&mut state);
-        let completed_query = completed_query();
-        let token_delete_query = token_delete_query();
+        let completion = completion_evidence();
+        let token_delete = token_delete_evidence();
         let empty_suggestion_keyboard_path = empty_suggestion_keyboard_path();
         let enter_window = enter_window_evidence();
         let direct_trigger_status = state
@@ -63,8 +63,11 @@ impl LauncherState {
             focus_after_shift_tab,
             focus_path: "Search>Results>Search".to_string(),
             action_panel_focus_path,
-            completed_query,
-            token_delete_query,
+            completed_query: completion.completed_query,
+            completion_focus_contract: completion.focus_contract,
+            normalized_query: token_delete.normalized_query,
+            token_delete_query: token_delete.after_delete,
+            token_delete_normalized_query: token_delete.normalized_after_delete,
             enter_window,
             ui_handler_contract: "ui-handler=cancel-before-ime,ime-before-enter",
             ime_visible_state_contract:
@@ -185,18 +188,51 @@ fn action_panel_focus_path(state: &mut LauncherState) -> String {
     path
 }
 
-fn token_delete_query() -> String {
-    let mut state = LauncherState::new();
-    state.update_query("open terminal now");
-    state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
-    state.view.query
+struct CompletionEvidence {
+    completed_query: String,
+    focus_contract: String,
 }
 
-fn completed_query() -> String {
+struct TokenDeleteEvidence {
+    normalized_query: String,
+    after_delete: String,
+    normalized_after_delete: String,
+}
+
+fn token_delete_evidence() -> TokenDeleteEvidence {
     let mut state = LauncherState::new();
-    state.update_query("reb");
-    state.handle_keyboard_input(LauncherKey::CompleteSelectedQuery, false);
-    state.view.query
+    state.update_query("  open   terminal now ");
+    let normalized_query = state.view.query.clone();
+    state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+    let after_delete = state.view.query.clone();
+    state.update_query("  open   terminal now ");
+    state.handle_keyboard_input(LauncherKey::DeletePreviousToken, false);
+    TokenDeleteEvidence {
+        normalized_query,
+        after_delete: after_delete.clone(),
+        normalized_after_delete: state.view.query,
+    }
+}
+
+fn completion_evidence() -> CompletionEvidence {
+    let mut search_state = LauncherState::new();
+    search_state.update_query("reb");
+    search_state.focus_section = LauncherFocusSection::Search;
+    search_state.handle_keyboard_input(LauncherKey::CompleteSelectedQuery, false);
+    let completed_query = search_state.view.query.clone();
+
+    let mut results_state = LauncherState::new();
+    results_state.update_query("reb");
+    results_state.focus_section = LauncherFocusSection::Results;
+    results_state.handle_keyboard_input(LauncherKey::FocusNext, false);
+    let focus_contract = format!(
+        "search-tab-completes={completed_query};results-tab-focuses={:?};query={}",
+        results_state.focus_section, results_state.view.query
+    );
+    CompletionEvidence {
+        completed_query,
+        focus_contract,
+    }
 }
 
 fn user_enter_defer_evidence() -> UserEnterEvidence {

@@ -144,11 +144,22 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
     assert_eq!(report.focus_path, "Search>Results>Search");
     assert_eq!(report.action_panel_focus_path, "ActionPanel>Search");
     assert_eq!(report.completed_query, "rebuild index");
+    assert_eq!(
+        report.completion_focus_contract,
+        "search-tab-completes=rebuild index;results-tab-focuses=Search;query=reb"
+    );
+    assert_eq!(report.normalized_query, "open terminal now");
     assert_eq!(report.token_delete_query, "open terminal");
+    assert_eq!(report.token_delete_normalized_query, "open terminal");
     assert!(summary.contains("focus_path=Search>Results>Search"));
     assert!(summary.contains("action_panel_focus_path=ActionPanel>Search"));
     assert!(summary.contains("completed_query=rebuild index"));
+    assert!(summary.contains(
+        "completion_focus_contract=search-tab-completes=rebuild index;results-tab-focuses=Search;query=reb"
+    ));
+    assert!(summary.contains("normalized_query=open terminal now"));
     assert!(summary.contains("token_delete_query=open terminal"));
+    assert!(summary.contains("token_delete_normalized_query=open terminal"));
     assert!(summary.contains("navigation_boundary_path=top:0->0;bottom:"));
 }
 

@@ -32,7 +32,11 @@ impl LauncherKeyboardReport {
             && self.focus_path == "Search>Results>Search"
             && self.action_panel_focus_path == "ActionPanel>Search"
             && self.completed_query == "rebuild index"
+            && self.completion_focus_contract
+                == "search-tab-completes=rebuild index;results-tab-focuses=Search;query=reb"
+            && self.normalized_query == "open terminal now"
             && self.token_delete_query == "open terminal"
+            && self.token_delete_normalized_query == "open terminal"
             && self.enter_window.pass()
             && self.ui_handler_contract == "ui-handler=cancel-before-ime,ime-before-enter"
             && self.ime_visible_state_contract
@@ -45,7 +49,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ntoken_delete_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_feedback_visible={}\nuser_enter_keeps_launcher_open={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ncompletion_focus_contract={}\nnormalized_query={}\ntoken_delete_query={}\ntoken_delete_normalized_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -74,7 +78,10 @@ impl LauncherKeyboardReport {
             self.focus_path,
             self.action_panel_focus_path,
             self.completed_query,
+            self.completion_focus_contract,
+            self.normalized_query,
             self.token_delete_query,
+            self.token_delete_normalized_query,
             self.enter_window.summary(),
             self.ui_handler_contract,
             self.ime_visible_state_contract,
