@@ -453,6 +453,30 @@ mod tests {
         );
     }
 
+    #[test]
+    fn app_alias_result_row_keeps_multilingual_names_keyboard_visible() {
+        let mut result = test_result("Open App: WeChat", ActionType::AppLaunch, 0.95);
+        result.action.description =
+            "Aliases: WeChat, Weixin, 微信 / Path: /tmp/std-fixture/WeChat.app".to_string();
+        result.matched_fields = vec!["tags".to_string()];
+
+        let row = LauncherResultRowModel::from_result(&result, None, "weixin", 0, 3, true);
+
+        assert_eq!(row.kind, i18n::t("launcher.results.kind.app"));
+        assert_eq!(row.icon_label, "APP");
+        assert_eq!(
+            row.match_badge,
+            Some(i18n::t("launcher.results.match.alias").to_string())
+        );
+        assert!(row.subtitle.contains("WeChat"));
+        assert!(row.subtitle.contains("Weixin"));
+        assert!(row.subtitle.contains("微信"));
+        assert_eq!(row.direct_shortcut, input::launcher_result_keycap(0));
+        assert_eq!(row.primary_shortcut, Some(input::enter().label()));
+        let expected_hint = format!("{} Open App: WeChat", i18n::t("launcher.action.run"));
+        assert_eq!(row.action_hint, Some(expected_hint));
+    }
+
     fn test_result(name: &str, action_type: ActionType, score: f32) -> SearchResult {
         SearchResult {
             action: Action::new(name, format!("{name} description"), "test", action_type),
