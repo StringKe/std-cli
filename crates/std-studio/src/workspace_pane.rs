@@ -111,6 +111,7 @@ pub struct WorkspacePaneContent {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WorkspacePaneCloseSnapshot {
     pub id: WorkspacePaneId,
+    pub kind: WorkspacePaneKind,
     pub identity_key: String,
     pub content_key: &'static str,
     pub title: String,
@@ -224,6 +225,7 @@ impl StudioApp {
                 .open_workspace_panes()
                 .map(|pane| WorkspacePaneCloseSnapshot {
                     id: pane.id,
+                    kind: pane.kind.clone(),
                     identity_key: pane.kind.identity_key(),
                     content_key: pane.kind.content_key(),
                     title: pane.title.clone(),
@@ -251,6 +253,17 @@ impl StudioApp {
                 .find(|pane| pane.id == snapshot.id)
             {
                 pane.open = true;
+            } else {
+                self.next_pane_serial = self.next_pane_serial.max(snapshot.id.value() + 1);
+                let focus_serial = self.next_focus_serial();
+                self.workspace_panes.push(WorkspacePane {
+                    id: snapshot.id,
+                    kind: snapshot.kind.clone(),
+                    title: snapshot.title.clone(),
+                    open: true,
+                    focused_at: chrono::Utc::now(),
+                    focus_serial,
+                });
             }
         }
         self.focused_pane = closeguard.focused_pane.filter(|focused| {

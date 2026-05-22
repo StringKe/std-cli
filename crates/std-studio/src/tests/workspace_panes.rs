@@ -169,6 +169,7 @@ fn studio_closeguard_restores_internal_panes_without_native_windows() {
     assert!(studio.focus_workspace_pane(workflow));
 
     let closeguard = studio.close_workspace_instance();
+    studio.workspace_panes.retain(|pane| pane.id != workflow);
     studio.restore_workspace_closeguard(&closeguard);
 
     assert_eq!(studio.open_workspace_panes().count(), 3);
@@ -177,6 +178,9 @@ fn studio_closeguard_restores_internal_panes_without_native_windows() {
         .open_workspace_panes()
         .any(|pane| pane.id == dashboard));
     assert!(studio.open_workspace_panes().any(|pane| pane.id == plugins));
+    assert!(studio
+        .open_workspace_panes()
+        .any(|pane| pane.id == workflow));
     assert!(studio
         .workspace_policy
         .summary()
@@ -189,6 +193,8 @@ fn studio_closeguard_restores_internal_panes_without_native_windows() {
         })
         .lines
         .contains(&format!("path={}", workflow_path.display())));
+    let next = studio.open_analysis_workbench(std::path::PathBuf::from("restored-analysis"));
+    assert!(next.value() > workflow.value());
 }
 
 #[test]
