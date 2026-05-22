@@ -238,6 +238,19 @@ impl LauncherSize {
     pub const PANEL_WIDTH: f32 = 720.0;
     pub const WINDOW_VERTICAL_ANCHOR: f32 = 0.28;
     pub const HIDDEN_HOST_SIZE: f32 = 1.0;
+    pub const SEARCH_BAR_MIN_HEIGHT: f32 = 40.0;
+    pub const SEARCH_INPUT_WIDTH_RESERVE: f32 = 72.0;
+    pub const SEARCH_IME_CHIP_WIDTH: f32 = 112.0;
+    pub const SEARCH_INPUT_HEIGHT: f32 = 36.0;
+    pub const SEARCH_ICON_WIDTH: f32 = 24.0;
+    pub const SEARCH_ICON_HEIGHT: f32 = 28.0;
+    pub const SEARCH_ICON_CENTER_X: f32 = 10.0;
+    pub const SEARCH_ICON_CENTER_Y_OFFSET: f32 = -2.0;
+    pub const SEARCH_ICON_RADIUS: f32 = 5.0;
+    pub const SEARCH_ICON_HANDLE_INSET: f32 = 4.0;
+    pub const SEARCH_ICON_HANDLE_OUTSET: f32 = 9.0;
+    pub const VOICE_INPUT_WIDTH_RESERVE: f32 = 112.0;
+    pub const VOICE_INPUT_HEIGHT: f32 = 28.0;
 
     pub fn panel_surface_width(scale: UiScale) -> f32 {
         scale.f32(Self::PANEL_WIDTH)
@@ -264,5 +277,49 @@ impl LauncherSize {
         let y = (monitor_size.y * Self::WINDOW_VERTICAL_ANCHOR)
             .min((monitor_size.y - viewport_size.y).max(0.0));
         egui::pos2(x, y)
+    }
+
+    pub fn search_bar_min_height(scale: UiScale) -> f32 {
+        scale.f32(Self::SEARCH_BAR_MIN_HEIGHT)
+    }
+
+    pub fn search_input_width(scale: UiScale, available_width: f32) -> f32 {
+        (available_width - scale.f32(Self::SEARCH_INPUT_WIDTH_RESERVE)).max(scale.f32(160.0))
+    }
+
+    pub fn search_input_width_with_ime(scale: UiScale, available_width: f32) -> f32 {
+        (available_width
+            - scale.f32(Self::SEARCH_INPUT_WIDTH_RESERVE + Self::SEARCH_IME_CHIP_WIDTH))
+        .max(scale.f32(160.0))
+    }
+
+    pub fn search_input_height(scale: UiScale) -> f32 {
+        scale.f32(Self::SEARCH_INPUT_HEIGHT)
+    }
+
+    pub fn search_ime_chip_width(scale: UiScale) -> f32 {
+        scale.f32(Self::SEARCH_IME_CHIP_WIDTH)
+    }
+
+    pub fn search_icon_size(scale: UiScale) -> egui::Vec2 {
+        egui::vec2(
+            scale.f32(Self::SEARCH_ICON_WIDTH),
+            scale.f32(Self::SEARCH_ICON_HEIGHT),
+        )
+    }
+
+    pub fn search_icon_center(scale: UiScale, rect: egui::Rect) -> egui::Pos2 {
+        egui::pos2(
+            rect.left() + scale.f32(Self::SEARCH_ICON_CENTER_X),
+            rect.center().y + scale.f32(Self::SEARCH_ICON_CENTER_Y_OFFSET),
+        )
+    }
+
+    pub fn voice_input_width(scale: UiScale, available_width: f32) -> f32 {
+        (available_width - scale.f32(Self::VOICE_INPUT_WIDTH_RESERVE)).max(scale.f32(160.0))
+    }
+
+    pub fn voice_input_height(scale: UiScale) -> f32 {
+        scale.f32(Self::VOICE_INPUT_HEIGHT)
     }
 }

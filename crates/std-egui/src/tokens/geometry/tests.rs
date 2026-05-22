@@ -149,6 +149,29 @@ fn launcher_sizes_export_transparent_host_geometry() {
 }
 
 #[test]
+fn launcher_sizes_export_search_geometry() {
+    let scale = UiScale::new(1.5);
+    let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(48.0, 42.0));
+    let center = LauncherSize::search_icon_center(scale, rect);
+
+    assert_eq!(LauncherSize::search_bar_min_height(scale), 60.0);
+    assert_eq!(LauncherSize::search_input_width(scale, 600.0), 492.0);
+    assert_eq!(
+        LauncherSize::search_input_width_with_ime(scale, 600.0),
+        324.0
+    );
+    assert_eq!(LauncherSize::search_input_height(scale), 54.0);
+    assert_eq!(LauncherSize::search_ime_chip_width(scale), 168.0);
+    assert_eq!(
+        LauncherSize::search_icon_size(scale),
+        egui::vec2(36.0, 42.0)
+    );
+    assert_eq!(center, egui::pos2(15.0, 18.0));
+    assert_eq!(LauncherSize::voice_input_width(scale, 600.0), 432.0);
+    assert_eq!(LauncherSize::voice_input_height(scale), 42.0);
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {
