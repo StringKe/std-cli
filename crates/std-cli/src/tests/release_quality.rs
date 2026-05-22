@@ -46,15 +46,29 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
     assert!(report.contains(
         "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>"
     ));
+    for required in [
+        "manual_ui_evidence=ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
+        "manual_ui_evidence=ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+        "manual_ui_evidence=ui_capture_rule=current-run-png-only",
+        "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
+        "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
+        "manual_ui_evidence=background_ui_rule=isolated-harness-only",
+    ] {
+        assert!(report.contains(required), "{required}");
+    }
     for forbidden in [
         "smoke=STD_ALLOW_DESKTOP_AUTOMATION=1",
         "smoke=STD_ALLOW_UI_PREVIEW=1",
-        "command=STD_ALLOW_DESKTOP_AUTOMATION=1",
-        "command=STD_ALLOW_UI_PREVIEW=1",
         "smoke=std-launcher --",
         "smoke=std-studio --",
     ] {
         assert!(!report.contains(forbidden), "{forbidden}");
+    }
+    for line in report.lines() {
+        if line.starts_with("command=") || line.starts_with("smoke=") {
+            assert!(!line.contains("STD_ALLOW_DESKTOP_AUTOMATION=1"), "{line}");
+            assert!(!line.contains("STD_ALLOW_UI_PREVIEW=1"), "{line}");
+        }
     }
     for required in [
         "command=STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 cargo test --workspace -- --test-threads=1",

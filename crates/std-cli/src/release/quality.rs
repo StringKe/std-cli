@@ -55,6 +55,14 @@ const BACKGROUND_UI_ACCEPTANCE: [&str; 2] = [
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh",
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>",
 ];
+const MANUAL_UI_EVIDENCE: [&str; 6] = [
+    "ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
+    "ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+    "ui_capture_rule=current-run-png-only",
+    "background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
+    "background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
+    "background_ui_rule=isolated-harness-only",
+];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
     fs::create_dir_all(quality_dir)?;
@@ -133,6 +141,9 @@ fn quality_report() -> String {
     for command in BACKGROUND_UI_ACCEPTANCE {
         lines.push(format!("background_ui_acceptance={command}"));
     }
+    for evidence in MANUAL_UI_EVIDENCE {
+        lines.push(format!("manual_ui_evidence={evidence}"));
+    }
     lines.join("\n")
 }
 
@@ -174,6 +185,12 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_desktop_acceptance=STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space",
         "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh",
         "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>",
+        "manual_ui_evidence=ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
+        "manual_ui_evidence=ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+        "manual_ui_evidence=ui_capture_rule=current-run-png-only",
+        "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
+        "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
+        "manual_ui_evidence=background_ui_rule=isolated-harness-only",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(
