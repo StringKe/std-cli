@@ -184,7 +184,9 @@ fn pane_management_contract(app: &StudioEguiApp, scenario: &str) -> &'static str
     if scenario == "panes"
         && app.status.contains("open=true")
         && app.status.contains("focus=true")
+        && app.status.contains("switch=true")
         && app.status.contains("close=true")
+        && app.status.contains("reopen=true")
         && app.status.contains("restore=true")
         && app.status.contains("state_preserved=true")
         && app.status.contains("history_visible=true")
@@ -192,7 +194,7 @@ fn pane_management_contract(app: &StudioEguiApp, scenario: &str) -> &'static str
         && !app.app.workspace_policy.allows_native_child_windows()
         && !app.app.workspace_policy.allows_detached_panels()
     {
-        "open|focus|close|restore|state-preserved|single-egui-viewport"
+        "open|focus|switch|close|reopen|restore|state-preserved|single-egui-viewport"
     } else {
         "not-panes"
     }

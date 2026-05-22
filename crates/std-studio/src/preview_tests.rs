@@ -189,8 +189,9 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
     assert!(summary.contains("plugin_permission=permissions|fs|network|review-prompt"));
-    assert!(summary
-        .contains("pane_management=open|focus|close|restore|state-preserved|single-egui-viewport"));
+    assert!(summary.contains(
+        "pane_management=open|focus|switch|close|reopen|restore|state-preserved|single-egui-viewport"
+    ));
     assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));

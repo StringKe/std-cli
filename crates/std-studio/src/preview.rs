@@ -363,12 +363,14 @@ fn seed_panes_preview(app: &mut StudioEguiApp) {
         && !app.app.open_workspace_panes().any(|pane| pane.id == memory);
     let restored = app.app.open_memory_browser_pane() == memory
         && app.app.open_workspace_panes().any(|pane| pane.id == memory);
+    let switched = app.app.focus_workspace_pane(history) && app.app.focused_pane == Some(history);
+    let reopened = app.app.focus_workspace_pane(memory) && app.app.focused_pane == Some(memory);
     let history_visible = app
         .app
         .open_workspace_panes()
         .any(|pane| pane.id == history);
     app.status = format!(
-        "panes preview seeded open={opened},focus={focus},close={closed},restore={restored},state_preserved={state_preserved},history_visible={history_visible}"
+        "panes preview seeded open={opened},focus={focus},switch={switched},close={closed},reopen={reopened},restore={restored},state_preserved={state_preserved},history_visible={history_visible}"
     );
 }
 
