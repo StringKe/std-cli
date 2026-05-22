@@ -282,7 +282,7 @@ mod tests {
             .and_then(|body| body.split("fn render_loading_progress_bar").next())
             .unwrap();
 
-        assert!(viewport_body.contains("LauncherPhase::Searching"));
+        assert!(viewport_body.contains("LauncherLoadingState::UpdatingResults"));
         assert!(viewport_body.contains("render_loading_progress_bar"));
         assert!(!progress_body.contains("render_loading_progress_bar"));
     }

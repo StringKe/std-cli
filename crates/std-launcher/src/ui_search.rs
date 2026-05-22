@@ -51,6 +51,7 @@ fn render_search_bar_contents(
             egui::TextEdit::singleline(&mut query_text)
                 .hint_text(search_placeholder(state))
                 .font(Text::headline())
+                .frame(false)
                 .interactive(!executing),
         );
         response.request_focus();
@@ -357,6 +358,20 @@ mod tests {
             search_input_width(420.0, true) < search_input_width(420.0, false),
             "IME state chip must reserve stable width in the search row"
         );
+    }
+
+    #[test]
+    fn search_input_uses_outer_token_surface_not_inner_textedit_frame() {
+        let source = include_str!("ui_search.rs");
+        let input_body = source
+            .split("egui::TextEdit::singleline")
+            .nth(1)
+            .and_then(|body| body.split(".interactive(!executing)").next())
+            .unwrap();
+
+        assert!(input_body.contains(".frame(false)"));
+        assert!(source.contains("Color::bg_surface_1"));
+        assert!(source.contains("Color::stroke_border"));
     }
 
     fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
