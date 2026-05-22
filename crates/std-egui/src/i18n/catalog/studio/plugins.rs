@@ -12,6 +12,22 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.plugins.search.hint") => Some("plugin action, tag, manifest"),
         (Locale::ZhCn, "studio.plugins.search") => Some("搜索"),
         (Locale::EnUs, "studio.plugins.search") => Some("Search"),
+        (Locale::ZhCn, "studio.plugins.install.path") => Some("Install from path"),
+        (Locale::EnUs, "studio.plugins.install.path") => Some("Install from path"),
+        (Locale::ZhCn, "studio.plugins.install.path.status") => {
+            Some("drop plugin zip or use std plugin install --path")
+        }
+        (Locale::EnUs, "studio.plugins.install.path.status") => {
+            Some("drop plugin zip or use std plugin install --path")
+        }
+        (Locale::ZhCn, "studio.plugins.install.registry") => Some("Install from registry"),
+        (Locale::EnUs, "studio.plugins.install.registry") => Some("Install from registry"),
+        (Locale::ZhCn, "studio.plugins.install.registry.status") => {
+            Some("registry install is phase 2")
+        }
+        (Locale::EnUs, "studio.plugins.install.registry.status") => {
+            Some("registry install is phase 2")
+        }
         (Locale::ZhCn, "studio.plugins.reload") => Some("重载"),
         (Locale::EnUs, "studio.plugins.reload") => Some("Reload"),
         (Locale::ZhCn, "studio.plugins.run") => Some("运行"),
@@ -86,6 +102,12 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.plugins.detail" => Some("manifest checks, scoped permissions, JS/TS execution"),
         "studio.plugins.search.hint" => Some("plugin action, tag, manifest"),
         "studio.plugins.search" => Some("Search"),
+        "studio.plugins.install.path" => Some("Install from path"),
+        "studio.plugins.install.path.status" => {
+            Some("drop plugin zip or use std plugin install --path")
+        }
+        "studio.plugins.install.registry" => Some("Install from registry"),
+        "studio.plugins.install.registry.status" => Some("registry install is phase 2"),
         "studio.plugins.reload" => Some("Reload"),
         "studio.plugins.run" => Some("Run"),
         "studio.plugins.status.title" => Some("Runtime Status"),

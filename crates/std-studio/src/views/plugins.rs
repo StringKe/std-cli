@@ -55,6 +55,12 @@ impl StudioEguiApp {
                     let results = self.app.search_plugins(&query);
                     self.status = format!("{} plugin actions", results.len());
                 }
+                if ui::quiet_button(ui, i18n::t("studio.plugins.install.path")).clicked() {
+                    self.status = i18n::t("studio.plugins.install.path.status").to_string();
+                }
+                if ui::quiet_button(ui, i18n::t("studio.plugins.install.registry")).clicked() {
+                    self.status = i18n::t("studio.plugins.install.registry.status").to_string();
+                }
                 if ui::quiet_button(ui, i18n::t("studio.plugins.reload")).clicked() {
                     self.reload_plugins();
                 }

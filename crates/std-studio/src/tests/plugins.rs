@@ -74,3 +74,37 @@ fn studio_plugin_toolbar_search_has_textbox_semantics() {
     assert!(body.contains("Plugin search, text box, value"));
     assert!(body.contains("query.trim().is_empty()"));
 }
+
+#[test]
+fn studio_plugin_toolbar_exposes_docs22_install_actions_without_native_dialog() {
+    let body = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("src")
+            .join("views")
+            .join("plugins.rs"),
+    )
+    .unwrap();
+    let catalog = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .join("std-egui")
+            .join("src")
+            .join("i18n")
+            .join("catalog")
+            .join("studio")
+            .join("plugins.rs"),
+    )
+    .unwrap();
+
+    assert!(body.contains("studio.plugins.install.path"));
+    assert!(body.contains("studio.plugins.install.registry"));
+    assert!(body.contains("studio.plugins.install.path.status"));
+    assert!(body.contains("studio.plugins.install.registry.status"));
+    assert!(catalog.contains("Install from path"));
+    assert!(catalog.contains("Install from registry"));
+    assert!(catalog.contains("registry install is phase 2"));
+    assert!(!body.contains("FileDialog"));
+    assert!(!body.contains("rfd::"));
+    assert!(!body.contains("open::that"));
+}
