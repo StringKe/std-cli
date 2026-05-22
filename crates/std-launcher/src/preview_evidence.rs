@@ -142,6 +142,11 @@ fn preview_state_passes(state: &LauncherState, state_name: &str) -> bool {
             .unwrap_or(false),
         "loading" | "searching" => state.view.phase == std_egui::LauncherPhase::Searching,
         "executing" => state.view.phase == std_egui::LauncherPhase::Executing,
+        "ime" => {
+            state.view.phase == std_egui::LauncherPhase::WithResults
+                && state.ime_preedit.as_deref() == Some("zhong")
+                && state.view.query == "index"
+        }
         "action-panel" => state.action_panel.open,
         _ => false,
     }

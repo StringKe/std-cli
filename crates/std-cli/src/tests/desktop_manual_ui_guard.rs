@@ -75,7 +75,7 @@ fn source_section<'a>(body: &'a str, start: &str, end: &str) -> &'a str {
     &tail[..end_index]
 }
 
-fn launcher_required_capture_states() -> [&'static str; 20] {
+fn launcher_required_capture_states() -> [&'static str; 22] {
     [
         "capture_launcher light collapsed",
         "capture_launcher dark collapsed",
@@ -95,6 +95,8 @@ fn launcher_required_capture_states() -> [&'static str; 20] {
         "capture_launcher dark defer",
         "capture_launcher light error",
         "capture_launcher dark error",
+        "capture_launcher light ime",
+        "capture_launcher dark ime",
         "capture_launcher light action-panel",
         "capture_launcher dark action-panel",
     ]

@@ -101,6 +101,8 @@ capture_launcher light defer
 capture_launcher dark defer
 capture_launcher light error
 capture_launcher dark error
+capture_launcher light ime
+capture_launcher dark ime
 capture_launcher light action-panel
 capture_launcher dark action-panel
 

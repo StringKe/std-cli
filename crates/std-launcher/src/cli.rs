@@ -334,6 +334,7 @@ mod tests {
             "light-defer",
             "dark-defer",
             "light-error",
+            "light-ime",
             "dark-action-panel",
             "STD_ALLOW_UI_PREVIEW=1",
         ] {
@@ -349,6 +350,8 @@ mod tests {
             "dark-defer",
             "light-error",
             "dark-error",
+            "light-ime",
+            "dark-ime",
         ] {
             assert!(summary.contains(expected), "{expected}");
         }

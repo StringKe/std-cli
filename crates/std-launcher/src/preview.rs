@@ -203,6 +203,8 @@ fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String>
         "dark-defer",
         "light-error",
         "dark-error",
+        "light-ime",
+        "dark-ime",
         "light-action-panel",
         "dark-action-panel",
     ]
@@ -237,6 +239,8 @@ fn required_capture_states_pass(states: &[String]) -> bool {
             "dark-defer",
             "light-error",
             "dark-error",
+            "light-ime",
+            "dark-ime",
             "light-action-panel",
             "dark-action-panel",
         ]
@@ -312,6 +316,10 @@ pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) 
                 },
             ));
             state.view.phase = std_egui::LauncherPhase::Feedback;
+        }
+        "ime" => {
+            state.update_query("index");
+            state.handle_ime_preedit("zhong");
         }
         _ => {
             state.update_query("index");
@@ -411,6 +419,14 @@ fn preview_matrix() -> Vec<LauncherPreviewScenario> {
         LauncherPreviewScenario {
             theme: "dark",
             state: "error",
+        },
+        LauncherPreviewScenario {
+            theme: "light",
+            state: "ime",
+        },
+        LauncherPreviewScenario {
+            theme: "dark",
+            state: "ime",
         },
         LauncherPreviewScenario {
             theme: "light",

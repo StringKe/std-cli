@@ -298,6 +298,8 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "dark-defer",
         "light-error",
         "dark-error",
+        "light-ime",
+        "dark-ime",
     ] {
         let launcher_evidence =
             read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;

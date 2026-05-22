@@ -41,7 +41,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
-    assert_eq!(report.scenarios.len(), 20);
+    assert_eq!(report.scenarios.len(), 22);
     assert!(report
         .commands
         .iter()
@@ -72,6 +72,7 @@ fn assert_preview_state_matrix(report: &LauncherPreviewSmokeReport) {
         "light-executing=PASS",
         "light-no-results=PASS",
         "dark-error=PASS",
+        "light-ime=PASS",
         "light-action-panel=PASS",
     ] {
         assert!(report.states.iter().any(|entry| entry.starts_with(state)));
@@ -171,6 +172,8 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
             "dark-defer",
             "light-error",
             "dark-error",
+            "light-ime",
+            "dark-ime",
             "light-action-panel",
             "dark-action-panel",
         ]
@@ -178,7 +181,7 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
 
     let summary = report.summary();
     assert!(summary.contains(
-        "required_capture_states=light-collapsed,dark-collapsed,light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-defer,dark-defer,light-error,dark-error,light-action-panel,dark-action-panel"
+        "required_capture_states=light-collapsed,dark-collapsed,light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-defer,dark-defer,light-error,dark-error,light-ime,dark-ime,light-action-panel,dark-action-panel"
     ));
 }
 
@@ -349,4 +352,9 @@ fn ui_preview_scenarios_seed_visible_launcher_states() {
         state.view.feedback.as_ref().unwrap().status,
         ActionExecutionStatus::Failed
     );
+
+    apply_preview_scenario(&mut state, "ime");
+    assert_eq!(state.view.query, "index");
+    assert_eq!(state.ime_preedit.as_deref(), Some("zhong"));
+    assert_eq!(state.view.phase, std_egui::LauncherPhase::WithResults);
 }

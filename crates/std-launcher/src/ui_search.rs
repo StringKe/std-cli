@@ -36,7 +36,7 @@ fn render_search_bar_contents(
 ) {
     let ctx = ui.ctx().clone();
     let executing = state.view.phase == LauncherPhase::Executing;
-    let ime_composing = input::ime_composing(&ctx);
+    let ime_composing = input::ime_composing(&ctx) || state.ime_preedit.is_some();
     let mut query_text = search_bar_text(state);
     ui.set_min_height(ui_metrics::search_bar_min_height());
     ui.horizontal(|ui| {

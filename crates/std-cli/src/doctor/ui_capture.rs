@@ -28,6 +28,8 @@ const LAUNCHER_CAPTURE_STATES: &[(&str, &str)] = &[
     ("dark", "defer"),
     ("light", "error"),
     ("dark", "error"),
+    ("light", "ime"),
+    ("dark", "ime"),
     ("light", "action-panel"),
     ("dark", "action-panel"),
 ];
@@ -285,7 +287,7 @@ mod tests {
 
         assert_eq!(
             verify_ui_capture_manifest_with_root(&manifest, None).unwrap(),
-            38
+            40
         );
     }
 
@@ -327,7 +329,7 @@ mod tests {
 
         assert_eq!(
             verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap(),
-            38
+            40
         );
     }
 
