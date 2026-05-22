@@ -2,9 +2,10 @@ use crate::gui_smoke::{run_gui_hotkey_smoke, GuiHotkeySmokeConfig};
 use crate::preview::LauncherPreviewSmokeReport;
 use std_egui::tokens::ThemeSmokeReport;
 use std_launcher::{
-    hotkey_smoke, HotkeySmokeReport, LauncherActionPanelSmokeReport, LauncherCloseSmokeReport,
-    LauncherKeyboardReport, LauncherSmokeReport, LauncherState, LauncherSurfaceSmokeReport,
-    LauncherUiSemanticsReport, LauncherWindowSmokeReport,
+    hotkey_smoke, HotkeySmokeReport, LauncherActionPanelSmokeReport,
+    LauncherAppLocalizationSmokeReport, LauncherCloseSmokeReport, LauncherKeyboardReport,
+    LauncherSmokeReport, LauncherState, LauncherSurfaceSmokeReport, LauncherUiSemanticsReport,
+    LauncherWindowSmokeReport,
 };
 
 enum LauncherCliSmoke {
@@ -13,6 +14,7 @@ enum LauncherCliSmoke {
     Window(LauncherWindowSmokeReport),
     Keyboard(Box<LauncherKeyboardReport>),
     ActionPanel(LauncherActionPanelSmokeReport),
+    AppLocalization(LauncherAppLocalizationSmokeReport),
     Close(LauncherCloseSmokeReport),
     UiSemantics(Box<LauncherUiSemanticsReport>),
     Surface(Box<LauncherSurfaceSmokeReport>),
@@ -40,6 +42,10 @@ pub(crate) fn run_smoke_from_args(args: Vec<String>) -> eframe::Result<bool> {
             Ok(true)
         }
         Some(LauncherCliSmoke::ActionPanel(report)) => {
+            println!("{}", report.summary());
+            Ok(true)
+        }
+        Some(LauncherCliSmoke::AppLocalization(report)) => {
             println!("{}", report.summary());
             Ok(true)
         }
@@ -111,6 +117,9 @@ fn smoke_from_args(args: Vec<String>) -> Option<LauncherCliSmoke> {
                 LauncherState::action_panel_smoke(query),
             ))
         }
+        Some("--app-localization-smoke") => Some(LauncherCliSmoke::AppLocalization(
+            LauncherAppLocalizationSmokeReport::run(),
+        )),
         Some("--close-smoke") => Some(LauncherCliSmoke::Close(LauncherState::close_smoke())),
         Some("--ui-semantics-smoke") => {
             let query = args
@@ -176,6 +185,29 @@ mod tests {
         };
 
         assert!(!config.allow_system_events);
+    }
+
+    #[test]
+    fn app_localization_smoke_reports_multilingual_aliases() {
+        let args = vec![
+            "std-launcher".to_string(),
+            "--app-localization-smoke".to_string(),
+        ];
+        let Some(LauncherCliSmoke::AppLocalization(report)) = smoke_from_args(args) else {
+            panic!("expected app localization smoke");
+        };
+
+        assert_eq!(report.status, "PASS");
+        assert!(report.summary().contains("queries=wechat|weixin|"));
+        assert!(report.summary().contains("action_ids_match=true"));
+        assert!(report
+            .summary()
+            .contains("enter_status=NeedsExternalRunner"));
+        assert!(report.summary().contains("deferred=true"));
+        assert!(report
+            .summary()
+            .contains("fixture_scope=local_apps_dir_only"));
+        assert!(report.summary().contains("system_apps_scanned=false"));
     }
 
     #[test]

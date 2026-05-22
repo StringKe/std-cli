@@ -7,6 +7,7 @@ mod action_panel;
 mod action_panel_review;
 mod action_panel_smoke;
 mod action_panel_state;
+mod app_localization_smoke;
 mod close_smoke;
 mod controller;
 mod hotkey;
@@ -32,6 +33,7 @@ mod voice;
 pub use action_bar_preview::ActionBarPreviewSummary;
 pub use action_panel::{ActionPanel, ActionPanelItem};
 pub use action_panel_smoke::LauncherActionPanelSmokeReport;
+pub use app_localization_smoke::LauncherAppLocalizationSmokeReport;
 pub use close_smoke::LauncherCloseSmokeReport;
 pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{

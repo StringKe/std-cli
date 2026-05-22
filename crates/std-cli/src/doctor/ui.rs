@@ -14,11 +14,12 @@ const UI_DOCS: [&str; 7] = [
     "docs/24_egui_Implementation_Constraints.md",
 ];
 
-const LAUNCHER_GATES: [&str; 5] = [
+const LAUNCHER_GATES: [&str; 6] = [
     "theme-smoke",
     "surface-smoke",
     "ui-semantics-smoke",
     "keyboard-smoke",
+    "app-localization-smoke",
     "preview-smoke",
 ];
 
@@ -52,6 +53,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
     check_launcher_keyboard_ime_evidence(&root)?;
+    check_launcher_app_localization_evidence(&root)?;
     check_desktop_automation_boundary(&root)?;
     Ok(UiDoctor {
         docs: "PASS",
@@ -80,6 +82,7 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-launcher --surface-smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-launcher --ui-semantics-smoke index",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-launcher --keyboard-smoke index",
+        "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-launcher --app-localization-smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-launcher --preview-smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --smoke",
         "STD_TEST_MODE=1 STD_ALLOW_DESKTOP_AUTOMATION=0 STD_ALLOW_UI_PREVIEW=0 STD_ALLOW_BACKGROUND_UI_AUTOMATION=0 std-studio --workspace-policy-smoke",
@@ -359,6 +362,33 @@ fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), Cl
         "user_enter_route",
         "Enter>handle_keyboard_input_by_user>LauncherUser",
         "user_enter_deferred",
+    ] {
+        check_text(&evidence, required)?;
+    }
+    Ok(())
+}
+
+fn check_launcher_app_localization_evidence(root: &std::path::Path) -> Result<(), CliError> {
+    let smoke = read_required(&root.join("crates/std-launcher/src/app_localization_smoke.rs"))?;
+    let cli = read_required(&root.join("crates/std-launcher/src/cli.rs"))?;
+    let core = read_required(&root.join("crates/std-core/src/app_bundle.rs"))?;
+    let tests = read_required(&root.join("crates/std-launcher/src/app_tests.rs"))?;
+    let evidence = format!("{smoke}\n{cli}\n{core}\n{tests}");
+    for required in [
+        "--app-localization-smoke",
+        "launcher_app_localization_smoke",
+        "queries=wechat|weixin|",
+        "fixture_scope=local_apps_dir_only",
+        "system_apps_scanned=false",
+        "CFBundleDisplayName",
+        "InfoPlist.strings",
+        "read_localized_info_plist_names",
+        "derived_aliases",
+        "wechat",
+        "weixin",
+        "\\\\U5fae\\\\U4fe1",
+        "ActionExecutionStatus::NeedsExternalRunner",
+        "launcher_searches_wechat_by_macos_multilingual_names_without_launching",
     ] {
         check_text(&evidence, required)?;
     }
