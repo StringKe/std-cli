@@ -12,7 +12,6 @@ let titleFragment = args[2]
 let outputURL = URL(fileURLWithPath: args[3])
 let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
 let infoList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] ?? []
-var fallback: (number: CGWindowID, area: Int)?
 
 for info in infoList {
     let owner = info[kCGWindowOwnerName as String] as? String ?? ""
@@ -21,30 +20,11 @@ for info in infoList {
         continue
     }
     guard let rawNumber = info[kCGWindowNumber as String] as? Int,
-          let bounds = info[kCGWindowBounds as String] as? [String: Any],
-          let width = bounds["Width"] as? Int,
-          let height = bounds["Height"] as? Int else {
+          let bounds = info[kCGWindowBounds as String] as? [String: Any] else {
         continue
     }
-    let number = CGWindowID(rawNumber)
-    let area = width * height
-    if fallback == nil || area > fallback!.area {
-        fallback = (number, area)
-    }
     if title.contains(titleFragment) {
-        capture(bounds: bounds, to: outputURL)
-    }
-}
-
-if let fallback {
-    let bounds = infoList.compactMap { info -> [String: Any]? in
-        guard let rawNumber = info[kCGWindowNumber as String] as? Int,
-              CGWindowID(rawNumber) == fallback.number else {
-            return nil
-        }
-        return info[kCGWindowBounds as String] as? [String: Any]
-    }.first
-    if let bounds {
+        _ = rawNumber
         capture(bounds: bounds, to: outputURL)
     }
 }

@@ -124,9 +124,10 @@ STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-launcher "std-cli Launcher"
 STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh std-studio "std-cli Studio" artifacts/ui/studio-light-dashboard.png
 ```
 
-成组截图使用 `scripts/capture-ui-matrix.sh`。该脚本同样默认 `SKIP`，并且在 `STD_TEST_MODE=1` 下拒绝运行，不能进入默认测试或质量门禁：
+成组截图使用 `mise run ui-capture-matrix` 或 `scripts/capture-ui-matrix.sh`。该入口同样默认 `SKIP`，并且在 `STD_TEST_MODE=1` 下拒绝运行，不能进入默认测试或质量门禁。窗口捕获必须同时匹配进程名和产品窗口标题，找不到标题时直接失败，不能 fallback 捕获同进程任意窗口：
 
 ```bash
+STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix
 STD_ALLOW_UI_PREVIEW=1 scripts/capture-ui-matrix.sh artifacts/ui/manual-acceptance
 ```
 

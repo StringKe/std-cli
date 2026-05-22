@@ -6,10 +6,13 @@ use super::desktop_guard_scan::assert_order;
 fn screenshot_capture_script_requires_ui_preview_opt_in() {
     let root = workspace_root();
     let body = fs::read_to_string(root.join("scripts/capture-window.sh")).unwrap();
+    let driver = fs::read_to_string(root.join("scripts/cg-capture-window.swift")).unwrap();
 
     assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
     assert!(body.contains("capture-window SKIP"));
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cg-capture-window.swift");
+    assert!(driver.contains("title.contains(titleFragment)"));
+    assert!(!driver.contains("fallback"));
 }
 
 #[test]
@@ -39,12 +42,32 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
 }
 
+#[test]
+fn mise_ui_capture_matrix_is_manual_preview_only() {
+    let root = workspace_root();
+    let body = fs::read_to_string(root.join("mise.toml")).unwrap();
+    let task = source_section(&body, "[tasks.ui-capture-matrix]", "[tasks.quality]");
+    let quality = source_section(&body, "[tasks.quality]", "[tasks.release-build]");
+
+    assert!(task.contains("STD_ALLOW_UI_PREVIEW = \"1\""));
+    assert!(task.contains("STD_TEST_MODE = \"0\""));
+    assert!(task.contains("scripts/capture-ui-matrix.sh"));
+    assert!(!quality.contains("ui-capture-matrix"));
+}
+
 fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
         .parent()
         .unwrap()
+}
+
+fn source_section<'a>(body: &'a str, start: &str, end: &str) -> &'a str {
+    let start_index = body.find(start).unwrap();
+    let tail = &body[start_index..];
+    let end_index = tail.find(end).unwrap_or(tail.len());
+    &tail[..end_index]
 }
 
 fn launcher_required_capture_states() -> [&'static str; 20] {

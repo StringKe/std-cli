@@ -66,6 +66,11 @@ description = "Manual opt-in: launch isolated harness and run background UI smok
 env = { STD_TEST_MODE = "0", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "0", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "1" }
 run = "cargo build -p std-launcher && scripts/background-ui-acceptance.sh"
 
+[tasks.ui-capture-matrix]
+description = "Manual opt-in: capture Launcher and Studio UI screenshots"
+env = { STD_TEST_MODE = "0", STD_ALLOW_DESKTOP_AUTOMATION = "0", STD_ALLOW_UI_PREVIEW = "1", STD_ALLOW_BACKGROUND_UI_AUTOMATION = "0" }
+run = "scripts/capture-ui-matrix.sh artifacts/ui/manual-acceptance"
+
 [tasks.quality]
 description = "Run the complete quality gate"
 depends = [
