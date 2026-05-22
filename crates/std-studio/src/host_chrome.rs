@@ -1,4 +1,4 @@
-use crate::{ui, StudioEguiApp};
+use crate::{host_chrome_drag, ui, StudioEguiApp};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -21,15 +21,7 @@ impl StudioEguiApp {
             .fill(host_chrome_surface_fill(ui.ctx()))
             .inner_margin(egui::Margin::symmetric(Space::SM, Space::XS));
         frame.show(ui, |ui| {
-            let drag_rect = ui.max_rect();
-            let drag_response = ui.interact(
-                drag_rect,
-                ui.id().with("host_drag"),
-                egui::Sense::click_and_drag(),
-            );
-            if drag_response.drag_started() {
-                ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
-            }
+            host_chrome_drag::install_host_chrome_drag_region(ui);
             ui.horizontal(|ui| {
                 self.render_top_identity(ui);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -133,6 +125,10 @@ impl StudioEguiApp {
 
 pub(crate) fn host_chrome_surface_contract() -> &'static str {
     "host_chrome=egui-owned,borderless,native-controls=false,surface=bg/surface-1"
+}
+
+pub(crate) fn host_chrome_input_contract() -> &'static str {
+    host_chrome_drag::host_chrome_drag_contract()
 }
 
 pub(crate) fn host_chrome_surface_token() -> &'static str {
@@ -267,5 +263,17 @@ mod tests {
 
         assert_eq!(first, second);
         assert_eq!(app.app.open_workspace_panes().count(), 1);
+    }
+
+    #[test]
+    fn host_chrome_drag_region_does_not_cover_controls() {
+        let source = include_str!("host_chrome.rs");
+
+        assert!(source.contains("install_host_chrome_drag_region"));
+        assert!(!source.contains("ui.id().with(\"host_drag\")"));
+        assert_eq!(
+            host_chrome_input_contract(),
+            "drag_region=background-only,left-identity-area;controls_reserved=true"
+        );
     }
 }

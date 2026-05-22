@@ -97,6 +97,9 @@ fn assert_shell_layout_summary(summary: &str) {
     ));
     assert!(summary
         .contains("host_chrome_contract=host_chrome=egui-owned,borderless,native-controls=false"));
+    assert!(summary.contains(
+        "host_chrome_input_contract=drag_region=background-only,left-identity-area;controls_reserved=true"
+    ));
     assert!(summary.contains("host_chrome_height=52"));
     assert!(summary.contains("status_bar_height=24"));
     assert!(summary.contains("sidebar_width=240"));

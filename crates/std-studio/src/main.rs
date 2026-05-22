@@ -11,6 +11,7 @@ mod app_view;
 mod bottom_panel;
 mod commands;
 mod host_chrome;
+mod host_chrome_drag;
 mod layout;
 mod native_app;
 mod operations;

@@ -88,6 +88,10 @@ impl StudioSmokeReport {
                 .contains("native-child-windows=false")
             && self.host_chrome_contract.contains("egui-owned")
             && self.host_chrome_contract.contains("native-controls=false")
+            && self.host_chrome_input_contract.contains("background-only")
+            && self
+                .host_chrome_input_contract
+                .contains("controls_reserved=true")
             && self.host_chrome_height == 52
             && self.status_bar_height == 24
             && self.sidebar_width == 240
