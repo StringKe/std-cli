@@ -64,14 +64,34 @@ fn deferred_feedback_exposes_copy_and_retry_only() {
 fn feedback_detail_is_limited_to_two_lines() {
     let feedback = feedback(ActionExecutionStatus::Failed, "one\ntwo\nthree");
 
-    assert_eq!(clamped_feedback_detail(&feedback), "one two");
+    let summary = feedback_detail_summary(&feedback);
+
+    assert_eq!(summary.text, "one two");
+    assert!(summary.truncated);
+}
+
+#[test]
+fn feedback_detail_marks_long_single_line_as_truncated_without_copy_loss() {
+    let detail = "plugin crashed while rendering launcher feedback ".repeat(4);
+    let feedback = feedback(ActionExecutionStatus::Failed, &detail);
+    let summary = feedback_detail_summary(&feedback);
+
+    assert!(summary.truncated);
+    assert!(summary.text.chars().count() <= FEEDBACK_DETAIL_MAX_CHARS);
+    assert!(summary
+        .visible_text()
+        .contains(i18n::t("launcher.feedback.truncated")));
+    assert!(feedback
+        .summary()
+        .contains("plugin crashed while rendering"));
+    assert!(feedback.summary().len() > summary.visible_text().len());
 }
 
 #[test]
 fn feedback_detail_surface_wraps_two_lines_without_truncating() {
     let source = include_str!("ui_feedback.rs");
 
-    assert!(source.contains("clamped_feedback_detail(feedback)"));
+    assert!(source.contains("feedback_detail_summary(feedback).visible_text()"));
     assert!(source.contains(".wrap()"));
     assert!(!source.contains(".truncate()"));
     assert_eq!(ui_metrics::feedback_text_height(), 58.0);

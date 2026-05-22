@@ -15,6 +15,14 @@ enum FeedbackKind {
     Deferred,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct FeedbackDetailSummary {
+    text: String,
+    truncated: bool,
+}
+
+const FEEDBACK_DETAIL_MAX_CHARS: usize = 96;
+
 pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) -> FeedbackRenderResult {
     let Some(feedback) = state.view.feedback.clone() else {
         return FeedbackRenderResult::default();
@@ -85,7 +93,7 @@ fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedba
             ui.add_sized(
                 [width, ui_metrics::feedback_detail_height()],
                 egui::Label::new(
-                    egui::RichText::new(clamped_feedback_detail(feedback))
+                    egui::RichText::new(feedback_detail_summary(feedback).visible_text())
                         .font(Text::footnote())
                         .color(Color::fg_secondary(ctx)),
                 )
@@ -306,13 +314,39 @@ fn feedback_action_label(action: LauncherFeedbackAction) -> &'static str {
     }
 }
 
-fn clamped_feedback_detail(feedback: &LauncherFeedback) -> String {
-    feedback
+fn feedback_detail_summary(feedback: &LauncherFeedback) -> FeedbackDetailSummary {
+    let mut truncated = false;
+    let mut text = feedback
         .detail
         .lines()
-        .take(2)
+        .enumerate()
+        .filter_map(|(index, line)| {
+            if index >= 2 {
+                truncated = true;
+                return None;
+            }
+            Some(line.trim())
+        })
         .collect::<Vec<_>>()
-        .join(" ")
+        .join(" ");
+    if text.chars().count() > FEEDBACK_DETAIL_MAX_CHARS {
+        text = text
+            .chars()
+            .take(FEEDBACK_DETAIL_MAX_CHARS)
+            .collect::<String>();
+        truncated = true;
+    }
+    FeedbackDetailSummary { text, truncated }
+}
+
+impl FeedbackDetailSummary {
+    fn visible_text(&self) -> String {
+        if self.truncated {
+            format!("{} {}", self.text, i18n::t("launcher.feedback.truncated"))
+        } else {
+            self.text.clone()
+        }
+    }
 }
 
 fn feedback_fill(ctx: &egui::Context, feedback: &LauncherFeedback) -> egui::Color32 {
