@@ -72,10 +72,6 @@ pub(crate) fn result_row_shrink() -> egui::Vec2 {
     crate::ui_metrics_results::result_row_shrink(scale())
 }
 
-pub(crate) fn result_icon_text_offset_y() -> egui::Vec2 {
-    crate::ui_metrics_results::result_icon_text_offset_y(scale())
-}
-
 pub(crate) fn result_list_slot_height() -> f32 {
     scale().f32(RESULT_ROW_HEIGHT)
 }

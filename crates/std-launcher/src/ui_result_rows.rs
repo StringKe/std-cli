@@ -1,6 +1,7 @@
 use crate::{
     ui_metrics,
     ui_parts::keycap,
+    ui_result_icons,
     ui_result_model::{group_header_label, LauncherResultRowModel},
 };
 use eframe::egui;
@@ -104,13 +105,7 @@ fn paint_result_icon(
         egui::CornerRadius::same(Radius::sm()),
         fill,
     );
-    ui.painter().text(
-        layout.icon_rect.center() + ui_metrics::result_icon_text_offset_y(),
-        egui::Align2::CENTER_CENTER,
-        &model.icon_label,
-        Text::caption(),
-        Color::fg_secondary(ctx),
-    );
+    ui_result_icons::paint(ui, layout.icon_rect, &model.icon_label, selected, ctx);
 }
 
 fn paint_result_text(
@@ -283,5 +278,18 @@ mod tests {
 
         assert!(source.contains("let text = if selected { text.strong() } else { text };"));
         assert!(source.contains(".font(Text::body())"));
+    }
+
+    #[test]
+    fn result_icon_delegates_to_single_color_geometric_glyph() {
+        let source = include_str!("ui_result_rows.rs");
+        let icon_body = source
+            .split("fn paint_result_icon")
+            .nth(1)
+            .and_then(|body| body.split("fn paint_result_text").next())
+            .unwrap();
+
+        assert!(icon_body.contains("ui_result_icons::paint"));
+        assert!(!icon_body.contains("painter().text"));
     }
 }

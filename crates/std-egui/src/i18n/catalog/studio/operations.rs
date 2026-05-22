@@ -70,12 +70,8 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.operations.workspace_policy.docs.detail") => {
             Some("single UI source of truth")
         }
-        (Locale::ZhCn, "studio.operations.workspace_policy.ui_completion") => {
-            Some("UI completion")
-        }
-        (Locale::EnUs, "studio.operations.workspace_policy.ui_completion") => {
-            Some("UI completion")
-        }
+        (Locale::ZhCn, "studio.operations.workspace_policy.ui_completion") => Some("UI completion"),
+        (Locale::EnUs, "studio.operations.workspace_policy.ui_completion") => Some("UI completion"),
         (Locale::ZhCn, "studio.operations.workspace_policy.ui_completion.detail") => {
             Some("headless smoke 不能作为 UI 完成证据")
         }

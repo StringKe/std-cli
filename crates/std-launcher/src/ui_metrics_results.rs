@@ -7,7 +7,6 @@ const LOADING_PROGRESS_MIN_WIDTH: f32 = 120.0;
 const GROUP_DIVIDER_HEIGHT: f32 = 1.0;
 const GROUP_LABEL_OFFSET_Y: f32 = 4.0;
 const RESULT_ICON_SIZE: f32 = 20.0;
-const RESULT_ICON_TEXT_OFFSET_Y: f32 = 0.5;
 const RESULT_ROW_TITLE_Y: f32 = 12.0;
 const RESULT_ROW_TITLE_HEIGHT: f32 = 18.0;
 const RESULT_ROW_SUBTITLE_Y: f32 = 28.0;
@@ -59,10 +58,6 @@ pub(crate) fn result_row_shrink(scale: UiScale) -> egui::Vec2 {
     egui::vec2(scale.f32(8.0), 0.0)
 }
 
-pub(crate) fn result_icon_text_offset_y(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(0.0, scale.f32(RESULT_ICON_TEXT_OFFSET_Y))
-}
-
 pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherResultRowLayout {
     let icon_size = scale.f32(RESULT_ICON_SIZE);
     let icon_rect = egui::Rect::from_center_size(
@@ -92,7 +87,6 @@ pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherRes
             egui::pos2(text_right.max(text_left), rect.bottom()),
         ),
         right_rect,
-        icon_text_offset_y: scale.f32(RESULT_ICON_TEXT_OFFSET_Y),
     }
 }
 
@@ -104,7 +98,6 @@ pub(crate) struct LauncherResultRowLayout {
     pub(crate) subtitle_pos: egui::Pos2,
     pub(crate) text_clip: egui::Rect,
     pub(crate) right_rect: egui::Rect,
-    pub(crate) icon_text_offset_y: f32,
 }
 
 #[cfg(test)]

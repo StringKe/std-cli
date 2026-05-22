@@ -103,8 +103,6 @@ mod tests {
             StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
             "headless-smoke-is-not-ui-completion"
         );
-        assert!(
-            StudioWorkspacePolicy::MANUAL_UI_EVIDENCE_GATES.contains(&"light-dark-screenshots")
-        );
+        assert!(StudioWorkspacePolicy::MANUAL_UI_EVIDENCE_GATES.contains(&"light-dark-screenshots"));
     }
 }
