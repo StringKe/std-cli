@@ -87,11 +87,13 @@ fn studio_cycles_workspace_pane_focus_without_losing_state() {
         })
         .lines
         .contains(&format!("path={}", workflow_path.display())));
-    assert!(studio.close_workspace_pane(dashboard));
+    assert!(studio.focus_workspace_pane(dashboard));
+    assert!(!studio.close_workspace_pane(dashboard));
+    assert_eq!(studio.focused_pane, Some(dashboard));
     assert!(studio.close_workspace_pane(workflow));
     assert!(studio.close_workspace_pane(analysis));
-    assert_eq!(studio.focus_next_workspace_pane(), None);
-    assert_eq!(studio.focused_pane, None);
+    assert_eq!(studio.focus_next_workspace_pane(), Some(dashboard));
+    assert_eq!(studio.focused_pane, Some(dashboard));
 }
 
 #[test]

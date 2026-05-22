@@ -19,6 +19,8 @@ fn workspace_tab_specs_mark_only_focused_pane() {
     assert_eq!(specs.len(), 2);
     assert!(!specs[0].focused);
     assert!(specs[1].focused);
+    assert!(!specs[0].closable);
+    assert!(specs[1].closable);
     assert_eq!(specs[1].title, i18n::t("studio.settings.title"));
     assert_eq!(specs[0].position, 1);
     assert_eq!(specs[1].position, 2);
@@ -27,12 +29,29 @@ fn workspace_tab_specs_mark_only_focused_pane() {
 }
 
 #[test]
-fn close_tab_keyboard_command_targets_focused_pane() {
+fn close_tab_keyboard_command_respects_dashboard_base_pane() {
+    let dashboard = WorkspaceTabSpec {
+        id: WorkspacePaneId::new(1),
+        title: i18n::t("studio.dashboard.title").to_string(),
+        focused: true,
+        closable: false,
+        position: 1,
+        total: 1,
+    };
+    let settings = WorkspaceTabSpec {
+        id: WorkspacePaneId::new(2),
+        title: i18n::t("studio.settings.title").to_string(),
+        focused: true,
+        closable: true,
+        position: 1,
+        total: 1,
+    };
+
+    assert_eq!(workspace_tab_close_keyboard_command(&dashboard), None);
     assert_eq!(
-        workspace_tab_keyboard_command(Some(WorkspacePaneId::new(7))),
-        Some(StudioWorkspaceCommand::Close(WorkspacePaneId::new(7)))
+        workspace_tab_close_keyboard_command(&settings),
+        Some(StudioWorkspaceCommand::Close(WorkspacePaneId::new(2)))
     );
-    assert_eq!(workspace_tab_keyboard_command(None), None);
 }
 
 #[test]
@@ -60,6 +79,7 @@ fn workspace_tab_a11y_labels_include_role_title_and_state() {
         id: WorkspacePaneId::new(9),
         title: "Workflow Builder".to_string(),
         focused: true,
+        closable: true,
         position: 2,
         total: 4,
     };
@@ -133,6 +153,7 @@ fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
             id: WorkspacePaneId::new(1),
             title: "Settings".to_string(),
             focused: false,
+            closable: true,
             position: 1,
             total: 2,
         },
@@ -140,6 +161,7 @@ fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
             id: WorkspacePaneId::new(2),
             title: i18n::t("studio.workspace_panes.plugin_manager").to_string(),
             focused: true,
+            closable: true,
             position: 2,
             total: 2,
         },

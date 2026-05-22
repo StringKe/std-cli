@@ -262,8 +262,14 @@ impl StudioEguiApp {
             self.queue_workspace_tab_command(StudioWorkspaceCommand::FocusNext);
         }
         if std_egui::input::studio_close_tab().pressed(ctx) {
-            if let Some(command) =
-                crate::workspace_tabs::workspace_tab_keyboard_command(self.app.focused_pane)
+            let tabs = crate::workspace_tabs::workspace_tab_specs(
+                &self.app.workspace_panes,
+                self.app.focused_pane,
+            );
+            if let Some(command) = tabs
+                .iter()
+                .find(|spec| spec.focused)
+                .and_then(crate::workspace_tabs::workspace_tab_close_keyboard_command)
             {
                 self.queue_workspace_tab_command(command);
             }

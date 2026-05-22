@@ -20,6 +20,7 @@ pub(crate) struct WorkspaceTabSpec {
     pub id: WorkspacePaneId,
     pub title: String,
     pub focused: bool,
+    pub closable: bool,
     pub position: usize,
     pub total: usize,
 }
@@ -37,6 +38,7 @@ pub(crate) fn workspace_tab_specs(
             id: pane.id,
             title: pane.title.clone(),
             focused: Some(pane.id) == focused,
+            closable: pane.kind.closable(),
             position: index + 1,
             total,
         })
@@ -56,8 +58,9 @@ pub(crate) fn workspace_tabs_contract(specs: &[WorkspaceTabSpec]) -> String {
     let focused_close = specs
         .iter()
         .find(|spec| spec.focused)
-        .map(workspace_tab_close_a11y_label)
+        .and_then(|spec| spec.closable.then(|| workspace_tab_close_a11y_label(spec)))
         .unwrap_or_else(|| "none".to_string());
+    let focused_spec = specs.iter().find(|spec| spec.focused);
     format!(
         "tabs={},focused={},cycle=previous|next,close_hit={}x{},a11y={},close_a11y={},keyboard_close={}",
         specs.len(),
@@ -66,7 +69,8 @@ pub(crate) fn workspace_tabs_contract(specs: &[WorkspaceTabSpec]) -> String {
         TAB_HEIGHT as u32,
         first_label,
         focused_close,
-        workspace_tab_keyboard_command(specs.iter().find(|spec| spec.focused).map(|spec| spec.id))
+        focused_spec
+            .and_then(workspace_tab_close_keyboard_command)
             .is_some()
     )
 }
@@ -86,10 +90,12 @@ pub(crate) fn render_workspace_tabs(
     });
 }
 
-pub(crate) fn workspace_tab_keyboard_command(
-    focused: Option<WorkspacePaneId>,
+pub(crate) fn workspace_tab_close_keyboard_command(
+    focused: &WorkspaceTabSpec,
 ) -> Option<StudioWorkspaceCommand> {
-    focused.map(StudioWorkspaceCommand::Close)
+    focused
+        .closable
+        .then_some(StudioWorkspaceCommand::Close(focused.id))
 }
 
 #[cfg(test)]
@@ -160,23 +166,25 @@ fn render_workspace_tab(
         push_command(commands, StudioWorkspaceCommand::Focus(spec.id));
     }
     paint_workspace_tab(ui, rect, spec, response.hovered());
-    let close_rect = workspace_tab_close_rect(rect);
-    let close = ui.interact(
-        close_rect,
-        ui.id().with(("tab-close", spec.id.value())),
-        egui::Sense::click(),
-    );
-    close.widget_info(|| {
-        egui::WidgetInfo::labeled(
-            egui::WidgetType::Button,
-            ui.is_enabled(),
-            workspace_tab_close_a11y_label(spec),
-        )
-    });
-    if close.clicked() {
-        push_command(commands, StudioWorkspaceCommand::Close(spec.id));
+    if spec.closable {
+        let close_rect = workspace_tab_close_rect(rect);
+        let close = ui.interact(
+            close_rect,
+            ui.id().with(("tab-close", spec.id.value())),
+            egui::Sense::click(),
+        );
+        close.widget_info(|| {
+            egui::WidgetInfo::labeled(
+                egui::WidgetType::Button,
+                ui.is_enabled(),
+                workspace_tab_close_a11y_label(spec),
+            )
+        });
+        if close.clicked() {
+            push_command(commands, StudioWorkspaceCommand::Close(spec.id));
+        }
+        paint_workspace_tab_close(ui, close_rect, close.hovered());
     }
-    paint_workspace_tab_close(ui, close_rect, close.hovered());
 }
 
 fn workspace_tab_width(title: &str) -> f32 {

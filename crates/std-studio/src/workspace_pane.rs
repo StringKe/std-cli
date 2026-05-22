@@ -28,6 +28,10 @@ pub enum WorkspacePaneKind {
 }
 
 impl WorkspacePaneKind {
+    pub fn closable(&self) -> bool {
+        !matches!(self, WorkspacePaneKind::Pane(StudioPane::Dashboard))
+    }
+
     pub fn identity_key(&self) -> String {
         match self {
             WorkspacePaneKind::Pane(pane) => format!("pane:{}", pane.content_key()),
@@ -201,6 +205,9 @@ impl StudioApp {
         let Some(index) = self.workspace_panes.iter().position(|pane| pane.id == id) else {
             return false;
         };
+        if !self.workspace_panes[index].kind.closable() {
+            return false;
+        }
         if !self.workspace_panes[index].open {
             return false;
         }

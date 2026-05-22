@@ -324,6 +324,7 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
         'O' => egui::Key::O,
         'P' => egui::Key::P,
         'S' => egui::Key::S,
+        'W' => egui::Key::W,
         _ => return false,
     };
     input.key_pressed(key)
@@ -412,6 +413,7 @@ mod tests {
             .label()
             .ends_with("+Left"));
         assert!(studio_next_bottom_panel_tab().label().ends_with("+Right"));
+        assert!(studio_close_tab().label().ends_with("+W"));
     }
 
     fn assert_launcher_bindings() {

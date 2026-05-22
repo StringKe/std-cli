@@ -76,6 +76,32 @@ fn workspace_focus_cycle_commands_switch_internal_tabs() {
 }
 
 #[test]
+fn workspace_close_shortcut_preserves_dashboard_base_pane() {
+    let mut app = StudioEguiApp::default();
+    let dashboard = app.app.open_workspace_pane(StudioPane::Dashboard);
+
+    let ctx = eframe::egui::Context::default();
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::W), |ctx| {
+        app.handle_workspace_tab_keyboard(ctx);
+    });
+
+    assert_eq!(app.app.focused_pane, Some(dashboard));
+    assert_eq!(app.app.open_workspace_panes().count(), 1);
+    assert!(app.workspace_commands.lock().unwrap().is_empty());
+
+    let settings = app.app.open_settings_pane();
+    let ctx = eframe::egui::Context::default();
+    let _ = ctx.run(mod_key_input(eframe::egui::Key::W), |ctx| {
+        app.handle_workspace_tab_keyboard(ctx);
+    });
+
+    assert_eq!(
+        app.workspace_commands.lock().unwrap().as_slice(),
+        &[StudioWorkspaceCommand::Close(settings)]
+    );
+}
+
+#[test]
 fn workflow_builder_keyboard_shortcuts_move_selected_loaded_step() {
     let mut app = test_app();
     let path = app
@@ -449,6 +475,24 @@ fn key_input(key: eframe::egui::Key) -> eframe::egui::RawInput {
             repeat: false,
             modifiers: eframe::egui::Modifiers::NONE,
         }],
+        ..Default::default()
+    }
+}
+
+fn mod_key_input(key: eframe::egui::Key) -> eframe::egui::RawInput {
+    let mut modifiers = eframe::egui::Modifiers::NONE;
+    modifiers.command = true;
+    modifiers.mac_cmd = cfg!(target_os = "macos");
+    modifiers.ctrl = !cfg!(target_os = "macos");
+    eframe::egui::RawInput {
+        events: vec![eframe::egui::Event::Key {
+            key,
+            physical_key: Some(key),
+            pressed: true,
+            repeat: false,
+            modifiers,
+        }],
+        modifiers,
         ..Default::default()
     }
 }
