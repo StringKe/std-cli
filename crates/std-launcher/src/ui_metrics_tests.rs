@@ -163,6 +163,11 @@ fn native_window_matches_panel_surface_without_carrier_background() {
     assert_eq!(rect.min.y, 0.0);
     assert_eq!(rect.max.y, available.bottom());
     assert!(panel_is_only_visible_surface(&state));
+    let summary = panel_surface_geometry_summary(&state);
+    assert!(summary.contains("panel_origin=0x0"));
+    assert!(summary.contains("carrier_clearance=0x0"));
+    assert!(summary.contains("frame_clear=true"));
+    assert!(summary.contains("panel_only=true"));
 }
 
 #[test]

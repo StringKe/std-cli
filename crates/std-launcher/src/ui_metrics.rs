@@ -289,17 +289,54 @@ pub(crate) fn window_inner_size(state: &LauncherState) -> egui::Vec2 {
 }
 
 pub(crate) fn panel_is_only_visible_surface(state: &LauncherState) -> bool {
+    panel_surface_geometry(state).passes()
+}
+
+pub(crate) fn panel_surface_geometry_summary(state: &LauncherState) -> String {
+    panel_surface_geometry(state).summary()
+}
+
+struct PanelSurfaceGeometry {
+    window: egui::Vec2,
+    panel: egui::Rect,
+    frame_clear: bool,
+}
+
+impl PanelSurfaceGeometry {
+    fn passes(&self) -> bool {
+        self.frame_clear
+            && self.panel.min == egui::Pos2::ZERO
+            && (self.panel.width() - self.window.x).abs() <= 0.5
+            && (self.panel.height() - self.window.y).abs() <= 0.5
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "native_window={}x{};panel_origin={}x{};panel_size={}x{};carrier_clearance={}x{};frame_clear={};panel_only={}",
+            self.window.x.round() as u32,
+            self.window.y.round() as u32,
+            self.panel.min.x.round() as i32,
+            self.panel.min.y.round() as i32,
+            self.panel.width().round() as u32,
+            self.panel.height().round() as u32,
+            (self.window.x - self.panel.width()).round() as i32,
+            (self.window.y - self.panel.height()).round() as i32,
+            self.frame_clear,
+            self.passes()
+        )
+    }
+}
+
+fn panel_surface_geometry(state: &LauncherState) -> PanelSurfaceGeometry {
     let viewport = window_inner_size(state);
     let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
     let panel = panel_rect(available, state);
-    panel.width() > 0.0
-        && panel.height() > 0.0
-        && panel.min.x >= available.min.x
-        && panel.min.y >= available.min.y
-        && panel.max.x <= available.max.x + 0.5
-        && panel.max.y <= available.max.y + 0.5
-        && crate::ui::launcher_viewport_frame().fill == egui::Color32::TRANSPARENT
-        && crate::ui::launcher_viewport_frame().stroke == egui::Stroke::NONE
+    let frame = crate::ui::launcher_viewport_frame();
+    PanelSurfaceGeometry {
+        window: viewport,
+        panel,
+        frame_clear: frame.fill == egui::Color32::TRANSPARENT && frame.stroke == egui::Stroke::NONE,
+    }
 }
 
 pub(crate) fn panel_height(state: &LauncherState, body_height: f32) -> f32 {

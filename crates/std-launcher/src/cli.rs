@@ -329,7 +329,10 @@ mod tests {
     fn assert_preview_summary_has_state_surfaces(summary: &str) {
         for expected in [
             "state_surface=panel_only:true,search:panel-as-search-surface",
-            "carrier_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;panel_only=true",
+            "carrier_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_window=",
+            "panel_origin=0x0",
+            "carrier_clearance=0x0",
+            "panel_only=true",
             "forbidden=black_or_white_carrier_background",
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",

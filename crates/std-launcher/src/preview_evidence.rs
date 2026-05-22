@@ -62,7 +62,7 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
     let panel_frame = launcher_panel_frame_contract(&state);
     let search_surface = launcher_search_surface_contract(&state);
     format!(
-        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={},search_surface={}",
+        "{}={}:viewport={}x{},panel={}x{},body={},bottom_clearance={},content_clearance={},panel_frame={},search_surface={},{}",
         scenario.label(),
         if fits { "PASS" } else { "FAIL" },
         viewport.x.round() as u32,
@@ -73,7 +73,8 @@ pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewSce
         (viewport.y - rect.max.y).round() as i32,
         content_clearance.round() as i32,
         panel_frame,
-        search_surface
+        search_surface,
+        ui_metrics::panel_surface_geometry_summary(&state)
     )
 }
 
@@ -175,7 +176,7 @@ struct PreviewStateSurface {
 struct PreviewCarrierSurface {
     clear_color: String,
     viewport_frame: String,
-    panel_only: bool,
+    geometry: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -219,20 +220,22 @@ impl PreviewCarrierSurface {
         Self {
             clear_color: std_launcher::launcher_clear_color_contract(),
             viewport_frame: std_launcher::launcher_viewport_frame_contract(),
-            panel_only: ui_metrics::panel_is_only_visible_surface(state),
+            geometry: ui_metrics::panel_surface_geometry_summary(state),
         }
     }
 
     fn passes(&self) -> bool {
         self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.panel_only
+            && self.geometry.contains("carrier_clearance=0x0")
+            && self.geometry.contains("panel_origin=0x0")
+            && self.geometry.contains("panel_only=true")
     }
 
     fn summary(&self) -> String {
         format!(
-            "carrier_contract={},{};panel_only={};forbidden=black_or_white_carrier_background",
-            self.clear_color, self.viewport_frame, self.panel_only
+            "carrier_contract={},{};{};forbidden=black_or_white_carrier_background",
+            self.clear_color, self.viewport_frame, self.geometry
         )
     }
 }
