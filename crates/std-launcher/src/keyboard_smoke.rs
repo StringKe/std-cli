@@ -36,6 +36,7 @@ impl LauncherState {
             .map(|execution| execution.status);
         let user_enter = user_enter_defer_evidence();
         let pinned_enter = pinned_enter_evidence();
+        let executing = executing_keyboard_evidence();
         state.handle_keyboard_input(LauncherKey::Escape, false);
         state.handle_keyboard_input(LauncherKey::Escape, false);
         LauncherKeyboardReport {
@@ -57,6 +58,10 @@ impl LauncherState {
             pinned_enter_status: pinned_enter.status,
             pinned_enter_keeps_launcher_open: pinned_enter.keeps_launcher_open,
             pinned_enter_window_commands: pinned_enter.window_commands,
+            executing_enter_path: executing.enter_path,
+            executing_enter_hidden: executing.enter_hidden,
+            executing_cancel_phase: executing.cancel_phase,
+            executing_cancel_focus: executing.cancel_focus,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged: ime.selection_unchanged,
             ime_action_panel_selection_unchanged: ime.action_panel_selection_unchanged,
@@ -168,6 +173,13 @@ struct PinnedEnterEvidence {
     status: Option<ActionExecutionStatus>,
     keeps_launcher_open: bool,
     window_commands: String,
+}
+
+struct ExecutingKeyboardEvidence {
+    enter_path: String,
+    enter_hidden: bool,
+    cancel_phase: std_egui::LauncherPhase,
+    cancel_focus: LauncherFocusSection,
 }
 
 struct ImeEvidence {
@@ -377,6 +389,28 @@ fn pinned_enter_evidence() -> PinnedEnterEvidence {
         } else {
             window_commands
         },
+    }
+}
+
+fn executing_keyboard_evidence() -> ExecutingKeyboardEvidence {
+    let mut enter_state = LauncherState::new();
+    enter_state.controller.show();
+    enter_state.update_query("index");
+    enter_state.view.preview_executing();
+    enter_state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    let mut cancel_state = LauncherState::new();
+    cancel_state.controller.show();
+    cancel_state.update_query("index");
+    cancel_state.view.preview_executing();
+    cancel_state.focus_section = LauncherFocusSection::Results;
+    cancel_state.handle_keyboard_input(LauncherKey::CancelExecuting, false);
+
+    ExecutingKeyboardEvidence {
+        enter_path: "Executing>Enter>MoveToBackground".to_string(),
+        enter_hidden: !enter_state.controller.visible,
+        cancel_phase: cancel_state.view.phase,
+        cancel_focus: cancel_state.focus_section,
     }
 }
 

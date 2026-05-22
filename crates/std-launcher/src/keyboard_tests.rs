@@ -83,6 +83,7 @@ fn assert_navigation(report: &LauncherKeyboardReport) {
 fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
     assert_trigger_statuses(report);
     assert_deferred_enter_feedback(report);
+    assert_executing_keyboard_feedback(report, summary);
     assert_trigger_summary(summary);
 }
 
@@ -125,6 +126,23 @@ fn assert_deferred_enter_feedback(report: &LauncherKeyboardReport) {
     assert!(report.pinned_enter_keeps_launcher_open);
     assert_eq!(report.pinned_enter_window_commands, "none");
     assert!(report.enter_window.pass());
+}
+
+fn assert_executing_keyboard_feedback(report: &LauncherKeyboardReport, summary: &str) {
+    assert_eq!(
+        report.executing_enter_path,
+        "Executing>Enter>MoveToBackground"
+    );
+    assert!(report.executing_enter_hidden);
+    assert_eq!(
+        report.executing_cancel_phase,
+        std_egui::LauncherPhase::WithResults
+    );
+    assert_eq!(report.executing_cancel_focus, LauncherFocusSection::Search);
+    assert!(summary.contains("executing_enter_path=Executing>Enter>MoveToBackground"));
+    assert!(summary.contains("executing_enter_hidden=true"));
+    assert!(summary.contains("executing_cancel_phase=WithResults"));
+    assert!(summary.contains("executing_cancel_focus=Search"));
 }
 
 fn assert_trigger_summary(summary: &str) {
