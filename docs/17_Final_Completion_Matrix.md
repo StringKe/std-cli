@@ -10,7 +10,7 @@
 - 历史 /tmp 截图不能作为完成证据
 - 真实截图必须来自本轮 STD_ALLOW_UI_PREVIEW=1 capture-ui-matrix 输出
 - 真实截图 manifest 必须包含 samples、unique_colors、black_pixels、white_pixels
-- 真实截图 doctor 必须拒绝 single-color、all-black、all-white carrier
+- 真实截图 doctor 必须拒绝 single-color、dominant-black、dominant-white carrier
 - 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
 
 ## Core

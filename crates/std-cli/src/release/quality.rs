@@ -68,7 +68,7 @@ const MANUAL_UI_EVIDENCE: [&str; 6] = [
 
 const UI_CAPTURE_EVIDENCE_RULES: [&str; 2] = [
     "ui_capture_pixels=samples+unique_colors+black_pixels+white_pixels",
-    "ui_capture_rejects=single-color+all-black+all-white-carrier",
+    "ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
 ];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
@@ -204,7 +204,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
         "manual_ui_evidence=background_ui_rule=isolated-harness-only",
         "manual_ui_evidence_rule=ui_capture_pixels=samples+unique_colors+black_pixels+white_pixels",
-        "manual_ui_evidence_rule=ui_capture_rejects=single-color+all-black+all-white-carrier",
+        "manual_ui_evidence_rule=ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
     ] {
         if !body.contains(expected) {
             return Err(CliError::Install(format!(

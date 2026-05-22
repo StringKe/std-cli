@@ -84,7 +84,7 @@ impl StudioCaptureManifest {
             capture_command: "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
             verify_rule: "manifest-current-run-png-files-by-theme-state",
             pixel_evidence_rule: "samples+unique_colors+black_pixels+white_pixels",
-            carrier_reject_rule: "reject-single-color+all-black+all-white-carrier",
+            carrier_reject_rule: "reject-single-color+dominant-black+dominant-white-carrier",
         }
     }
 
@@ -103,7 +103,8 @@ impl StudioCaptureManifest {
             && self.capture_command == "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"
             && self.verify_rule == "manifest-current-run-png-files-by-theme-state"
             && self.pixel_evidence_rule == "samples+unique_colors+black_pixels+white_pixels"
-            && self.carrier_reject_rule == "reject-single-color+all-black+all-white-carrier"
+            && self.carrier_reject_rule
+                == "reject-single-color+dominant-black+dominant-white-carrier"
     }
 
     fn summary(&self) -> String {
