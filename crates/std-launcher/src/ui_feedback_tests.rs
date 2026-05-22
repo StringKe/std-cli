@@ -98,7 +98,7 @@ fn feedback_surface_stacks_text_above_actions() {
         .unwrap();
 
     assert!(render_contents.contains("render_text(ui, &ctx, feedback);"));
-    assert!(render_contents.contains("render_actions(ui, state, feedback);"));
+    assert!(render_contents.contains("render_actions(ui, state, feedback)"));
     assert!(source.contains("ui_metrics::feedback_action_height()"));
     assert!(source.contains("Layout::left_to_right"));
     assert!(!render_contents.contains("right_to_left"));
@@ -220,7 +220,10 @@ fn retry_click_uses_launcher_user_execution_path() {
     let source = include_str!("ui_feedback.rs");
     let production_source = source.split("#[cfg(test)]").next().unwrap();
 
-    assert!(production_source.contains("state.trigger_selected_by_user();"));
+    let shell = include_str!("ui.rs");
+
+    assert!(production_source.contains("FeedbackCommand::Trigger(index)"));
+    assert!(shell.contains("state.trigger_feedback_action()"));
     assert!(!production_source.contains("state.trigger_selected();"));
 }
 
@@ -228,7 +231,22 @@ fn retry_click_uses_launcher_user_execution_path() {
 fn copy_click_uses_shared_feedback_copy_model() {
     let source = include_str!("ui_feedback.rs");
     let production_source = source.split("#[cfg(test)]").next().unwrap();
+    let shell = include_str!("ui.rs");
 
-    assert!(production_source.contains("state.copy_feedback_to_clipboard_model()"));
+    assert!(production_source.contains("FeedbackCommand::Trigger(index)"));
+    assert!(shell.contains("state.trigger_feedback_action()"));
+    assert!(shell.contains("ui.ctx().copy_text(execution.message)"));
     assert!(!production_source.contains("ui.ctx().copy_text(feedback.summary())"));
+}
+
+#[test]
+fn feedback_render_returns_commands_instead_of_mutating_launcher_state() {
+    let source = include_str!("ui_feedback.rs");
+    let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+    assert!(production_source.contains("pub(crate) enum FeedbackCommand"));
+    assert!(production_source.contains("Trigger(usize)"));
+    assert!(!production_source.contains("state.trigger_selected_by_user();"));
+    assert!(!production_source.contains("state.open_studio_execution_history_from_feedback();"));
+    assert!(!production_source.contains("state.copy_feedback_to_clipboard_model()"));
 }

@@ -111,7 +111,17 @@ pub(crate) fn render_launcher_panel(
                 ui_action_bar::ActionBarCommand::None => {}
             }
             render_voice(ui, state, voice_transcript);
-            ui_feedback::render(ui, state);
+            let feedback = ui_feedback::render(ui, state);
+            match feedback.command {
+                ui_feedback::FeedbackCommand::Trigger(index) => {
+                    state.focus_section = std_launcher::LauncherFocusSection::Feedback;
+                    state.view.selected_feedback_action = index;
+                    if let Some(execution) = state.trigger_feedback_action() {
+                        ui.ctx().copy_text(execution.message);
+                    }
+                }
+                ui_feedback::FeedbackCommand::None => {}
+            }
             ui_action_panel::render(ui.ctx(), action_bar.rect, state);
         });
     hide_requested

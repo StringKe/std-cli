@@ -15,17 +15,18 @@ enum FeedbackKind {
     Deferred,
 }
 
-pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) {
+pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) -> FeedbackRenderResult {
     let Some(feedback) = state.view.feedback.clone() else {
-        return;
+        return FeedbackRenderResult::default();
     };
     let ctx = ui.ctx().clone();
+    let mut command = FeedbackCommand::None;
     let response = egui::Frame::new()
         .fill(feedback_fill(&ctx, &feedback))
         .stroke(egui::Stroke::new(1.0, feedback_stroke(&ctx, &feedback)))
         .corner_radius(egui::CornerRadius::same(Radius::md()))
         .inner_margin(egui::Margin::symmetric(Space::sm(), Space::xs()))
-        .show(ui, |ui| render_contents(ui, state, &feedback))
+        .show(ui, |ui| command = render_contents(ui, state, &feedback))
         .response;
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
@@ -34,13 +35,30 @@ pub(crate) fn render(ui: &mut egui::Ui, state: &mut LauncherState) {
             feedback_panel_a11y_label(&feedback),
         )
     });
+    FeedbackRenderResult { command }
 }
 
-fn render_contents(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) struct FeedbackRenderResult {
+    pub(crate) command: FeedbackCommand,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) enum FeedbackCommand {
+    #[default]
+    None,
+    Trigger(usize),
+}
+
+fn render_contents(
+    ui: &mut egui::Ui,
+    state: &LauncherState,
+    feedback: &LauncherFeedback,
+) -> FeedbackCommand {
     let ctx = ui.ctx().clone();
     render_text(ui, &ctx, feedback);
     ui.add_space(Space::xs() as f32);
-    render_actions(ui, state, feedback);
+    render_actions(ui, state, feedback)
 }
 
 fn render_text(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &LauncherFeedback) {
@@ -109,8 +127,13 @@ fn render_status_icon(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &Launche
     }
 }
 
-fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
+fn render_actions(
+    ui: &mut egui::Ui,
+    state: &LauncherState,
+    feedback: &LauncherFeedback,
+) -> FeedbackCommand {
     let actions = feedback.actions();
+    let mut command = FeedbackCommand::None;
     ui.allocate_ui_with_layout(
         egui::vec2(ui.available_width(), ui_metrics::feedback_action_height()),
         egui::Layout::left_to_right(egui::Align::Center),
@@ -128,9 +151,7 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                         )
                         .clicked()
                         {
-                            if let Some(execution) = state.copy_feedback_to_clipboard_model() {
-                                ui.ctx().copy_text(execution.message);
-                            }
+                            command = FeedbackCommand::Trigger(index);
                         }
                     }
                     LauncherFeedbackAction::Retry => {
@@ -142,7 +163,7 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                         )
                         .clicked()
                         {
-                            state.trigger_selected_by_user();
+                            command = FeedbackCommand::Trigger(index);
                         }
                     }
                     LauncherFeedbackAction::OpenStudio => {
@@ -157,13 +178,14 @@ fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &Launc
                         )
                         .clicked()
                         {
-                            state.open_studio_execution_history_from_feedback();
+                            command = FeedbackCommand::Trigger(index);
                         }
                     }
                 }
             }
         },
     );
+    command
 }
 
 fn feedback_button(
