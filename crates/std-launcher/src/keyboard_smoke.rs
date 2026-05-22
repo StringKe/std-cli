@@ -68,6 +68,7 @@ impl LauncherState {
             action_panel_focus_path,
             completed_query: completion.completed_query,
             completion_focus_contract: completion.focus_contract,
+            focus_visible_contract: focus_visible_contract(),
             normalized_query: token_delete.normalized_query,
             token_delete_query: token_delete.after_delete,
             token_delete_normalized_query: token_delete.normalized_after_delete,
@@ -115,6 +116,17 @@ fn navigation_boundary_path(query: &str) -> String {
         bottom_after.to_string()
     };
     format!("top:0->{top};bottom:{bottom_before}->{bottom_marker}")
+}
+
+fn focus_visible_contract() -> String {
+    [
+        "focus-ring=Search|Results|ActionPanel|Feedback",
+        "source=keyboard-visible,pointer-hidden",
+        "tab=Search>Results>Search",
+        "shift-tab=Search>Results>Search",
+        "ime=preedit-keeps-focus,enter-owned-by-ime",
+    ]
+    .join(";")
 }
 
 struct UserEnterEvidence {

@@ -176,6 +176,13 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
         report.completion_focus_contract,
         "search-tab-completes=rebuild index;results-tab-focuses=Search;query=reb"
     );
+    assert!(report
+        .focus_visible_contract
+        .contains("focus-ring=Search|Results|ActionPanel|Feedback"));
+    assert!(report
+        .focus_visible_contract
+        .contains("source=keyboard-visible,pointer-hidden"));
+    assert!(report.focus_visible_contract.contains("enter-owned-by-ime"));
     assert_eq!(report.normalized_query, "open terminal now");
     assert_eq!(report.token_delete_query, "open terminal");
     assert_eq!(report.token_delete_normalized_query, "open terminal");
@@ -185,6 +192,11 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
     assert!(summary.contains(
         "completion_focus_contract=search-tab-completes=rebuild index;results-tab-focuses=Search;query=reb"
     ));
+    assert!(
+        summary.contains("focus_visible_contract=focus-ring=Search|Results|ActionPanel|Feedback")
+    );
+    assert!(summary.contains("source=keyboard-visible,pointer-hidden"));
+    assert!(summary.contains("ime=preedit-keeps-focus,enter-owned-by-ime"));
     assert!(summary.contains("normalized_query=open terminal now"));
     assert!(summary.contains("token_delete_query=open terminal"));
     assert!(summary.contains("token_delete_normalized_query=open terminal"));
