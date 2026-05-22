@@ -50,7 +50,7 @@ pub(crate) fn format_coverage_report(report: &IndexCoverageReport) -> String {
         lines.push(format!(
             "entity: {} complete={} components={} relations={} history={}",
             item.name,
-            item.coverage.complete(),
+            coverage_status(item.coverage.complete()),
             item.component_count,
             item.relation_count,
             item.history_count
@@ -70,11 +70,92 @@ fn inspection_header(inspection: &IndexInspection) -> Vec<String> {
         format!("history: {}", inspection.history_count),
         format!(
             "coverage: overview={} components={} relations={} history={} complete={}",
-            inspection.coverage.entity_overview,
-            inspection.coverage.component_digest,
-            inspection.coverage.symbol_relation_index,
-            inspection.coverage.historical_context,
-            inspection.coverage.complete()
+            coverage_status(inspection.coverage.entity_overview),
+            coverage_status(inspection.coverage.component_digest),
+            coverage_status(inspection.coverage.symbol_relation_index),
+            coverage_status(inspection.coverage.historical_context),
+            coverage_status(inspection.coverage.complete())
         ),
     ]
+}
+
+fn coverage_status(pass: bool) -> &'static str {
+    if pass {
+        "PASS"
+    } else {
+        "FAIL"
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::Utc;
+    use std_index::{
+        EntityKind, EntityOverview, IndexCoverage, IndexCoverageItem, IndexCoverageReport,
+        IndexInspection,
+    };
+    use uuid::Uuid;
+
+    #[test]
+    fn coverage_report_uses_text_status() {
+        let report = IndexCoverageReport {
+            total: 1,
+            complete: 0,
+            incomplete: 1,
+            items: vec![IndexCoverageItem {
+                name: "project".to_string(),
+                kind: EntityKind::Project,
+                path: "project".into(),
+                coverage: coverage(false),
+                component_count: 1,
+                relation_count: 0,
+                history_count: 0,
+            }],
+        };
+
+        let output = super::format_coverage_report(&report);
+
+        assert!(output.contains("complete=FAIL"));
+        assert!(!output.contains("complete=false"));
+    }
+
+    #[test]
+    fn inspection_uses_layer_text_status() {
+        let inspection = IndexInspection {
+            overview: overview(),
+            coverage: coverage(false),
+            component_count: 1,
+            relation_count: 0,
+            history_count: 0,
+            key_components: vec![],
+            key_relations: vec![],
+            key_history: vec![],
+        };
+
+        let output = super::format_inspection(&inspection);
+
+        assert!(output.contains("overview=PASS"));
+        assert!(output.contains("relations=FAIL"));
+        assert!(output.contains("complete=FAIL"));
+    }
+
+    fn coverage(complete: bool) -> IndexCoverage {
+        IndexCoverage {
+            entity_overview: true,
+            component_digest: true,
+            symbol_relation_index: complete,
+            historical_context: complete,
+        }
+    }
+
+    fn overview() -> EntityOverview {
+        EntityOverview {
+            id: Uuid::nil(),
+            kind: EntityKind::Project,
+            path: "project".into(),
+            name: "project".to_string(),
+            summary: "summary".to_string(),
+            created_at: Utc::now(),
+        }
+    }
 }

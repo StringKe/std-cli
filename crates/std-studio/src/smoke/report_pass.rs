@@ -225,7 +225,7 @@ impl StudioSmokeReport {
         self.analysis_coverage_complete >= 1
             && self
                 .analysis_coverage_layers
-                .contains("overview=true,components=true,relations=true,history=true")
+                .contains("overview:PASS,components:PASS,relations:PASS,history:PASS")
             && self.analysis_search_hits >= 1
             && self.analysis_answer_sources >= 1
             && self
@@ -239,7 +239,7 @@ impl StudioSmokeReport {
                 .contains("overview=target|index|activity")
             && self
                 .analysis_visual_contract
-                .contains("coverage=overview|components|relations|history")
+                .contains("coverage=overview:PASS|components:PASS|relations:PASS|history:PASS")
             && self.analysis_visual_contract.contains("qa=sources:")
             && self.analysis_inspect_components >= 1
             && self.analysis_inspect_relations >= 1
