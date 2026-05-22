@@ -107,7 +107,6 @@ pub struct StudioApp {
     pub dashboard: StudioDashboardViewModel,
     pub memory_browser: MemoryBrowserViewModel,
     pub plugin_manager: PluginManagerViewModel,
-    pub active_pane: StudioPane,
     pub workflow_debug: Option<WorkflowDryRun>,
     pub last_workflow_execution: Option<WorkflowExecution>,
     pub last_batch_report: Option<BatchReport>,
@@ -141,7 +140,6 @@ impl Default for StudioApp {
             dashboard,
             memory_browser,
             plugin_manager,
-            active_pane: StudioPane::Dashboard,
             workflow_debug: None,
             last_workflow_execution: None,
             last_batch_report: None,
@@ -172,7 +170,6 @@ impl StudioApp {
             dashboard,
             memory_browser,
             plugin_manager,
-            active_pane: StudioPane::Dashboard,
             workflow_debug: None,
             last_workflow_execution: None,
             last_batch_report: None,
@@ -194,10 +191,6 @@ impl StudioApp {
 
     pub fn app_workspace_policy_report(&self) -> String {
         self.workspace_policy.strict_report()
-    }
-
-    pub fn switch_pane(&mut self, pane: StudioPane) {
-        self.active_pane = pane;
     }
 
     pub fn run_batch_plan(&mut self, plan: &BatchPlan) -> &BatchReport {

@@ -12,7 +12,7 @@ use std_studio::{AnalysisWorkbenchTab, AnalysisWorkbenchViewModel};
 
 impl StudioEguiApp {
     pub(crate) fn handle_analysis_workbench_keyboard(&mut self, ctx: &egui::Context) {
-        if self.app.active_pane != std_studio::StudioPane::Analysis
+        if self.app.focused_studio_pane() != Some(std_studio::StudioPane::Analysis)
             || std_egui::input::ime_composing(ctx)
         {
             return;

@@ -17,7 +17,7 @@ fn studio_can_be_instantiated() {
     let studio = test_studio();
     assert_eq!(studio.name, "std-cli Studio");
     assert!(studio.dashboard.action_count >= 3);
-    assert_eq!(studio.active_pane, StudioPane::Dashboard);
+    assert_eq!(studio.focused_studio_pane(), Some(StudioPane::Dashboard));
     assert_eq!(
         studio.workspace_policy.host_window,
         HostWindowPolicy::SingleBorderlessEguiViewport
@@ -34,9 +34,9 @@ fn studio_can_be_instantiated() {
 fn studio_switches_panes() {
     let mut studio = test_studio();
 
-    studio.switch_pane(StudioPane::Plugins);
+    studio.open_plugin_manager_pane();
 
-    assert_eq!(studio.active_pane, StudioPane::Plugins);
+    assert_eq!(studio.focused_studio_pane(), Some(StudioPane::Plugins));
     assert_eq!(
         StudioPane::Plugins.label(),
         std_egui::i18n::t("studio.plugins.title")

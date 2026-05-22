@@ -181,6 +181,24 @@ impl StudioApp {
         self.open_pane(WorkspacePaneKind::Settings)
     }
 
+    pub fn focused_studio_pane(&self) -> Option<StudioPane> {
+        let focused = self.focused_pane?;
+        let pane = self
+            .workspace_panes
+            .iter()
+            .find(|pane| pane.id == focused && pane.open)?;
+        Some(match pane.kind {
+            WorkspacePaneKind::Pane(pane) => pane,
+            WorkspacePaneKind::WorkflowBuilder { .. } => StudioPane::Workflows,
+            WorkspacePaneKind::AnalysisWorkbench { .. } => StudioPane::Analysis,
+            WorkspacePaneKind::AppManager => StudioPane::Apps,
+            WorkspacePaneKind::MemoryBrowser => StudioPane::Memory,
+            WorkspacePaneKind::ExecutionHistory => StudioPane::History,
+            WorkspacePaneKind::PluginManager => StudioPane::Plugins,
+            WorkspacePaneKind::Settings => StudioPane::Settings,
+        })
+    }
+
     pub fn focus_workspace_pane(&mut self, id: WorkspacePaneId) -> bool {
         let Some(index) = self.workspace_panes.iter().position(|pane| pane.id == id) else {
             return false;

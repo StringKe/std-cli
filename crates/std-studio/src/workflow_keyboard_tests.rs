@@ -1,7 +1,7 @@
 use crate::{workspace_panes::focused_workspace_spec, StudioEguiApp};
 use std::sync::Mutex;
 use std_core::{StdConfig, StdCore};
-use std_studio::{StudioApp, StudioPane};
+use std_studio::StudioApp;
 
 static ENV_LOCK: Mutex<()> = Mutex::new(());
 
@@ -16,8 +16,7 @@ fn mod_n_creates_workflow_and_opens_builder_from_raw_input() {
         app.handle_workflow_creation_keyboard(ctx);
     });
 
-    assert_eq!(app.app.active_pane, StudioPane::Workflows);
-    assert_eq!(app.app.open_workspace_panes().count(), 1);
+    assert_eq!(app.app.open_workspace_panes().count(), 2);
     assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
     assert!(app.status.contains("created"));
     let spec = focused_workspace_spec(&app.app).unwrap();
@@ -37,7 +36,7 @@ fn mod_n_respects_ime_composing_guard() {
         app.handle_workflow_creation_keyboard(ctx);
     });
 
-    assert_eq!(app.app.open_workspace_panes().count(), 0);
+    assert_eq!(app.app.open_workspace_panes().count(), 1);
     assert!(app.status.is_empty());
 }
 

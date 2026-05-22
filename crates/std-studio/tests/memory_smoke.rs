@@ -19,7 +19,7 @@ fn studio_memory_pane_uses_shared_core_storage() {
     .unwrap();
 
     let mut studio = StudioApp::with_core(core);
-    studio.switch_pane(StudioPane::Memory);
+    studio.open_memory_browser_pane();
 
     let found = studio.search_memory("CLI memory");
     let written = studio
@@ -49,7 +49,7 @@ fn studio_workflow_run_writes_shared_execution_history() {
     });
     core.seed_builtin_actions().unwrap();
     let mut studio = StudioApp::with_core(core);
-    studio.switch_pane(StudioPane::Workflows);
+    studio.open_workspace_pane(StudioPane::Workflows);
     let path = studio
         .create_workflow("Smoke Run", "Run from Studio smoke")
         .unwrap();
