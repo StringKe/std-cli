@@ -160,9 +160,8 @@ fn assert_shell_layout_summary(summary: &str) {
     assert!(summary.contains("bottom_panel_height=240"));
     assert!(summary.contains("bottom_panel_default_open=false"));
     assert!(summary.contains("canvas_surface=surface=bg/surface-0"));
-    assert!(
-        summary.contains("canvas_content_route=focused-workspace-pane-primary,main-pane-fallback")
-    );
+    assert!(summary
+        .contains("canvas_content_route=focused-workspace-pane-primary,dashboard-pane-recovery"));
     assert!(summary.contains("status_bar_right=analysis-progress,ai-provider,version"));
     assert!(summary.contains("standard_launcher_enter_ms=320"));
     assert!(summary.contains("reduced_launcher_enter_ms=0"));

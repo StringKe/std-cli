@@ -8,7 +8,6 @@ use crate::{
 };
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
-use std_studio::StudioPane;
 
 impl StudioEguiApp {
     pub(crate) fn render_shell(&mut self, ctx: &egui::Context) {
@@ -53,22 +52,14 @@ impl StudioEguiApp {
             if self.render_focused_workspace_pane(ui) {
                 return;
             }
-            self.render_main_workspace_pane(ui);
+            self.restore_dashboard_workspace_pane();
+            self.render_focused_workspace_pane(ui);
         });
     }
 
-    fn render_main_workspace_pane(&mut self, ui: &mut egui::Ui) {
-        match self.app.active_pane {
-            StudioPane::Dashboard => self.render_dashboard(ui),
-            StudioPane::Workflows => self.render_workflows(ui),
-            StudioPane::Apps => self.render_apps(ui),
-            StudioPane::Memory => self.render_memory(ui),
-            StudioPane::Plugins => self.render_plugins(ui),
-            StudioPane::Analysis => self.render_analysis(ui),
-            StudioPane::History => self.render_history(ui),
-            StudioPane::Operations => self.render_operations(ui),
-            StudioPane::Settings => self.render_settings(ui),
-        }
+    fn restore_dashboard_workspace_pane(&mut self) {
+        self.app
+            .open_workspace_pane(std_studio::StudioPane::Dashboard);
     }
 
     fn render_context(&mut self, ui: &mut egui::Ui) {
@@ -133,7 +124,10 @@ impl StudioEguiApp {
     fn render_status_bar(&mut self, ui: &mut egui::Ui) {
         ui.set_height(STATUS_BAR_HEIGHT);
         ui.horizontal(|ui| {
-            status_text(ui, self.app.active_pane.content_key());
+            let workspace_key = focused_workspace_spec(&self.app)
+                .map(|spec| spec.content_key)
+                .unwrap_or("dashboard");
+            status_text(ui, workspace_key);
             status_divider(ui);
             status_text(
                 ui,
@@ -275,7 +269,8 @@ mod tests {
     fn status_bar_renderer_uses_tokenized_caption_text_and_custom_dividers() {
         let source = include_str!("shell.rs");
 
-        assert!(source.contains("status_text(ui, self.app.active_pane.content_key())"));
+        assert!(source.contains("focused_workspace_spec(&self.app)"));
+        assert!(source.contains("status_text(ui, workspace_key)"));
         assert!(source.contains("Text::caption()"));
         assert!(source.contains("status_divider(ui)"));
         assert!(!source.contains("\n            ui.separator()"));
@@ -287,7 +282,9 @@ mod tests {
 
         assert!(source.contains("if self.render_focused_workspace_pane(ui)"));
         assert!(source.contains("return;"));
-        assert!(source.contains("self.render_main_workspace_pane(ui);"));
+        assert!(source.contains("self.restore_dashboard_workspace_pane();"));
+        let old_main_fallback = ["fn render_", "main_workspace_pane"].join("");
+        assert!(!source.contains(&old_main_fallback));
         let old_append_call = ["self.render_", "workspace_panes(ui);"].join("");
         assert!(!source.contains(&old_append_call));
     }

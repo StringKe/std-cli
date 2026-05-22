@@ -76,10 +76,11 @@ fn canvas_content_route_evidence() -> String {
     let source = include_str!("../shell.rs");
     let old_append_call = ["self.render_", "workspace_panes(ui);"].join("");
     if source.contains("if self.render_focused_workspace_pane(ui)")
-        && source.contains("self.render_main_workspace_pane(ui);")
+        && source.contains("self.restore_dashboard_workspace_pane();")
+        && !source.contains(&["fn render_", "main_workspace_pane"].join(""))
         && !source.contains(&old_append_call)
     {
-        "focused-workspace-pane-primary,main-pane-fallback".to_string()
+        "focused-workspace-pane-primary,dashboard-pane-recovery".to_string()
     } else {
         "workspace-pane-appended-to-main".to_string()
     }

@@ -51,7 +51,9 @@ impl StudioSmokeReport {
             && self
                 .canvas_content_route
                 .contains("focused-workspace-pane-primary")
-            && self.canvas_content_route.contains("main-pane-fallback")
+            && self
+                .canvas_content_route
+                .contains("dashboard-pane-recovery")
             && self
                 .canvas_surface
                 .contains("standard_launcher_enter_ms=320")
