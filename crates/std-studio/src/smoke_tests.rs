@@ -72,6 +72,8 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("workspace_main_path_contract=host=single-borderless-egui-viewport"));
     assert!(summary.contains("panes=internal-egui-workspace-panes"));
     assert!(summary.contains("extra_viewports=forbidden"));
+    assert!(summary.contains("show_viewport=forbidden"));
+    assert!(summary.contains("viewport_id=forbidden"));
     assert!(summary.contains("egui_window=forbidden"));
     assert!(summary.contains("settings_overlay=forbidden"));
 }

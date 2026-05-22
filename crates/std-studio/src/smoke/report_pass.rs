@@ -62,6 +62,12 @@ impl StudioSmokeReport {
                 .contains("extra_viewports=forbidden")
             && self
                 .workspace_main_path_contract
+                .contains("show_viewport=forbidden")
+            && self
+                .workspace_main_path_contract
+                .contains("viewport_id=forbidden")
+            && self
+                .workspace_main_path_contract
                 .contains("egui_window=forbidden")
             && self
                 .workspace_main_path_contract

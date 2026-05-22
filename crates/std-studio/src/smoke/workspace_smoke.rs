@@ -128,6 +128,8 @@ fn workspace_main_path_contract() -> String {
         "host=single-borderless-egui-viewport",
         "panes=internal-egui-workspace-panes",
         "extra_viewports=forbidden",
+        "show_viewport=forbidden",
+        "viewport_id=forbidden",
         "egui_window=forbidden",
         "settings_overlay=forbidden",
         "allowed_viewport_files=viewport|host_chrome|preview",

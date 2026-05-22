@@ -141,6 +141,9 @@ fn forbidden_studio_window_patterns() -> Vec<String> {
         ["Viewport", "Builder::default"].join(""),
         ["Viewport", "Command::"].join(""),
         ["send_", "viewport_cmd"].join(""),
+        ["show_", "viewport"].join(""),
+        ["Viewport", "Id"].join(""),
+        ["Viewport", "Class"].join(""),
     ]
 }
 
