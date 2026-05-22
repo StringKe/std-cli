@@ -52,6 +52,10 @@ impl LauncherSize {
     pub const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
     pub const RESULT_RIGHT_GAP: f32 = 8.0;
     pub const ASK_AI_ROW_HEIGHT: f32 = 34.0;
+    pub const SEARCH_PANEL_HEIGHT: f32 = 64.0;
+    pub const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
+    pub const BODY_MIN_HEIGHT: f32 = 128.0;
+    pub const VOICE_ROW_HEIGHT: f32 = 44.0;
     pub const ACTION_BAR_HEIGHT: f32 = 36.0;
     pub const ACTION_BAR_CONTENT_HEIGHT: f32 = 24.0;
     pub const ACTION_BAR_RIGHT_WIDTH: f32 = 272.0;
@@ -287,6 +291,22 @@ impl LauncherSize {
 
     pub fn ask_ai_row_height(scale: UiScale) -> f32 {
         scale.f32(Self::ASK_AI_ROW_HEIGHT)
+    }
+
+    pub fn search_panel_height(scale: UiScale) -> f32 {
+        scale.f32(Self::SEARCH_PANEL_HEIGHT)
+    }
+
+    pub fn search_section_height(scale: UiScale) -> f32 {
+        scale.f32(Space::SM as f32) * 2.0 + scale.f32(Self::SEARCH_BAR_MIN_HEIGHT)
+    }
+
+    pub fn body_min_height(scale: UiScale) -> f32 {
+        scale.f32(Self::BODY_MIN_HEIGHT)
+    }
+
+    pub fn voice_row_height(scale: UiScale) -> f32 {
+        scale.f32(Self::VOICE_ROW_HEIGHT)
     }
 
     pub fn action_bar_height(scale: UiScale) -> f32 {

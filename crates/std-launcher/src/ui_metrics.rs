@@ -3,10 +3,8 @@ use std_egui::tokens::{LauncherSize, Space, UiScale};
 use std_egui::LauncherPhase;
 use std_launcher::LauncherState;
 
-pub(crate) const SEARCH_HEIGHT: f32 = 64.0;
 pub(crate) const ACTION_BAR_HEIGHT: f32 = LauncherSize::ACTION_BAR_HEIGHT;
 pub(crate) const MAX_RESULT_ROWS: f32 = LauncherSize::MAX_RESULT_ROWS;
-pub(crate) const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 #[cfg(test)]
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
 

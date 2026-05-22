@@ -1,4 +1,5 @@
 use super::*;
+use std_egui::tokens::LauncherSize;
 use std_launcher::PANEL_WIDTH;
 
 #[test]
@@ -16,7 +17,7 @@ fn expanded_window_size_scales_with_ui_zoom() {
     state.update_query("index");
     let body_height = crate::ui_metrics_layout::body_height_for_scale(
         &state,
-        DEFAULT_VIEWPORT_HEIGHT,
+        LauncherSize::DEFAULT_VIEWPORT_HEIGHT,
         UiScale::new(1.5),
     );
     let height =
@@ -151,10 +152,10 @@ fn collapsed_panel_rect_matches_native_host_window() {
     let rect = panel_rect(available, &state);
 
     assert_eq!(rect.width(), PANEL_WIDTH);
-    assert_eq!(rect.height(), SEARCH_HEIGHT);
+    assert_eq!(rect.height(), LauncherSize::SEARCH_PANEL_HEIGHT);
     assert_eq!(rect.min.x, 16.0);
     assert_eq!(rect.min.y, 16.0);
-    assert_eq!(available.height(), SEARCH_HEIGHT + 32.0);
+    assert_eq!(available.height(), LauncherSize::SEARCH_PANEL_HEIGHT + 32.0);
 }
 
 #[test]
@@ -200,8 +201,8 @@ fn collapsed_launcher_uses_docs_search_bar_height_without_outer_padding() {
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), viewport);
     let rect = panel_rect(available, &state);
 
-    assert_eq!(viewport.y, SEARCH_HEIGHT + 32.0);
-    assert_eq!(rect.height(), SEARCH_HEIGHT);
+    assert_eq!(viewport.y, LauncherSize::SEARCH_PANEL_HEIGHT + 32.0);
+    assert_eq!(rect.height(), LauncherSize::SEARCH_PANEL_HEIGHT);
     assert_eq!(panel_inner_padding_for_state(&state), 0.0);
 }
 
@@ -211,7 +212,7 @@ fn native_host_window_height_includes_panel_inner_padding() {
     state.update_query("index");
     let body = crate::ui_metrics_layout::body_height_for_scale(
         &state,
-        DEFAULT_VIEWPORT_HEIGHT,
+        LauncherSize::DEFAULT_VIEWPORT_HEIGHT,
         UiScale::default(),
     );
     let expected = Space::MD as f32 * 2.0
@@ -264,7 +265,7 @@ fn body_height_counts_virtual_group_header_slots() {
     let slots = result_list_slot_count(&state);
     let body = crate::ui_metrics_layout::body_height_for_scale(
         &state,
-        DEFAULT_VIEWPORT_HEIGHT,
+        LauncherSize::DEFAULT_VIEWPORT_HEIGHT,
         UiScale::default(),
     );
 

@@ -264,6 +264,10 @@ fn launcher_sizes_export_action_bar_geometry() {
     let right_width = LauncherSize::action_bar_right_width(720.0);
 
     assert_eq!(LauncherSize::ASK_AI_ROW_HEIGHT, 34.0);
+    assert_eq!(LauncherSize::SEARCH_PANEL_HEIGHT, 64.0);
+    assert_eq!(LauncherSize::DEFAULT_VIEWPORT_HEIGHT, 520.0);
+    assert_eq!(LauncherSize::BODY_MIN_HEIGHT, 128.0);
+    assert_eq!(LauncherSize::VOICE_ROW_HEIGHT, 44.0);
     assert_eq!(LauncherSize::ACTION_BAR_HEIGHT, 36.0);
     assert_eq!(LauncherSize::ACTION_BAR_CONTENT_HEIGHT, 24.0);
     assert_eq!(LauncherSize::ACTION_BAR_RIGHT_WIDTH, 272.0);
@@ -271,6 +275,10 @@ fn launcher_sizes_export_action_bar_geometry() {
     assert_eq!(LauncherSize::ACTION_BAR_MIN_LEFT_WIDTH, 160.0);
     assert_eq!(LauncherSize::ACTION_SUMMARY_LABEL_HEIGHT, 18.0);
     assert_eq!(LauncherSize::ask_ai_row_height(scale), 51.0);
+    assert_eq!(LauncherSize::search_panel_height(scale), 96.0);
+    assert_eq!(LauncherSize::search_section_height(scale), 96.0);
+    assert_eq!(LauncherSize::body_min_height(scale), 192.0);
+    assert_eq!(LauncherSize::voice_row_height(scale), 66.0);
     assert_eq!(LauncherSize::action_bar_height(scale), 54.0);
     assert_eq!(LauncherSize::action_bar_content_height(scale), 36.0);
     assert_eq!(right_width, 272.0);
