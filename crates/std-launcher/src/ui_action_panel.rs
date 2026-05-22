@@ -169,14 +169,17 @@ fn typed_action_panel_chars(ctx: &egui::Context) -> Vec<char> {
 
 fn action_panel_filter_a11y_label(query: &str) -> String {
     let value = if query.trim().is_empty() {
-        "empty"
+        i18n::t("launcher.action.filter.value.empty")
     } else {
         query.trim()
     };
-    format!(
-        "{}, text box, value {value}",
-        i18n::t("launcher.action.filter.a11y")
-    )
+    i18n::t("launcher.action.filter.input.a11y")
+        .replace("{label}", i18n::t("launcher.action.filter.a11y"))
+        .replace("{value}", value)
+}
+
+fn action_panel_row_a11y_label(item: &ActionPanelItem) -> String {
+    i18n::t("launcher.action.row.a11y").replace("{label}", item.title())
 }
 
 fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui::Response {
@@ -199,7 +202,7 @@ fn action_row(ui: &mut egui::Ui, item: &ActionPanelItem, selected: bool) -> egui
                 egui::WidgetInfo::labeled(
                     egui::WidgetType::SelectableLabel,
                     ui.is_enabled(),
-                    format!("{} action", item.title()),
+                    action_panel_row_a11y_label(item),
                 )
             });
             ui.scope_builder(egui::UiBuilder::new().max_rect(response.rect), |ui| {
@@ -290,17 +293,26 @@ mod tests {
     fn action_panel_filter_a11y_label_exposes_value() {
         assert_eq!(
             action_panel_filter_a11y_label("retry"),
-            format!(
-                "{}, text box, value retry",
-                i18n::t("launcher.action.filter.a11y")
-            )
+            i18n::t("launcher.action.filter.input.a11y")
+                .replace("{label}", i18n::t("launcher.action.filter.a11y"))
+                .replace("{value}", "retry")
         );
         assert_eq!(
             action_panel_filter_a11y_label("  "),
-            format!(
-                "{}, text box, value empty",
-                i18n::t("launcher.action.filter.a11y")
-            )
+            i18n::t("launcher.action.filter.input.a11y")
+                .replace("{label}", i18n::t("launcher.action.filter.a11y"))
+                .replace("{value}", i18n::t("launcher.action.filter.value.empty"))
+        );
+    }
+
+    #[test]
+    fn action_panel_row_a11y_label_uses_localized_template() {
+        let item = ActionPanelItem::CopyCommand("std index rebuild".to_string());
+
+        assert_eq!(
+            action_panel_row_a11y_label(&item),
+            i18n::t("launcher.action.row.a11y")
+                .replace("{label}", i18n::t("launcher.action.copy_command"))
         );
     }
 }

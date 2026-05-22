@@ -149,6 +149,14 @@ mod tests {
             "Action Panel 过滤"
         );
         assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.filter.input.a11y"),
+            "{label}，文本框，当前值 {value}"
+        );
+        assert_eq!(
+            translate(Locale::EnUs, "launcher.action.row.a11y"),
+            "{label} action"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "launcher.action.review_first"),
             "Review first"
         );

@@ -6,6 +6,16 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.action.filter.hint") => Some("Filter actions"),
         (Locale::ZhCn, "launcher.action.filter.a11y") => Some("Action Panel 过滤"),
         (Locale::EnUs, "launcher.action.filter.a11y") => Some("Action Panel filter"),
+        (Locale::ZhCn, "launcher.action.filter.value.empty") => Some("空"),
+        (Locale::EnUs, "launcher.action.filter.value.empty") => Some("empty"),
+        (Locale::ZhCn, "launcher.action.filter.input.a11y") => {
+            Some("{label}，文本框，当前值 {value}")
+        }
+        (Locale::EnUs, "launcher.action.filter.input.a11y") => {
+            Some("{label}, text box, value {value}")
+        }
+        (Locale::ZhCn, "launcher.action.row.a11y") => Some("{label}，操作"),
+        (Locale::EnUs, "launcher.action.row.a11y") => Some("{label} action"),
         (Locale::ZhCn, "launcher.action.no_matches") => Some("没有匹配的操作"),
         (Locale::EnUs, "launcher.action.no_matches") => Some("No matching actions"),
         (Locale::ZhCn, "launcher.feedback.copy") => Some("复制"),
@@ -48,6 +58,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
     match key {
         "launcher.action.filter.hint" => Some("Filter actions"),
         "launcher.action.filter.a11y" => Some("Action Panel filter"),
+        "launcher.action.filter.value.empty" => Some("empty"),
+        "launcher.action.filter.input.a11y" => Some("{label}, text box, value {value}"),
+        "launcher.action.row.a11y" => Some("{label} action"),
         "launcher.action.no_matches" => Some("No matching actions"),
         "launcher.feedback.copy" => Some("Copy"),
         "launcher.feedback.retry" => Some("Retry"),
