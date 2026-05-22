@@ -22,6 +22,9 @@ guard ProcessInfo.processInfo.environment["STD_ALLOW_BACKGROUND_UI_AUTOMATION"] 
 }
 
 let config = parseConfig()
+guard AXIsProcessTrusted() else {
+    fail("macOS Accessibility trust required before event tap")
+}
 guard config.bundleId == requiredBundleId else {
     fail("bundle_id outside whitelist")
 }
@@ -48,8 +51,8 @@ guard !isForbiddenFrontmostApp(previousApp) else {
     fail("frontmost app is forbidden for event tap: \(previousApp.bundleId)")
 }
 var session = BackgroundActivationSession(previousPid: previousPid, targetPid: config.harnessPid)
-guard session.start() else {
-    fail("event tap install failed")
+if let failure = session.start() {
+    fail(failure)
 }
 sendAppKitActivation(to: config.harnessPid, windowId: config.windowId, subtype: 1)
 postCenterPrimer(to: config.harnessPid, windowId: config.windowId, window: window)
@@ -81,10 +84,16 @@ final class BackgroundActivationSession {
         self.targetPid = targetPid
     }
 
-    func start() -> Bool {
+    func start() -> String? {
         previousTap = createTap(pid: previousPid, dropFocusMessages: true)
+        guard previousTap != nil else {
+            return "previous event tap install failed before primer"
+        }
         targetTap = createTap(pid: targetPid, dropFocusMessages: false)
-        return previousTap != nil && targetTap != nil
+        guard targetTap != nil else {
+            return "target event tap install failed before primer"
+        }
+        return nil
     }
 
     func stop() {

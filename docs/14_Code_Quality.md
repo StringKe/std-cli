@@ -91,6 +91,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - 启动 harness 使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh`，该脚本只创建 `dev.std-cli.background-ui-harness` 测试 app，并用 `open -g` 避免抢占前台
 - 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness <token>" --harness-token <token>`
 - `cargo run -p std-cli -- ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness <token>"`、`--harness-token <token>` 才能进入真实 driver
+- driver 必须先通过 `AXIsProcessTrusted`，否则在安装 event tap 前直接 `FAIL`
 - 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置
 - driver 只能使用 `postToPid` 定向投递到 harness pid，不能使用全局 HID、System Events、前台点击或用户当前 frontmost app
 - 激活前先安装 previous 和 target 两个 per-process event tap，然后再发 appKitDefined primer 和 center primer
@@ -108,7 +109,7 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - 不用真实 App 名称、进程名或窗口标题作为 harness 选择条件。macOS App 名称和窗口标题存在多语言别名，WeChat、weixin、wechat、微信这类名称都不能作为允许条件。harness 只能来自固定 bundle id、pid、window id 和 window title 四重匹配
 - 失败时返回 `SKIP` 或 `FAIL`，不能 fallback 到前台点击真实桌面
 
-当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `cargo run -p std-cli -- ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1` 和 `STD_TEST_MODE`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，tap mask 只包含 raw value 13、19、20 三类 focus message，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。
+当前人工 runner 为 `scripts/background-ui-smoke.swift`，由 `cargo run -p std-cli -- ui background-smoke` 在通过全部 harness 白名单后调用 `/usr/bin/swift` 执行。脚本自身再次检查 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1`、`STD_TEST_MODE` 和 `AXIsProcessTrusted`，避免绕过 CLI 直接运行时触碰桌面。runner 使用 `CGEvent.tapCreateForPid` 创建 per-process event tap，tap mask 只包含 raw value 13、19、20 三类 focus message，使用 `NSEvent.otherEvent` 生成 `appKitDefined` activation primer，并只对传入的 harness pid/window id 调用 `postToPid`。
 
 完整人工验收流程：
 

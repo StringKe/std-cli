@@ -178,7 +178,8 @@ fn background_ui_smoke_documents_safe_background_event_route() {
         "window-center-primer",
         "postToPid-target-pid-input",
         "tap_order=install_previous_and_target_taps_before_primer",
-        "tap_failure=fail_before_any_primer_or_input",
+        "trust_gate=AXIsProcessTrusted_before_event_tap",
+        "tap_failure=identify_previous_or_target_and_fail_before_primer",
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
         "event_route=postToPid_target_pid_only",
@@ -229,17 +230,23 @@ fn background_ui_runner_fails_when_event_taps_are_unavailable() {
     let body = fs::read_to_string(root.join("scripts/background-ui-smoke.swift")).unwrap();
 
     assert!(
-        body.contains("guard session.start() else"),
+        body.contains("if let failure = session.start()"),
         "background UI runner must require event taps before primer or input"
     );
     assert!(
-        body.contains("fail(\"event tap install failed\")"),
+        body.contains("previous event tap install failed before primer")
+            && body.contains("target event tap install failed before primer"),
         "background UI runner must hard fail when event taps cannot be installed"
     );
     assert_order(
         &body,
-        "guard session.start() else",
+        "if let failure = session.start()",
         "sendAppKitActivation(to: config.harnessPid",
+    );
+    assert_order(
+        &body,
+        "guard AXIsProcessTrusted() else",
+        "if let failure = session.start()",
     );
     assert!(body.contains("virtualKey: 36"));
     assert!(!body.contains("virtualKey: 53"));
