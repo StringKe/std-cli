@@ -41,7 +41,7 @@
 ### Studio
 
 - Dashboard、Workflow、Apps、Memory、Plugins、Analysis、History、Settings pane
-- 多窗口打开、聚焦、关闭、重复窗口去重
+- Workspace pane 打开、聚焦、关闭、重复 pane 去重
 - Workflow 创建、编辑、模拟、执行、trace 查看
 - Batch Debug 复用 `std-orchestration::BatchExecutor`
 - Plugin Manager 读取 manifest check report

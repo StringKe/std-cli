@@ -1,15 +1,15 @@
 # 22. Studio UX Spec - Studio 表面 UX 详规
 
-本文件是 Studio 多窗口、面板、Canvas、Inspector、Workflow Builder、Analysis Workbench 的 UX 合订本。与 09_Studio_Surface_Detail 互补：09 偏「窗口与功能区拓扑」，本文件偏「像素与交互细则」。视觉 token、动效、键盘逻辑来自 18、19、20。
+本文件是 Studio 单宿主窗口、workspace pane、Canvas、Inspector、Workflow Builder、Analysis Workbench 的 UX 合订本。与 09_Studio_Surface_Detail 互补：09 偏「workspace 与功能区拓扑」，本文件偏「像素与交互细则」。视觉 token、动效、键盘逻辑来自 18、19、20。
 
 ## 01. 设计目标
 
 - **专业感**：界面密度可与 Xcode、JetBrains IDE 对标，开发者不会觉得「这只是个 launcher 的辅助 GUI」
 - **可发现 + 可深挖**：每个抽象（Workflow / Skill / Memory / Action / Plugin）都有专门面板，但不需要先读说明书
-- **多窗口协作**：用户可以同时盯一个 Workflow Builder 和一个 Analysis Workbench，互不打扰
+- **Workspace 协作**：用户可以同时盯一个 Workflow Builder 和一个 Analysis Workbench，互不打扰
 - **AI 内建**：所有面板都能在不切换上下文的前提下调用 AI 辅助
 
-## 02. 窗口拓扑
+## 02. Workspace 拓扑
 
 **主窗口**（每个 Studio 实例一个）：
 
@@ -19,20 +19,20 @@
 - 最小尺寸：1080 x 640
 - 内容：左 Sidebar + 中 Canvas + 右 Inspector + 底部 Panel
 
-**工作区窗口**（应用内可多开）：
+**Workspace pane**（应用内可多开）：
 
-- Workflow Builder：每个 Workflow 一个 workspace window
-- Analysis Workbench：每个分析目标一个 workspace window
+- Workflow Builder：每个 Workflow 一个 workspace pane
+- Analysis Workbench：每个分析目标一个 workspace pane
 - Memory Browser：单例
 - Execution History：单例
 - Plugin Manager：单例
 
-**多 workspace window 行为**：
+**多 workspace pane 行为**：
 
 - 使用 egui 内部 dock/pane 渲染，禁止 macOS 原生子窗口作为主路径
-- 同一对象（同一 Workflow id、同一 Analysis target）只允许一个窗口（去重，详见 09 当前实现）
-- 窗口间状态通过 std-core 事件总线同步
-- 关闭主窗口即关闭当前 Studio 实例内的 workspace windows
+- 同一对象（同一 Workflow id、同一 Analysis target）只允许一个 pane（去重，详见 09 当前实现）
+- Pane 间状态通过 std-core 事件总线同步
+- 关闭主窗口即关闭当前 Studio 实例内的 workspace panes
 
 **禁止**：
 
@@ -103,8 +103,9 @@
 
 - 根窗口使用无装饰 eframe viewport，Studio 自绘 host chrome
 - macOS / Windows / Linux 只保留一个系统宿主窗口，不使用原生子窗口
-- 关闭 / 最小化 / 最大化是 token 化按钮，使用 egui `ViewportCommand`
-- host chrome 中允许放置当前 workspace、窗口数量、刷新和打开当前视图
+- 关闭 / 最小化 / 最大化是中性工具栏按钮，使用 egui `ViewportCommand`
+- 禁止模拟 macOS 交通灯按钮，避免看起来像原生窗口 chrome
+- host chrome 中允许放置当前 workspace、pane 数量、刷新和打开当前视图
 - drag region 覆盖非交互区域，按钮和输入控件不得抢拖拽行为
 
 ## 05. Workflow Builder
@@ -221,17 +222,17 @@
 
 ## 10. Settings
 
-- 单独窗口（`Mod+,`）
+- v1 使用内部 workspace pane（`Mod+,` 打开或聚焦 Settings pane），不创建原生子窗口
 - 左 Sidebar 分类：Appearance / Hotkeys / AI Provider / Index / Plugins / Privacy / About
 - 右内容区表单
 - 任何 destructive 操作（重置全部 / 删除索引）有 modal 二次确认 + typed-confirm（输入「DELETE」）
 
-## 11. 多窗口协作行为
+## 11. Workspace 协作行为
 
 - Workflow 在 Launcher 触发执行 -> Studio 自动 toast 显示「Execution started」+ 可点击跳到 Execution History
 - 在某个 Workflow Builder 中保存 -> 其他窗口监听到 `WorkflowChanged` 事件并刷新本地视图
-- 不同窗口的 Selection 不共享（避免「我在 Builder 选了 Step 3，结果 Inspector 跳到别的窗」）
-- 焦点窗口切换无动画（系统级 winit 行为，不干涉）
+- 不同 workspace 的 Selection 不共享（避免「我在 Builder 选了 Step 3，结果 Inspector 跳到别的区域」）
+- Workspace 焦点切换无动画，保持专业工作台的稳定感
 
 ## 12. 拖拽（DnD）
 
@@ -286,15 +287,12 @@
 
 ## 16. Performance 与验收
 
-- `StudioPerformanceReport`：开窗时间、Canvas 重绘 95p、列表渲染时长
-- `std-studio --smoke` 必须覆盖多窗口打开 / 关闭，PR 附 smoke output
+- `StudioPerformanceReport`：开窗时间、Canvas 重绘 95p、列表渲染时长；`std-studio --smoke` 必须覆盖 workspace 打开 / 关闭
 - [ ] 所有面板使用 18 token，无新增颜色 / 间距 / 字号
 - [ ] 所有动效在 19 表内
 - [ ] 所有快捷键不冲突 20-06 与系统保留
 - [ ] DnD 都有键盘等价
 - [ ] dark + light 双模式验证
 - [ ] Reduce Motion 下面板切换瞬时无伪动画
-- [ ] 多窗口同时打开 3 个：Workflow Builder + Analysis + Memory，CPU < 10%（空闲）
+- [ ] Workspace pane 同时打开 3 个：Workflow Builder + Analysis + Memory，CPU < 10%（空闲）
 - [ ] `std-studio --smoke` PASS
-
-**关联文档**：03_Surfaces、09_Studio_Surface_Detail、06_Workflow_System、07_Personal_RAG_and_Analysis、10_Tool_and_Plugin_System

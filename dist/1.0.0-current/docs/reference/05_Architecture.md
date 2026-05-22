@@ -78,9 +78,9 @@ members = [
 - 输入事件全部走 egui，搜索使用 `nucleo`
 - Launcher 状态层支持热键切换、搜索、预览、键盘移动、语音 transcript 和执行反馈
 
-## 6. Studio 多窗口实现
+## 6. Studio workspace pane 实现
 
-- `std-studio` 维护 `StudioApp` 和 detached window model
+- `std-studio` 维护 `StudioApp` 和 egui 内部 workspace pane model
 - 每个窗口类型映射到真实 pane content snapshot
 - Workflow builder、Analysis workbench、Plugin manager、App manager、Memory browser、Execution history 都复用共享 Core
 
@@ -99,7 +99,7 @@ members = [
 
 v1.0 已落地：
 - Launcher + 基础 Core + Workflow 执行
-- Studio 多窗口 + Workflow 编辑器 + 执行轨迹
+- Studio workspace pane + Workflow 编辑器 + 执行轨迹
 - `std-index` 四层结构化分析
 - `deno_core` JavaScript / TypeScript 插件系统
 

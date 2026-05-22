@@ -58,23 +58,43 @@ Open App: WeChat    Launch macOS app at /Applications/WeChat.app
 
 ### Release 和 install
 
-当前 release/install 证据：
+当前 release/install 证据已于 2026-05-22 08:03 UTC 用 `mise` 任务入口重跑，全部命令均在 `STD_TEST_MODE=1`、`STD_ALLOW_DESKTOP_AUTOMATION=0`、`STD_ALLOW_UI_PREVIEW=0`、`STD_ALLOW_BACKGROUND_UI_AUTOMATION=0` 下执行：
 
 ```text
-cargo build --release --workspace
+mise run release-build
 PASS
 
-target/release/std release package --version 1.0.0 --from target/release --dist dist/1.0.0-current
+mise run release-package
 PASS
+dist_dir=dist/1.0.0-current
+binaries=3
+app_bundles=2
+quality=PASS
 
-target/release/std release verify --dist dist/1.0.0-current
+mise run release-verify
 PASS
+version=1.0.0
+binaries=3
+app_bundles=2
+docs=26
+examples=9
+quality=6
+checksums=46
+metadata=PASS
+install_command=PASS
 
-target/release/std install run --prefix /tmp/std-cli-install-current --from dist/1.0.0-current/bin
+mise run install-run
 PASS
+prefix=.std-cli/install-check
+binaries=3
+app_bundles=2
 
-target/release/std install verify --prefix /tmp/std-cli-install-current
+mise run install-verify
 PASS
+prefix=.std-cli/install-check
+binaries=3
+app_bundles=2
+storage=PASS
 ```
 
 ### Quality
@@ -112,19 +132,26 @@ PASS
 
 ### Studio runtime
 
-安装版 `std-studio` 已验证 headless 核心工作流，但该证据只覆盖内部 workspace pane 状态，不证明 UI 已完成：
+安装版 `.std-cli/install-check/bin/std-studio` 已验证 headless 核心工作流，但该证据只覆盖内部 workspace pane 状态，不证明 UI 已完成：
 
 ```text
-/tmp/std-cli-install-current/bin/std-studio --smoke
+.std-cli/install-check/bin/std-studio --smoke
 studio_smoke PASS
-workspace_panes=7
-focused_pane=7
+workspace_panes=10
+focused_pane=11
+pane_opened=true
+pane_focus_switched=true
+pane_closed=true
+pane_focus_restored=true
+pane_state_preserved=true
 workflow_status=Completed
 batch_status=NeedsExternalRunner
-analysis=project
-analysis_coverage_complete=2
+analysis_coverage_layers=overview:PASS,components:PASS,relations:PASS,history:PASS
 memory_count=1
-plugin_status=Completed
+plugin_js_status=Completed
+plugin_ts_status=Completed
+operations_release_result=release verify evidence 7/7 present
+operations_install_result=install verify evidence 5/5 present
 history_count=1
 ```
 
@@ -136,7 +163,7 @@ history_count=1
 - Memory 写入和搜索
 - Plugin manifest 加载、检查和运行
 - Index 分析和 coverage
-- 7 个 Studio workspace pane 模型入口
+- 10 个 Studio workspace pane 模型入口
 
 安装版 `.app` 已验证真实 UI 可视渲染：
 
@@ -238,55 +265,43 @@ audit_events=WorkflowStarted,WorkflowStepCompleted,WorkflowCompleted
 
 ### Plugin runtime
 
-安装版 `std` 已验证 JavaScript 和 TypeScript 插件均通过 `deno_core` 执行：
+安装版 `.std-cli/install-check/bin/std` 已验证 JavaScript 和 TypeScript 插件均通过 `deno_core` 执行：
 
 ```text
-std plugin check examples/plugins/hello-js
+.std-cli/install-check/bin/std plugin check examples/plugins/hello-js
 status=PASS
 plugin_name=hello-js
 
-std plugin check examples/plugins/typed-ts
+.std-cli/install-check/bin/std plugin check examples/plugins/typed-ts
 status=PASS
 plugin_name=typed-ts
 
-std plugin run hello-js
+.std-cli/install-check/bin/std plugin run hello-js
 status=Completed
 runtime=deno_core
-script=/private/tmp/std-cli-smoke-data/plugins/hello-js/main.js
+script=/Users/chen/.std-cli/plugins/hello-js/main.js
 stdout={"plugin":"hello-js","greeting":"hello from std-cli","input":{}}
 
-std plugin run plugin-typed-ts
+.std-cli/install-check/bin/std plugin run plugin-typed-ts
 status=Completed
 runtime=deno_core
-script=/private/tmp/std-cli-smoke-data/plugins/typed-ts/main.ts
+script=/Users/chen/.std-cli/plugins/typed-ts/main.ts
 stdout={"plugin":"typed-ts","greeting":"hello std-cli"}
 ```
 
 ### Index runtime
 
-安装版 `std` 已验证四层 index coverage：
+安装版 `.std-cli/install-check/bin/std` 已验证四层 index coverage：
 
 ```text
-std index rebuild /tmp/std-cli-smoke-project
-components=1
-
-std files index /tmp/std-cli-smoke-project --max-depth 3 --max-files 20
-entries=1
-
-std index coverage
-total=1
-complete=1
+.std-cli/install-check/bin/std index coverage
+total=5
+complete=5
 incomplete=0
 entity_overview=true
 component_digest=true
 symbol_relation_index=true
 historical_context=true
-
-std index search SmokeComponent
-std-cli-smoke-project    components,relations
-
-std index ask SmokeComponent
-answer includes SmokeComponent defines_type and implements_type evidence
 ```
 
 ## 最终审计项

@@ -35,7 +35,7 @@ std-cli 的目标是把「快速触发 + 自动化编排 + 深度理解」三件
   - 快速搜索与触发 Workflow、App、功能
   - 简单 AI 操作
 
-- **Studio**：真正的桌面多窗口应用
+- **Studio**：单个无装饰宿主窗口内的专业 workspace 应用
   - Workflow 的专业构建与调试
   - 应用 / 项目 / 工具的结构化分析与可视化
   - 个人知识库浏览与管理
@@ -48,6 +48,7 @@ std-cli 的目标是把「快速触发 + 自动化编排 + 深度理解」三件
 - 全部使用 Rust + egui 实现
 - 强 Core、GUI 中立
 - Launcher 必须永远保持克制
+- Studio 不使用 macOS 原生窗口 chrome 作为产品 UI，所有主交互都由 egui 自绘
 - Studio 提供专业能力，但不追求消费级花哨
 - 本地优先，数据可控
 

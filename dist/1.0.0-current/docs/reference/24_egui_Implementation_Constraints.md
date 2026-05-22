@@ -48,7 +48,7 @@ egui 提供的核心布局：
 - `grid::Grid`
 - `Layout::with_main_align` / `with_cross_align`
 - `Window` / `Area`（用于 Tooltip / Popover）
-- `Viewport`（用于 detached window，已在 Studio 使用）
+- `Viewport`（仅用于宿主窗口，不用于 Studio 工作台主路径的 detached 子窗口）
 
 **std-cli 落地的布局规则**：
 
@@ -205,16 +205,16 @@ pub fn list_row(ui: &mut Ui, item: &ResultItem, selected: bool) -> Response {
 - widget 内 spawn tokio task
 - widget 内做 unwrap / expect（应返回 Result 或安全 fallback）
 
-## 08. 多 workspace window
+## 08. 多 workspace pane
 
-- 已落地：Studio 主路径使用 egui 内部 dock/pane 渲染 workspace window
-- 每个 workspace window 是 Studio 内部状态对象，不使用原生子窗口 chrome
+- 已落地：Studio 主路径使用 egui 内部 dock/pane 渲染 workspace pane
+- 每个 workspace pane 是 Studio 内部状态对象，不使用原生子窗口 chrome
 - 跨窗口同步通过 std-core 事件总线
-- workspace window 之间不直接互相调用 UI API
+- workspace pane 之间不直接互相调用 UI API
 
 **closeguard**：
 
-- 主窗口关闭时先记录 pending state，再关闭当前实例内 workspace windows
+- 主窗口关闭时先记录 pending state，再关闭当前实例内 workspace panes
 - 详见 11_Event_Protocol
 
 ## 09. Accessibility 接入
@@ -284,7 +284,7 @@ let composing = ctx.input(|i| {
 
 - wgpu backend 切换（当前 glow）：为后续启用更复杂的 shader-based 效果
 - Custom Painter 扩展：为 Relations 图、Memory timeline 等场景预留
-- 平台原生菜单（macOS NSMenu / Win Menu）的混入：通过 `eframe::NativeOptions::with_menubar`
+- 平台原生菜单（macOS NSMenu / Win Menu）的混入：只允许作为系统集成层，不得承担 Studio 主交互
 - Accessibility tree 的更深节点：等 accesskit 在 egui 中完善
 
 ## 15. 验收清单

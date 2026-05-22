@@ -15,6 +15,7 @@ Cargo.lock
 # Build artifacts
 *.dmg
 *.app
+.std-cli/
 
 # Local config
 .env

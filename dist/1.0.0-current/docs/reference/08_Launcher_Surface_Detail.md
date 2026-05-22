@@ -41,7 +41,9 @@
 - `GlobalHotkeyRuntime` 使用 `global-hotkey` 注册和匹配热键事件
 - `std-launcher --hotkey-smoke Alt+Space` 只注册并释放全局热键，输出注册耗时和 PASS/FAIL，不打开窗口
 - `std-launcher --window-smoke` 验证隐藏窗口发送 `Visible(false)`，热键唤起发送 `Visible(true)` 和 `Focus`
-- `std-launcher --gui-hotkey-smoke Alt+Space 5000` 是显式 opt-in 的桌面验证：启动隐藏 egui 窗口，注册真实全局热键，用 macOS 系统事件发送按键，收到事件后唤起窗口并退出
+- `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance` 是真实焦点、Enter 打开、窗口 toggle 的首选人工验收：启动固定 bundle id 的隔离 harness，用 per-process event tap、appKitDefined primer、center primer 和 postToPid 定向输入验证后台交互
+- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 5000` 只保留为人工安装包热键补充验收
+- 未设置 `STD_ALLOW_DESKTOP_AUTOMATION=1` 时，GUI hotkey smoke 返回 `SKIP`，不触碰当前桌面
 - 搜索使用 `std-core` Registry scoring
 - 结果渲染使用稳定尺寸列表，避免搜索、预览、触发时抖动
 

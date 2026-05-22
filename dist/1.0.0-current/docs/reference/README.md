@@ -15,7 +15,7 @@
 - [06_Workflow_System.md](06_Workflow_System.md) - Workflow 定义、执行、AI 集成
 - [07_Personal_RAG_and_Analysis.md](07_Personal_RAG_and_Analysis.md) - 个人环境索引与结构化理解（Eney 方向）
 - [08_Launcher_Surface_Detail.md](08_Launcher_Surface_Detail.md) - Launcher（cli 入口）详细设计
-- [09_Studio_Surface_Detail.md](09_Studio_Surface_Detail.md) - Studio 多窗口与编辑分析界面
+- [09_Studio_Surface_Detail.md](09_Studio_Surface_Detail.md) - Studio workspace pane 与编辑分析界面
 - [10_Tool_and_Plugin_System.md](10_Tool_and_Plugin_System.md) - Tool Registry 与插件机制
 - [11_Event_Protocol.md](11_Event_Protocol.md) - 事件驱动与表面通信协议
 - [12_Configuration_and_Storage.md](12_Configuration_and_Storage.md) - 配置、存储和权限边界
@@ -31,7 +31,7 @@
 - [19_Motion_and_Interaction_Rhythm.md](19_Motion_and_Interaction_Rhythm.md) - 动效曲线、时长档位、场景动效表、Spring 映射、Reduce Motion 降级
 - [20_Keyboard_Focus_and_Input.md](20_Keyboard_Focus_and_Input.md) - 键盘优先、焦点环、跨平台修饰键、全局热键、IME
 - [21_Launcher_UX_Spec.md](21_Launcher_UX_Spec.md) - Launcher 浮层从唤起到执行的全链路 UX 细则
-- [22_Studio_UX_Spec.md](22_Studio_UX_Spec.md) - Studio 多窗口布局、Workflow Builder、Analysis Workbench 等 UX 细则
+- [22_Studio_UX_Spec.md](22_Studio_UX_Spec.md) - Studio workspace pane 布局、Workflow Builder、Analysis Workbench 等 UX 细则
 - [23_Accessibility_and_Localization.md](23_Accessibility_and_Localization.md) - WCAG AA、屏幕阅读器、HC、Reduce Motion、i18n zh-CN / en-US
 - [24_egui_Implementation_Constraints.md](24_egui_Implementation_Constraints.md) - egui 落地约束、Material 替代策略、自定义 widget 规范
 

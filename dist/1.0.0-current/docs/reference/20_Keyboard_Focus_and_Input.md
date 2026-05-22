@@ -83,7 +83,9 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 **冲突处理**：
 
 - 注册失败时不静默失败：Launcher 启动时输出 `hotkey_registration FAIL`，并在 macOS menu bar / 系统托盘提示
-- 提供 `std-launcher --hotkey-smoke <combo>` 用于验证注册
+- 提供 `std-launcher --hotkey-smoke <combo>` 用于非 GUI 注册验证
+- 真实焦点、Enter 打开、窗口 toggle 验收必须优先使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance`
+- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke <combo>` 只保留为人工安装包热键补充验收
 - 提供 `std doctor` 检测系统已占用快捷键并建议替代
 
 **用户自定义**：
@@ -96,6 +98,24 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 
 - 唤起 Launcher 后再次按下相同热键 -> 关闭 Launcher（toggle）
 - Esc 始终关闭 Launcher，不可禁用
+
+**后台 UI 验收**：
+
+- 默认测试禁止 AX、CGEvent、postToPid、System Events 和真实全局热键
+- 真实焦点、Enter 打开、窗口 toggle、面板管理验收只能走显式 opt-in
+- 标准入口是 `mise run ui-background-acceptance`
+- 使用隔离 harness 后台验证，不操作用户正在使用的窗口
+- harness 目标必须由固定 bundle id、pid、window id、window title 四重匹配确认
+- 每次 harness 启动必须生成本轮 `harness_token`，窗口标题必须是 `std-cli Background UI Harness <token>`，禁止复用旧 harness
+- 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness <token>" --harness-token <token>`
+- driver 顺序固定为 per-process event tap -> appKitDefined primer -> center primer -> postToPid 定向输入
+- PASS 输出必须证明 `frontmost_preserved=true`，并且 `frontmost_before` 等于 `frontmost_after`
+- previous 和 target 任一 per-process event tap 安装失败时必须 `FAIL`，禁止继续发送 primer、点击或键盘事件
+- event tap 只订阅 raw value 13、19、20 三类 focus message，只拦截 previous app deactivation，target activation 必须放行
+- previous app 永远不能作为输入目标；真实 App 名称不能作为 harness 选择条件
+- 浮动光标只是状态可视化，不是输入机制
+- 禁止向当前 frontmost app、Terminal、1Password、WeChat、系统设置或用户既有窗口投递事件
+- 该后台路径不进入默认质量门禁，只能人工 opt-in 运行
 
 ## 05. Launcher 内快捷键
 

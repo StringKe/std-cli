@@ -102,7 +102,7 @@
 - 默认分组顺序：Action / Workflow > App / File > Clipboard > Memory > Skill > Other
 - 用户可在 Settings 自定义顺序
 - 同分组内按 score 降序
-- 分组标题 `text/footnote` `fg/tertiary` uppercase + 1px 上 divider，**不参与键盘选中**
+- 分组标题 `text/footnote` `fg/tertiary` 保留可读标题大小写 + 1px 上 divider，**不参与键盘选中**
 
 **项渲染**：
 
@@ -239,13 +239,19 @@
 | --- | --- | --- | --- |
 | 热键 -> 主面板可见 | ≤ 80ms | `LauncherPerformanceReport.hotkey_to_paint` | 已落地 |
 | keystroke -> 列表更新 | ≤ 16ms (95p) | 同 report | 已落地 |
-| Mod+K -> Action Panel 可见 | ≤ 50ms | smoke 断言 | 待补 |
-| 主面板关闭 -> 完全消失 | ≤ 200ms | smoke 断言 | 待补 |
+| Mod+K -> Action Panel 可见 | ≤ 50ms | `std-launcher --action-panel-smoke` | 已落地 |
+| 主面板关闭 -> 完全消失 | ≤ 200ms | `std-launcher --close-smoke` | 已落地 |
 | Cold start（first launch） | ≤ 600ms | std doctor | 已落地 |
 
 **回归门禁**：
 
-- 任何 Launcher 改动 PR 必须跑 `std-launcher --smoke` 和 `std-launcher --hotkey-smoke Alt+Space` 并附输出
+- 任何 Launcher 改动 PR 必须跑 `std-launcher --smoke`、`std-launcher --window-smoke`、`std-launcher --keyboard-smoke index` 并附输出
+- 真实焦点、Enter 打开、窗口 toggle 验证必须优先使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance`
+- 后台 UI 验收只能操作 `dev.std-cli.background-ui-harness` 隔离窗口，必须验证 bundle id、pid、window id、window title 四重匹配
+- 后台 UI harness 必须带本轮 `harness_token`，窗口标题必须是 `std-cli Background UI Harness <token>`，禁止复用旧 harness 或用户已有窗口
+- 后台 UI runner 必须输出 `frontmost_preserved=true`，并证明 `frontmost_before` 等于 `frontmost_after`
+- 后台 UI runner 只能验证隔离 harness 的后台事件路由，不得把 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前工作窗口作为目标
+- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space` 只保留为人工安装包热键补充验收，不进入默认回归门禁
 - 95p keystroke 时间退化 > 4ms 视为 P0 阻塞
 
 ## 11. 与上下游 surface 的关系

@@ -68,12 +68,20 @@
 
 证据：
 
-- `std-studio --smoke` 返回 `PASS`
-- `workspace_panes=7`
+- `.std-cli/install-check/bin/std-studio --smoke` 返回 `PASS`
+- `workspace_panes=10`
+- `pane_opened=true`
+- `pane_focus_switched=true`
+- `pane_closed=true`
+- `pane_focus_restored=true`
+- `pane_state_preserved=true`
 - `workflow_status=Completed`
 - `batch_status=NeedsExternalRunner`
-- `analysis_coverage_complete=2`
-- `plugin_status=Completed`
+- `analysis_coverage_layers=overview:PASS,components:PASS,relations:PASS,history:PASS`
+- `plugin_js_status=Completed`
+- `plugin_ts_status=Completed`
+- `operations_release_result=release verify evidence 7/7 present`
+- `operations_install_result=install verify evidence 5/5 present`
 - `/tmp/std-studio-installed-ui.png` 为 3840 x 2160 非空截图
 - System Events 窗口名为 `std-cli Studio`
 
@@ -120,10 +128,10 @@
 
 证据：
 
-- `std plugin check examples/plugins/hello-js` 返回 `status=PASS`
-- `std plugin check examples/plugins/typed-ts` 返回 `status=PASS`
-- `std plugin run hello-js` 返回 `status=Completed` 和 `runtime=deno_core`
-- `std plugin run plugin-typed-ts` 返回 `status=Completed` 和 `runtime=deno_core`
+- `.std-cli/install-check/bin/std plugin check examples/plugins/hello-js` 返回 `status=PASS`
+- `.std-cli/install-check/bin/std plugin check examples/plugins/typed-ts` 返回 `status=PASS`
+- `.std-cli/install-check/bin/std plugin run hello-js` 返回 `status=Completed` 和 `runtime=deno_core`
+- `.std-cli/install-check/bin/std plugin run plugin-typed-ts` 返回 `status=Completed` 和 `runtime=deno_core`
 - `cargo test --workspace -- --test-threads=1` 覆盖 scoped fs、network、clipboard 权限边界
 
 覆盖：
@@ -140,11 +148,8 @@
 
 证据：
 
-- `std index rebuild /tmp/std-cli-smoke-project` 返回 `components=1`
-- `std files index /tmp/std-cli-smoke-project` 返回 `entries=1`
-- `std index coverage` 返回 `complete=1`、`incomplete=0`
-- coverage 四项均为 true
-- `std index ask SmokeComponent` 返回 defines_type 和 implements_type evidence
+- `.std-cli/install-check/bin/std index coverage` 返回 `total=5`、`complete=5`、`incomplete=0`
+- 5 个 coverage item 的四层 coverage 均为 true
 
 覆盖：
 
@@ -181,9 +186,9 @@
 
 证据：
 
-- `cargo build --release --workspace` PASS
-- `std release package --version 1.0.0 --from target/release --dist dist/1.0.0-current` PASS
-- `std release verify --dist dist/1.0.0-current` PASS
+- `mise run release-build` PASS
+- `mise run release-package` PASS，`dist_dir=dist/1.0.0-current`、`binaries=3`、`app_bundles=2`、`quality=PASS`
+- `mise run release-verify` PASS，`binaries=3`、`app_bundles=2`、`docs=26`、`examples=9`、`quality=6`、`checksums=46`
 
 覆盖：
 
@@ -198,9 +203,9 @@
 
 证据：
 
-- `std install run --prefix /tmp/std-cli-install-current --from dist/1.0.0-current/bin` PASS
-- `std install verify --prefix /tmp/std-cli-install-current` PASS
-- installed `std`、`std-launcher`、`std-studio` smoke 均 PASS
+- `mise run install-run` PASS，安装到 `.std-cli/install-check`
+- `mise run install-verify` PASS，`binaries=3`、`app_bundles=2`、`storage=PASS`
+- installed `std`、`std-launcher`、`std-studio` headless smoke 均 PASS
 
 覆盖：
 
@@ -234,7 +239,7 @@
 
 ## 最终门槛
 
-状态：PASS
+状态：未完成
 
 完成前必须重跑并保留当前证据：
 
