@@ -103,7 +103,15 @@ mod tests {
         );
         assert_eq!(
             translate(Locale::ZhCn, "launcher.action.filter.hint"),
-            "Filter actions"
+            "过滤操作"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.filter.a11y"),
+            "Action Panel 过滤"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.no_matches"),
+            "没有匹配的操作"
         );
     }
 

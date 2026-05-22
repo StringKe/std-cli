@@ -2,11 +2,11 @@ use crate::i18n::Locale;
 
 pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
     match (locale, key) {
-        (Locale::ZhCn, "launcher.action.filter.hint") => Some("Filter actions"),
+        (Locale::ZhCn, "launcher.action.filter.hint") => Some("过滤操作"),
         (Locale::EnUs, "launcher.action.filter.hint") => Some("Filter actions"),
-        (Locale::ZhCn, "launcher.action.filter.a11y") => Some("Action Panel filter"),
+        (Locale::ZhCn, "launcher.action.filter.a11y") => Some("Action Panel 过滤"),
         (Locale::EnUs, "launcher.action.filter.a11y") => Some("Action Panel filter"),
-        (Locale::ZhCn, "launcher.action.no_matches") => Some("No matching actions"),
+        (Locale::ZhCn, "launcher.action.no_matches") => Some("没有匹配的操作"),
         (Locale::EnUs, "launcher.action.no_matches") => Some("No matching actions"),
         (Locale::ZhCn, "launcher.feedback.copy") => Some("复制"),
         (Locale::EnUs, "launcher.feedback.copy") => Some("Copy"),
