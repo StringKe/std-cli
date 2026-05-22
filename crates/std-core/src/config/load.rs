@@ -84,6 +84,11 @@ fn apply_env_overrides(config: &mut StdConfig) -> Result<(), ConfigError> {
         ("STD_REDUCE_MOTION", "appearance.reduce_motion"),
         ("STDCLI_HIGH_CONTRAST", "appearance.high_contrast"),
         ("STD_HIGH_CONTRAST", "appearance.high_contrast"),
+        (
+            "STDCLI_REDUCE_TRANSPARENCY",
+            "appearance.reduce_transparency",
+        ),
+        ("STD_REDUCE_TRANSPARENCY", "appearance.reduce_transparency"),
     ] {
         if let Ok(value) = env::var(env_key) {
             config.set_field(field, &value).map_err(|error| {

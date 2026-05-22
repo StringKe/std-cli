@@ -18,6 +18,7 @@ pub struct ThemeProfile {
     pub requested: ThemeMode,
     pub effective: EffectiveTheme,
     pub high_contrast: bool,
+    pub reduce_transparency: bool,
     pub reduce_motion: bool,
     pub focus_ring_width: u32,
 }
@@ -34,7 +35,7 @@ impl ThemeProfile {
         mode: ThemeMode,
         config_reduce_motion: bool,
     ) -> Self {
-        Self::apply_with_accessibility(ctx, mode, config_reduce_motion, false)
+        Self::apply_with_accessibility(ctx, mode, config_reduce_motion, false, false)
     }
 
     pub fn apply_with_accessibility(
@@ -42,10 +43,12 @@ impl ThemeProfile {
         mode: ThemeMode,
         config_reduce_motion: bool,
         config_high_contrast: bool,
+        config_reduce_transparency: bool,
     ) -> Self {
         let a11y = AccessibilityContext::from_env();
         let a11y = AccessibilityContext {
             high_contrast: a11y.high_contrast || config_high_contrast,
+            reduce_transparency: a11y.reduce_transparency || config_reduce_transparency,
             ..a11y
         };
         apply_theme_with_scale(ctx, mode, UiScale::from_env(), &a11y);
@@ -59,6 +62,7 @@ impl ThemeProfile {
             requested: mode,
             effective: effective_theme(ctx, mode),
             high_contrast: a11y.high_contrast,
+            reduce_transparency: a11y.reduce_transparency,
             reduce_motion: MotionContext::from_env().is_reduced(),
             focus_ring_width: a11y.focus_ring_width() as u32,
         }
@@ -402,7 +406,8 @@ mod tests {
     fn theme_profile_merges_config_high_contrast() {
         let ctx = egui::Context::default();
 
-        let profile = ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, true);
+        let profile =
+            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Light, false, true, false);
 
         assert!(profile.high_contrast);
         assert_eq!(profile.focus_ring_width, 3);
@@ -410,5 +415,16 @@ mod tests {
             ctx.style().visuals.selection.bg_fill,
             palette::LIGHT_ACCENT_WEAK_HC
         );
+    }
+
+    #[test]
+    fn theme_profile_merges_config_reduce_transparency() {
+        let ctx = egui::Context::default();
+
+        let profile =
+            ThemeProfile::apply_with_accessibility(&ctx, ThemeMode::Dark, false, false, true);
+
+        assert!(profile.reduce_transparency);
+        assert_eq!(profile.effective, EffectiveTheme::Dark);
     }
 }

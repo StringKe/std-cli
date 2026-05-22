@@ -10,6 +10,9 @@ impl StdConfig {
             "theme" => Some(self.theme.clone()),
             "appearance.reduce_motion" => Some(self.appearance.reduce_motion.to_string()),
             "appearance.high_contrast" => Some(self.appearance.high_contrast.to_string()),
+            "appearance.reduce_transparency" => {
+                Some(self.appearance.reduce_transparency.to_string())
+            }
             _ => None,
         }
     }
@@ -32,6 +35,11 @@ impl StdConfig {
             "appearance.high_contrast" => {
                 self.appearance.high_contrast = value.parse::<bool>().map_err(|_| {
                     format!("appearance.high_contrast must be true or false: {value}")
+                })?;
+            }
+            "appearance.reduce_transparency" => {
+                self.appearance.reduce_transparency = value.parse::<bool>().map_err(|_| {
+                    format!("appearance.reduce_transparency must be true or false: {value}")
                 })?;
             }
             _ => return Err(format!("unknown config key: {key}")),

@@ -118,6 +118,18 @@ impl StudioEguiApp {
                     self.settings_high_contrast.to_string(),
                 );
             }
+            if let ToggleRowEvent::Toggle(enabled) = settings_toggle::toggle_row(
+                ui,
+                i18n::t("studio.settings.transparency.reduce"),
+                i18n::t("studio.settings.transparency.reduce.detail"),
+                self.settings_reduce_transparency,
+            ) {
+                self.settings_reduce_transparency = enabled;
+                self.save_setting(
+                    "appearance.reduce_transparency",
+                    self.settings_reduce_transparency.to_string(),
+                );
+            }
         });
     }
 

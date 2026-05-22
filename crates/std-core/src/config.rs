@@ -48,6 +48,7 @@ pub struct StdConfig {
 pub struct AppearanceConfig {
     pub reduce_motion: bool,
     pub high_contrast: bool,
+    pub reduce_transparency: bool,
 }
 
 impl StdConfig {
@@ -89,6 +90,10 @@ impl StdConfig {
 
     pub fn high_contrast(&self) -> bool {
         self.appearance.high_contrast
+    }
+
+    pub fn reduce_transparency(&self) -> bool {
+        self.appearance.reduce_transparency
     }
 
     pub fn writable_config_path() -> PathBuf {
@@ -134,6 +139,7 @@ mod tests {
         assert_eq!(cfg.theme, "system");
         assert!(!cfg.reduce_motion());
         assert!(!cfg.high_contrast());
+        assert!(!cfg.reduce_transparency());
         assert!(cfg.workflows_dir().ends_with("workflows"));
         assert!(cfg.plugins_dir().ends_with("plugins"));
         assert!(cfg.apps_dir().ends_with("Applications"));
@@ -162,6 +168,9 @@ mod tests {
         config
             .set_field("appearance.high_contrast", "true")
             .unwrap();
+        config
+            .set_field("appearance.reduce_transparency", "true")
+            .unwrap();
         config.set_field("data_dir", "/tmp/std-data").unwrap();
         config.save_to(&path).unwrap();
 
@@ -174,11 +183,15 @@ mod tests {
         assert!(loaded.enable_ai);
         assert!(loaded.appearance.reduce_motion);
         assert!(loaded.appearance.high_contrast);
+        assert!(loaded.appearance.reduce_transparency);
         assert_eq!(loaded.data_dir, PathBuf::from("/tmp/std-data"));
         assert!(config.set_field("missing", "value").is_err());
         assert!(config.set_field("enable_ai", "yes").is_err());
         assert!(config.set_field("appearance.reduce_motion", "yes").is_err());
         assert!(config.set_field("appearance.high_contrast", "yes").is_err());
+        assert!(config
+            .set_field("appearance.reduce_transparency", "yes")
+            .is_err());
     }
 
     #[test]
@@ -190,7 +203,7 @@ mod tests {
         fs::write(
             &config_path,
             format!(
-                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\nappearance:\n  reduce_motion: true\n  high_contrast: true\n",
+                "launcher_hotkey: Cmd+K\ndata_dir: {}\nenable_ai: true\ntheme: dark\nappearance:\n  reduce_motion: true\n  high_contrast: true\n  reduce_transparency: true\n",
                 data_dir.display()
             ),
         )
@@ -207,6 +220,7 @@ mod tests {
         assert_eq!(config.theme, "dark");
         assert!(config.reduce_motion());
         assert!(config.high_contrast());
+        assert!(config.reduce_transparency());
     }
 
     #[test]

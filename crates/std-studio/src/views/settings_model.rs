@@ -68,6 +68,7 @@ pub(crate) struct SettingsContract {
     pub(crate) theme_control: &'static str,
     pub(crate) motion_control: &'static str,
     pub(crate) contrast_control: &'static str,
+    pub(crate) transparency_control: &'static str,
     pub(crate) ai_control: &'static str,
     pub(crate) storage_control: &'static str,
 }
@@ -87,6 +88,7 @@ pub(crate) fn settings_contract() -> SettingsContract {
         theme_control: "segmented-control",
         motion_control: "token-toggle-row",
         contrast_control: "token-toggle-row",
+        transparency_control: "token-toggle-row",
         ai_control: "token-toggle-row",
         storage_control: "token-path-row",
     }
@@ -121,6 +123,7 @@ mod tests {
         assert_eq!(contract.theme_control, "segmented-control");
         assert_eq!(contract.motion_control, "token-toggle-row");
         assert_eq!(contract.contrast_control, "token-toggle-row");
+        assert_eq!(contract.transparency_control, "token-toggle-row");
         assert_eq!(contract.ai_control, "token-toggle-row");
         assert_eq!(contract.storage_control, "token-path-row");
     }

@@ -85,6 +85,7 @@ pub(crate) struct StudioEguiApp {
     pub(crate) settings_enable_ai: bool,
     pub(crate) settings_reduce_motion: bool,
     pub(crate) settings_high_contrast: bool,
+    pub(crate) settings_reduce_transparency: bool,
     pub(crate) settings_theme: String,
     pub(crate) settings_category: crate::views::settings_model::SettingsCategory,
     pub(crate) batch_json: String,
@@ -124,6 +125,7 @@ impl Default for StudioEguiApp {
             settings_enable_ai: false,
             settings_reduce_motion: false,
             settings_high_contrast: false,
+            settings_reduce_transparency: false,
             settings_theme: String::new(),
             settings_category: crate::views::settings_model::SettingsCategory::Appearance,
             batch_json: default_batch_json(),
@@ -152,6 +154,7 @@ impl StudioEguiApp {
         self.settings_enable_ai = self.app.core.config.enable_ai;
         self.settings_reduce_motion = self.app.core.config.reduce_motion();
         self.settings_high_contrast = self.app.core.config.high_contrast();
+        self.settings_reduce_transparency = self.app.core.config.reduce_transparency();
         self.settings_theme = self.app.core.config.theme.clone();
     }
 }
@@ -163,6 +166,7 @@ impl eframe::App for StudioEguiApp {
             &self.app.core.config.theme,
             self.app.core.config.reduce_motion(),
             self.app.core.config.high_contrast(),
+            self.app.core.config.reduce_transparency(),
         ));
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);

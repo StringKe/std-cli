@@ -92,6 +92,14 @@ fn translate_appearance(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.settings.contrast.high.detail") => {
             Some("Saves appearance.high_contrast for text, borders, and focus rings")
         }
+        (Locale::ZhCn, "studio.settings.transparency.reduce") => Some("减少透明度"),
+        (Locale::EnUs, "studio.settings.transparency.reduce") => Some("Reduce transparency"),
+        (Locale::ZhCn, "studio.settings.transparency.reduce.detail") => {
+            Some("保存到 appearance.reduce_transparency，阴影改为硬边")
+        }
+        (Locale::EnUs, "studio.settings.transparency.reduce.detail") => {
+            Some("Saves appearance.reduce_transparency and hardens elevation edges")
+        }
         _ => None,
     }
 }
@@ -223,6 +231,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.settings.contrast.high" => Some("High contrast"),
         "studio.settings.contrast.high.detail" => {
             Some("Saves appearance.high_contrast for text, borders, and focus rings")
+        }
+        "studio.settings.transparency.reduce" => Some("Reduce transparency"),
+        "studio.settings.transparency.reduce.detail" => {
+            Some("Saves appearance.reduce_transparency and hardens elevation edges")
         }
         "studio.settings.hotkey.contract" => {
             Some("Focus and IME first, hotkeys register by explicit opt-in")

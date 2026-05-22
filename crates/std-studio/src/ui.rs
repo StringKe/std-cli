@@ -6,12 +6,14 @@ pub(crate) fn install_visuals(
     theme: &str,
     config_reduce_motion: bool,
     config_high_contrast: bool,
+    config_reduce_transparency: bool,
 ) -> ThemeProfile {
     ThemeProfile::apply_with_accessibility(
         ctx,
         ThemeMode::resolve(theme),
         config_reduce_motion,
         config_high_contrast,
+        config_reduce_transparency,
     )
 }
 
