@@ -26,11 +26,19 @@ const MANUAL_BLOCKERS: [&str; 6] = [
     "完成前必须重跑并保留当前证据",
 ];
 
+const CURRENT_EVIDENCE_RULES: [&str; 4] = [
+    "历史 target/ui-evidence 路径不能作为完成证据",
+    "历史 /tmp 截图不能作为完成证据",
+    "真实截图必须来自本轮 STD_ALLOW_UI_PREVIEW=1 capture-ui-matrix 输出",
+    "安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出",
+];
+
 pub(crate) struct CompletionDoctor {
     pub(crate) audit: &'static str,
     pub(crate) matrix: &'static str,
     pub(crate) areas: Vec<&'static str>,
     pub(crate) blockers: Vec<&'static str>,
+    pub(crate) evidence_rules: Vec<&'static str>,
     pub(crate) final_completion: &'static str,
 }
 
@@ -47,6 +55,7 @@ pub(crate) fn check_completion_gate() -> Result<CompletionDoctor, CliError> {
         matrix: "PASS",
         areas: REQUIRED_AREAS.to_vec(),
         blockers: MANUAL_BLOCKERS.to_vec(),
+        evidence_rules: CURRENT_EVIDENCE_RULES.to_vec(),
         final_completion: "INCOMPLETE_REAL_GUI_REQUIRED",
     })
 }
@@ -64,6 +73,9 @@ fn check_audit_doc(audit: &str) -> Result<(), CliError> {
         check_text(audit, required)?;
     }
     for required in REQUIRED_AREAS {
+        check_text(audit, required)?;
+    }
+    for required in CURRENT_EVIDENCE_RULES {
         check_text(audit, required)?;
     }
     Ok(())
@@ -93,6 +105,9 @@ fn check_matrix_doc(matrix: &str) -> Result<(), CliError> {
     for blocker in MANUAL_BLOCKERS {
         check_text(matrix, blocker)?;
     }
+    for required in CURRENT_EVIDENCE_RULES {
+        check_text(matrix, required)?;
+    }
     Ok(())
 }
 
@@ -108,6 +123,7 @@ mod tests {
         assert_eq!(report.matrix, "PASS");
         assert_eq!(report.final_completion, "INCOMPLETE_REAL_GUI_REQUIRED");
         assert_eq!(report.areas, REQUIRED_AREAS);
+        assert_eq!(report.evidence_rules, CURRENT_EVIDENCE_RULES);
         assert!(report
             .blockers
             .contains(&"Studio UI 仍需按 docs/18-24 重新验收"));

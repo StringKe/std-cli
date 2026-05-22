@@ -107,6 +107,7 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
         completion_matrix: completion.matrix,
         completion_areas: completion.areas,
         completion_manual_blockers: completion.blockers,
+        completion_evidence_rules: completion.evidence_rules,
         final_completion: completion.final_completion,
         release_plan: "PASS",
         install_plan: "PASS",

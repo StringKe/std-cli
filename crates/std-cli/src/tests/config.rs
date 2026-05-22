@@ -148,6 +148,9 @@ fn assert_doctor_ui_output(output: &str) {
     assert!(
         output.contains("completion_manual_blockers=Launcher 截图仍需按 docs/18-21 做像素级审计")
     );
+    assert!(
+        output.contains("completion_evidence_rules=历史 target/ui-evidence 路径不能作为完成证据")
+    );
     assert!(output.contains("final_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
 
@@ -271,6 +274,11 @@ fn assert_doctor_json_completion(report: &serde_json::Value) {
         .unwrap()
         .iter()
         .any(|blocker| blocker.as_str() == Some("Studio UI 仍需按 docs/18-24 重新验收")));
+    assert!(report["completion_evidence_rules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|rule| rule.as_str() == Some("历史 /tmp 截图不能作为完成证据")));
 }
 
 #[test]

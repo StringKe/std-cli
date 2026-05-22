@@ -4,6 +4,13 @@
 
 当前矩阵用于最终完成判断。UI 完成状态全部作废，所有项目必须用当前运行证据重新证明，不能用代码存在、测试存在或历史印象替代。
 
+当前证据规则：
+
+- 历史 target/ui-evidence 路径不能作为完成证据
+- 历史 /tmp 截图不能作为完成证据
+- 真实截图必须来自本轮 STD_ALLOW_UI_PREVIEW=1 capture-ui-matrix 输出
+- 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
+
 ## Core
 
 状态：未完成

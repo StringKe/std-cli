@@ -3,6 +3,13 @@
 ## 当前结论
 v1.0 completion 未完成。当前 UI 完成状态全部作废，功能 smoke 和后端能力不能作为 UI 完成证据。完成状态不能从单元测试、smoke 路径存在或 UI 代码存在直接推出。每个门槛都必须有当前运行证据。
 
+当前证据规则：
+
+- 历史 target/ui-evidence 路径不能作为完成证据
+- 历史 /tmp 截图不能作为完成证据
+- 真实截图必须来自本轮 STD_ALLOW_UI_PREVIEW=1 capture-ui-matrix 输出
+- 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
+
 ## 已验证证据
 
 ### Launcher runtime

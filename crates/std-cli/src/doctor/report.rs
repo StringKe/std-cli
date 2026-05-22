@@ -39,6 +39,7 @@ pub(crate) struct DoctorReport {
     pub(crate) completion_matrix: &'static str,
     pub(crate) completion_areas: Vec<&'static str>,
     pub(crate) completion_manual_blockers: Vec<&'static str>,
+    pub(crate) completion_evidence_rules: Vec<&'static str>,
     pub(crate) final_completion: &'static str,
     pub(crate) release_plan: &'static str,
     pub(crate) install_plan: &'static str,
@@ -48,7 +49,7 @@ pub(crate) struct DoctorReport {
 impl DoctorReport {
     pub(crate) fn text(&self) -> String {
         format!(
-            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nconfig_files={config_files}\nmax_config_file={max_config_file}:{max_config_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nui_docs={ui_docs}\nui_docs_count={ui_docs_count}\nlauncher_ui_gates={launcher_ui_gates}\nstudio_ui_gates={studio_ui_gates}\nmanual_desktop_acceptance={manual_desktop_acceptance}\nbackground_ui_acceptance={background_ui_acceptance}\ndesktop_automation_default={desktop_automation_default}\nui_completion={ui_completion}\ncompletion_audit={completion_audit}\ncompletion_matrix={completion_matrix}\ncompletion_areas={completion_areas}\ncompletion_manual_blockers={completion_manual_blockers}\nfinal_completion={final_completion}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
+            "doctor {status}\nstorage={storage}\nactions={actions}\nplanner={planner}\nworkflow_dry_run={workflow_dry_run}\nindex_components={index_components}\nindex_relations={index_relations}\nplugins={plugins}\naudit_events={audit_events}\nquality={quality}\nquality_ci={quality_ci}\ndylint_lint={dylint_lint}\nquality_tools={quality_tools}\nsource_file_limit={source_file_limit}\nconfig_file_limit={config_file_limit}\nsource_files={source_files}\nmax_source_file={max_source_file}:{max_source_lines}\nconfig_files={config_files}\nmax_config_file={max_config_file}:{max_config_lines}\nworkspace_crates={workspace_crates}\nlauncher={launcher}\nstudio={studio}\nui_docs={ui_docs}\nui_docs_count={ui_docs_count}\nlauncher_ui_gates={launcher_ui_gates}\nstudio_ui_gates={studio_ui_gates}\nmanual_desktop_acceptance={manual_desktop_acceptance}\nbackground_ui_acceptance={background_ui_acceptance}\ndesktop_automation_default={desktop_automation_default}\nui_completion={ui_completion}\ncompletion_audit={completion_audit}\ncompletion_matrix={completion_matrix}\ncompletion_areas={completion_areas}\ncompletion_manual_blockers={completion_manual_blockers}\ncompletion_evidence_rules={completion_evidence_rules}\nfinal_completion={final_completion}\nrelease_plan={release_plan}\ninstall_plan={install_plan}\nconfig_path={config_path}",
             status = self.status,
             storage = self.storage,
             actions = self.actions,
@@ -85,6 +86,7 @@ impl DoctorReport {
             completion_matrix = self.completion_matrix,
             completion_areas = self.completion_areas.join(","),
             completion_manual_blockers = self.completion_manual_blockers.join("|"),
+            completion_evidence_rules = self.completion_evidence_rules.join("|"),
             final_completion = self.final_completion,
             release_plan = self.release_plan,
             install_plan = self.install_plan,
@@ -130,6 +132,7 @@ impl DoctorReport {
             "completion_matrix": self.completion_matrix,
             "completion_areas": self.completion_areas,
             "completion_manual_blockers": self.completion_manual_blockers,
+            "completion_evidence_rules": self.completion_evidence_rules,
             "final_completion": self.final_completion,
             "release_plan": self.release_plan,
             "install_plan": self.install_plan,
