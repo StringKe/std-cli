@@ -71,6 +71,10 @@ mod tests {
 
         assert!(report.pass());
         assert!(report.output().contains("internal-egui-workspace-panes"));
+        assert!(report.output().contains("extra_viewports=false"));
+        assert!(report.output().contains("show_viewport_api=false"));
+        assert!(report.output().contains("egui_window_api=false"));
+        assert!(report.output().contains("settings_overlay=false"));
         assert!(report
             .output()
             .contains("source_guard=workspace_policy_guard.rs"));

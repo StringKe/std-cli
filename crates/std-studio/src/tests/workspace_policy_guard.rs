@@ -57,6 +57,10 @@ fn workspace_policy_never_claims_headless_smoke_completes_ui() {
     let report = policy.strict_report();
 
     assert!(report.contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+    assert!(report.contains("extra_viewports=false"));
+    assert!(report.contains("show_viewport_api=false"));
+    assert!(report.contains("egui_window_api=false"));
+    assert!(report.contains("settings_overlay=false"));
     assert!(report.contains("manual_ui_evidence_gates=light-dark-screenshots"));
     assert!(report.contains("workspace-pane-open-focus-close-restore"));
     assert!(report.contains("keyboard-a11y-focus"));

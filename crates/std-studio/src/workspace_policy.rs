@@ -4,6 +4,10 @@ pub struct StudioWorkspacePolicy {
     pub pane_system: PaneSystemPolicy,
     pub native_child_windows: bool,
     pub detached_panels: bool,
+    pub extra_viewports: bool,
+    pub show_viewport_api: bool,
+    pub egui_window_api: bool,
+    pub settings_overlay: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +55,10 @@ impl StudioWorkspacePolicy {
             pane_system: PaneSystemPolicy::InternalEguiWorkspacePanes,
             native_child_windows: false,
             detached_panels: false,
+            extra_viewports: false,
+            show_viewport_api: false,
+            egui_window_api: false,
+            settings_overlay: false,
         }
     }
 
@@ -60,6 +68,22 @@ impl StudioWorkspacePolicy {
 
     pub const fn allows_detached_panels(self) -> bool {
         self.detached_panels
+    }
+
+    pub const fn allows_extra_viewports(self) -> bool {
+        self.extra_viewports
+    }
+
+    pub const fn allows_show_viewport_api(self) -> bool {
+        self.show_viewport_api
+    }
+
+    pub const fn allows_egui_window_api(self) -> bool {
+        self.egui_window_api
+    }
+
+    pub const fn allows_settings_overlay(self) -> bool {
+        self.settings_overlay
     }
 
     pub const fn summary(self) -> &'static str {
@@ -73,11 +97,15 @@ impl StudioWorkspacePolicy {
 
     pub fn strict_report(self) -> String {
         format!(
-            "host={};pane_system={};native_child_windows={};detached_panels={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={};ui_completion_boundary={};manual_ui_evidence_gates={}",
+            "host={};pane_system={};native_child_windows={};detached_panels={};extra_viewports={};show_viewport_api={};egui_window_api={};settings_overlay={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={};ui_completion_boundary={};manual_ui_evidence_gates={}",
             self.host_window.label(),
             self.pane_system.label(),
             self.native_child_windows,
             self.detached_panels,
+            self.extra_viewports,
+            self.show_viewport_api,
+            self.egui_window_api,
+            self.settings_overlay,
             Self::DOC_REFERENCE,
             Self::VIEWPORT_TOUCHPOINTS.join("|"),
             Self::NATIVE_ENTRYPOINTS.join("|"),

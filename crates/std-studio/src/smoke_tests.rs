@@ -70,12 +70,16 @@ fn assert_workspace_forbidden_policy_summary(summary: &str) {
     assert!(summary.contains("forbidden=native-child-windows:false|detached-panels:false"));
     assert!(summary.contains("native_child_windows=false"));
     assert!(summary.contains("detached_panels=false"));
+    assert!(summary.contains("extra_viewports=false"));
+    assert!(summary.contains("show_viewport_api=false"));
+    assert!(summary.contains("egui_window_api=false"));
+    assert!(summary.contains("settings_overlay=false"));
 }
 
 fn assert_workspace_pane_lifecycle_summary(summary: &str) {
-    assert!(summary.contains(
-        "pane_host_policy=host=single-borderless-egui-viewport;pane_system=internal-egui-workspace-panes;native_child_windows=false;detached_panels=false;docs=docs/22 + docs/24"
-    ));
+    assert!(summary.contains("pane_host_policy=host=single-borderless-egui-viewport"));
+    assert!(summary.contains("pane_system=internal-egui-workspace-panes"));
+    assert!(summary.contains("docs=docs/22 + docs/24"));
     assert!(
         summary.contains("pane_management_sequence=open>dedupe>focus>switch>close>reopen>restore")
     );
@@ -84,19 +88,30 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("hotkey_source=default-or-user"));
     assert!(summary.contains("hotkey_reset=reset-to-default"));
     assert!(summary.contains("hotkey_control=token-binding-row"));
+    assert_workspace_settings_policy_summary(summary);
+    assert_workspace_main_path_summary(summary);
+}
+
+fn assert_workspace_settings_policy_summary(summary: &str) {
     assert!(summary.contains("theme_modes=system|dark|light"));
     assert!(summary.contains("theme_control=segmented-control"));
     assert!(summary.contains("appearance_profile=theme-profile=requested|effective"));
     assert!(summary.contains("focus-ring|ui-scale"));
     assert!(summary.contains("ai_control=token-toggle-row"));
     assert!(summary.contains("storage_control=token-path-row"));
+}
+
+fn assert_workspace_main_path_summary(summary: &str) {
     assert!(summary.contains("workspace_main_path_contract=host=single-borderless-egui-viewport"));
     assert!(summary.contains("panes=internal-egui-workspace-panes"));
     assert!(summary.contains("extra_viewports=forbidden"));
     assert!(summary.contains("show_viewport=forbidden"));
+    assert!(summary.contains("show_viewport_api=false"));
     assert!(summary.contains("viewport_id=forbidden"));
     assert!(summary.contains("egui_window=forbidden"));
+    assert!(summary.contains("egui_window_api=false"));
     assert!(summary.contains("settings_overlay=forbidden"));
+    assert!(summary.contains("settings_overlay=false"));
 }
 
 fn assert_workspace_ui_completion_boundary(summary: &str) {

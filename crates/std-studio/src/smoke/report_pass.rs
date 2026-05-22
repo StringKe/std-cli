@@ -79,13 +79,22 @@ impl StudioSmokeReport {
                 .contains("show_viewport=forbidden")
             && self
                 .workspace_main_path_contract
+                .contains("show_viewport_api=false")
+            && self
+                .workspace_main_path_contract
                 .contains("viewport_id=forbidden")
             && self
                 .workspace_main_path_contract
                 .contains("egui_window=forbidden")
             && self
                 .workspace_main_path_contract
+                .contains("egui_window_api=false")
+            && self
+                .workspace_main_path_contract
                 .contains("settings_overlay=forbidden")
+            && self
+                .workspace_main_path_contract
+                .contains("settings_overlay=false")
             && !self.native_child_windows
             && !self.detached_panels
     }

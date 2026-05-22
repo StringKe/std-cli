@@ -6,6 +6,10 @@ pub(crate) struct WorkspacePolicySmoke {
     pub(crate) pane_system: &'static str,
     pub(crate) native_child_windows: bool,
     pub(crate) detached_panels: bool,
+    pub(crate) extra_viewports: bool,
+    pub(crate) show_viewport_api: bool,
+    pub(crate) egui_window_api: bool,
+    pub(crate) settings_overlay: bool,
     pub(crate) doc_reference: &'static str,
     pub(crate) summary: &'static str,
     pub(crate) viewport_touchpoints: String,
@@ -27,6 +31,10 @@ impl WorkspacePolicySmoke {
             pane_system: policy.pane_system.label(),
             native_child_windows: policy.allows_native_child_windows(),
             detached_panels: policy.allows_detached_panels(),
+            extra_viewports: policy.allows_extra_viewports(),
+            show_viewport_api: policy.allows_show_viewport_api(),
+            egui_window_api: policy.allows_egui_window_api(),
+            settings_overlay: policy.allows_settings_overlay(),
             doc_reference: StudioWorkspacePolicy::DOC_REFERENCE,
             summary: policy.summary(),
             viewport_touchpoints: StudioWorkspacePolicy::VIEWPORT_TOUCHPOINTS.join("|"),
@@ -43,6 +51,10 @@ impl WorkspacePolicySmoke {
             && self.pane_system == "internal-egui-workspace-panes"
             && !self.native_child_windows
             && !self.detached_panels
+            && !self.extra_viewports
+            && !self.show_viewport_api
+            && !self.egui_window_api
+            && !self.settings_overlay
             && self.doc_reference == "docs/22 + docs/24"
             && self.summary == "single egui host viewport, internal workspace panes"
             && self.viewport_touchpoints
@@ -69,12 +81,16 @@ impl WorkspacePolicySmoke {
 
     pub(crate) fn output(&self) -> String {
         format!(
-            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nforbidden_apis={}\nui_completion_boundary={}\nmanual_ui_evidence_gates={}\nsource_guard={}",
+            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\nextra_viewports={}\nshow_viewport_api={}\negui_window_api={}\nsettings_overlay={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nforbidden_apis={}\nui_completion_boundary={}\nmanual_ui_evidence_gates={}\nsource_guard={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.host_window,
             self.pane_system,
             self.native_child_windows,
             self.detached_panels,
+            self.extra_viewports,
+            self.show_viewport_api,
+            self.egui_window_api,
+            self.settings_overlay,
             self.doc_reference,
             self.summary,
             self.viewport_touchpoints,
@@ -104,6 +120,10 @@ mod tests {
         assert!(report.pass(), "{}", report.output());
         assert!(report.output().contains("native_child_windows=false"));
         assert!(report.output().contains("detached_panels=false"));
+        assert!(report.output().contains("extra_viewports=false"));
+        assert!(report.output().contains("show_viewport_api=false"));
+        assert!(report.output().contains("egui_window_api=false"));
+        assert!(report.output().contains("settings_overlay=false"));
         assert!(report
             .output()
             .contains("viewport_touchpoints=src/viewport.rs"));

@@ -140,9 +140,12 @@ fn workspace_main_path_contract() -> String {
         "panes=internal-egui-workspace-panes",
         "extra_viewports=forbidden",
         "show_viewport=forbidden",
+        "show_viewport_api=false",
         "viewport_id=forbidden",
         "egui_window=forbidden",
+        "egui_window_api=false",
         "settings_overlay=forbidden",
+        "settings_overlay=false",
         "allowed_viewport_files=viewport|host_chrome|preview",
     ]
     .join(",")

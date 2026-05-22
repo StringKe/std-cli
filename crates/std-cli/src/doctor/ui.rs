@@ -48,6 +48,7 @@ pub(crate) fn check_ui_completion_evidence() -> Result<UiDoctor, CliError> {
     check_runtime_theme_profiles(&root)?;
     check_studio_keyboard_evidence(&root)?;
     check_studio_operations_evidence(&root)?;
+    check_studio_workspace_policy_contract(&root)?;
     check_launcher_panel_viewport(&root)?;
     check_preview_matrices(&root)?;
     check_launcher_keyboard_ime_evidence(&root)?;
@@ -150,6 +151,40 @@ fn check_studio_operations_evidence(root: &std::path::Path) -> Result<(), CliErr
         &studio_smoke,
         "operations_summary: inputs.operations.summary()",
     )?;
+    Ok(())
+}
+
+fn check_studio_workspace_policy_contract(root: &std::path::Path) -> Result<(), CliError> {
+    let policy = read_required(&root.join("crates/std-studio/src/workspace_policy.rs"))?;
+    let smoke = read_required(&root.join("crates/std-studio/src/smoke/workspace_policy_smoke.rs"))?;
+    let guard = read_required(&root.join("crates/std-studio/src/tests/workspace_policy_guard.rs"))?;
+    let main_smoke = read_required(&root.join("crates/std-studio/src/smoke/workspace_smoke.rs"))?;
+    let evidence = format!("{policy}\n{smoke}\n{guard}\n{main_smoke}");
+    for required in [
+        "pub extra_viewports: bool",
+        "pub show_viewport_api: bool",
+        "pub egui_window_api: bool",
+        "pub settings_overlay: bool",
+        "extra_viewports: false",
+        "show_viewport_api: false",
+        "egui_window_api: false",
+        "settings_overlay: false",
+        "pub const fn allows_extra_viewports",
+        "pub const fn allows_show_viewport_api",
+        "pub const fn allows_egui_window_api",
+        "pub const fn allows_settings_overlay",
+        "extra_viewports=false",
+        "show_viewport_api=false",
+        "egui_window_api=false",
+        "settings_overlay=false",
+        "source_guard=workspace_policy_guard.rs",
+        "extra_viewports=forbidden",
+        "show_viewport=forbidden",
+        "egui_window=forbidden",
+        "settings_overlay=forbidden",
+    ] {
+        check_text(&evidence, required)?;
+    }
     Ok(())
 }
 

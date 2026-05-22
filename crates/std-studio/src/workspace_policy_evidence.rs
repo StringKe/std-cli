@@ -82,6 +82,30 @@ fn render_policy(
         );
         operations_rows::gate_row(
             ui,
+            "extra_viewports",
+            bool_label(policy.allows_extra_viewports()),
+            "Studio workbench panes must stay inside the single host viewport.",
+        );
+        operations_rows::gate_row(
+            ui,
+            "show_viewport_api",
+            bool_label(policy.allows_show_viewport_api()),
+            "Workbench code must not call egui show_viewport.",
+        );
+        operations_rows::gate_row(
+            ui,
+            "egui_window_api",
+            bool_label(policy.allows_egui_window_api()),
+            "Workbench code must not create egui Window overlays.",
+        );
+        operations_rows::gate_row(
+            ui,
+            "settings_overlay",
+            bool_label(policy.allows_settings_overlay()),
+            "Settings opens as a workspace pane, not an overlay.",
+        );
+        operations_rows::gate_row(
+            ui,
             i18n::t("studio.operations.workspace_policy.docs"),
             StudioWorkspacePolicy::DOC_REFERENCE,
             i18n::t("studio.operations.workspace_policy.docs.detail"),
@@ -122,7 +146,13 @@ fn render_policy(
 }
 
 fn policy_state_label(policy: StudioWorkspacePolicy) -> &'static str {
-    if policy.allows_native_child_windows() || policy.allows_detached_panels() {
+    if policy.allows_native_child_windows()
+        || policy.allows_detached_panels()
+        || policy.allows_extra_viewports()
+        || policy.allows_show_viewport_api()
+        || policy.allows_egui_window_api()
+        || policy.allows_settings_overlay()
+    {
         "FAIL"
     } else {
         "PASS"
@@ -157,6 +187,10 @@ mod tests {
         assert_eq!(policy_state_label(policy), "PASS");
         assert_eq!(bool_label(policy.allows_native_child_windows()), "false");
         assert_eq!(bool_label(policy.allows_detached_panels()), "false");
+        assert_eq!(bool_label(policy.allows_extra_viewports()), "false");
+        assert_eq!(bool_label(policy.allows_show_viewport_api()), "false");
+        assert_eq!(bool_label(policy.allows_egui_window_api()), "false");
+        assert_eq!(bool_label(policy.allows_settings_overlay()), "false");
         assert_eq!(
             StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
             "headless-smoke-is-not-ui-completion"
@@ -189,6 +223,9 @@ mod tests {
         assert!(evidence.contains("WorkspacePolicyState"));
         assert!(evidence.contains("studio.operations.workspace_policy.open_panes"));
         assert!(evidence.contains("studio.operations.workspace_policy.focused"));
+        assert!(evidence.contains("show_viewport_api"));
+        assert!(evidence.contains("egui_window_api"));
+        assert!(evidence.contains("settings_overlay"));
         assert!(evidence.contains("closeguard=internal-pane-state-only"));
     }
 }
