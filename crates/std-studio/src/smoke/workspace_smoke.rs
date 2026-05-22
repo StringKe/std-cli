@@ -78,7 +78,7 @@ pub(crate) fn run_workspace_pane_smoke(
     );
     let settings_contract = crate::views::settings_model::settings_contract();
     let settings_contract = format!(
-        "surface={},navigation={},categories={},hotkey_source={},hotkey_reset={},hotkey_control={},theme_modes={},theme_control={},zoom_levels={},zoom_control={},motion_control={},contrast_control={},transparency_control={},ai_control={},storage_control={}",
+        "surface={},navigation={},categories={},hotkey_source={},hotkey_reset={},hotkey_control={},theme_modes={},theme_control={},zoom_levels={},zoom_control={},motion_control={},contrast_control={},transparency_control={},appearance_profile={},ai_control={},storage_control={}",
         settings_contract.surface,
         settings_contract.navigation,
         settings_contract.categories.join("|"),
@@ -92,6 +92,7 @@ pub(crate) fn run_workspace_pane_smoke(
         settings_contract.motion_control,
         settings_contract.contrast_control,
         settings_contract.transparency_control,
+        settings_contract.appearance_profile,
         settings_contract.ai_control,
         settings_contract.storage_control
     );

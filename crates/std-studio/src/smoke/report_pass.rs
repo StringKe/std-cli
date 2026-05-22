@@ -423,6 +423,8 @@ fn settings_contract_pass(contract: &str) -> bool {
         "motion_control=token-toggle-row",
         "contrast_control=token-toggle-row",
         "transparency_control=token-toggle-row",
+        "appearance_profile=theme-profile=requested|effective",
+        "focus-ring|ui-scale",
         "ai_control=token-toggle-row",
         "storage_control=token-path-row",
     ]

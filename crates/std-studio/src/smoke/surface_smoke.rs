@@ -22,6 +22,7 @@ pub(crate) struct StudioSurfaceSmoke {
     reduced_focus_ring_ms: u128,
     reduce_motion_contract: String,
     surface_contract: String,
+    settings_theme_contract: String,
     doc_reference: String,
 }
 
@@ -102,6 +103,7 @@ impl StudioSurfaceSmoke {
                 .to_string(),
             surface_contract: "canvas:L1,sidebar:L2,inspector:L2,bottom:L2,status:L2,selected:L4"
                 .to_string(),
+            settings_theme_contract: settings_theme_contract(),
             doc_reference: "docs/22#03-main-window-layout".to_string(),
         }
     }
@@ -144,13 +146,22 @@ impl StudioSurfaceSmoke {
             && self.reduce_motion_contract.contains("STD_REDUCE_MOTION=1")
             && self.surface_contract.contains("canvas:L1")
             && self.surface_contract.contains("selected:L4")
+            && self
+                .settings_theme_contract
+                .contains("theme_modes=system|dark|light")
+            && self
+                .settings_theme_contract
+                .contains("profile=theme-profile=requested|effective")
+            && self
+                .settings_theme_contract
+                .contains("controls=theme:segmented-control")
             && self.doc_reference == "docs/22#03-main-window-layout"
     }
 
     pub(crate) fn output(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_host_chrome_surface_layer={}\nlight_host_chrome_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nhost_chrome_contract={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\ndoc_reference={}",
+            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_host_chrome_surface_layer={}\nlight_host_chrome_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nhost_chrome_contract={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\nsettings_theme_contract={}\ndoc_reference={}",
             self.dark_canvas_surface_layer,
             self.light_canvas_surface_layer,
             self.dark_sidebar_surface_layer,
@@ -172,9 +183,24 @@ impl StudioSurfaceSmoke {
             self.reduced_focus_ring_ms,
             self.reduce_motion_contract,
             self.surface_contract,
+            self.settings_theme_contract,
             self.doc_reference
         )
     }
+}
+
+fn settings_theme_contract() -> String {
+    let contract = crate::views::settings_model::settings_contract();
+    format!(
+        "theme_modes={};controls=theme:{},motion:{},contrast:{},transparency:{},zoom:{};profile={}",
+        contract.theme_modes.join("|"),
+        contract.theme_control,
+        contract.motion_control,
+        contract.contrast_control,
+        contract.transparency_control,
+        contract.zoom_control,
+        contract.appearance_profile
+    )
 }
 
 fn surface(name: &str, token: &str, color: egui::Color32) -> String {
@@ -226,5 +252,12 @@ mod tests {
             .output()
             .contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
         assert!(report.output().contains("surface_contract=canvas:L1"));
+        assert!(report
+            .output()
+            .contains("settings_theme_contract=theme_modes=system|dark|light"));
+        assert!(report.output().contains("controls=theme:segmented-control"));
+        assert!(report
+            .output()
+            .contains("profile=theme-profile=requested|effective"));
     }
 }

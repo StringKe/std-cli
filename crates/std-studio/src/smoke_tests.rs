@@ -86,6 +86,8 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("hotkey_control=token-binding-row"));
     assert!(summary.contains("theme_modes=system|dark|light"));
     assert!(summary.contains("theme_control=segmented-control"));
+    assert!(summary.contains("appearance_profile=theme-profile=requested|effective"));
+    assert!(summary.contains("focus-ring|ui-scale"));
     assert!(summary.contains("ai_control=token-toggle-row"));
     assert!(summary.contains("storage_control=token-path-row"));
     assert!(summary.contains("workspace_main_path_contract=host=single-borderless-egui-viewport"));
