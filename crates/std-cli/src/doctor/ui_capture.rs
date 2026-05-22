@@ -2,7 +2,10 @@ use crate::{
     doctor::workspace::{check_text, read_required},
     CliError,
 };
-use std::{env, fs};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 const LAUNCHER_CAPTURE_STATES: &[(&str, &str)] = &[
     ("light", "collapsed"),
@@ -54,16 +57,19 @@ pub(crate) fn check_ui_capture_scripts(root: &std::path::Path) -> Result<(), Cli
     check_optional_capture_manifest()
 }
 
-pub(crate) fn verify_ui_capture_manifest(body: &str) -> Result<usize, CliError> {
+fn verify_ui_capture_manifest_with_root(
+    body: &str,
+    root: Option<&Path>,
+) -> Result<usize, CliError> {
     check_text(body, "capture-ui-matrix manifest")?;
     check_text(body, "opt_in=STD_ALLOW_UI_PREVIEW=1")?;
     check_text(body, "capture_rule=pid+process-name+window-title")?;
     check_text(body, "completion_rule=current-run-png-only")?;
     for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
-        verify_capture_line(body, "launcher", theme, scenario)?;
+        verify_capture_line(body, root, "launcher", theme, scenario)?;
     }
     for (theme, scenario) in STUDIO_CAPTURE_STATES {
-        verify_capture_line(body, "studio", theme, scenario)?;
+        verify_capture_line(body, root, "studio", theme, scenario)?;
     }
     Ok(LAUNCHER_CAPTURE_STATES.len() + STUDIO_CAPTURE_STATES.len())
 }
@@ -171,15 +177,18 @@ fn check_optional_capture_manifest() -> Result<(), CliError> {
     let Ok(path) = env::var("STD_UI_CAPTURE_MANIFEST") else {
         return Ok(());
     };
-    let body = fs::read_to_string(&path).map_err(|error| {
+    let manifest_path = PathBuf::from(&path);
+    let body = fs::read_to_string(&manifest_path).map_err(|error| {
         CliError::Doctor(format!("unable to read UI capture manifest: {error}"))
     })?;
-    verify_ui_capture_manifest(&body)?;
+    let root = manifest_path.parent().unwrap_or_else(|| Path::new("."));
+    verify_ui_capture_manifest_with_root(&body, Some(root))?;
     Ok(())
 }
 
 fn verify_capture_line(
     body: &str,
+    root: Option<&Path>,
     surface: &str,
     theme: &str,
     scenario: &str,
@@ -197,17 +206,58 @@ fn verify_capture_line(
             "capture manifest path mismatch for {surface} {theme} {scenario}: {path}"
         )));
     }
-    if bytes
+    let declared_bytes = bytes
         .parse::<usize>()
         .ok()
         .filter(|value| *value > 0)
-        .is_none()
-    {
+        .ok_or_else(|| {
+            CliError::Doctor(format!(
+                "capture manifest bytes must be positive for {surface} {theme} {scenario}"
+            ))
+        })?;
+    if let Some(root) = root {
+        verify_capture_png(root, path, declared_bytes, surface, theme, scenario)?;
+    }
+    Ok(())
+}
+
+fn verify_capture_png(
+    root: &Path,
+    path: &str,
+    declared_bytes: usize,
+    surface: &str,
+    theme: &str,
+    scenario: &str,
+) -> Result<(), CliError> {
+    let png_path = capture_path(root, path);
+    let bytes = fs::read(&png_path).map_err(|error| {
+        CliError::Doctor(format!(
+            "unable to read capture png for {surface} {theme} {scenario}: {error}"
+        ))
+    })?;
+    if bytes.len() != declared_bytes {
         return Err(CliError::Doctor(format!(
-            "capture manifest bytes must be positive for {surface} {theme} {scenario}"
+            "capture manifest byte count mismatch for {surface} {theme} {scenario}: declared={declared_bytes} actual={}",
+            bytes.len()
+        )));
+    }
+    if !bytes.starts_with(b"\x89PNG\r\n\x1a\n") {
+        return Err(CliError::Doctor(format!(
+            "capture file must be PNG for {surface} {theme} {scenario}"
         )));
     }
     Ok(())
+}
+
+fn capture_path(root: &Path, path: &str) -> PathBuf {
+    let path = Path::new(path);
+    if path.is_absolute() {
+        path.to_path_buf()
+    } else if let Some(name) = path.file_name() {
+        root.join(name)
+    } else {
+        root.join(path)
+    }
 }
 
 fn capture_field<'a>(line: &'a str, key: &str) -> Result<&'a str, CliError> {
@@ -230,17 +280,23 @@ mod tests {
     fn ui_capture_manifest_requires_all_launcher_and_studio_pngs() {
         let manifest = sample_manifest();
 
-        assert_eq!(verify_ui_capture_manifest(&manifest).unwrap(), 38);
+        assert_eq!(
+            verify_ui_capture_manifest_with_root(&manifest, None).unwrap(),
+            38
+        );
     }
 
     #[test]
     fn ui_capture_manifest_rejects_missing_state() {
+        let png_bytes = sample_png_bytes().len();
         let manifest = sample_manifest().replace(
-            "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes=1\n",
+            &format!(
+                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes}\n"
+            ),
             "",
         );
 
-        let error = verify_ui_capture_manifest(&manifest).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
         assert!(error
             .to_string()
             .contains("capture manifest missing launcher theme=dark scenario=error"));
@@ -248,16 +304,64 @@ mod tests {
 
     #[test]
     fn ui_capture_manifest_rejects_empty_png() {
+        let png_bytes = sample_png_bytes().len();
         let manifest = sample_manifest().replace(
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=1",
+            &format!(
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes}"
+            ),
             "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0",
         );
 
-        let error = verify_ui_capture_manifest(&manifest).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
         assert!(error.to_string().contains("bytes must be positive"));
     }
 
+    #[test]
+    fn ui_capture_manifest_with_root_requires_real_png_files() {
+        let temp = tempfile::tempdir().unwrap();
+        write_sample_pngs(temp.path());
+        let manifest = sample_manifest();
+
+        assert_eq!(
+            verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap(),
+            38
+        );
+    }
+
+    #[test]
+    fn ui_capture_manifest_with_root_rejects_missing_png_file() {
+        let temp = tempfile::tempdir().unwrap();
+        write_sample_pngs(temp.path());
+        fs::remove_file(temp.path().join("launcher-dark-error.png")).unwrap();
+        let manifest = sample_manifest();
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("unable to read capture png for launcher dark error"));
+    }
+
+    #[test]
+    fn ui_capture_manifest_with_root_rejects_non_png_file() {
+        let temp = tempfile::tempdir().unwrap();
+        write_sample_pngs(temp.path());
+        fs::write(temp.path().join("studio-light-panes.png"), b"not-png").unwrap();
+        let png_bytes = sample_png_bytes().len();
+        let manifest = sample_manifest().replace(
+            &format!(
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes}"
+            ),
+            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7",
+        );
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("capture file must be PNG for studio light panes"));
+    }
+
     fn sample_manifest() -> String {
+        let png_bytes = sample_png_bytes().len();
         let mut lines = vec![
             "capture-ui-matrix manifest".to_string(),
             "created_at=2026-05-22T00:00:00Z".to_string(),
@@ -269,14 +373,28 @@ mod tests {
         ];
         for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
             lines.push(format!(
-                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes=1"
+                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={png_bytes}"
             ));
         }
         for (theme, scenario) in STUDIO_CAPTURE_STATES {
             lines.push(format!(
-                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes=1"
+                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={png_bytes}"
             ));
         }
         lines.join("\n")
+    }
+
+    fn write_sample_pngs(root: &Path) {
+        let bytes = sample_png_bytes();
+        for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
+            fs::write(root.join(format!("launcher-{theme}-{scenario}.png")), bytes).unwrap();
+        }
+        for (theme, scenario) in STUDIO_CAPTURE_STATES {
+            fs::write(root.join(format!("studio-{theme}-{scenario}.png")), bytes).unwrap();
+        }
+    }
+
+    fn sample_png_bytes() -> &'static [u8] {
+        b"\x89PNG\r\n\x1a\nstd-cli-ui-capture"
     }
 }
