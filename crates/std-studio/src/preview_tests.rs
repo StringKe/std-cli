@@ -109,6 +109,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
     assert_preview_summary_has_scenarios(&summary);
     assert_required_capture_state_contract(&report);
+    assert_preview_capture_manifest_contract(&report);
     assert_preview_summary_has_surfaces(&summary);
     assert_preview_summary_has_viewport_policy(&summary);
 }
@@ -200,4 +201,20 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("normal-viewport-close"));
+}
+
+fn assert_preview_capture_manifest_contract(report: &StudioPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(report.capture_manifest.pass(&report.scenarios));
+    assert!(
+        summary.contains("expected_capture_manifest=artifacts/ui/manual-acceptance/manifest.txt")
+    );
+    assert!(summary.contains("capture_out_dir=artifacts/ui/manual-acceptance"));
+    assert!(summary.contains("expected_capture_files=studio-light-dashboard.png"));
+    assert!(summary.contains("studio-dark-panes.png"));
+    assert!(summary.contains("capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
+    assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
+    assert!(summary.contains("pixel_evidence_rule=samples+unique_colors+black_pixels+white_pixels"));
+    assert!(summary.contains("carrier_reject_rule=reject-single-color+all-black+all-white-carrier"));
 }
