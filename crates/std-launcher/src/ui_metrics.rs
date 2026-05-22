@@ -1,13 +1,11 @@
 use eframe::egui;
-use std_egui::tokens::{Space, UiScale};
+use std_egui::tokens::{LauncherSize, Space, UiScale};
 use std_egui::LauncherPhase;
 use std_launcher::LauncherState;
 
 pub(crate) const SEARCH_HEIGHT: f32 = 64.0;
 pub(crate) const ACTION_BAR_HEIGHT: f32 = 36.0;
-const RESULT_ROW_HEIGHT: f32 = 36.0;
-pub(crate) const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
-pub(crate) const MAX_RESULT_ROWS: f32 = 6.0;
+pub(crate) const MAX_RESULT_ROWS: f32 = LauncherSize::MAX_RESULT_ROWS;
 pub(crate) const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 #[cfg(test)]
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
@@ -76,11 +74,11 @@ pub(crate) fn result_row_shrink() -> egui::Vec2 {
 }
 
 pub(crate) fn result_list_slot_height() -> f32 {
-    scale().f32(RESULT_ROW_HEIGHT)
+    LauncherSize::result_row_height(scale())
 }
 
 pub(crate) fn group_header_slot_height() -> f32 {
-    scale().f32(GROUP_HEADER_ROW_HEIGHT)
+    LauncherSize::group_header_slot_height(scale())
 }
 
 pub(crate) fn loading_progress_rect(available_width: f32, top_left: egui::Pos2) -> egui::Rect {
@@ -353,16 +351,16 @@ fn result_list_slot_count(state: &LauncherState) -> usize {
 pub(crate) fn result_list_visible_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
     let row_count = state.view.results.len().min(MAX_RESULT_ROWS as usize);
     let group_count = crate::ui_results::group_count(&state.view.results).min(row_count);
-    let group_height = group_count as f32 * scale.f32(GROUP_HEADER_ROW_HEIGHT);
-    let row_height = row_count as f32 * scale.f32(RESULT_ROW_HEIGHT);
+    let group_height = group_count as f32 * LauncherSize::group_header_slot_height(scale);
+    let row_height = row_count as f32 * LauncherSize::result_row_height(scale);
     group_height + row_height
 }
 
 #[cfg(test)]
 fn row_metrics_for_scale(scale: UiScale) -> (f32, f32, f32, f32, f32) {
     (
-        scale.f32(RESULT_ROW_HEIGHT),
-        scale.f32(GROUP_HEADER_ROW_HEIGHT),
+        LauncherSize::result_row_height(scale),
+        LauncherSize::group_header_slot_height(scale),
         scale.f32(34.0),
         scale.f32(24.0),
         scale.f32(18.0),

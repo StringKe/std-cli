@@ -216,6 +216,49 @@ fn launcher_sizes_export_empty_state_geometry() {
 }
 
 #[test]
+fn launcher_sizes_export_result_list_geometry() {
+    let scale = UiScale::new(1.5);
+    let loading = LauncherSize::loading_progress_rect(scale, 600.0, egui::Pos2::ZERO);
+    let group = LauncherSize::group_divider_rect(scale, 600.0, egui::Pos2::ZERO);
+
+    assert_eq!(LauncherSize::RESULT_ROW_HEIGHT, 36.0);
+    assert_eq!(LauncherSize::GROUP_HEADER_ROW_HEIGHT, 24.0);
+    assert_eq!(LauncherSize::MAX_RESULT_ROWS, 6.0);
+    assert_eq!(LauncherSize::result_row_height(scale), 54.0);
+    assert_eq!(
+        LauncherSize::result_row_size(scale, 720.0),
+        egui::vec2(720.0, 54.0)
+    );
+    assert_eq!(
+        LauncherSize::result_row_shrink(scale),
+        egui::vec2(12.0, 0.0)
+    );
+    assert_eq!(LauncherSize::group_header_slot_height(scale), 36.0);
+    assert_eq!(LauncherSize::group_header_label_offset_y(scale), 6.0);
+    assert_eq!(group.width(), 600.0);
+    assert_eq!(group.height(), 1.5);
+    assert_eq!(loading.width(), 228.0);
+    assert_eq!(loading.height(), 3.0);
+}
+
+#[test]
+fn launcher_sizes_export_result_row_regions() {
+    let scale = UiScale::new(1.5);
+
+    assert_eq!(LauncherSize::result_icon_size(scale), 30.0);
+    assert_eq!(LauncherSize::result_icon_text_gap(scale), 18.0);
+    assert_eq!(LauncherSize::result_title_y(scale), 18.0);
+    assert_eq!(LauncherSize::result_title_height(scale), 27.0);
+    assert_eq!(LauncherSize::result_subtitle_y(scale), 42.0);
+    assert_eq!(LauncherSize::result_right_area_width(scale, 720.0), 270.0);
+    assert_eq!(LauncherSize::result_text_right_gap(scale), 18.0);
+    assert_eq!(LauncherSize::result_direct_keycap_width(scale), 66.0);
+    assert_eq!(LauncherSize::result_primary_keycap_width(scale), 78.0);
+    assert_eq!(LauncherSize::result_action_label_width(scale), 138.0);
+    assert_eq!(LauncherSize::result_right_gap(scale), 12.0);
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {

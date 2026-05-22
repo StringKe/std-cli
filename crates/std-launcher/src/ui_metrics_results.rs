@@ -1,36 +1,16 @@
 use eframe::egui;
-use std_egui::tokens::UiScale;
-
-const LOADING_PROGRESS_HEIGHT: f32 = 2.0;
-const LOADING_PROGRESS_WIDTH_RATIO: f32 = 0.38;
-const LOADING_PROGRESS_MIN_WIDTH: f32 = 120.0;
-const GROUP_DIVIDER_HEIGHT: f32 = 1.0;
-const GROUP_LABEL_OFFSET_Y: f32 = 4.0;
-const RESULT_ICON_SIZE: f32 = 20.0;
-const RESULT_ROW_TITLE_Y: f32 = 12.0;
-const RESULT_ROW_TITLE_HEIGHT: f32 = 18.0;
-const RESULT_ROW_SUBTITLE_Y: f32 = 28.0;
-const RESULT_RIGHT_AREA_WIDTH: f32 = 180.0;
-const RESULT_TEXT_RIGHT_GAP: f32 = 12.0;
-const RESULT_DIRECT_KEYCAP_WIDTH: f32 = 44.0;
-const RESULT_PRIMARY_KEYCAP_WIDTH: f32 = 52.0;
-const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
-const RESULT_RIGHT_GAP: f32 = 8.0;
-
-pub(crate) fn loading_progress_height(scale: UiScale) -> f32 {
-    scale.f32(LOADING_PROGRESS_HEIGHT)
-}
+use std_egui::tokens::{LauncherSize, UiScale};
 
 pub(crate) fn result_right_affordance_layout(
     scale: UiScale,
     rect: egui::Rect,
     has_action: bool,
 ) -> LauncherResultRightAffordanceLayout {
-    let gap = scale.f32(RESULT_RIGHT_GAP);
-    let direct_width = scale.f32(RESULT_DIRECT_KEYCAP_WIDTH);
-    let primary_width = scale.f32(RESULT_PRIMARY_KEYCAP_WIDTH);
+    let gap = LauncherSize::result_right_gap(scale);
+    let direct_width = LauncherSize::result_direct_keycap_width(scale);
+    let primary_width = LauncherSize::result_primary_keycap_width(scale);
     let action_width = if has_action {
-        scale.f32(RESULT_ACTION_LABEL_WIDTH)
+        LauncherSize::result_action_label_width(scale)
     } else {
         0.0
     };
@@ -61,7 +41,7 @@ fn take_right_rect(container: egui::Rect, right: &mut f32, width: f32) -> egui::
 }
 
 pub(crate) fn loading_progress_size(scale: UiScale, available_width: f32) -> egui::Vec2 {
-    egui::vec2(available_width, loading_progress_height(scale))
+    LauncherSize::loading_progress_size(scale, available_width)
 }
 
 pub(crate) fn loading_progress_rect(
@@ -69,13 +49,7 @@ pub(crate) fn loading_progress_rect(
     available_width: f32,
     top_left: egui::Pos2,
 ) -> egui::Rect {
-    let width = (available_width * LOADING_PROGRESS_WIDTH_RATIO)
-        .max(scale.f32(LOADING_PROGRESS_MIN_WIDTH).min(available_width));
-    egui::Rect::from_min_size(top_left, egui::vec2(width, loading_progress_height(scale)))
-}
-
-pub(crate) fn group_divider_height(scale: UiScale) -> f32 {
-    scale.f32(GROUP_DIVIDER_HEIGHT)
+    LauncherSize::loading_progress_rect(scale, available_width, top_left)
 }
 
 pub(crate) fn group_divider_rect(
@@ -83,48 +57,48 @@ pub(crate) fn group_divider_rect(
     available_width: f32,
     top_left: egui::Pos2,
 ) -> egui::Rect {
-    egui::Rect::from_min_size(
-        top_left,
-        egui::vec2(available_width, group_divider_height(scale)),
-    )
+    LauncherSize::group_divider_rect(scale, available_width, top_left)
 }
 
 pub(crate) fn group_header_label_offset_y(scale: UiScale) -> f32 {
-    scale.f32(GROUP_LABEL_OFFSET_Y)
+    LauncherSize::group_header_label_offset_y(scale)
 }
 
 pub(crate) fn result_row_size(scale: UiScale, available_width: f32) -> egui::Vec2 {
-    egui::vec2(available_width, scale.f32(36.0))
+    LauncherSize::result_row_size(scale, available_width)
 }
 
 pub(crate) fn result_row_shrink(scale: UiScale) -> egui::Vec2 {
-    egui::vec2(scale.f32(8.0), 0.0)
+    LauncherSize::result_row_shrink(scale)
 }
 
 pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherResultRowLayout {
-    let icon_size = scale.f32(RESULT_ICON_SIZE);
+    let icon_size = LauncherSize::result_icon_size(scale);
     let icon_rect = egui::Rect::from_center_size(
         egui::pos2(rect.left() + icon_size * 0.5, rect.center().y),
         egui::vec2(icon_size, icon_size),
     );
-    let right_width = scale.f32(RESULT_RIGHT_AREA_WIDTH).min(rect.width() * 0.38);
+    let right_width = LauncherSize::result_right_area_width(scale, rect.width());
     let right_rect = egui::Rect::from_min_max(
         egui::pos2(rect.right() - right_width, rect.top()),
         rect.right_bottom(),
     );
-    let text_left = icon_rect.right() + scale.f32(12.0);
-    let text_right = right_rect.left() - scale.f32(RESULT_TEXT_RIGHT_GAP);
+    let text_left = icon_rect.right() + LauncherSize::result_icon_text_gap(scale);
+    let text_right = right_rect.left() - LauncherSize::result_text_right_gap(scale);
     LauncherResultRowLayout {
         icon_rect,
-        title_pos: egui::pos2(text_left, rect.top() + scale.f32(RESULT_ROW_TITLE_Y)),
+        title_pos: egui::pos2(text_left, rect.top() + LauncherSize::result_title_y(scale)),
         title_rect: egui::Rect::from_min_size(
             egui::pos2(text_left, rect.top()),
             egui::vec2(
                 (text_right - text_left).max(0.0),
-                scale.f32(RESULT_ROW_TITLE_HEIGHT),
+                LauncherSize::result_title_height(scale),
             ),
         ),
-        subtitle_pos: egui::pos2(text_left, rect.top() + scale.f32(RESULT_ROW_SUBTITLE_Y)),
+        subtitle_pos: egui::pos2(
+            text_left,
+            rect.top() + LauncherSize::result_subtitle_y(scale),
+        ),
         text_clip: egui::Rect::from_min_max(
             egui::pos2(text_left, rect.top()),
             egui::pos2(text_right.max(text_left), rect.bottom()),
@@ -170,7 +144,10 @@ pub(crate) fn group_header_slot_metrics_for_scale(
     scale: UiScale,
     available_width: f32,
 ) -> (f32, f32, f32) {
-    let slot = egui::vec2(available_width, scale.f32(24.0));
+    let slot = egui::vec2(
+        available_width,
+        LauncherSize::group_header_slot_height(scale),
+    );
     (slot.x, slot.y, group_header_label_offset_y(scale))
 }
 
