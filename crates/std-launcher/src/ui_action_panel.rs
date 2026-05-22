@@ -220,11 +220,17 @@ mod tests {
     fn action_panel_filter_a11y_label_exposes_value() {
         assert_eq!(
             action_panel_filter_a11y_label("retry"),
-            "Filter actions, text box, value retry"
+            format!(
+                "{}, text box, value retry",
+                i18n::t("launcher.action.filter.a11y")
+            )
         );
         assert_eq!(
             action_panel_filter_a11y_label("  "),
-            "Filter actions, text box, value empty"
+            format!(
+                "{}, text box, value empty",
+                i18n::t("launcher.action.filter.a11y")
+            )
         );
     }
 }

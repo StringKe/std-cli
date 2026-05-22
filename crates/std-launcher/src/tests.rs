@@ -312,7 +312,7 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
     assert!(summary.contains("launcher_window_smoke PASS"));
     assert!(summary.contains("shown_commands=ResizeToPanel,PositionForPanel,Visible(true),Focus"));
     assert!(summary.contains(
-        "host_positioning=resize-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus"
+        "host_positioning=resize-fixed-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus"
     ));
     assert!(summary.contains("native_window=transparent-carrier"));
     assert!(summary.contains("panel_surface=opaque-bg-surface-0"));

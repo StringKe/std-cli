@@ -150,9 +150,10 @@ mod tests {
         assert_eq!(background_harness_title(), "std-cli Background UI Harness");
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
+        assert!(description.contains("resizable: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
         assert!(background_harness_window_contract().starts_with(
-            "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x"
+            "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x"
         ));
     }
 

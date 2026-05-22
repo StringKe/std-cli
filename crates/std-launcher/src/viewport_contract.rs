@@ -12,6 +12,7 @@ pub fn launcher_panel_viewport(size: egui::Vec2, visible: bool) -> egui::Viewpor
         .with_inner_size(size)
         .with_decorations(false)
         .with_transparent(true)
+        .with_resizable(false)
         .with_visible(visible)
 }
 
@@ -32,12 +33,12 @@ pub fn launcher_viewport_frame_contract() -> String {
 }
 
 pub fn launcher_host_positioning_contract() -> &'static str {
-    "host_positioning=resize-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
+    "host_positioning=resize-fixed-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
 }
 
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
-        "native=transparent-carrier,transparent=true,decorations=false,visible={visible},panel_surface=opaque,size={}x{}",
+        "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible={visible},panel_surface=opaque,size={}x{}",
         size.x as u32, size.y as u32
     )
 }
@@ -50,11 +51,11 @@ mod tests {
     fn launcher_viewport_contracts_name_transparency_and_size() {
         assert_eq!(
             transparent_hidden_panel_contract(egui::vec2(720.0, 64.0)),
-            "native=transparent-carrier,transparent=true,decorations=false,visible=false,panel_surface=opaque,size=720x64"
+            "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,size=720x64"
         );
         assert_eq!(
             transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
-            "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x320"
+            "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x320"
         );
     }
 
@@ -67,7 +68,9 @@ mod tests {
 
         assert!(hidden_viewport.contains("transparent: Some(true)"));
         assert!(hidden_viewport.contains("decorations: Some(false)"));
+        assert!(hidden_viewport.contains("resizable: Some(false)"));
         assert!(hidden_viewport.contains("visible: Some(false)"));
+        assert!(visible_viewport.contains("resizable: Some(false)"));
         assert!(visible_viewport.contains("visible: Some(true)"));
     }
 
@@ -83,7 +86,7 @@ mod tests {
         );
         assert_eq!(
             launcher_host_positioning_contract(),
-            "host_positioning=resize-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
+            "host_positioning=resize-fixed-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
         );
     }
 }

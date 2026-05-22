@@ -196,7 +196,7 @@ fn native_host_window_contract() -> String {
     let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH, 64.0));
     let panel_width = crate::panel_surface_width(1.0);
     if size
-        == "native=transparent-carrier,transparent=true,decorations=false,visible=false,panel_surface=opaque,size=720x64"
+        == "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,size=720x64"
         && panel_width == PANEL_WIDTH
     {
         return "native_host_window=transparent_carrier,panel_surface=opaque,no_carrier_background"
@@ -209,7 +209,7 @@ fn capture_window_contract() -> String {
     let panel_width = crate::panel_surface_width(1.0);
     let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH, 360.0));
     if preview
-        == "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x360"
+        == "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x360"
         && panel_width == PANEL_WIDTH
     {
         return "capture_window=transparent_carrier,opt_in_only,panel_surface=opaque,no_carrier_background"

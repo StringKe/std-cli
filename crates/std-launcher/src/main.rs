@@ -109,10 +109,11 @@ mod tests {
 
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
+        assert!(description.contains("resizable: Some(false)"));
         assert!(description.contains("visible: Some(false)"));
         assert_eq!(
             contract,
-            "native=transparent-carrier,transparent=true,decorations=false,visible=false,panel_surface=opaque,size=720x64"
+            "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,size=720x64"
         );
         assert_eq!(
             ui::launcher_initial_window_inner_size(),

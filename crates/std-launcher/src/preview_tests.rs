@@ -221,10 +221,11 @@ fn ui_preview_uses_transparent_carrier_with_opaque_panel() {
     assert_eq!(preview_window_title(), "std-cli Launcher");
     assert!(description.contains("transparent: Some(true)"));
     assert!(description.contains("decorations: Some(false)"));
+    assert!(description.contains("resizable: Some(false)"));
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
         preview_capture_window_contract(&config),
-        "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x460"
+        "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x460"
     );
 }
 
