@@ -255,7 +255,7 @@ fn visible_structure_contract() -> String {
         "preview=breadcrumb|primary-command|examples",
         "feedback=status-icon|title|message|copy|retry|open-studio",
         "states=empty|no-results|loading|executing|defer|error",
-        "carrier=transparent-viewport|opaque-panel-surface",
+        "host=transparent-native-host|opaque-panel-surface|host-gap-0",
     ]
     .join(";")
 }

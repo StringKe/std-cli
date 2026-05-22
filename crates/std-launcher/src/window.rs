@@ -64,10 +64,10 @@ mod tests {
     }
 
     #[test]
-    fn launcher_window_host_contract_forbids_carrier_viewport_positioning() {
+    fn launcher_window_host_contract_forbids_visible_host_gap_positioning() {
         assert_eq!(
             std_launcher::launcher_host_positioning_contract(),
-            "host_positioning=resize-fixed-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
+            "host_positioning=resize-to-panel>outer-position-0.28-monitor-anchor>visible>focus;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gap=0x0"
         );
     }
 

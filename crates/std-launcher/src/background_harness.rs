@@ -131,6 +131,9 @@ fn background_harness_window_contract() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Mutex, MutexGuard};
+
+    static HARNESS_ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn background_harness_is_blocked_in_test_mode() {
@@ -151,6 +154,7 @@ mod tests {
 
     #[test]
     fn background_harness_uses_whitelisted_window_title() {
+        let _guard = harness_env_guard();
         std::env::set_var(HARNESS_TOKEN_ENV, "test-token");
         let options = background_harness_native_options();
         let description = format!("{:?}", options.viewport);
@@ -165,13 +169,14 @@ mod tests {
         assert!(description.contains("resizable: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
         assert!(background_harness_window_contract().starts_with(
-            "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gap=0x0,size=720x"
         ));
         std::env::remove_var(HARNESS_TOKEN_ENV);
     }
 
     #[test]
     fn background_harness_token_contract_rejects_blank_values() {
+        let _guard = harness_env_guard();
         std::env::remove_var(HARNESS_TOKEN_ENV);
         assert_eq!(background_harness_token(), None);
         assert_eq!(
@@ -189,6 +194,10 @@ mod tests {
             "std-cli Background UI Harness run-42"
         );
         std::env::remove_var(HARNESS_TOKEN_ENV);
+    }
+
+    fn harness_env_guard() -> MutexGuard<'static, ()> {
+        HARNESS_ENV_LOCK.lock().unwrap()
     }
 
     #[test]

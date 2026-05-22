@@ -196,9 +196,9 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=transparent_carrier,panel_surface=opaque,no_carrier_background",
-        "capture_window=transparent_carrier,opt_in_only,panel_surface=opaque,no_carrier_background",
-        "capture_surface=opaque_panel_surface,transparent_carrier,no_carrier_background,no_shadow_clip",
+        "native_host_window=transparent_host,panel_surface=opaque,host_gap=0x0,no_host_background",
+        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gap=0x0,no_host_background",
+        "capture_surface=opaque_panel_surface,transparent_host,host_gap=0x0,no_host_background,no_shadow_clip",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -213,7 +213,7 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     for forbidden in ["const CARRIER_MARGIN", "carrier_margin_for_scale"] {
         if launcher_metrics.contains(forbidden) {
             return Err(CliError::Config(
-                "launcher must not depend on a visible viewport carrier".to_string(),
+                "launcher must not depend on a visible viewport host gap".to_string(),
             ));
         }
     }
@@ -239,7 +239,7 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
-        "transparent-carrier,opaque-panel-surface,opt-in-only",
+        "transparent-native-host,opaque-panel-surface,opt-in-only",
         "no-default-window",
         "preview_surface_summary",
         "preview_size_summary",

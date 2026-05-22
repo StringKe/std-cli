@@ -253,13 +253,13 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=transparent_carrier,panel_surface=opaque"));
+            .contains("native_host_window=transparent_host,panel_surface=opaque,host_gap=0x0"));
         assert!(report
             .summary()
-            .contains("capture_window=transparent_carrier,opt_in_only,panel_surface=opaque"));
+            .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque"));
         assert!(report
             .summary()
-            .contains("capture_surface=opaque_panel_surface,transparent_carrier"));
+            .contains("capture_surface=opaque_panel_surface,transparent_host"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
@@ -338,13 +338,13 @@ mod tests {
     fn assert_preview_summary_has_state_surfaces(summary: &str) {
         for expected in [
             "state_surface=panel_only:true,search:panel-as-search-surface",
-            "carrier_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_window=",
-            "native_carrier=transparent",
+            "host_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_host=",
+            "host_background=none",
             "panel_surface=opaque",
             "panel_origin=0x0",
-            "carrier_clearance=0x0",
+            "host_gap=0x0",
             "panel_only=true",
-            "forbidden=black_or_white_carrier_background",
+            "forbidden=black_or_white_host_background",
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",
             "feedback:status-danger-weak",

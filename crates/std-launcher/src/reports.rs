@@ -96,7 +96,8 @@ impl LauncherWindowSmokeReport {
                 .contains("outer-position-0.28-monitor-anchor")
             && self
                 .host_positioning_contract
-                .contains("carrier_background=none")
+                .contains("host_background=none")
+            && self.host_positioning_contract.contains("host_gap=0x0")
             && self.elapsed_ms <= self.budget_ms
     }
 

@@ -110,7 +110,7 @@ fn panel_rect_anchors_to_upper_screen_region() {
 }
 
 #[test]
-fn panel_surface_width_matches_docs_width_without_carrier_viewport() {
+fn panel_surface_width_matches_docs_width_without_host_gap() {
     let width = panel_surface_width();
 
     assert_eq!(width, 720.0);
@@ -169,7 +169,7 @@ fn panel_rect_uses_available_panel_surface_when_window_is_short() {
 }
 
 #[test]
-fn native_window_matches_panel_surface_without_carrier_background() {
+fn native_host_matches_panel_surface_without_host_background() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let available = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), window_inner_size(&state));
@@ -184,7 +184,7 @@ fn native_window_matches_panel_surface_without_carrier_background() {
     assert!(panel_is_only_visible_surface(&state));
     let summary = panel_surface_geometry_summary(&state);
     assert!(summary.contains("panel_origin=0x0"));
-    assert!(summary.contains("carrier_clearance=0x0"));
+    assert!(summary.contains("host_gap=0x0"));
     assert!(summary.contains("frame_clear=true"));
     assert!(summary.contains("panel_only=true"));
 }
@@ -277,7 +277,7 @@ fn body_height_counts_virtual_group_header_slots() {
 }
 
 #[test]
-fn all_preview_visible_states_keep_transparent_carrier_and_opaque_panel() {
+fn all_preview_visible_states_keep_transparent_host_and_opaque_panel() {
     for scenario in [
         "empty",
         "results",

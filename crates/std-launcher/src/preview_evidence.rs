@@ -17,14 +17,14 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     let affordance = LauncherAffordanceSummary::for_scenario(scenario.state);
     let state_surface = PreviewStateSurface::for_state(&state, scenario.state);
     let no_match_fallback = PreviewNoMatchFallback::for_state(&state, scenario.state);
-    let carrier = PreviewCarrierSurface::for_state(&state);
+    let host = PreviewNativeHostSurface::for_state(&state);
     let behavior = PreviewStateBehavior::for_state(&state, scenario.state);
     let passes = valid
         && preview_surface_passes(&surface, scenario.theme)
         && affordance.passes(scenario.state)
         && state_surface.passes(scenario.state)
         && no_match_fallback.passes(scenario.state)
-        && carrier.passes()
+        && host.passes()
         && behavior.passes(scenario.state)
         && feedback_status_icon_passes(scenario.state);
     format!(
@@ -42,7 +42,7 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
         affordance.summary(),
         state_surface.summary(),
         no_match_fallback.summary(),
-        carrier.summary(),
+        host.summary(),
         behavior.summary(),
         feedback_status_icon_summary(scenario.state),
         surface.summary()
@@ -96,7 +96,7 @@ fn preview_content_clearance(
 
 fn launcher_panel_frame_contract(state: &LauncherState) -> &'static str {
     if ui_metrics::panel_is_only_visible_surface(state) {
-        "transparent_carrier_with_opaque_panel_surface"
+        "transparent_host_with_opaque_panel_surface"
     } else {
         "native_background_visible_fail"
     }
@@ -177,7 +177,7 @@ struct PreviewStateSurface {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct PreviewCarrierSurface {
+struct PreviewNativeHostSurface {
     clear_color: String,
     viewport_frame: String,
     geometry: String,
@@ -219,7 +219,7 @@ impl PreviewNoMatchFallback {
     }
 }
 
-impl PreviewCarrierSurface {
+impl PreviewNativeHostSurface {
     fn for_state(state: &LauncherState) -> Self {
         Self {
             clear_color: std_launcher::launcher_clear_color_contract(),
@@ -231,14 +231,14 @@ impl PreviewCarrierSurface {
     fn passes(&self) -> bool {
         self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.geometry.contains("carrier_clearance=0x0")
+            && self.geometry.contains("host_gap=0x0")
             && self.geometry.contains("panel_origin=0x0")
             && self.geometry.contains("panel_only=true")
     }
 
     fn summary(&self) -> String {
         format!(
-            "carrier_contract={},{};{};forbidden=black_or_white_carrier_background",
+            "host_contract={},{};{};forbidden=black_or_white_host_background",
             self.clear_color, self.viewport_frame, self.geometry
         )
     }
