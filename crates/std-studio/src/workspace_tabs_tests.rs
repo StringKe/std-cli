@@ -48,10 +48,10 @@ fn cycle_controls_use_workspace_focus_commands() {
     );
     assert!(std_egui::input::studio_previous_workspace_pane()
         .label()
-        .contains("Shift+Up"));
+        .contains(std_egui::input::shift_modifier_label()));
     assert!(std_egui::input::studio_next_workspace_pane()
         .label()
-        .contains("Shift+Down"));
+        .contains(std_egui::input::shift_modifier_label()));
 }
 
 #[test]
@@ -73,8 +73,14 @@ fn workspace_tab_a11y_labels_include_role_title_and_state() {
         "关闭工作区面板，Workflow Builder，按钮，按 Enter 关闭"
     );
     assert_eq!(
-        workspace_cycle_a11y_label(i18n::t("studio.workspace_panes.next"), "Mod+Shift+Down"),
-        "下一个工作区面板，快捷键 Mod+Shift+Down"
+        workspace_cycle_a11y_label(
+            i18n::t("studio.workspace_panes.next"),
+            &std_egui::input::studio_next_workspace_pane().label()
+        ),
+        format!(
+            "下一个工作区面板，快捷键 {}",
+            std_egui::input::studio_next_workspace_pane().label()
+        )
     );
 }
 

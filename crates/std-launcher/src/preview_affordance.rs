@@ -30,11 +30,16 @@ impl LauncherAffordanceSummary {
             "no-results" => self.ask_ai,
             "defer" => {
                 self.feedback_actions == "Copy,Retry"
-                    && self.feedback_action_shortcuts == "Copy:Enter,Retry:Enter"
+                    && self.feedback_action_shortcuts
+                        == format!("Copy:{enter},Retry:{enter}", enter = input::enter().label())
             }
             "error" => {
                 self.feedback_actions == "Copy,Retry,OpenStudio"
-                    && self.feedback_action_shortcuts == "Copy:Enter,Retry:Enter,OpenStudio:Enter"
+                    && self.feedback_action_shortcuts
+                        == format!(
+                            "Copy:{enter},Retry:{enter},OpenStudio:{enter}",
+                            enter = input::enter().label()
+                        )
             }
             "action-panel" => {
                 self.action_panel_actions
@@ -141,11 +146,14 @@ mod tests {
         assert_eq!(empty.suggested, 3);
         assert!(no_results.ask_ai);
         assert_eq!(defer.feedback_actions, "Copy,Retry");
-        assert_eq!(defer.feedback_action_shortcuts, "Copy:Enter,Retry:Enter");
+        assert_eq!(
+            defer.feedback_action_shortcuts,
+            feedback_shortcuts(&["Copy", "Retry"])
+        );
         assert_eq!(error.feedback_actions, "Copy,Retry,OpenStudio");
         assert_eq!(
             error.feedback_action_shortcuts,
-            "Copy:Enter,Retry:Enter,OpenStudio:Enter"
+            feedback_shortcuts(&["Copy", "Retry", "OpenStudio"])
         );
         assert_eq!(
             action_panel.action_panel_actions,
@@ -177,7 +185,16 @@ mod tests {
         );
         assert_eq!(
             LauncherAffordanceSummary::for_scenario("defer").feedback_action_shortcuts,
-            "Copy:Enter,Retry:Enter"
+            feedback_shortcuts(&["Copy", "Retry"])
         );
+    }
+
+    fn feedback_shortcuts(actions: &[&str]) -> String {
+        let enter = input::enter().label();
+        actions
+            .iter()
+            .map(|action| format!("{action}:{enter}"))
+            .collect::<Vec<_>>()
+            .join(",")
     }
 }

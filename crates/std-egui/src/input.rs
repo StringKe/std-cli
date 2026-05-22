@@ -20,16 +20,18 @@ impl KeyBinding {
             Self::Mod(key) => format!("{}+{}", primary_modifier_label(), key.to_ascii_uppercase()),
             Self::ModShift(key) => {
                 format!(
-                    "{}+Shift+{}",
+                    "{}+{}+{}",
                     primary_modifier_label(),
+                    shift_modifier_label(),
                     key.to_ascii_uppercase()
                 )
             }
             Self::ModNamed(key) => format!("{}+{}", primary_modifier_label(), named_key_label(key)),
             Self::ModShiftNamed(key) => {
                 format!(
-                    "{}+Shift+{}",
+                    "{}+{}+{}",
                     primary_modifier_label(),
+                    shift_modifier_label(),
                     named_key_label(key)
                 )
             }
@@ -38,7 +40,7 @@ impl KeyBinding {
             }
             Self::AltNamed(key) => format!("{}+{}", alt_modifier_label(), named_key_label(key)),
             Self::Ctrl(key) => format!("Ctrl+{}", key.to_ascii_uppercase()),
-            Self::ShiftNamed(key) => format!("Shift+{}", named_key_label(key)),
+            Self::ShiftNamed(key) => format!("{}+{}", shift_modifier_label(), named_key_label(key)),
             Self::Plain(key) => named_key_label(key).to_string(),
             Self::Named(name) => name.to_string(),
         }
@@ -111,6 +113,14 @@ pub fn alt_modifier_label() -> &'static str {
         "⌥"
     } else {
         "Alt"
+    }
+}
+
+pub fn shift_modifier_label() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "⇧"
+    } else {
+        "Shift"
     }
 }
 
@@ -310,17 +320,35 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
     input.key_pressed(key)
 }
 
-fn named_key_label(key: egui::Key) -> &'static str {
+pub fn named_key_label(key: egui::Key) -> &'static str {
     match key {
-        egui::Key::ArrowDown => "Down",
-        egui::Key::ArrowUp => "Up",
-        egui::Key::Backspace => "Backspace",
+        egui::Key::ArrowDown => "↓",
+        egui::Key::ArrowUp => "↑",
+        egui::Key::Backspace => {
+            if cfg!(target_os = "macos") {
+                "⌫"
+            } else {
+                "Backspace"
+            }
+        }
         egui::Key::Comma => ",",
-        egui::Key::Enter => "Enter",
+        egui::Key::Enter => {
+            if cfg!(target_os = "macos") {
+                "↵"
+            } else {
+                "Enter"
+            }
+        }
         egui::Key::Escape => "Esc",
         egui::Key::Questionmark => "?",
         egui::Key::Slash => "/",
-        egui::Key::Tab => "Tab",
+        egui::Key::Tab => {
+            if cfg!(target_os = "macos") {
+                "⇥"
+            } else {
+                "Tab"
+            }
+        }
         _ => "Key",
     }
 }
@@ -341,6 +369,24 @@ mod tests {
     }
 
     #[test]
+    fn named_key_labels_follow_platform_conventions() {
+        assert_eq!(arrow_up().label(), "↑");
+        assert_eq!(arrow_down().label(), "↓");
+        assert_eq!(escape().label(), "Esc");
+        if cfg!(target_os = "macos") {
+            assert_eq!(enter().label(), "↵");
+            assert_eq!(tab().label(), "⇥");
+            assert_eq!(launcher_defer().label(), "⇧+↵");
+            assert_eq!(launcher_delete_previous_token().label(), "⌘+⌫");
+        } else {
+            assert_eq!(enter().label(), "Enter");
+            assert_eq!(tab().label(), "Tab");
+            assert_eq!(launcher_defer().label(), "Shift+Enter");
+            assert_eq!(launcher_delete_previous_token().label(), "Ctrl+Backspace");
+        }
+    }
+
+    #[test]
     fn studio_palette_binding_matches_docs() {
         assert!(studio_command_palette().label().ends_with("+P"));
         assert!(studio_command_palette_slash().label().ends_with("+/"));
@@ -354,32 +400,46 @@ mod tests {
 
     fn assert_studio_workflow_bindings() {
         let alt = alt_modifier_label();
-        assert_eq!(studio_workflow_step_move_up().label(), format!("{alt}+Up"));
+        let enter = named_key_label(egui::Key::Enter);
+        let shift = shift_modifier_label();
+        let up = named_key_label(egui::Key::ArrowUp);
+        let down = named_key_label(egui::Key::ArrowDown);
+        assert_eq!(
+            studio_workflow_step_move_up().label(),
+            format!("{alt}+{up}")
+        );
         assert_eq!(
             studio_workflow_step_move_down().label(),
-            format!("{alt}+Down")
+            format!("{alt}+{down}")
         );
-        if cfg!(target_os = "macos") {
-            assert_eq!(studio_workflow_step_move_up().label(), "⌥+Up");
-        }
-        assert!(studio_workflow_test().label().ends_with("+Enter"));
-        assert!(studio_workflow_simulate().label().ends_with("+Shift+Enter"));
+        assert!(studio_workflow_test()
+            .label()
+            .ends_with(&format!("+{enter}")));
+        assert!(studio_workflow_simulate()
+            .label()
+            .ends_with(&format!("+{shift}+{enter}")));
         assert!(studio_workflow_save().label().ends_with("+S"));
-        assert!(studio_workflow_history().label().ends_with("+Shift+H"));
+        assert!(studio_workflow_history()
+            .label()
+            .ends_with(&format!("+{shift}+H")));
         assert!(studio_previous_workspace_pane()
             .label()
-            .ends_with("+Shift+Up"));
+            .ends_with(&format!("+{shift}+{up}")));
         assert!(studio_next_workspace_pane()
             .label()
-            .ends_with("+Shift+Down"));
+            .ends_with(&format!("+{shift}+{down}")));
     }
 
     fn assert_launcher_bindings() {
+        let backspace = named_key_label(egui::Key::Backspace);
+        let enter_label = named_key_label(egui::Key::Enter);
+        let shift = shift_modifier_label();
+        let tab_label = named_key_label(egui::Key::Tab);
         assert!(launcher_delete_previous_token()
             .label()
-            .ends_with("+Backspace"));
-        assert_eq!(enter().label(), "Enter");
-        assert_eq!(launcher_defer().label(), "Shift+Enter");
+            .ends_with(&format!("+{backspace}")));
+        assert_eq!(enter().label(), enter_label);
+        assert_eq!(launcher_defer().label(), format!("{shift}+{enter_label}"));
         assert_eq!(KeyBinding::Ctrl('C').label(), "Ctrl+C");
         assert_eq!(launcher_cancel().label(), "Ctrl+C");
         assert!(launcher_open_studio().label().ends_with("+O"));
@@ -390,8 +450,8 @@ mod tests {
             assert_eq!(launcher_result_keycap(0).unwrap(), "⌘+1");
         }
         assert!(launcher_result_keycap(9).is_none());
-        assert_eq!(tab().label(), "Tab");
-        assert_eq!(shift_tab().label(), "Shift+Tab");
+        assert_eq!(tab().label(), tab_label);
+        assert_eq!(shift_tab().label(), format!("{shift}+{tab_label}"));
     }
 
     #[test]

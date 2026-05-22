@@ -19,9 +19,7 @@ impl LauncherUiSemanticsReport {
             && self
                 .result_group_label
                 .contains(i18n::t("launcher.results.group.action_workflow"))
-            && self
-                .selected_label
-                .contains(&format!("{} ", input::enter().label()))
+            && self.selected_label.contains("按 Enter")
             && self.selected_reader_label == self.selected_label
             && self.selected_position.contains(" of ")
             && self.selected_keycap == input::launcher_result_keycap(0).unwrap()

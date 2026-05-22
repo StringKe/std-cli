@@ -341,11 +341,12 @@ mod tests {
 
         let selected_label = result_accessibility_label(&selected, &view);
         let idle_label = result_accessibility_label(&idle, &view);
+        let enter = std_egui::input::enter().label();
 
         assert!(selected_label.contains("shortcut"));
-        assert!(selected_label.contains(&format!("press Enter to {}", selected.action_label)));
+        assert!(selected_label.contains(&format!("press {enter} to {}", selected.action_label)));
         assert!(idle_label.contains("shortcut"));
-        assert!(!idle_label.contains(&format!("press Enter to {}", idle.action_label)));
+        assert!(!idle_label.contains(&format!("press {enter} to {}", idle.action_label)));
     }
 
     #[test]

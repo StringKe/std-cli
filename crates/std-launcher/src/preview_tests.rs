@@ -116,8 +116,14 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("enter_keycap=true,button_semantics=true"));
     assert!(summary.contains("feedback_actions=Copy,Retry"));
     assert!(summary.contains("feedback_actions=Copy,Retry,OpenStudio"));
-    assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
-    assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
+    assert!(summary.contains(&format!(
+        "feedback_action_shortcuts=Copy:{enter},Retry:{enter}",
+        enter = std_egui::input::enter().label()
+    )));
+    assert!(summary.contains(&format!(
+        "feedback_action_shortcuts=Copy:{enter},Retry:{enter},OpenStudio:{enter}",
+        enter = std_egui::input::enter().label()
+    )));
     assert!(summary.contains(&format!(
         "action_panel_actions={},{},{},{}",
         std_egui::i18n::t("launcher.action.review_first"),

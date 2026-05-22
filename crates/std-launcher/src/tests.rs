@@ -271,7 +271,10 @@ fn assert_loading_and_execution_semantics(report: &LauncherUiSemanticsReport, su
     );
     assert!(summary.contains("loading_progress=2px Searching indeterminate"));
     assert!(summary.contains("executing_input_enabled=false"));
-    assert!(summary.contains("executing_background_shortcut=Move to background Enter"));
+    assert!(summary.contains(&format!(
+        "executing_background_shortcut=Move to background {}",
+        std_egui::input::enter().label()
+    )));
 }
 
 fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
