@@ -102,7 +102,7 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
         "workflow-error" => {
             app.app.active_pane == StudioPane::Workflows
                 && app.app.last_workflow_execution.is_some()
-                && app.bottom_panel_tab == crate::bottom_panel::BottomPanelTab::Problems
+                && app.bottom_panel_tab == crate::bottom_panel_model::BottomPanelTab::Problems
                 && app
                     .app
                     .last_workflow_execution
@@ -150,7 +150,7 @@ fn workflow_error_contract(app: &StudioEguiApp, scenario: &str) -> &'static str 
     if scenario == "workflow-error"
         && app.app.active_pane == StudioPane::Workflows
         && app.layout.bottom_panel_open
-        && app.bottom_panel_tab == crate::bottom_panel::BottomPanelTab::Problems
+        && app.bottom_panel_tab == crate::bottom_panel_model::BottomPanelTab::Problems
         && app
             .app
             .last_workflow_execution

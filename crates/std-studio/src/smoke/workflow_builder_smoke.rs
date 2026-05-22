@@ -1,5 +1,5 @@
 use crate::{
-    bottom_panel::BottomPanelTabModel,
+    bottom_panel_model::BottomPanelTabModel,
     views::{self, workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace},
 };
 use std_egui::input;

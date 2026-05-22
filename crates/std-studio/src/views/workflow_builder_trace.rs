@@ -1,4 +1,4 @@
-use crate::{ui, views::workflow_rows, StudioEguiApp};
+use crate::{bottom_panel_model::workflow_status_label, ui, views::workflow_rows, StudioEguiApp};
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 use std_orchestration::{ExecutionStatus, WorkflowDryRun, WorkflowExecution};
@@ -37,14 +37,14 @@ fn render_debug(ui: &mut egui::Ui, debug: Option<&WorkflowDryRun>) {
     workflow_rows::workflow_summary(
         ui,
         &debug.workflow_name,
-        &format!("{:?}", debug.status),
+        workflow_status_label(&debug.status),
         debug.steps.len(),
     );
     for step in &debug.steps {
         workflow_rows::status_row(
             ui,
             &step.step_name,
-            &format!("{:?}", step.status),
+            workflow_status_label(&step.status),
             &format!("{:?} {}", step.step_type, step.message),
             status_fill(ui.ctx(), &step.status),
         );
@@ -59,14 +59,14 @@ fn render_execution(ui: &mut egui::Ui, execution: Option<&WorkflowExecution>) {
     workflow_rows::workflow_summary(
         ui,
         &execution.workflow_name,
-        &format!("{:?}", execution.status),
+        workflow_status_label(&execution.status),
         execution.results.len(),
     );
     for step in &execution.results {
         workflow_rows::status_row(
             ui,
             &step.step_name,
-            &format!("{:?}", step.status),
+            workflow_status_label(&step.status),
             &format!("started={} finished={}", step.started_at, step.finished_at),
             status_fill(ui.ctx(), &step.status),
         );
@@ -75,7 +75,12 @@ fn render_execution(ui: &mut egui::Ui, execution: Option<&WorkflowExecution>) {
 
 fn status_path(dry_run: Option<&WorkflowDryRun>, execution: Option<&WorkflowExecution>) -> String {
     let dry = dry_run
-        .map(|debug| debug.steps.iter().map(|step| status_label(&step.status)))
+        .map(|debug| {
+            debug
+                .steps
+                .iter()
+                .map(|step| workflow_status_label(&step.status))
+        })
         .into_iter()
         .flatten();
     let run = execution
@@ -83,21 +88,11 @@ fn status_path(dry_run: Option<&WorkflowDryRun>, execution: Option<&WorkflowExec
             execution
                 .results
                 .iter()
-                .map(|step| status_label(&step.status))
+                .map(|step| workflow_status_label(&step.status))
         })
         .into_iter()
         .flatten();
     dry.chain(run).collect::<Vec<_>>().join(">")
-}
-
-fn status_label(status: &ExecutionStatus) -> &'static str {
-    match status {
-        ExecutionStatus::Pending => "pending",
-        ExecutionStatus::Running => "running",
-        ExecutionStatus::Completed => "success",
-        ExecutionStatus::Failed => "error",
-        ExecutionStatus::Cancelled => "skipped",
-    }
 }
 
 fn status_fill(ctx: &egui::Context, status: &ExecutionStatus) -> egui::Color32 {
@@ -112,15 +107,6 @@ fn status_fill(ctx: &egui::Context, status: &ExecutionStatus) -> egui::Color32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn status_labels_match_docs_22_batch_debug_states() {
-        assert_eq!(status_label(&ExecutionStatus::Pending), "pending");
-        assert_eq!(status_label(&ExecutionStatus::Running), "running");
-        assert_eq!(status_label(&ExecutionStatus::Completed), "success");
-        assert_eq!(status_label(&ExecutionStatus::Failed), "error");
-        assert_eq!(status_label(&ExecutionStatus::Cancelled), "skipped");
-    }
 
     #[test]
     fn empty_debug_contract_keeps_panel_visible() {

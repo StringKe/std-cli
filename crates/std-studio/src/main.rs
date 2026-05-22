@@ -9,6 +9,7 @@ mod app_rows;
 mod app_tests;
 mod app_view;
 mod bottom_panel;
+mod bottom_panel_model;
 mod commands;
 mod host_chrome;
 mod host_chrome_drag;
@@ -45,7 +46,7 @@ mod workspace_policy_evidence;
 mod workspace_tabs;
 
 use analysis_state::AnalysisUiState;
-use bottom_panel::BottomPanelTab;
+use bottom_panel_model::BottomPanelTab;
 use layout::StudioLayoutState;
 use native_app::{native_app_blocked_by_test_mode, run_studio_native_app};
 use preview::{

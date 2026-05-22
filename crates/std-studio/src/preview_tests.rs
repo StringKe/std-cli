@@ -71,7 +71,7 @@ fn workflow_preview_seeds_builder_runtime_state() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(
         app.bottom_panel_tab,
-        crate::bottom_panel::BottomPanelTab::BatchDebug
+        crate::bottom_panel_model::BottomPanelTab::BatchDebug
     );
 }
 
@@ -89,7 +89,7 @@ fn workflow_error_preview_seeds_failed_execution_and_problems_panel() {
     );
     assert_eq!(
         app.bottom_panel_tab,
-        crate::bottom_panel::BottomPanelTab::Problems
+        crate::bottom_panel_model::BottomPanelTab::Problems
     );
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_snapshot().status, "1 issues");

@@ -336,7 +336,7 @@ pub(crate) fn seed_workflow_error_preview(app: &mut StudioEguiApp) {
     });
     app.app.open_workflow_builder(workflow_path);
     app.layout.open_bottom_panel();
-    app.bottom_panel_tab = crate::bottom_panel::BottomPanelTab::Problems;
+    app.bottom_panel_tab = crate::bottom_panel_model::BottomPanelTab::Problems;
     app.status = "workflow error preview seeded".to_string();
 }
 

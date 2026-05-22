@@ -1,4 +1,10 @@
-use crate::{ui, StudioEguiApp};
+use crate::{
+    bottom_panel_model::{
+        action_status_label, bottom_panel_row_a11y_label, workflow_status_label, BottomPanelRow,
+        BottomPanelSnapshot, BottomPanelTab, BottomPanelTabModel,
+    },
+    ui, StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -12,75 +18,6 @@ const STATUS_CHIP_HEIGHT: f32 = Space::MD as f32 + Space::TWO_XS as f32;
 const STATUS_CHIP_Y_OFFSET: f32 = STATUS_CHIP_HEIGHT / 2.0;
 const ROW_TITLE_Y_OFFSET: f32 = -7.0;
 const ROW_DETAIL_Y_OFFSET: f32 = 9.0;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum BottomPanelTab {
-    BatchDebug,
-    Logs,
-    Problems,
-    Performance,
-}
-
-impl BottomPanelTab {
-    pub(crate) fn label(self) -> &'static str {
-        match self {
-            Self::BatchDebug => i18n::t("studio.shell.bottom.batch_debug"),
-            Self::Logs => i18n::t("studio.shell.bottom.logs"),
-            Self::Problems => i18n::t("studio.shell.bottom.problems"),
-            Self::Performance => i18n::t("studio.shell.bottom.performance"),
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct BottomPanelTabModel {
-    pub(crate) tabs: Vec<BottomPanelTab>,
-    pub(crate) selected: BottomPanelTab,
-}
-
-impl BottomPanelTabModel {
-    pub(crate) fn for_selected(selected: BottomPanelTab) -> Self {
-        Self {
-            tabs: vec![
-                BottomPanelTab::BatchDebug,
-                BottomPanelTab::Logs,
-                BottomPanelTab::Problems,
-                BottomPanelTab::Performance,
-            ],
-            selected,
-        }
-    }
-
-    pub(crate) fn docs22_default() -> Self {
-        Self::for_selected(BottomPanelTab::BatchDebug)
-    }
-
-    pub(crate) fn labels(&self) -> Vec<&'static str> {
-        self.tabs.iter().map(|tab| tab.label()).collect()
-    }
-
-    pub(crate) fn contract(&self) -> String {
-        format!(
-            "tabs={};selected={};role=bottom-panel-tabs",
-            self.labels().join("|"),
-            self.selected.label()
-        )
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct BottomPanelSnapshot {
-    pub title: String,
-    pub status: String,
-    pub rows: Vec<BottomPanelRow>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct BottomPanelRow {
-    pub name: String,
-    pub status: String,
-    pub detail: String,
-}
 
 impl StudioEguiApp {
     pub(crate) fn open_batch_debug_panel(&mut self) {
@@ -133,13 +70,13 @@ impl StudioEguiApp {
         if let Some(report) = self.app.last_batch_report.as_ref() {
             return BottomPanelSnapshot {
                 title: "Batch Debug".to_string(),
-                status: format!("{:?}", report.status),
+                status: action_status_label(&report.status).to_string(),
                 rows: report
                     .steps
                     .iter()
                     .map(|step| BottomPanelRow {
                         name: step.name.clone(),
-                        status: format!("{:?}", step.status),
+                        status: action_status_label(&step.status).to_string(),
                         detail: format!("{:?} {}", step.kind, step.target),
                     })
                     .collect(),
@@ -148,13 +85,13 @@ impl StudioEguiApp {
         if let Some(execution) = self.app.last_workflow_execution.as_ref() {
             return BottomPanelSnapshot {
                 title: execution.workflow_name.clone(),
-                status: format!("{:?}", execution.status),
+                status: workflow_status_label(&execution.status).to_string(),
                 rows: execution
                     .results
                     .iter()
                     .map(|step| BottomPanelRow {
                         name: step.step_name.clone(),
-                        status: format!("{:?}", step.status),
+                        status: workflow_status_label(&step.status).to_string(),
                         detail: format!(
                             "started={} finished={}",
                             step.started_at, step.finished_at
@@ -166,13 +103,13 @@ impl StudioEguiApp {
         if let Some(debug) = self.app.workflow_debug.as_ref() {
             return BottomPanelSnapshot {
                 title: debug.workflow_name.clone(),
-                status: format!("{:?}", debug.status),
+                status: workflow_status_label(&debug.status).to_string(),
                 rows: debug
                     .steps
                     .iter()
                     .map(|step| BottomPanelRow {
                         name: step.step_name.clone(),
-                        status: format!("{:?}", step.status),
+                        status: workflow_status_label(&step.status).to_string(),
                         detail: step.message.clone(),
                     })
                     .collect(),
@@ -219,7 +156,7 @@ impl StudioEguiApp {
                     .filter(|step| step.status != ExecutionStatus::Completed)
                     .map(|step| BottomPanelRow {
                         name: step.step_name.clone(),
-                        status: format!("{:?}", step.status),
+                        status: workflow_status_label(&step.status).to_string(),
                         detail: problem_detail(&step.output),
                     }),
             );
@@ -364,15 +301,11 @@ fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
     ui.add_space(Space::TWO_XS as f32);
 }
 
-fn bottom_panel_row_a11y_label(row: &BottomPanelRow) -> String {
-    format!("{}, status {}, {}", row.name, row.status, row.detail)
-}
-
 fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
     let fill = match status {
-        "Completed" => ui::ok_bg(ui.ctx()),
-        "Failed" | "NeedsExternalRunner" => ui::warn_bg(ui.ctx()),
-        "Running" => ui::selected_bg(ui.ctx()),
+        "success" => ui::ok_bg(ui.ctx()),
+        "error" | "skipped" => ui::warn_bg(ui.ctx()),
+        "running" => ui::selected_bg(ui.ctx()),
         _ => ui::panel_alt(ui.ctx()),
     };
     ui.painter().rect_filled(
@@ -391,27 +324,12 @@ fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
 
 #[cfg(test)]
 pub(crate) fn completed_status() -> String {
-    format!("{:?}", std_types::ActionExecutionStatus::Completed)
+    action_status_label(&std_types::ActionExecutionStatus::Completed).to_string()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn bottom_panel_tabs_match_docs22_default_order() {
-        let model = BottomPanelTabModel::docs22_default();
-
-        assert_eq!(
-            model.labels(),
-            vec!["Batch Debug", "Logs", "Problems", "Performance"]
-        );
-        assert_eq!(model.selected, BottomPanelTab::BatchDebug);
-        assert_eq!(
-            model.contract(),
-            "tabs=Batch Debug|Logs|Problems|Performance;selected=Batch Debug;role=bottom-panel-tabs"
-        );
-    }
 
     #[test]
     fn bottom_panel_snapshots_switch_by_selected_tab() {
@@ -447,19 +365,5 @@ mod tests {
         assert!(app.layout.bottom_panel_open);
         assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
         assert_eq!(app.bottom_panel_snapshot().title, "Batch Debug");
-    }
-
-    #[test]
-    fn bottom_panel_rows_expose_status_and_detail_to_accessibility() {
-        let row = BottomPanelRow {
-            name: "Run tests".to_string(),
-            status: "Completed".to_string(),
-            detail: "started=1 finished=2".to_string(),
-        };
-
-        assert_eq!(
-            bottom_panel_row_a11y_label(&row),
-            "Run tests, status Completed, started=1 finished=2"
-        );
     }
 }

@@ -1,5 +1,5 @@
 use crate::{
-    bottom_panel::BottomPanelTabModel,
+    bottom_panel_model::BottomPanelTabModel,
     layout::StudioLayoutState,
     viewport::{studio_host_viewport_contract, STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
 };
