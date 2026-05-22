@@ -200,10 +200,31 @@ fn native_host_window_height_includes_panel_inner_padding() {
     let mut state = LauncherState::new();
     state.update_query("index");
     let body = body_height_for_scale(&state, DEFAULT_VIEWPORT_HEIGHT, UiScale::default());
-    let chrome = Space::MD as f32 * 3.0 + Space::SM as f32;
-    let expected = SEARCH_HEIGHT + body + ACTION_BAR_HEIGHT + chrome;
+    let expected = Space::MD as f32 * 2.0
+        + search_section_height_for_scale(UiScale::default())
+        + Space::XS as f32
+        + body
+        + Space::XS as f32
+        + ACTION_BAR_HEIGHT;
 
     assert_eq!(window_inner_size(&state).y, expected);
+}
+
+#[test]
+fn expanded_panel_height_budget_matches_rendered_sections_without_clipping() {
+    for scenario in ["results", "defer", "error", "executing", "action-panel"] {
+        let mut state = LauncherState::new();
+        crate::preview::apply_preview_scenario(&mut state, scenario);
+        let viewport = window_inner_size(&state);
+        let body = body_height_for_scale(&state, viewport.y, UiScale::default());
+        let budget = layout_budget_for_scale(&state, body, UiScale::default());
+        let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
+        let panel = panel_rect(available, &state);
+
+        assert_eq!(viewport.y, budget.total_height, "{scenario}");
+        assert_eq!(panel.height(), budget.total_height, "{scenario}");
+        assert!(panel.contains_rect(available), "{scenario}");
+    }
 }
 
 #[test]
@@ -211,7 +232,7 @@ fn feedback_status_height_budget_covers_rendered_panel() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "defer");
     let scale = UiScale::default();
-    let budget = extra_status_height_for_scale(&state, scale);
+    let budget = launcher_status_height_for_scale(&state, scale);
     let rendered_panel = feedback_panel_height_for_scale(scale);
     let rendered_budget = rendered_panel + scale.f32(Space::XS as f32);
 

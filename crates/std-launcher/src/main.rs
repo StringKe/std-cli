@@ -201,8 +201,8 @@ mod tests {
 
     fn hardcoded_color_patterns() -> &'static [&'static str] {
         &[
-            "Color32::from_rgb",
-            "Color32::from_rgba",
+            concat!("Color32", "::from_rgb"),
+            concat!("Color32", "::from_rgba"),
             "from_black_alpha",
             "#000",
             "#fff",

@@ -1,5 +1,5 @@
 use eframe::egui;
-use std_egui::tokens::Color;
+use std_egui::tokens::{Color, Radius};
 
 pub(crate) fn paint(
     ui: &mut egui::Ui,
@@ -29,7 +29,7 @@ fn paint_window(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let inner = rect.shrink(rect.width() * 0.24);
     ui.painter().rect_stroke(
         inner,
-        egui::CornerRadius::same(2),
+        egui::CornerRadius::same(Radius::sm()),
         stroke,
         egui::StrokeKind::Inside,
     );
@@ -61,7 +61,7 @@ fn paint_document(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let inner = rect.shrink(rect.width() * 0.25);
     ui.painter().rect_stroke(
         inner,
-        egui::CornerRadius::same(2),
+        egui::CornerRadius::same(Radius::sm()),
         stroke,
         egui::StrokeKind::Inside,
     );
@@ -114,7 +114,7 @@ fn paint_clipboard(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     let inner = rect.shrink(rect.width() * 0.25);
     ui.painter().rect_stroke(
         inner,
-        egui::CornerRadius::same(2),
+        egui::CornerRadius::same(Radius::sm()),
         stroke,
         egui::StrokeKind::Inside,
     );
@@ -124,7 +124,7 @@ fn paint_clipboard(ui: &mut egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
     );
     ui.painter().rect_stroke(
         clip,
-        egui::CornerRadius::same(2),
+        egui::CornerRadius::same(Radius::sm()),
         stroke,
         egui::StrokeKind::Inside,
     );

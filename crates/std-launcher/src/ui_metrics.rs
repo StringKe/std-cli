@@ -10,6 +10,7 @@ const RESULT_ROW_HEIGHT: f32 = 36.0;
 const GROUP_HEADER_ROW_HEIGHT: f32 = 24.0;
 const MAX_RESULT_ROWS: f32 = 6.0;
 const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
+const VOICE_ROW_HEIGHT: f32 = 44.0;
 #[cfg(test)]
 const PANEL_VERTICAL_ANCHOR: f32 = 0.28;
 
@@ -372,17 +373,11 @@ fn panel_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScal
     if !panel_is_expanded(state) {
         return collapsed_panel_height_for_scale(scale);
     }
-    let panel_padding = scale.f32(Space::MD as f32) * 2.0;
-    panel_content_height_for_scale(state, body_height, scale) + panel_padding
+    layout_budget_for_scale(state, body_height, scale).total_height
 }
 
 fn panel_content_height_for_scale(state: &LauncherState, body_height: f32, scale: UiScale) -> f32 {
-    scale.f32(SEARCH_HEIGHT)
-        + body_height
-        + scale.f32(ACTION_BAR_HEIGHT)
-        + scale.f32(Space::MD as f32)
-        + scale.f32(Space::SM as f32)
-        + extra_status_height_for_scale(state, scale)
+    layout_budget_for_scale(state, body_height, scale).content_height
 }
 
 fn body_height_for_scale(state: &LauncherState, viewport_height: f32, scale: UiScale) -> f32 {
@@ -419,15 +414,59 @@ fn collapsed_panel_height_for_scale(scale: UiScale) -> f32 {
     scale.f32(SEARCH_HEIGHT)
 }
 
-fn extra_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
-    let mut height = 0.0;
+struct LauncherLayoutBudget {
+    content_height: f32,
+    total_height: f32,
+}
+
+fn layout_budget_for_scale(
+    state: &LauncherState,
+    body_height: f32,
+    scale: UiScale,
+) -> LauncherLayoutBudget {
+    let padding = scale.f32(Space::MD as f32);
+    let content = launcher_content_height_for_scale(state, body_height, scale);
+    LauncherLayoutBudget {
+        content_height: content,
+        total_height: content + padding * 2.0,
+    }
+}
+
+fn launcher_content_height_for_scale(
+    state: &LauncherState,
+    body_height: f32,
+    scale: UiScale,
+) -> f32 {
+    search_section_height_for_scale(scale)
+        + scale.f32(Space::XS as f32)
+        + body_height
+        + scale.f32(Space::XS as f32)
+        + scale.f32(ACTION_BAR_HEIGHT)
+        + launcher_status_height_for_scale(state, scale)
+}
+
+fn search_section_height_for_scale(scale: UiScale) -> f32 {
+    scale.f32(Space::SM as f32) * 2.0 + scale.f32(SEARCH_BAR_MIN_CONTENT_HEIGHT)
+}
+
+const SEARCH_BAR_MIN_CONTENT_HEIGHT: f32 = 40.0;
+
+fn launcher_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
+    voice_status_height_for_scale(state, scale) + feedback_status_height_for_scale(state, scale)
+}
+
+fn voice_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
     if state.controller.voice_active {
-        height += scale.f32(44.0) + scale.f32(Space::XS as f32);
+        return scale.f32(Space::XS as f32) + scale.f32(VOICE_ROW_HEIGHT);
     }
+    0.0
+}
+
+fn feedback_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
     if state.view.feedback.is_some() {
-        height += feedback_panel_height_for_scale(scale) + scale.f32(Space::XS as f32);
+        return scale.f32(Space::XS as f32) + feedback_panel_height_for_scale(scale);
     }
-    height
+    0.0
 }
 
 #[cfg(test)]
