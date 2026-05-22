@@ -1,4 +1,5 @@
 use crate::{
+    doctor::ui_capture_manifest::verify_capture_manifest_header,
     doctor::ui_capture_pixels::{verify_pixel_evidence, CapturePixelEvidence},
     doctor::ui_capture_png::{verify_capture_png, CaptureManifestEntry},
     doctor::workspace::{check_text, read_required},
@@ -65,10 +66,7 @@ fn verify_ui_capture_manifest_with_root(
     body: &str,
     root: Option<&Path>,
 ) -> Result<usize, CliError> {
-    check_text(body, "capture-ui-matrix manifest")?;
-    check_text(body, "opt_in=STD_ALLOW_UI_PREVIEW=1")?;
-    check_text(body, "capture_rule=pid+process-name+window-title")?;
-    check_text(body, "completion_rule=current-run-png-only")?;
+    verify_capture_manifest_header(body, root)?;
     for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
         verify_capture_line(body, root, "launcher", theme, scenario)?;
     }
@@ -324,11 +322,12 @@ mod tests {
     #[test]
     fn ui_capture_manifest_with_root_requires_real_png_files() {
         let temp = tempfile::tempdir().unwrap();
-        write_sample_pngs(temp.path());
+        let root = capture_root(&temp);
+        write_sample_pngs(&root);
         let manifest = sample_manifest();
 
         assert_eq!(
-            verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap(),
+            verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap(),
             40
         );
     }
@@ -336,11 +335,12 @@ mod tests {
     #[test]
     fn ui_capture_manifest_with_root_rejects_missing_png_file() {
         let temp = tempfile::tempdir().unwrap();
-        write_sample_pngs(temp.path());
-        fs::remove_file(temp.path().join("launcher-dark-error.png")).unwrap();
+        let root = capture_root(&temp);
+        write_sample_pngs(&root);
+        fs::remove_file(root.join("launcher-dark-error.png")).unwrap();
         let manifest = sample_manifest();
 
-        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
         assert!(error
             .to_string()
             .contains("unable to read capture png for launcher dark error"));
@@ -349,8 +349,9 @@ mod tests {
     #[test]
     fn ui_capture_manifest_with_root_rejects_non_png_file() {
         let temp = tempfile::tempdir().unwrap();
-        write_sample_pngs(temp.path());
-        fs::write(temp.path().join("studio-light-panes.png"), b"not-png").unwrap();
+        let root = capture_root(&temp);
+        write_sample_pngs(&root);
+        fs::write(root.join("studio-light-panes.png"), b"not-png").unwrap();
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
@@ -359,7 +360,7 @@ mod tests {
             &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1080 height=640 {SAMPLE_EVIDENCE}"),
         );
 
-        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
         assert!(error
             .to_string()
             .contains("capture file must be PNG for studio light panes"));
@@ -368,13 +369,14 @@ mod tests {
     #[test]
     fn ui_capture_manifest_with_root_rejects_dimension_mismatch() {
         let temp = tempfile::tempdir().unwrap();
-        write_sample_pngs(temp.path());
+        let root = capture_root(&temp);
+        write_sample_pngs(&root);
         let manifest = sample_manifest().replace(
             &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1080 height=640 {SAMPLE_EVIDENCE}"),
             &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1081 height=640 {SAMPLE_EVIDENCE}"),
         );
 
-        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
         assert!(error.to_string().contains(
             "capture manifest dimensions mismatch for studio light panes: declared=1081x640 actual=1080x640"
         ));
@@ -383,15 +385,16 @@ mod tests {
     #[test]
     fn ui_capture_manifest_with_root_rejects_too_small_png() {
         let temp = tempfile::tempdir().unwrap();
-        write_sample_pngs(temp.path());
+        let root = capture_root(&temp);
+        write_sample_pngs(&root);
         let bytes = sample_png_bytes(500, 64);
-        fs::write(temp.path().join("launcher-light-collapsed.png"), bytes).unwrap();
+        fs::write(root.join("launcher-light-collapsed.png"), bytes).unwrap();
         let manifest = sample_manifest().replace(
             &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=720 height=64 {SAMPLE_EVIDENCE}"),
             &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=500 height=64 {SAMPLE_EVIDENCE}"),
         );
 
-        let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
+        let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
         assert!(error
             .to_string()
             .contains("capture PNG too small for launcher light collapsed"));
@@ -460,6 +463,12 @@ mod tests {
             )
             .unwrap();
         }
+    }
+
+    fn capture_root(temp: &tempfile::TempDir) -> PathBuf {
+        let root = temp.path().join("artifacts/ui/manual-acceptance");
+        fs::create_dir_all(&root).unwrap();
+        root
     }
 
     fn sample_png_bytes(width: u32, height: u32) -> Vec<u8> {
