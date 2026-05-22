@@ -69,6 +69,7 @@ impl LauncherState {
             completed_query: completion.completed_query,
             completion_focus_contract: completion.focus_contract,
             focus_visible_contract: focus_visible_contract(),
+            shortcut_help_contract: shortcut_help_contract(),
             normalized_query: token_delete.normalized_query,
             token_delete_query: token_delete.after_delete,
             token_delete_normalized_query: token_delete.normalized_after_delete,
@@ -127,6 +128,19 @@ fn focus_visible_contract() -> String {
         "ime=preedit-keeps-focus,enter-owned-by-ime",
     ]
     .join(";")
+}
+
+fn shortcut_help_contract() -> String {
+    let mut help_state = LauncherState::new();
+    help_state.update_query("?");
+    let help_visible = crate::launcher_shortcut_help_visible(&help_state.view.query);
+    let nl_visible = help_state.view.nl_suggestion.is_some()
+        && !crate::launcher_shortcut_help_visible(&help_state.view.query);
+    let summary = crate::launcher_shortcut_help_summary();
+    format!(
+        "trigger=?;title=Keyboard shortcuts;help_visible={help_visible};nl_action_visible={nl_visible};{}",
+        summary
+    )
 }
 
 struct UserEnterEvidence {

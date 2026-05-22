@@ -73,6 +73,7 @@ pub struct LauncherKeyboardReport {
     pub completed_query: String,
     pub completion_focus_contract: String,
     pub focus_visible_contract: String,
+    pub shortcut_help_contract: String,
     pub normalized_query: String,
     pub token_delete_query: String,
     pub token_delete_normalized_query: String,
