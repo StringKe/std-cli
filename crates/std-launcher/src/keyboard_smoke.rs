@@ -46,8 +46,11 @@ impl LauncherState {
             user_enter_status: user_enter.status,
             user_enter_route: user_enter.route,
             user_enter_deferred: user_enter.deferred,
+            user_enter_defer_reason: user_enter.defer_reason,
             user_enter_feedback_visible: user_enter.feedback_visible,
+            user_enter_feedback_title: user_enter.feedback_title,
             user_enter_keeps_launcher_open: user_enter.keeps_launcher_open,
+            user_enter_window_commands: user_enter.window_commands,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged: ime.selection_unchanged,
             ime_action_panel_selection_unchanged: ime.action_panel_selection_unchanged,
@@ -118,8 +121,11 @@ struct UserEnterEvidence {
     status: Option<ActionExecutionStatus>,
     route: String,
     deferred: bool,
+    defer_reason: String,
     feedback_visible: bool,
+    feedback_title: String,
     keeps_launcher_open: bool,
+    window_commands: String,
 }
 
 struct ImeEvidence {
@@ -255,8 +261,11 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
             status: None,
             route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
             deferred: false,
+            defer_reason: "none".to_string(),
             feedback_visible: false,
+            feedback_title: "none".to_string(),
             keeps_launcher_open: false,
+            window_commands: "none".to_string(),
         };
     };
     let deferred = execution
@@ -265,15 +274,39 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
         .and_then(|output| output.get("deferred"))
         .and_then(|value| value.as_bool())
         .unwrap_or(false);
+    let defer_reason = execution
+        .output
+        .as_ref()
+        .and_then(|output| output.get("reason"))
+        .and_then(|value| value.as_str())
+        .unwrap_or("none")
+        .to_string();
     let feedback_visible = state.view.feedback.is_some();
+    let feedback_title = state
+        .view
+        .feedback
+        .as_ref()
+        .map(|feedback| feedback.title.clone())
+        .unwrap_or_else(|| "none".to_string());
     let keeps_launcher_open = state.controller.visible;
+    let window_commands = crate::format_window_commands(&LauncherState::enter_window_commands(
+        true,
+        keeps_launcher_open,
+    ));
     let _ = std::fs::remove_dir_all(root);
     UserEnterEvidence {
         status: Some(execution.status),
         route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
         deferred,
+        defer_reason,
         feedback_visible,
+        feedback_title,
         keeps_launcher_open,
+        window_commands: if window_commands.is_empty() {
+            "none".to_string()
+        } else {
+            window_commands
+        },
     }
 }
 

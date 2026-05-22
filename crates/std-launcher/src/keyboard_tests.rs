@@ -98,15 +98,31 @@ fn assert_trigger_paths(report: &LauncherKeyboardReport, summary: &str) {
         "Enter>handle_keyboard_input_by_user>LauncherUser"
     );
     assert!(report.user_enter_deferred);
+    assert_eq!(
+        report.user_enter_defer_reason,
+        "external runner action requires explicit user trigger"
+    );
     assert!(report.user_enter_feedback_visible);
+    assert_eq!(
+        report.user_enter_feedback_title,
+        std_egui::i18n::t("launcher.feedback.deferred")
+    );
     assert!(report.user_enter_keeps_launcher_open);
+    assert_eq!(report.user_enter_window_commands, "none");
     assert!(report.enter_window.pass());
     assert!(summary.contains("direct_trigger_status=Completed"));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
     assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>LauncherUser"));
     assert!(summary.contains("user_enter_deferred=true"));
+    assert!(summary
+        .contains("user_enter_defer_reason=external runner action requires explicit user trigger"));
     assert!(summary.contains("user_enter_feedback_visible=true"));
+    assert!(summary.contains(&format!(
+        "user_enter_feedback_title={}",
+        std_egui::i18n::t("launcher.feedback.deferred")
+    )));
     assert!(summary.contains("user_enter_keeps_launcher_open=true"));
+    assert!(summary.contains("user_enter_window_commands=none"));
     assert!(summary.contains("enter_window=completed_status=Completed"));
     assert!(summary.contains("completed_hide=true"));
     assert!(summary.contains("completed_commands=Visible(false)"));
