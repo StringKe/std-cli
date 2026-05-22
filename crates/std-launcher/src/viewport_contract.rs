@@ -32,12 +32,12 @@ pub fn launcher_viewport_frame_contract() -> String {
 }
 
 pub fn launcher_host_positioning_contract() -> &'static str {
-    "host_positioning=resize-panel-window>outer-position-0.28-monitor-anchor>visible>focus;native_window=panel-sized-transparent-host;panel_origin=0x0;carrier_background=none"
+    "host_positioning=resize-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
 }
 
 fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
     format!(
-        "native=panel-surface,transparent=true,decorations=false,visible={visible},size={}x{}",
+        "native=transparent-carrier,transparent=true,decorations=false,visible={visible},panel_surface=opaque,size={}x{}",
         size.x as u32, size.y as u32
     )
 }
@@ -50,11 +50,11 @@ mod tests {
     fn launcher_viewport_contracts_name_transparency_and_size() {
         assert_eq!(
             transparent_hidden_panel_contract(egui::vec2(720.0, 64.0)),
-            "native=panel-surface,transparent=true,decorations=false,visible=false,size=720x64"
+            "native=transparent-carrier,transparent=true,decorations=false,visible=false,panel_surface=opaque,size=720x64"
         );
         assert_eq!(
             transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
-            "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x320"
+            "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x320"
         );
     }
 
@@ -83,7 +83,7 @@ mod tests {
         );
         assert_eq!(
             launcher_host_positioning_contract(),
-            "host_positioning=resize-panel-window>outer-position-0.28-monitor-anchor>visible>focus;native_window=panel-sized-transparent-host;panel_origin=0x0;carrier_background=none"
+            "host_positioning=resize-transparent-carrier>outer-position-0.28-monitor-anchor>visible>focus;native_window=transparent-carrier;panel_surface=opaque-bg-surface-0;carrier_background=none"
         );
     }
 }

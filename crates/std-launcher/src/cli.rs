@@ -253,13 +253,13 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=panel_surface,no_carrier_background"));
+            .contains("native_host_window=transparent_carrier,panel_surface=opaque"));
         assert!(report
             .summary()
-            .contains("capture_window=panel_surface,opt_in_only,no_carrier_background"));
+            .contains("capture_window=transparent_carrier,opt_in_only,panel_surface=opaque"));
         assert!(report
             .summary()
-            .contains("capture_surface=native_panel_surface,no_carrier_background"));
+            .contains("capture_surface=opaque_panel_surface,transparent_carrier"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
@@ -339,6 +339,8 @@ mod tests {
         for expected in [
             "state_surface=panel_only:true,search:panel-as-search-surface",
             "carrier_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_window=",
+            "native_carrier=transparent",
+            "panel_surface=opaque",
             "panel_origin=0x0",
             "carrier_clearance=0x0",
             "panel_only=true",

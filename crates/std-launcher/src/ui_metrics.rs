@@ -315,7 +315,7 @@ impl PanelSurfaceGeometry {
 
     fn summary(&self) -> String {
         format!(
-            "native_window={}x{};panel_origin={}x{};panel_size={}x{};carrier_clearance={}x{};frame_clear={};panel_only={}",
+            "native_window={}x{};native_carrier=transparent;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};carrier_clearance={}x{};frame_clear={};panel_only={}",
             self.window.x.round() as u32,
             self.window.y.round() as u32,
             self.panel.min.x.round() as i32,

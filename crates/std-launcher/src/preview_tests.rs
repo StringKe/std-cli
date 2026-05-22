@@ -170,7 +170,8 @@ fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
 fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     let summary = report.summary();
 
-    assert!(summary.contains("preview_capture_contract=native-panel-surface,opt-in-only"));
+    assert!(summary
+        .contains("preview_capture_contract=transparent-carrier,opaque-panel-surface,opt-in-only"));
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
@@ -188,7 +189,7 @@ fn assert_preview_ui_completion_boundary(report: &LauncherPreviewSmokeReport) {
 }
 
 #[test]
-fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
+fn preview_smoke_sizes_prove_capture_window_has_transparent_carrier() {
     let report = LauncherPreviewSmokeReport::new();
 
     assert!(report.pass(), "{}", report.summary());
@@ -198,7 +199,7 @@ fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
     assert!(report.summary().contains("light-empty=PASS"));
     assert!(report
         .summary()
-        .contains("panel_frame=native_panel_surface"));
+        .contains("panel_frame=transparent_carrier_with_opaque_panel_surface"));
     assert!(report
         .summary()
         .contains("search_surface=panel_as_search_surface"));
@@ -208,7 +209,7 @@ fn preview_smoke_sizes_prove_capture_window_has_panel_only_surface() {
 }
 
 #[test]
-fn ui_preview_uses_native_panel_surface_window() {
+fn ui_preview_uses_transparent_carrier_with_opaque_panel() {
     let config = LauncherPreviewConfig {
         theme_mode: ThemeMode::Light,
         scenario: "empty".to_string(),
@@ -223,7 +224,7 @@ fn ui_preview_uses_native_panel_surface_window() {
     assert!(description.contains("visible: Some(true)"));
     assert_eq!(
         preview_capture_window_contract(&config),
-        "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x460"
+        "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x460"
     );
 }
 
@@ -240,14 +241,16 @@ fn launcher_entrypoints_share_panel_native_options() {
 }
 
 #[test]
-fn preview_evidence_names_native_panel_surface_not_preview_viewport() {
+fn preview_evidence_names_transparent_carrier_not_preview_viewport() {
     let surface = include_str!("surface_smoke.rs");
     let preview = include_str!("preview.rs");
 
-    assert!(surface.contains("capture_window=panel_surface,opt_in_only"));
-    assert!(surface.contains("capture_surface=native_panel_surface"));
+    assert!(surface.contains("capture_window=transparent_carrier,opt_in_only"));
+    assert!(surface.contains("capture_surface=opaque_panel_surface"));
+    assert!(surface.contains("panel_surface=opaque"));
     assert!(!surface.contains("preview_viewport="));
-    assert!(preview.contains("native-panel-surface"));
+    assert!(preview.contains("transparent-carrier"));
+    assert!(preview.contains("opaque-panel-surface"));
     assert!(preview.contains("no-carrier-background"));
     assert!(!preview.contains("preview_viewport"));
     assert!(!preview.contains("preview_viewport_contract"));

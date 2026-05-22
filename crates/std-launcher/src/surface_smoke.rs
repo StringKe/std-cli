@@ -93,11 +93,11 @@ impl LauncherSurfaceSmokeReport {
             && self.viewport_frame_contract == "viewport_frame=transparent_fill,no_stroke"
             && self.panel_radius == 16
             && self.native_host_window_contract
-                == "native_host_window=panel_surface,no_carrier_background"
+                == "native_host_window=transparent_carrier,panel_surface=opaque,no_carrier_background"
             && self.capture_window_contract
-                == "capture_window=panel_surface,opt_in_only,no_carrier_background"
+                == "capture_window=transparent_carrier,opt_in_only,panel_surface=opaque,no_carrier_background"
             && self.capture_surface_contract
-                == "capture_surface=native_panel_surface,no_carrier_background,no_shadow_clip"
+                == "capture_surface=opaque_panel_surface,transparent_carrier,no_carrier_background,no_shadow_clip"
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -195,10 +195,12 @@ fn viewport_frame_contract() -> String {
 fn native_host_window_contract() -> String {
     let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH, 64.0));
     let panel_width = crate::panel_surface_width(1.0);
-    if size == "native=panel-surface,transparent=true,decorations=false,visible=false,size=720x64"
+    if size
+        == "native=transparent-carrier,transparent=true,decorations=false,visible=false,panel_surface=opaque,size=720x64"
         && panel_width == PANEL_WIDTH
     {
-        return "native_host_window=panel_surface,no_carrier_background".to_string();
+        return "native_host_window=transparent_carrier,panel_surface=opaque,no_carrier_background"
+            .to_string();
     }
     "native_host_window=FAIL".to_string()
 }
@@ -207,16 +209,18 @@ fn capture_window_contract() -> String {
     let panel_width = crate::panel_surface_width(1.0);
     let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH, 360.0));
     if preview
-        == "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x360"
+        == "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x360"
         && panel_width == PANEL_WIDTH
     {
-        return "capture_window=panel_surface,opt_in_only,no_carrier_background".to_string();
+        return "capture_window=transparent_carrier,opt_in_only,panel_surface=opaque,no_carrier_background"
+            .to_string();
     }
     "capture_window=FAIL".to_string()
 }
 
 fn capture_surface_contract() -> String {
-    "capture_surface=native_panel_surface,no_carrier_background,no_shadow_clip".to_string()
+    "capture_surface=opaque_panel_surface,transparent_carrier,no_carrier_background,no_shadow_clip"
+        .to_string()
 }
 
 fn action_bar_preview_state() -> String {

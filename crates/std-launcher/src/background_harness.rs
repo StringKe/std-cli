@@ -152,7 +152,7 @@ mod tests {
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
         assert!(background_harness_window_contract().starts_with(
-            "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x"
+            "native=transparent-carrier,transparent=true,decorations=false,visible=true,panel_surface=opaque,size=720x"
         ));
     }
 

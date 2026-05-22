@@ -238,7 +238,7 @@ fn body_height_counts_virtual_group_header_slots() {
 }
 
 #[test]
-fn all_preview_visible_states_keep_native_panel_surface_only() {
+fn all_preview_visible_states_keep_transparent_carrier_and_opaque_panel() {
     for scenario in [
         "empty",
         "results",
