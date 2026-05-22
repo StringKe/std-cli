@@ -6,8 +6,12 @@ mod analysis_state;
 mod analysis_tab_content;
 mod app_rows;
 #[cfg(test)]
+mod app_shell_tests;
+#[cfg(test)]
 mod app_tests;
 mod app_view;
+#[cfg(test)]
+mod app_workspace_tests;
 mod bottom_panel;
 #[cfg(test)]
 mod bottom_panel_keyboard_tests;
