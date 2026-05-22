@@ -41,29 +41,9 @@ record_capture() {
   bytes=$(wc -c <"$output" | tr -d ' ')
   width=$(/usr/bin/sips -g pixelWidth "$output" 2>/dev/null | /usr/bin/awk '/pixelWidth/ {print $2}')
   height=$(/usr/bin/sips -g pixelHeight "$output" 2>/dev/null | /usr/bin/awk '/pixelHeight/ {print $2}')
-  pixel_evidence=$(capture_pixel_evidence "$output" "$width" "$height")
+  pixel_evidence=$(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift \
+    scripts/cg-sample-pixels.swift "$output")
   echo "$surface theme=$theme scenario=$scenario path=$output bytes=$bytes width=$width height=$height $pixel_evidence" >>"$manifest"
-}
-
-capture_pixel_evidence() {
-  output="$1"
-  width="$2"
-  height="$3"
-  tmp="$out_dir/.pixel-samples.txt"
-  : >"$tmp"
-  for x_pct in 25 50 75; do
-    for y_pct in 25 50 75; do
-      x=$((width * x_pct / 100))
-      y=$((height * y_pct / 100))
-      /usr/bin/sips -g pixelColor "$x" "$y" "$output" 2>/dev/null |
-        /usr/bin/awk '/pixelColor/ {print $2}' >>"$tmp"
-    done
-  done
-  samples=$(wc -l <"$tmp" | tr -d ' ')
-  unique_colors=$(sort -u "$tmp" | wc -l | tr -d ' ')
-  black_pixels=$(grep -Eci '^(000000|0x000000|black)$' "$tmp" || true)
-  white_pixels=$(grep -Eci '^(ffffff|0xffffff|white)$' "$tmp" || true)
-  echo "samples=$samples unique_colors=$unique_colors black_pixels=$black_pixels white_pixels=$white_pixels"
 }
 
 pids=""

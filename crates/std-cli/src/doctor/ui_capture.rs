@@ -94,6 +94,18 @@ fn check_window_capture_script(root: &std::path::Path) -> Result<(), CliError> {
     ] {
         check_text(&driver, required)?;
     }
+    let sampler = read_required(&root.join("scripts/cg-sample-pixels.swift"))?;
+    for required in [
+        "CGImageSourceCreateWithURL",
+        "CGContext(",
+        "xPercents = [25, 50, 75]",
+        "yPercents = [25, 50, 75]",
+        "unique_colors",
+        "black_pixels",
+        "white_pixels",
+    ] {
+        check_text(&sampler, required)?;
+    }
     Ok(())
 }
 
@@ -114,9 +126,10 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "completion_rule=current-run-png-only",
         "/usr/bin/sips -g pixelWidth",
         "/usr/bin/sips -g pixelHeight",
-        "/usr/bin/sips -g pixelColor",
+        "scripts/cg-sample-pixels.swift",
         "width=$width height=$height",
-        "samples=$samples unique_colors=$unique_colors black_pixels=$black_pixels white_pixels=$white_pixels",
+        "pixel_evidence=$(",
+        "$pixel_evidence",
         "record_capture launcher",
         "record_capture studio",
         "manifest=$manifest",
