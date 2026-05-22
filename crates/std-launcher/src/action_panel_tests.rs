@@ -331,6 +331,30 @@ fn action_panel_filter_is_keyboard_reachable_from_panel_focus() {
 }
 
 #[test]
+fn action_panel_copy_execution_uses_stable_action_kind_not_display_name() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.open_action_panel();
+    state.update_action_panel_query("copy");
+    let execution = state.trigger_action_panel_selection().unwrap();
+
+    assert!(matches!(
+        state.action_panel.selected_item(),
+        Some(ActionPanelItem::CopyCommand(_))
+    ));
+    assert!(execution.action_name.starts_with("Copy Command:"));
+    assert_ne!(execution.action_name, "Copy Action Command");
+    assert_eq!(execution.status, ActionExecutionStatus::Completed);
+}
+
+#[test]
 fn action_panel_filter_respects_ime_composition() {
     let mut state = LauncherState::new();
     state.update_query("terminal");

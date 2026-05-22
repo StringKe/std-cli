@@ -54,7 +54,13 @@ pub(crate) struct ActionPanelRenderResult {
 pub(crate) enum ActionPanelCommand {
     #[default]
     None,
-    Triggered(ActionExecution),
+    Triggered(ActionPanelExecution),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ActionPanelExecution {
+    pub(crate) execution: ActionExecution,
+    pub(crate) copy_to_clipboard: bool,
 }
 
 fn header(ui: &mut egui::Ui, state: &LauncherState) {
@@ -122,7 +128,10 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) -> ActionPanelCommand {
             state.focus_section = LauncherFocusSection::ActionPanel;
             state.focus_source = LauncherFocusSource::Pointer;
             if let Some(execution) = state.trigger_action_panel_selection_by_user() {
-                command = ActionPanelCommand::Triggered(execution);
+                command = ActionPanelCommand::Triggered(ActionPanelExecution {
+                    execution,
+                    copy_to_clipboard: matches!(item, ActionPanelItem::CopyCommand(_)),
+                });
             }
         }
         ui.add_space(Space::two_xs() as f32);
@@ -248,7 +257,9 @@ mod tests {
         assert!(click_branch.contains("state.action_panel.selected = index"));
         assert!(click_branch.contains("LauncherFocusSource::Pointer"));
         assert!(click_branch.contains("state.trigger_action_panel_selection_by_user()"));
-        assert!(production_source.contains("ActionPanelCommand::Triggered(execution)"));
+        assert!(production_source.contains("ActionPanelCommand::Triggered(ActionPanelExecution"));
+        assert!(production_source
+            .contains("copy_to_clipboard: matches!(item, ActionPanelItem::CopyCommand(_))"));
     }
 
     #[test]

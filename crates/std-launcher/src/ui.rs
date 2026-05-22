@@ -130,9 +130,10 @@ pub(crate) fn render_launcher_panel(
             }
             let action_panel = ui_action_panel::render(ui.ctx(), action_bar.rect, state);
             match action_panel.command {
-                ui_action_panel::ActionPanelCommand::Triggered(execution) => {
+                ui_action_panel::ActionPanelCommand::Triggered(trigger) => {
+                    let execution = trigger.execution;
                     hide_requested |= ui_keyboard::execution_hides_launcher(&execution);
-                    if execution.action_name == "Copy Action Command" {
+                    if trigger.copy_to_clipboard {
                         ui.ctx().copy_text(execution.message);
                     }
                 }
@@ -228,8 +229,9 @@ mod tests {
         assert!(
             production_source.contains("ui_action_panel::render(ui.ctx(), action_bar.rect, state)")
         );
-        assert!(production_source.contains("ActionPanelCommand::Triggered(execution)"));
+        assert!(production_source.contains("ActionPanelCommand::Triggered(trigger)"));
         assert!(production_source.contains("ui_keyboard::execution_hides_launcher(&execution)"));
+        assert!(production_source.contains("trigger.copy_to_clipboard"));
         assert!(production_source.contains("ui.ctx().copy_text(execution.message)"));
     }
 
