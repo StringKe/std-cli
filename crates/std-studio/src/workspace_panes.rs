@@ -92,6 +92,13 @@ impl StudioEguiApp {
         );
         crate::workspace_tabs::render_workspace_tabs(ui, &tabs, &self.workspace_commands);
         ui.add_space(Space::XS as f32);
+        let lifecycle = crate::workspace_lifecycle::WorkspaceLifecycleSpec::from_panes(
+            &self.app.workspace_panes,
+            self.app.focused_pane,
+            self.app.workspace_policy,
+        );
+        crate::workspace_lifecycle::render_workspace_lifecycle(ui, &lifecycle);
+        ui.add_space(Space::XS as f32);
         render_workspace_toolbar(
             ui,
             &spec,

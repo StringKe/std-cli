@@ -72,6 +72,22 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         }
         (Locale::ZhCn, "studio.workspace_panes.shortcut_suffix") => Some("，快捷键 {shortcut}"),
         (Locale::EnUs, "studio.workspace_panes.shortcut_suffix") => Some(", shortcut {shortcut}"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.title") => Some("Pane 状态"),
+        (Locale::EnUs, "studio.workspace_lifecycle.title") => Some("Pane State"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.open") => Some("打开 {count}"),
+        (Locale::EnUs, "studio.workspace_lifecycle.open") => Some("open {count}"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.focused") => Some("焦点 {title}"),
+        (Locale::EnUs, "studio.workspace_lifecycle.focused") => Some("focus {title}"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.restore") => Some("可恢复 {count}"),
+        (Locale::EnUs, "studio.workspace_lifecycle.restore") => Some("restorable {count}"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.none") => Some("无"),
+        (Locale::EnUs, "studio.workspace_lifecycle.none") => Some("none"),
+        (Locale::ZhCn, "studio.workspace_lifecycle.a11y") => Some(
+            "工作区生命周期，打开 {open}，当前焦点 {focused}，类型 {key}，可恢复 {closed}，策略 {policy}",
+        ),
+        (Locale::EnUs, "studio.workspace_lifecycle.a11y") => Some(
+            "Workspace lifecycle, open {open}, focused {focused}, kind {key}, restorable {closed}, policy {policy}",
+        ),
         (Locale::ZhCn, "studio.chrome.refresh") => Some("刷新"),
         (Locale::EnUs, "studio.chrome.refresh") => Some("Refresh"),
         (Locale::ZhCn, "studio.chrome.open_current_pane") => Some("打开当前面板"),
@@ -136,6 +152,14 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
             Some("{action}, workspace pane action, {title}, button, press Enter{shortcut}")
         }
         "studio.workspace_panes.shortcut_suffix" => Some(", shortcut {shortcut}"),
+        "studio.workspace_lifecycle.title" => Some("Pane State"),
+        "studio.workspace_lifecycle.open" => Some("open {count}"),
+        "studio.workspace_lifecycle.focused" => Some("focus {title}"),
+        "studio.workspace_lifecycle.restore" => Some("restorable {count}"),
+        "studio.workspace_lifecycle.none" => Some("none"),
+        "studio.workspace_lifecycle.a11y" => Some(
+            "Workspace lifecycle, open {open}, focused {focused}, kind {key}, restorable {closed}, policy {policy}",
+        ),
         "studio.chrome.refresh" => Some("Refresh"),
         "studio.chrome.open_current_pane" => Some("Open Current Pane"),
         "studio.chrome.workspace_panes" => Some("workspace panes"),
