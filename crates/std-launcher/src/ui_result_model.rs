@@ -123,8 +123,20 @@ fn result_subtitle(result: &SearchResult, preview: Option<&ActionPreview>) -> St
     preview
         .map(|preview| preview.subtitle.as_str())
         .filter(|subtitle| !subtitle.trim().is_empty())
+        .or_else(|| app_alias_description(result).filter(|aliases| !aliases.trim().is_empty()))
         .unwrap_or(result.action.description.as_str())
         .to_string()
+}
+
+fn app_alias_description(result: &SearchResult) -> Option<&str> {
+    if result.action.action_type != ActionType::AppLaunch {
+        return None;
+    }
+    result
+        .action
+        .description
+        .strip_prefix("Aliases: ")
+        .map(|_| result.action.description.as_str())
 }
 
 fn match_badge(result: &SearchResult) -> Option<String> {
@@ -419,6 +431,25 @@ mod tests {
                     matched: false
                 }
             ]
+        );
+    }
+
+    #[test]
+    fn app_alias_matches_show_alias_subtitle_without_selected_preview() {
+        let mut result = test_result("Open App: WeChat", ActionType::AppLaunch, 0.8);
+        result.action.description =
+            "Aliases: WeChat, Weixin, 微信 / Path: /tmp/std-fixture/WeChat.app".to_string();
+        result.matched_fields = vec!["tags".to_string()];
+
+        let row = LauncherResultRowModel::from_result(&result, None, "微信", 0, 1, false);
+
+        assert_eq!(
+            row.subtitle,
+            "Aliases: WeChat, Weixin, 微信 / Path: /tmp/std-fixture/WeChat.app"
+        );
+        assert_eq!(
+            row.match_badge,
+            Some(i18n::t("launcher.results.match.alias").to_string())
         );
     }
 
