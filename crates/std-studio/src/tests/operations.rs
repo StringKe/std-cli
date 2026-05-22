@@ -75,10 +75,17 @@ fn assert_gate_outputs(evidence: &OpsEvidence) {
     assert!(!evidence.install.result.is_empty());
     assert!(evidence.install.result.contains("install verify"));
     assert!(evidence.install.output.contains("launcher="));
+    assert!(evidence.install.command.contains(".std-cli/install-check"));
+    assert!(evidence.install.artifact.contains(".std-cli/install-check"));
     assert_runbook_contains(
         &evidence.install.runbook,
-        &["std install run", "std install verify"],
+        &[
+            "std install run",
+            "std install verify",
+            ".std-cli/install-check",
+        ],
     );
+    assert_mise_install_gate_matches_operations_prefix(&evidence.install.command);
     assert_eq!(
         evidence.runtime.command,
         "mise run ui-background-acceptance"
@@ -157,4 +164,30 @@ fn assert_runbook_contains(runbook: &str, commands: &[&str]) {
             "runbook missing {command}: {runbook}"
         );
     }
+}
+
+fn assert_mise_install_gate_matches_operations_prefix(command: &str) {
+    let root = workspace_root();
+    let mise = std::fs::read_to_string(root.join("mise.toml")).unwrap();
+
+    assert!(mise.contains("install run --prefix .std-cli/install-check"));
+    assert!(mise.contains("install verify --prefix .std-cli/install-check"));
+    assert!(
+        command.contains(
+            root.join(".std-cli")
+                .join("install-check")
+                .display()
+                .to_string()
+                .as_str()
+        ),
+        "operations install command must point at repo-local install-check prefix: {command}"
+    );
+}
+
+fn workspace_root() -> std::path::PathBuf {
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .unwrap()
+        .to_path_buf()
 }

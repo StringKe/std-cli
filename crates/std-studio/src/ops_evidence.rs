@@ -49,7 +49,7 @@ impl OpsEvidence {
     pub fn load() -> Self {
         let root = workspace_root();
         let release_dir = release_evidence_dir(&root);
-        let install_prefix = install_evidence_dir();
+        let install_prefix = install_evidence_dir(&root);
         Self {
             qa: OpsGate {
                 title: "QA",
@@ -429,12 +429,8 @@ fn release_evidence_dir(root: &Path) -> PathBuf {
     }
 }
 
-fn install_evidence_dir() -> PathBuf {
-    std::env::var_os("HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(".std-cli")
-        .join("install-check")
+fn install_evidence_dir(root: &Path) -> PathBuf {
+    root.join(".std-cli").join("install-check")
 }
 
 fn workspace_root() -> PathBuf {
