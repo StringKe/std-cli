@@ -40,6 +40,22 @@ fn studio_opens_focuses_and_closes_workspace_panes() {
 }
 
 #[test]
+fn studio_starts_with_dashboard_workspace_base_pane() {
+    let studio = test_studio();
+    let pane = studio.open_workspace_panes().next().unwrap();
+
+    assert_eq!(studio.open_workspace_panes().count(), 1);
+    assert_eq!(studio.focused_pane, Some(WorkspacePaneId::new(1)));
+    assert_eq!(pane.id, WorkspacePaneId::new(1));
+    assert_eq!(pane.kind, WorkspacePaneKind::Pane(StudioPane::Dashboard));
+    assert_eq!(
+        studio.workspace_pane_content(&pane.kind).content_key,
+        "dashboard"
+    );
+    assert!(!pane.kind.closable());
+}
+
+#[test]
 fn workspace_panes_dedupe_workflow_and_analysis_by_lexical_identity() {
     let mut studio = test_studio();
     let workflow = studio.open_workflow_builder(std::path::PathBuf::from("daily/workflow.json"));
@@ -58,7 +74,7 @@ fn workspace_panes_dedupe_workflow_and_analysis_by_lexical_identity() {
     assert_eq!(analysis, analysis_alias);
     assert_eq!(workflow_kind.identity_key(), "workflow:daily/workflow.json");
     assert_eq!(analysis_kind.identity_key(), "analysis:std-cli/src");
-    assert_eq!(studio.open_workspace_panes().count(), 2);
+    assert_eq!(studio.open_workspace_panes().count(), 3);
     assert_eq!(studio.focused_pane, Some(analysis));
 }
 
@@ -106,7 +122,7 @@ fn closed_workspace_panes_restore_identity_and_state() {
     let analysis = studio.open_analysis_workbench(std::path::PathBuf::from("std-cli"));
 
     assert!(studio.close_workspace_pane(workflow));
-    assert_eq!(studio.open_workspace_panes().count(), 1);
+    assert_eq!(studio.open_workspace_panes().count(), 2);
     assert_eq!(studio.focused_pane, Some(analysis));
 
     let restored = studio.open_workflow_builder(workflow_path.clone());
@@ -118,7 +134,7 @@ fn closed_workspace_panes_restore_identity_and_state() {
 
     assert_eq!(restored, workflow);
     assert!(pane.open);
-    assert_eq!(pane.focus_serial, 3);
+    assert_eq!(pane.focus_serial, 4);
     assert_eq!(studio.focused_pane, Some(workflow));
     assert!(studio
         .workspace_pane_content(&pane.kind)

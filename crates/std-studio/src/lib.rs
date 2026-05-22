@@ -120,6 +120,14 @@ pub struct StudioApp {
     next_focus_serial: u64,
 }
 
+fn initial_workspace_panes() -> Vec<WorkspacePane> {
+    vec![WorkspacePane::new(
+        WorkspacePaneId::new(1),
+        WorkspacePaneKind::Pane(StudioPane::Dashboard),
+        1,
+    )]
+}
+
 impl Default for StudioApp {
     fn default() -> Self {
         let core = StdCore::with_config(StdConfig::load());
@@ -139,11 +147,11 @@ impl Default for StudioApp {
             last_batch_report: None,
             active_analysis: None,
             planned_workflow: None,
-            workspace_panes: Vec::new(),
-            focused_pane: None,
+            workspace_panes: initial_workspace_panes(),
+            focused_pane: Some(WorkspacePaneId::new(1)),
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
-            next_pane_serial: 1,
-            next_focus_serial: 1,
+            next_pane_serial: 2,
+            next_focus_serial: 2,
         }
     }
 }
@@ -170,11 +178,11 @@ impl StudioApp {
             last_batch_report: None,
             active_analysis: None,
             planned_workflow: None,
-            workspace_panes: Vec::new(),
-            focused_pane: None,
+            workspace_panes: initial_workspace_panes(),
+            focused_pane: Some(WorkspacePaneId::new(1)),
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
-            next_pane_serial: 1,
-            next_focus_serial: 1,
+            next_pane_serial: 2,
+            next_focus_serial: 2,
         }
     }
 
