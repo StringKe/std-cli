@@ -281,6 +281,12 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("studio-workspace-pane-open-focus-close-restore"));
+        assert!(smoke
+            .summary()
+            .contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
+        assert!(smoke
+            .summary()
+            .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
         assert!(smoke.summary().contains("operations_step_summary="));
         assert!(smoke.summary().contains("operations_visual_contract="));
         assert_gate_contract(&smoke.summary());

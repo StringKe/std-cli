@@ -335,6 +335,10 @@ fn assert_operations_completion_summary(summary: &str) {
     assert!(summary.contains("operations_completion_manual_gates="));
     assert!(summary.contains("launcher-background-harness-enter"));
     assert!(summary.contains("studio-keyboard-a11y-focus"));
+    assert!(summary.contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
+    assert!(
+        summary.contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix")
+    );
 }
 
 fn assert_operations_contract_summary(summary: &str) {

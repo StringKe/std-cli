@@ -226,6 +226,10 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
         .contains("launcher-background-harness-enter"));
     assert!(operations_completion::completion_manual_gates(&rows)
         .contains("studio-keyboard-a11y-focus"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
     assert!(!manual.contains("Plugin"));
     assert!(!manual.contains("Index"));
     assert_eq!(rows.len(), 11);

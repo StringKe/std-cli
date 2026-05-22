@@ -1,11 +1,12 @@
 use crate::ops_evidence::{OpsEvidence, OpsStatus};
+use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CompletionAuditRow {
     pub area: &'static str,
     pub status: OpsStatus,
     pub evidence: String,
-    pub manual_gates: Vec<&'static str>,
+    pub manual_gates: Vec<String>,
 }
 
 pub fn completion_audit_rows(evidence: &OpsEvidence) -> Vec<CompletionAuditRow> {
@@ -13,33 +14,25 @@ pub fn completion_audit_rows(evidence: &OpsEvidence) -> Vec<CompletionAuditRow> 
         manual_row(
             "UI Docs 18-24",
             "docs define contract; runtime proof still required",
-            &[
+            [
                 "docs-18-24-requirement-audit",
                 "light-dark-token-proof",
                 "keyboard-focus-ime-proof",
                 "a11y-localization-proof",
-            ],
+            ]
+            .into_iter()
+            .map(str::to_string)
+            .collect(),
         ),
         manual_row(
             "Launcher",
             "requires current screenshots, focus, Enter, IME, light and dark evidence",
-            &[
-                "launcher-light-dark-screenshots",
-                "launcher-results-no-results-defer-error-screenshots",
-                "launcher-keyboard-navigation-ime",
-                "launcher-installed-hotkey-toggle",
-                "launcher-background-harness-enter",
-            ],
+            launcher_manual_gates(),
         ),
         manual_row(
             "Studio",
             "requires current screenshots, pane lifecycle, keyboard focus, runtime evidence",
-            &[
-                "studio-light-dark-screenshots",
-                "studio-workspace-pane-open-focus-close-restore",
-                "studio-keyboard-a11y-focus",
-                "studio-operations-runtime-evidence",
-            ],
+            studio_manual_gates(),
         ),
         row("Core", evidence.doctor.status, &evidence.doctor.result),
         row(
@@ -57,6 +50,50 @@ pub fn completion_audit_rows(evidence: &OpsEvidence) -> Vec<CompletionAuditRow> 
         row("Release", evidence.release.status, &evidence.release.result),
         row("Install", evidence.install.status, &evidence.install.result),
         row("Quality", evidence.qa.status, &evidence.qa.result),
+    ]
+}
+
+fn launcher_manual_gates() -> Vec<String> {
+    let mut gates = [
+        "launcher-light-dark-screenshots",
+        "launcher-results-no-results-defer-error-screenshots",
+        "launcher-keyboard-navigation-ime",
+        "launcher-installed-hotkey-toggle",
+        "launcher-background-harness-enter",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect::<Vec<_>>();
+    gates.extend(ui_capture_manual_gates());
+    gates
+}
+
+fn studio_manual_gates() -> Vec<String> {
+    let mut gates = [
+        "studio-light-dark-screenshots",
+        "studio-workspace-pane-open-focus-close-restore",
+        "studio-keyboard-a11y-focus",
+        "studio-operations-runtime-evidence",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect::<Vec<_>>();
+    gates.extend(ui_capture_manual_gates());
+    gates
+}
+
+fn ui_capture_manual_gates() -> Vec<String> {
+    vec![
+        format!("ui-capture-manifest={}", ui_capture::UI_CAPTURE_MANIFEST),
+        format!("ui-capture-command={}", ui_capture::UI_CAPTURE_COMMAND),
+        format!(
+            "ui-capture-pixels={}",
+            ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
+        ),
+        format!(
+            "ui-capture-rejects={}",
+            ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
+        ),
     ]
 }
 
@@ -78,7 +115,7 @@ pub fn completion_manual_areas(rows: &[CompletionAuditRow]) -> String {
 pub fn completion_manual_gates(rows: &[CompletionAuditRow]) -> String {
     rows.iter()
         .filter(|row| row.status == OpsStatus::Manual)
-        .flat_map(|row| row.manual_gates.iter().copied())
+        .flat_map(|row| row.manual_gates.iter().map(String::as_str))
         .collect::<Vec<_>>()
         .join("|")
 }
@@ -96,16 +133,12 @@ fn row(area: &'static str, status: OpsStatus, evidence: &str) -> CompletionAudit
     }
 }
 
-fn manual_row(
-    area: &'static str,
-    evidence: &str,
-    manual_gates: &[&'static str],
-) -> CompletionAuditRow {
+fn manual_row(area: &'static str, evidence: &str, manual_gates: Vec<String>) -> CompletionAuditRow {
     CompletionAuditRow {
         area,
         status: OpsStatus::Manual,
         evidence: evidence.to_string(),
-        manual_gates: manual_gates.to_vec(),
+        manual_gates,
     }
 }
 
@@ -127,6 +160,10 @@ mod tests {
         assert!(completion_manual_areas(&rows).contains("UI Docs 18-24"));
         assert!(completion_manual_gates(&rows).contains("launcher-background-harness-enter"));
         assert!(completion_manual_gates(&rows).contains("studio-keyboard-a11y-focus"));
+        assert!(completion_manual_gates(&rows).contains("ui-capture-manifest="));
+        assert!(completion_manual_gates(&rows).contains("ui-capture-command="));
+        assert!(completion_manual_gates(&rows).contains("ui-capture-pixels="));
+        assert!(completion_manual_gates(&rows).contains("ui-capture-rejects="));
         assert!(!completion_manual_areas(&rows).contains("Plugin"));
         assert!(!completion_manual_areas(&rows).contains("Index"));
         assert_eq!(rows.len(), 11);
