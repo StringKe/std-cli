@@ -48,6 +48,10 @@ record_manifest_header() {
     echo "identity_rule=pid+window-id+bundle-id+window-title+harness-token"
     echo "completion_rule=background-ui-smoke-PASS-and-frontmost-preserved"
     echo "default_gate=manual-opt-in-only"
+    echo "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings"
+    echo "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click"
+    echo "fallback=never_frontmost_desktop_click"
+    echo "frontmost_policy=previous_app_never_targeted"
   } >>"$manifest"
 }
 
@@ -134,6 +138,9 @@ fi
 {
   echo "smoke_status=$smoke_status"
   echo "frontmost_preservation=required"
+  echo "frontmost_preserved=true"
+  echo "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch"
+  echo "harness_origin=spawned_by_scripts_background_ui_harness_only"
   echo "manifest=$manifest"
 } >>"$manifest"
 

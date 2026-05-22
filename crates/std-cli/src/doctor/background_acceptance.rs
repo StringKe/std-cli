@@ -20,6 +20,10 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "identity_rule=pid+window-id+bundle-id+window-title+harness-token",
         "completion_rule=background-ui-smoke-PASS-and-frontmost-preserved",
         "default_gate=manual-opt-in-only",
+        "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings",
+        "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
+        "fallback=never_frontmost_desktop_click",
+        "frontmost_policy=previous_app_never_targeted",
         "bundle_id=dev.std-cli.background-ui-harness",
         "window_title=std-cli Background UI Harness ",
         "harness_token=run-",
@@ -29,6 +33,9 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "--harness-token run-",
         "smoke_status=PASS",
         "frontmost_preservation=required",
+        "frontmost_preserved=true",
+        "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
+        "harness_origin=spawned_by_scripts_background_ui_harness_only",
     ] {
         check_text(body, required)?;
     }
@@ -114,6 +121,27 @@ mod tests {
             .contains("frontmost_preservation=required"));
     }
 
+    #[test]
+    fn background_acceptance_manifest_rejects_missing_forbidden_targets() {
+        let manifest = sample_manifest().replace(
+            "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings\n",
+            "",
+        );
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("forbidden_targets="));
+    }
+
+    #[test]
+    fn background_acceptance_manifest_rejects_missing_no_frontmost_click_fallback() {
+        let manifest = sample_manifest().replace("fallback=never_frontmost_desktop_click\n", "");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("fallback=never_frontmost_desktop_click"));
+    }
+
     fn sample_manifest() -> &'static str {
         "background-ui-acceptance manifest\n\
 created_at=2026-05-22T00:00:00Z\n\
@@ -121,6 +149,10 @@ target=isolated_background_ui_harness_only\n\
 identity_rule=pid+window-id+bundle-id+window-title+harness-token\n\
 completion_rule=background-ui-smoke-PASS-and-frontmost-preserved\n\
 default_gate=manual-opt-in-only\n\
+forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings\n\
+forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click\n\
+fallback=never_frontmost_desktop_click\n\
+frontmost_policy=previous_app_never_targeted\n\
 harness_pid=42\n\
 window_id=24\n\
 bundle_id=dev.std-cli.background-ui-harness\n\
@@ -129,6 +161,9 @@ harness_token=run-42\n\
 smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid 42 --window-id 24 --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness run-42\" --harness-token run-42\n\
 smoke_status=PASS\n\
 frontmost_preservation=required\n\
+frontmost_preserved=true\n\
+real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch\n\
+harness_origin=spawned_by_scripts_background_ui_harness_only\n\
 manifest=artifacts/ui/background-acceptance/manifest.txt\n"
     }
 }
