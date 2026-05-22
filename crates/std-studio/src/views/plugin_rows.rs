@@ -10,8 +10,7 @@ use crate::{
 use eframe::egui;
 use std::path::Path;
 use std_egui::tokens::{Color, Space, Text};
-use std_studio::plugin_security::{boundary_summary, runtime_summary, PluginBoundarySummary};
-use std_types::{ActionExecutionStatus, ActionPreview, SearchResult};
+use std_types::{ActionPreview, SearchResult};
 
 pub(crate) enum PluginActionRowEvent {
     None,
@@ -85,48 +84,6 @@ pub(crate) fn action_row(
     }
 }
 
-pub(crate) fn check_report_row(ui: &mut egui::Ui, report: &std_core::PluginCheckReport) {
-    let boundary = boundary_summary(report);
-    let detail = format!(
-        "{} permissions={} fs={} network={}",
-        boundary.actions,
-        boundary.permissions.join(","),
-        boundary.fs_scopes,
-        boundary.network_hosts
-    );
-    status_row(
-        ui,
-        &report.plugin_name,
-        boundary.status,
-        &detail,
-        ui::ok_bg(ui.ctx()),
-    );
-    boundary_panel(ui, &boundary);
-}
-
-pub(crate) fn security_summary_panel(ui: &mut egui::Ui, reports: &[std_core::PluginCheckReport]) {
-    if reports.is_empty() {
-        ui::empty_state(ui, std_egui::i18n::t("studio.plugins.checks.empty"));
-        return;
-    }
-    let summary = plugin_security_summary(reports);
-    status_row(
-        ui,
-        "Plugin boundary",
-        summary.status,
-        &format!("{} permissions", summary.permissions.len()),
-        ui::selected_bg(ui.ctx()),
-    );
-    ui.horizontal_wrapped(|ui| {
-        for permission in &summary.permissions {
-            ui::chip(ui, permission, Color::accent_weak(ui.ctx()));
-        }
-    });
-    runtime_row(ui, "actions", &summary.actions);
-    runtime_row(ui, "fs", &summary.fs_scopes);
-    runtime_row(ui, "network", &summary.network_hosts);
-}
-
 pub(crate) fn inspector_context_panel(ui: &mut egui::Ui, model: &PluginInspectorModel) {
     status_row(
         ui,
@@ -135,11 +92,11 @@ pub(crate) fn inspector_context_panel(ui: &mut egui::Ui, model: &PluginInspector
         &model.description,
         ui::selected_bg(ui.ctx()),
     );
-    runtime_row(ui, "permissions", &model.permissions.join(","));
-    runtime_row(ui, "commands", &model.commands.join(","));
-    runtime_row(ui, "enable", &model.enable_state);
-    runtime_row(ui, "review", &model.review_prompt);
-    runtime_row(ui, "audit log", &model.audit_log);
+    label_value_row(ui, "permissions", &model.permissions.join(","));
+    label_value_row(ui, "commands", &model.commands.join(","));
+    label_value_row(ui, "enable", &model.enable_state);
+    label_value_row(ui, "review", &model.review_prompt);
+    label_value_row(ui, "audit log", &model.audit_log);
 }
 
 pub(crate) fn preview_panel(ui: &mut egui::Ui, preview: &ActionPreview) {
@@ -155,49 +112,8 @@ pub(crate) fn preview_panel(ui: &mut egui::Ui, preview: &ActionPreview) {
         ui::selected_bg(ui.ctx()),
     );
     for (key, value) in &preview.metadata {
-        metadata_row(ui, key, value);
+        label_value_row(ui, key, value);
     }
-}
-
-pub(crate) fn execution_panel(
-    ui: &mut egui::Ui,
-    name: &str,
-    status: &ActionExecutionStatus,
-    message: &str,
-    output: Option<&serde_json::Value>,
-) {
-    let runtime = runtime_summary(status, output);
-    status_row(
-        ui,
-        name,
-        &runtime.status,
-        message,
-        plugin_status_fill(ui.ctx(), status),
-    );
-    runtime_row(ui, "runtime", &runtime.runtime);
-    runtime_row(ui, "exit", &runtime.exit_code);
-    runtime_row(ui, "duration", &runtime.duration);
-    runtime_row(ui, "boundary", &runtime.boundary);
-}
-
-pub(crate) fn output_view(ui: &mut egui::Ui, output: &serde_json::Value) {
-    let body = output.to_string();
-    let response = ui.add_sized(
-        [ui.available_width(), 120.0],
-        egui::Label::new(
-            egui::RichText::new(body)
-                .font(Text::code())
-                .color(ui::strong_text(ui.ctx())),
-        )
-        .selectable(true),
-    );
-    response.widget_info(|| {
-        egui::WidgetInfo::labeled(
-            egui::WidgetType::Label,
-            ui.is_enabled(),
-            "Plugin runtime output",
-        )
-    });
 }
 
 pub(crate) fn status_row(
@@ -242,7 +158,7 @@ pub(crate) fn status_row(
     ui.add_space(Space::TWO_XS as f32);
 }
 
-fn metadata_row(ui: &mut egui::Ui, key: &str, value: &str) {
+pub(crate) fn label_value_row(ui: &mut egui::Ui, key: &str, value: &str) {
     ui.horizontal(|ui| {
         ui.label(
             egui::RichText::new(key)
@@ -255,88 +171,6 @@ fn metadata_row(ui: &mut egui::Ui, key: &str, value: &str) {
                 .color(ui::strong_text(ui.ctx())),
         );
     });
-}
-
-fn boundary_panel(ui: &mut egui::Ui, boundary: &PluginBoundarySummary) {
-    ui.horizontal_wrapped(|ui| {
-        for permission in &boundary.permissions {
-            ui::chip(ui, permission, Color::accent_weak(ui.ctx()));
-        }
-        ui::chip(
-            ui,
-            &format!("fs {}", boundary.fs_scopes),
-            Color::bg_surface_2(ui.ctx()),
-        );
-        ui::chip(
-            ui,
-            &format!("net {}", boundary.network_hosts),
-            Color::bg_surface_2(ui.ctx()),
-        );
-    });
-    ui.add_space(Space::XS as f32);
-}
-
-fn runtime_row(ui: &mut egui::Ui, label: &str, value: &str) {
-    ui.horizontal(|ui| {
-        ui.label(
-            egui::RichText::new(label)
-                .font(Text::caption())
-                .color(ui::muted_text(ui.ctx())),
-        );
-        ui.label(
-            egui::RichText::new(value)
-                .font(Text::caption())
-                .color(ui::strong_text(ui.ctx())),
-        );
-    });
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct PluginSecuritySummary {
-    pub(crate) status: &'static str,
-    pub(crate) permissions: Vec<String>,
-    pub(crate) fs_scopes: String,
-    pub(crate) network_hosts: String,
-    pub(crate) actions: String,
-}
-
-pub(crate) fn plugin_security_summary(
-    reports: &[std_core::PluginCheckReport],
-) -> PluginSecuritySummary {
-    let mut permissions = reports
-        .iter()
-        .flat_map(|report| boundary_summary(report).permissions)
-        .collect::<Vec<_>>();
-    permissions.sort();
-    permissions.dedup();
-    let action_count = reports.iter().map(|report| report.actions).sum::<usize>();
-    let fs_count = reports
-        .iter()
-        .flat_map(|report| report.fs_scopes.iter())
-        .count();
-    let network_count = reports
-        .iter()
-        .flat_map(|report| report.network_hosts.iter())
-        .count();
-    PluginSecuritySummary {
-        status: if reports.iter().all(|report| report.status == "PASS") {
-            "PASS"
-        } else {
-            "FAIL"
-        },
-        permissions,
-        fs_scopes: count_label(fs_count),
-        network_hosts: count_label(network_count),
-        actions: format!("{action_count} actions"),
-    }
-}
-
-fn count_label(count: usize) -> String {
-    match count {
-        0 => "none".to_string(),
-        1 => "1 entry".to_string(),
-        count => format!("{count} entries"),
-    }
 }
 
 fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginListRowModel) {
@@ -384,63 +218,19 @@ fn paint_match_chips(ui: &mut egui::Ui, rect: egui::Rect, fields: &[String]) {
     }
 }
 
-fn plugin_status_fill(ctx: &egui::Context, status: &ActionExecutionStatus) -> egui::Color32 {
-    match status {
-        ActionExecutionStatus::Completed => ui::ok_bg(ctx),
-        ActionExecutionStatus::Failed => ui::warn_bg(ctx),
-        ActionExecutionStatus::NeedsExternalRunner => ui::warn_bg(ctx),
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::path::PathBuf;
-
     #[test]
-    fn plugin_security_summary_merges_permission_boundary() {
-        let reports = vec![
-            std_core::PluginCheckReport {
-                manifest_path: PathBuf::from("a/plugin.json"),
-                plugin_name: "a".to_string(),
-                status: "PASS",
-                actions: 2,
-                permissions: vec![
-                    std_core::plugins::PluginPermission::Code,
-                    std_core::plugins::PluginPermission::FsScoped,
-                ],
-                fs_scopes: vec![PathBuf::from("fixtures")],
-                network_hosts: vec!["api.local".to_string()],
-            },
-            std_core::PluginCheckReport {
-                manifest_path: PathBuf::from("b/plugin.json"),
-                plugin_name: "b".to_string(),
-                status: "PASS",
-                actions: 1,
-                permissions: vec![std_core::plugins::PluginPermission::Code],
-                fs_scopes: Vec::new(),
-                network_hosts: Vec::new(),
-            },
-        ];
-
-        let summary = plugin_security_summary(&reports);
-
-        assert_eq!(summary.status, "PASS");
-        assert_eq!(summary.permissions, vec!["Code", "FsScoped"]);
-        assert_eq!(summary.actions, "3 actions");
-        assert_eq!(summary.fs_scopes, "1 entry");
-        assert_eq!(summary.network_hosts, "1 entry");
-    }
-
-    #[test]
-    fn plugin_runtime_output_uses_readonly_label_not_text_edit() {
+    fn plugin_rows_keep_list_preview_and_shared_status_primitives() {
         let source = include_str!("plugin_rows.rs");
         let implementation = source.split("#[cfg(test)]").next().unwrap();
 
-        assert!(implementation.contains("fn output_view"));
-        assert!(implementation.contains("WidgetType::Label"));
-        assert!(implementation.contains("Plugin runtime output"));
-        assert!(implementation.contains(".selectable(true)"));
-        assert!(!implementation.contains("TextEdit::multiline(&mut body).interactive(false)"));
+        assert!(implementation.contains("fn manifest_row"));
+        assert!(implementation.contains("fn action_row"));
+        assert!(implementation.contains("fn preview_panel"));
+        assert!(implementation.contains("fn status_row"));
+        assert!(implementation.contains("fn label_value_row"));
+        assert!(!implementation.contains("fn output_view"));
+        assert!(!implementation.contains("fn plugin_security_summary"));
     }
 }

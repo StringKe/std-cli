@@ -3,7 +3,7 @@ use crate::{
     views::{
         plugin_inspector_model::PluginInspectorModel,
         plugin_rows::{self, PluginActionRowEvent},
-        plugin_status_bar,
+        plugin_runtime_rows, plugin_security_rows, plugin_status_bar,
     },
     StudioEguiApp,
 };
@@ -131,7 +131,10 @@ impl StudioEguiApp {
                 i18n::t("studio.plugins.security.detail"),
             );
             plugin_rows::inspector_context_panel(ui, &model);
-            plugin_rows::security_summary_panel(ui, &self.app.plugin_manager.check_reports);
+            plugin_security_rows::security_summary_panel(
+                ui,
+                &self.app.plugin_manager.check_reports,
+            );
         });
         ui.add_space(Space::SM as f32);
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
@@ -171,7 +174,7 @@ impl StudioEguiApp {
             .max_height(190.0)
             .show(ui, |ui| {
                 for report in &self.app.plugin_manager.check_reports {
-                    plugin_rows::check_report_row(ui, report);
+                    plugin_security_rows::check_report_row(ui, report);
                 }
             });
     }
@@ -189,7 +192,7 @@ impl StudioEguiApp {
             ui::empty_state(ui, i18n::t("studio.plugins.execution.empty"));
             return;
         };
-        plugin_rows::execution_panel(
+        plugin_runtime_rows::execution_panel(
             ui,
             &execution.action_name,
             &execution.status,
@@ -197,7 +200,7 @@ impl StudioEguiApp {
             execution.output.as_ref(),
         );
         if let Some(output) = &execution.output {
-            plugin_rows::output_view(ui, output);
+            plugin_runtime_rows::output_view(ui, output);
         }
     }
 

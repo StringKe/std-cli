@@ -8,6 +8,8 @@ mod memory_rows;
 pub(crate) mod plugin_inspector_model;
 mod plugin_list_model;
 mod plugin_rows;
+mod plugin_runtime_rows;
+mod plugin_security_rows;
 mod plugin_status_bar;
 mod plugin_workspace_shell;
 mod plugins;
