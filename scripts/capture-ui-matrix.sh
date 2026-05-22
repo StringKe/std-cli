@@ -18,6 +18,29 @@ fi
 
 out_dir="${1:-artifacts/ui/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$out_dir"
+manifest="$out_dir/manifest.txt"
+: >"$manifest"
+
+record_manifest_header() {
+  {
+    echo "capture-ui-matrix manifest"
+    echo "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "out_dir=$out_dir"
+    echo "opt_in=STD_ALLOW_UI_PREVIEW=1"
+    echo "test_mode=STD_TEST_MODE must not be 1"
+    echo "capture_rule=pid+process-name+window-title"
+    echo "completion_rule=current-run-png-only"
+  } >>"$manifest"
+}
+
+record_capture() {
+  surface="$1"
+  theme="$2"
+  scenario="$3"
+  output="$4"
+  bytes=$(wc -c <"$output" | tr -d ' ')
+  echo "$surface theme=$theme scenario=$scenario path=$output bytes=$bytes" >>"$manifest"
+}
 
 pids=""
 cleanup() {
@@ -26,6 +49,7 @@ cleanup() {
   done
 }
 trap cleanup EXIT
+record_manifest_header
 
 capture_launcher() {
   theme="$1"
@@ -37,6 +61,7 @@ capture_launcher() {
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-launcher "std-cli Launcher" "$output"
   wait "$pid" || true
   test -s "$output"
+  record_capture launcher "$theme" "$scenario" "$output"
   echo "$output"
 }
 
@@ -50,6 +75,7 @@ capture_studio() {
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-studio "std-cli Studio" "$output"
   wait "$pid" || true
   test -s "$output"
+  record_capture studio "$theme" "$scenario" "$output"
   echo "$output"
 }
 
@@ -93,4 +119,4 @@ capture_studio dark settings
 capture_studio light panes
 capture_studio dark panes
 
-echo "capture-ui-matrix PASS out_dir=$out_dir"
+echo "capture-ui-matrix PASS out_dir=$out_dir manifest=$manifest"
