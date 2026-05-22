@@ -12,12 +12,25 @@ pub(crate) fn action_preview(entry: &RegistryEntry) -> ActionPreview {
     ActionPreview {
         action_id: entry.action.id,
         title: entry.action.name.clone(),
-        subtitle: entry.action.description.clone(),
+        subtitle: preview_subtitle(entry),
         action_type: entry.action.action_type.clone(),
         primary_command: primary_command(entry),
         metadata: entry.metadata.clone(),
         examples: entry.action.examples.clone(),
     }
+}
+
+fn preview_subtitle(entry: &RegistryEntry) -> String {
+    if entry.action.action_type == ActionType::AppLaunch {
+        if let Some(aliases) = entry
+            .metadata
+            .get("aliases")
+            .filter(|value| !value.is_empty())
+        {
+            return format!("Aliases: {aliases}");
+        }
+    }
+    entry.action.description.clone()
 }
 
 pub(crate) fn execute_registry_entry(

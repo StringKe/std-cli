@@ -52,9 +52,13 @@ fn core_searches_wechat_app_by_english_pinyin_and_chinese_names() {
     assert_eq!(english.action.id, pinyin.action.id);
     assert_eq!(english.action.id, chinese.action.id);
     assert_eq!(chinese.action.name, "Open App: WeChat");
+    assert!(preview.subtitle.contains("Aliases:"));
     assert!(preview.metadata["aliases"].contains("wechat"));
     assert!(preview.metadata["aliases"].contains("weixin"));
     assert!(preview.metadata["aliases"].contains(wechat_chinese_name()));
+    assert!(preview.subtitle.contains("wechat"));
+    assert!(preview.subtitle.contains("weixin"));
+    assert!(preview.subtitle.contains(wechat_chinese_name()));
 }
 
 fn write_escaped_unicode_app_bundle(app: &std::path::Path) {
