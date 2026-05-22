@@ -5,8 +5,9 @@ use std::env;
 use std::time::{Duration, Instant};
 use std_launcher::LauncherState;
 
-const HARNESS_TITLE: &str = "std-cli Background UI Harness";
+const HARNESS_TITLE_PREFIX: &str = "std-cli Background UI Harness";
 const HARNESS_QUERY: &str = "Echo";
+const HARNESS_TOKEN_ENV: &str = "STD_BACKGROUND_UI_HARNESS_TOKEN";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum BackgroundHarnessRequest {
@@ -90,10 +91,19 @@ pub(crate) fn blocked_background_harness_summary(reason: &str) -> String {
 
 pub(crate) fn run_background_harness(timeout_ms: u64) -> eframe::Result<()> {
     eframe::run_native(
-        HARNESS_TITLE,
+        &background_harness_title(),
         background_harness_native_options(),
         Box::new(|_cc| Ok(Box::new(BackgroundHarnessApp::new(timeout_ms)))),
     )
+}
+
+fn background_harness_title() -> String {
+    match env::var(HARNESS_TOKEN_ENV) {
+        Ok(token) if !token.trim().is_empty() => {
+            format!("{HARNESS_TITLE_PREFIX} {}", token.trim())
+        }
+        _ => HARNESS_TITLE_PREFIX.to_string(),
+    }
 }
 
 fn background_harness_native_options() -> eframe::NativeOptions {
@@ -136,7 +146,8 @@ mod tests {
         let options = background_harness_native_options();
         let description = format!("{:?}", options.viewport);
 
-        assert_eq!(HARNESS_TITLE, "std-cli Background UI Harness");
+        assert_eq!(HARNESS_TITLE_PREFIX, "std-cli Background UI Harness");
+        assert_eq!(background_harness_title(), "std-cli Background UI Harness");
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));

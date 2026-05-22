@@ -31,7 +31,8 @@
 - `frontmost_preserved=true`
 - `frontmost_before` 等于 `frontmost_after`
 - target bundle id 为 `dev.std-cli.background-ui-harness`
-- target window title 为 `std-cli Background UI Harness`
+- target window title 为 `std-cli Background UI Harness <token>`
+- target harness token 为本轮新生成 token
 - target identity 通过 bundle id、pid、window id、window title 四重匹配
 - `registered=true`
 - `commands=Visible(true),Focus`

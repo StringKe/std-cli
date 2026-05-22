@@ -16,6 +16,8 @@ pub enum UiCommand {
         bundle_id: Option<String>,
         #[arg(long)]
         window_title: Option<String>,
+        #[arg(long)]
+        harness_token: Option<String>,
     },
 }
 
@@ -26,11 +28,13 @@ pub(crate) fn handle_ui(command: UiCommand) -> String {
             window_id,
             bundle_id,
             window_title,
+            harness_token,
         } => background_smoke(BackgroundSmokeConfig {
             harness_pid,
             window_id,
             bundle_id,
             window_title,
+            harness_token,
         }),
     }
 }

@@ -86,10 +86,11 @@ STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
 - harness 必须有可验证的 bundle id、pid、window id 和 window title 白名单
 - runner 必须用 pid 反查真实 bundle identifier，不能只信任命令行传入的 bundle id 字符串
 - target identity 必须是固定 bundle id、pid、window id、window title 四重匹配，缺任一项直接 `SKIP` 或 `FAIL`
+- 每次 harness 启动必须生成本轮 `harness_token`，窗口标题必须是 `std-cli Background UI Harness <token>`，driver 必须同时校验 `--harness-token <token>`，禁止复用残留旧 harness
 - 启动完整验收使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh` 或 `mise run ui-background-acceptance`
 - 启动 harness 使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh`，该脚本只创建 `dev.std-cli.background-ui-harness` 测试 app，并用 `open -g` 避免抢占前台
-- 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
-- `cargo run -p std-cli -- ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness"` 才能进入真实 driver
+- 验收命令必须完整写作 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness <token>" --harness-token <token>`
+- `cargo run -p std-cli -- ui background-smoke` 必须收到 `--harness-pid`、`--window-id`、`--bundle-id dev.std-cli.background-ui-harness`、`--window-title "std-cli Background UI Harness <token>"`、`--harness-token <token>` 才能进入真实 driver
 - 浮动光标不是输入机制，只能作为可视化状态；driver 不依赖系统鼠标位置
 - driver 只能使用 `postToPid` 定向投递到 harness pid，不能使用全局 HID、System Events、前台点击或用户当前 frontmost app
 - 激活前先安装 previous 和 target 两个 per-process event tap，然后再发 appKitDefined primer 和 center primer

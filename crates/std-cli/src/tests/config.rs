@@ -155,7 +155,8 @@ fn background_ui_smoke_is_skipped_in_test_mode() {
     assert!(output.contains("background_ui_smoke SKIP"));
     assert!(output.contains("reason=STD_TEST_MODE blocks background UI automation"));
     assert!(output.contains("required_bundle_id=dev.std-cli.background-ui-harness"));
-    assert!(output.contains("required_window_title=std-cli Background UI Harness"));
+    assert!(output.contains("required_window_title_prefix=std-cli Background UI Harness"));
+    assert!(output.contains("harness_token=MISSING"));
     assert!(output.contains("harness_pid=MISSING"));
     assert!(output.contains("window_id=MISSING"));
     assert!(output.contains("event_route=postToPid_target_pid_only"));

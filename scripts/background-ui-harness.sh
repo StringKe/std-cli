@@ -42,12 +42,14 @@ macos_dir="$app_dir/Contents/MacOS"
 plist="$app_dir/Contents/Info.plist"
 executable="$macos_dir/std-launcher"
 launcher_abs="$(CDPATH= cd -- "$(dirname -- "$launcher_bin")" && pwd)/$(basename -- "$launcher_bin")"
+harness_token="run-$$"
 
 rm -rf "$app_dir"
 mkdir -p "$macos_dir"
 cat >"$executable" <<WRAPPER
 #!/bin/sh
 export STD_ALLOW_BACKGROUND_UI_AUTOMATION=1
+export STD_BACKGROUND_UI_HARNESS_TOKEN="$harness_token"
 unset STD_TEST_MODE
 exec "$launcher_abs" --background-ui-harness "$timeout_ms"
 WRAPPER
@@ -73,7 +75,7 @@ PLIST
 
 index=0
 while [ "$index" -lt 50 ]; do
-  if /usr/bin/swift "$root_dir/scripts/background-ui-harness-window.swift"; then
+  if /usr/bin/swift "$root_dir/scripts/background-ui-harness-window.swift" --harness-token "$harness_token"; then
     exit 0
   fi
   index=$((index + 1))

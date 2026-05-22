@@ -106,7 +106,8 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 - 标准入口是 `mise run ui-background-acceptance`
 - 使用隔离 harness 后台验证，不操作用户正在使用的窗口
 - harness 目标必须由固定 bundle id、pid、window id、window title 四重匹配确认
-- 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness"`
+- 每次 harness 启动必须生成本轮 `harness_token`，窗口标题必须是 `std-cli Background UI Harness <token>`，禁止复用旧 harness
+- 验收命令固定为 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title "std-cli Background UI Harness <token>" --harness-token <token>`
 - driver 顺序固定为 per-process event tap -> appKitDefined primer -> center primer -> postToPid 定向输入
 - PASS 输出必须证明 `frontmost_preserved=true`，并且 `frontmost_before` 等于 `frontmost_after`
 - previous 和 target 任一 per-process event tap 安装失败时必须 `FAIL`，禁止继续发送 primer、点击或键盘事件

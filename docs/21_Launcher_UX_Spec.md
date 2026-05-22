@@ -248,6 +248,7 @@
 - 任何 Launcher 改动 PR 必须跑 `std-launcher --smoke`、`std-launcher --window-smoke`、`std-launcher --keyboard-smoke index` 并附输出
 - 真实焦点、Enter 打开、窗口 toggle 验证必须优先使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance`
 - 后台 UI 验收只能操作 `dev.std-cli.background-ui-harness` 隔离窗口，必须验证 bundle id、pid、window id、window title 四重匹配
+- 后台 UI harness 必须带本轮 `harness_token`，窗口标题必须是 `std-cli Background UI Harness <token>`，禁止复用旧 harness 或用户已有窗口
 - 后台 UI runner 必须输出 `frontmost_preserved=true`，并证明 `frontmost_before` 等于 `frontmost_after`
 - `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space` 只保留为人工安装包热键补充验收，不进入默认回归门禁
 - 95p keystroke 时间退化 > 4ms 视为 P0 阻塞

@@ -65,7 +65,10 @@ fn mise_quality_keeps_background_ui_manual_only() {
     assert!(smoke.contains("STD_TEST_MODE = \"0\""));
     assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
     assert!(smoke.contains("--bundle-id dev.std-cli.background-ui-harness"));
-    assert!(smoke.contains("--window-title \\\"std-cli Background UI Harness\\\""));
+    assert!(smoke.contains(
+        "--window-title \\\"std-cli Background UI Harness ${HARNESS_TOKEN:?set HARNESS_TOKEN}\\\""
+    ));
+    assert!(smoke.contains("--harness-token ${HARNESS_TOKEN:?set HARNESS_TOKEN}"));
     assert!(acceptance.contains("Manual opt-in"));
     assert!(acceptance.contains("STD_TEST_MODE = \"0\""));
     assert!(acceptance.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
@@ -134,6 +137,8 @@ fn assert_background_harness_contract(root: &Path) {
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "dev.std-cli.background-ui-harness",
         "std-cli Background UI Harness",
+        "STD_BACKGROUND_UI_HARNESS_TOKEN",
+        "harness_token=\"run-$$\"",
         "open -n -g",
         "unset STD_TEST_MODE",
         "--background-ui-harness",
@@ -150,6 +155,8 @@ fn assert_background_harness_contract(root: &Path) {
         "scripts/background-ui-harness.sh",
         "bundle_id outside whitelist",
         "window_title outside whitelist",
+        "harness_token missing",
+        "--harness-token",
         "cargo run -p std-cli -- ui background-smoke",
     ] {
         assert!(
@@ -165,14 +172,17 @@ fn background_cli_contract_terms() -> &'static [&'static str] {
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "isolated_background_ui_harness_only",
         "HARNESS_BUNDLE_ID",
-        "HARNESS_WINDOW_TITLE",
+        "HARNESS_WINDOW_TITLE_PREFIX",
         "BACKGROUND_RUNNER",
         "scripts/background-ui-smoke.swift",
         "scripts/background-ui-harness.sh",
         "required_bundle_id=",
-        "required_window_title=",
+        "required_window_title_prefix=",
+        "harness_token=",
         "harness_pid required",
         "window_id required",
+        "harness_token required",
+        "--harness-token",
         "/usr/bin/swift",
         "driver_sequence=",
         "per-process-event-tap",
@@ -182,6 +192,7 @@ fn background_cli_contract_terms() -> &'static [&'static str] {
         "cursor_visual=floating_cursor_not_required_for_event_delivery",
         "harness_origin=spawned_by_scripts_background_ui_harness_only",
         "target_identity=fixed_bundle_pid_window_title_quadruple",
+        "run_identity=harness_token_required_to_reject_stale_windows",
         "tap_order=install_previous_and_target_taps_before_primer",
         "event_tap_then_appkit_defined_primer_then_center_primer",
         "event_route=postToPid_target_pid_only",
@@ -264,6 +275,7 @@ fn background_runner_contract_terms() -> &'static [&'static str] {
         "virtualKey: 36",
         "requiredBundleId",
         "requiredWindowTitle",
+        "harnessToken",
     ]
 }
 

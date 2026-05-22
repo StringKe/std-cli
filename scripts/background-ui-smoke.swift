@@ -8,10 +8,11 @@ struct Config {
     let windowId: Int
     let bundleId: String
     let windowTitle: String
+    let harnessToken: String
 }
 
 let requiredBundleId = "dev.std-cli.background-ui-harness"
-let requiredWindowTitle = "std-cli Background UI Harness"
+let requiredWindowTitlePrefix = "std-cli Background UI Harness"
 
 guard ProcessInfo.processInfo.environment["STD_TEST_MODE"] != "1" else {
     fail("STD_TEST_MODE blocks background UI automation")
@@ -24,7 +25,7 @@ let config = parseConfig()
 guard config.bundleId == requiredBundleId else {
     fail("bundle_id outside whitelist")
 }
-guard config.windowTitle == requiredWindowTitle else {
+guard config.windowTitle == "\(requiredWindowTitlePrefix) \(config.harnessToken)" else {
     fail("window_title outside whitelist")
 }
 guard let app = NSRunningApplication(processIdentifier: config.harnessPid),
@@ -275,10 +276,17 @@ func parseConfig() -> Config {
           let windowText = values["--window-id"],
           let windowId = Int(windowText),
           let bundleId = values["--bundle-id"],
-          let windowTitle = values["--window-title"] else {
-        fail("usage: background-ui-smoke.swift --harness-pid <pid> --window-id <id> --bundle-id <bundle> --window-title <title>")
+          let windowTitle = values["--window-title"],
+          let harnessToken = values["--harness-token"] else {
+        fail("usage: background-ui-smoke.swift --harness-pid <pid> --window-id <id> --bundle-id <bundle> --window-title <title> --harness-token <token>")
     }
-    return Config(harnessPid: pid, windowId: windowId, bundleId: bundleId, windowTitle: windowTitle)
+    return Config(
+        harnessPid: pid,
+        windowId: windowId,
+        bundleId: bundleId,
+        windowTitle: windowTitle,
+        harnessToken: harnessToken
+    )
 }
 
 func fail(_ message: String) -> Never {

@@ -146,7 +146,8 @@ fn background_ui_smoke_accepts_only_isolated_harness_identity() {
 
     for required in [
         "const HARNESS_BUNDLE_ID: &str = \"dev.std-cli.background-ui-harness\";",
-        "const HARNESS_WINDOW_TITLE: &str = \"std-cli Background UI Harness\";",
+        "const HARNESS_WINDOW_TITLE_PREFIX: &str = \"std-cli Background UI Harness\";",
+        "harness_token required",
         "bundle_id outside whitelist",
         "window_title outside whitelist",
         "STD_TEST_MODE blocks background UI automation",
@@ -209,7 +210,9 @@ fn mise_background_ui_tasks_are_manual_harness_only() {
     assert!(smoke.contains("STD_ALLOW_BACKGROUND_UI_AUTOMATION = \"1\""));
     assert!(smoke.contains("${HARNESS_PID:?set HARNESS_PID}"));
     assert!(smoke.contains("${WINDOW_ID:?set WINDOW_ID}"));
+    assert!(smoke.contains("${HARNESS_TOKEN:?set HARNESS_TOKEN}"));
     assert!(smoke.contains("cargo run -p std-cli -- ui background-smoke"));
+    assert!(smoke.contains("--harness-token"));
     assert!(!smoke.contains("run = \"std ui background-smoke"));
     assert!(smoke.contains("dev.std-cli.background-ui-harness"));
     assert!(smoke.contains("std-cli Background UI Harness"));

@@ -92,7 +92,8 @@ fn check_quality_report_gates(root: &std::path::Path) -> Result<(), CliError> {
         "--harness-pid <pid>",
         "--window-id <window-id>",
         "--bundle-id dev.std-cli.background-ui-harness",
-        "--window-title \\\"std-cli Background UI Harness\\\"",
+        "--window-title \\\"std-cli Background UI Harness <token>\\\"",
+        "--harness-token <token>",
     ] {
         check_text(&body, required)?;
     }
