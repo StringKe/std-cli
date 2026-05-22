@@ -33,6 +33,7 @@ mod ui_result_model;
 #[cfg(test)]
 mod ui_result_model_tests;
 mod ui_result_nl;
+mod ui_result_row_paint;
 mod ui_result_rows;
 mod ui_results;
 mod ui_results_surface;
