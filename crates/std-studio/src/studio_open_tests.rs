@@ -76,7 +76,7 @@ fn settings_request_uses_internal_workspace_pane() {
 
     assert_eq!(app.app.active_pane, StudioPane::Settings);
     assert_eq!(spec.content_key, "settings");
-    assert_eq!(spec.heading, "Settings");
+    assert_eq!(spec.heading, std_egui::i18n::t("studio.settings.title"));
     assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
     assert!(app.status.contains("opened studio settings"));
 }

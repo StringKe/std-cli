@@ -104,13 +104,14 @@ fn render_workspace_cycle_controls(
     ui: &mut egui::Ui,
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
-    let previous = ui::quiet_button(ui, i18n::t("studio.workspace_panes.previous"));
+    let previous_label = i18n::t("studio.workspace_panes.previous");
+    let previous = ui::quiet_button(ui, previous_label);
     previous.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
             ui.is_enabled(),
             workspace_cycle_a11y_label(
-                "Previous",
+                previous_label,
                 input::studio_previous_workspace_pane().label().as_str(),
             ),
         )
@@ -118,13 +119,14 @@ fn render_workspace_cycle_controls(
     if previous.clicked() {
         push_command(commands, StudioWorkspaceCommand::FocusPrevious);
     }
-    let next = ui::quiet_button(ui, i18n::t("studio.workspace_panes.next"));
+    let next_label = i18n::t("studio.workspace_panes.next");
+    let next = ui::quiet_button(ui, next_label);
     next.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
             ui.is_enabled(),
             workspace_cycle_a11y_label(
-                "Next",
+                next_label,
                 input::studio_next_workspace_pane().label().as_str(),
             ),
         )

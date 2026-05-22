@@ -299,7 +299,7 @@ mod tests {
 
         let summary = workspace_context_summary(&spec);
 
-        assert!(summary.contains("inspector_context=pane:Plugin Manager;kind:plugins"));
+        assert!(summary.contains("inspector_context=pane:插件管理;kind:plugins"));
         assert!(summary.contains("actions=show-main,refresh,close,reload"));
     }
 }

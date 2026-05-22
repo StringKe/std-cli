@@ -38,8 +38,8 @@ fn assert_workspace_pane_state_summary(summary: &str) {
     assert!(summary.contains("pane_deduplicated=true"));
     assert!(summary.contains("pane_content_keys=analysis,apps,dashboard"));
     assert!(summary.contains("history,memory,operations,plugins,settings,workflows"));
-    assert!(summary.contains("pane_focused_title=Plugin Manager"));
-    assert!(summary.contains("pane_restored_title=Plugin Manager"));
+    assert!(summary.contains("pane_focused_title=插件管理"));
+    assert!(summary.contains("pane_restored_title=插件管理"));
     assert!(summary.contains("pane_closed_removed=true"));
     assert!(summary.contains("pane_state_preserved=true"));
     assert!(summary.contains("reopened_memory="));
@@ -55,14 +55,14 @@ fn assert_workspace_tab_summary(summary: &str) {
     assert!(summary.contains("after-reopen:"));
     assert!(summary.contains("state_preserved=true"));
     assert!(summary.contains("focused="));
-    assert!(summary.contains("title=Plugin Manager"));
+    assert!(summary.contains("title=插件管理"));
     assert!(summary.contains("tabs=tabs="));
-    assert!(summary.contains("focused=Plugin Manager"));
+    assert!(summary.contains("focused=插件管理"));
     assert!(summary.contains("cycle=previous|next"));
     assert!(summary.contains("close_hit=28x28"));
     assert!(summary.contains("keyboard_close=true"));
     assert!(summary.contains("Workspace pane tab, Dashboard"));
-    assert!(summary.contains("Close workspace pane, Plugin Manager"));
+    assert!(summary.contains("Close workspace pane, 插件管理"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
 }
 

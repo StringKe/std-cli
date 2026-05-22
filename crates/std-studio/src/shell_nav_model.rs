@@ -86,11 +86,11 @@ mod tests {
         );
         assert_eq!(
             section_titles(&sections[0]),
-            vec!["Workflows", "Apps", "Memory"]
+            vec!["Workflow Workbench", "Apps", "Memory Browser"]
         );
         assert_eq!(
             section_titles(&sections[1]),
-            vec!["Plugins", "Analysis", "Settings", "Operations"]
+            vec!["Plugin Manager", "Index Analysis", "设置", "Operations"]
         );
         assert_eq!(section_titles(&sections[2]), vec!["Dashboard", "History"]);
     }

@@ -154,7 +154,7 @@ fn workspace_pane_a11y_label_includes_heading_and_kind() {
     assert_eq!(spec.id, settings);
     assert_eq!(
         crate::workspace_panes::workspace_pane_a11y_label(&spec),
-        "Workspace pane, Settings, settings"
+        "Workspace pane, 设置, settings"
     );
 }
 
@@ -383,9 +383,9 @@ fn studio_command_sources_use_real_app_state() {
     let commands = crate::commands::command_palette_items(&app.app);
     let quick_open = crate::commands::quick_open_items(&app.app);
 
-    assert!(commands.iter().any(|item| item.title == "显示 Settings"));
+    assert!(commands.iter().any(|item| item.title == "显示 设置"));
     assert!(commands.iter().any(|item| item.title == "刷新工作区状态"));
-    assert!(quick_open.iter().any(|item| item.title == "Plugin Manager"));
+    assert!(quick_open.iter().any(|item| item.title == "插件管理"));
     assert_eq!(app.app.focused_pane, Some(pane));
 }
 

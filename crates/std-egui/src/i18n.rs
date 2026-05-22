@@ -277,6 +277,18 @@ mod tests {
             "Studio 内部面板"
         );
         assert_eq!(
+            translate(Locale::ZhCn, "studio.workspace_panes.title"),
+            "工作区面板"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.workspace_panes.memory_browser"),
+            "记忆浏览器"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.chrome.open_current_pane"),
+            "打开当前面板"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "studio.workspace_panes.execution_history"),
             "Execution History"
         );
@@ -286,7 +298,7 @@ mod tests {
         );
         assert_eq!(
             translate(Locale::ZhCn, "studio.status.workspace_pane_opened"),
-            "已打开 workspace pane"
+            "已打开工作区面板"
         );
     }
 

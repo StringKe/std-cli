@@ -142,7 +142,7 @@ mod tests {
         let items = quick_open_items(&app);
 
         assert!(items.iter().any(|item| {
-            item.title == "Plugin Manager"
+            item.title == std_egui::i18n::t("studio.workspace_panes.plugin_manager")
                 && item.action == StudioCommandAction::FocusWorkspace(plugin)
         }));
         assert!(items.iter().any(|item| {

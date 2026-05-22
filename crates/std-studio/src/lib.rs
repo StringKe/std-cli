@@ -25,7 +25,7 @@ pub use analysis_workbench::{
 pub use ops_evidence::{OpsEvidence, OpsGate, OpsStatus};
 pub use ops_steps::OpsStep;
 use std_core::{StdConfig, StdCore};
-use std_egui::{MemoryBrowserViewModel, PluginManagerViewModel, StudioDashboardViewModel};
+use std_egui::{i18n, MemoryBrowserViewModel, PluginManagerViewModel, StudioDashboardViewModel};
 use std_index::{
     IndexAnswer, IndexCoverageReport, IndexDocument, IndexError, IndexInspection, IndexSearchResult,
 };
@@ -57,15 +57,15 @@ pub enum StudioPane {
 impl StudioPane {
     pub fn label(self) -> &'static str {
         match self {
-            StudioPane::Dashboard => "Dashboard",
-            StudioPane::Workflows => "Workflows",
-            StudioPane::Apps => "Apps",
-            StudioPane::Memory => "Memory",
-            StudioPane::Plugins => "Plugins",
-            StudioPane::Analysis => "Analysis",
-            StudioPane::History => "History",
-            StudioPane::Operations => "Operations",
-            StudioPane::Settings => "Settings",
+            StudioPane::Dashboard => i18n::t("studio.dashboard.title"),
+            StudioPane::Workflows => i18n::t("studio.workflows.title"),
+            StudioPane::Apps => i18n::t("studio.apps.title"),
+            StudioPane::Memory => i18n::t("studio.memory.title"),
+            StudioPane::Plugins => i18n::t("studio.plugins.title"),
+            StudioPane::Analysis => i18n::t("studio.analysis.title"),
+            StudioPane::History => i18n::t("studio.history.title"),
+            StudioPane::Operations => i18n::t("studio.operations.title"),
+            StudioPane::Settings => i18n::t("studio.settings.title"),
         }
     }
 

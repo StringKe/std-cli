@@ -214,8 +214,14 @@ fn studio_pane_titles_reflect_pane_kind() {
 
     assert!(titles.contains(&(workflow, "Workflow Builder: workflow.json")));
     assert!(titles.contains(&(analysis, "Analysis Workbench: std-cli")));
-    assert!(titles.contains(&(apps, "App Manager")));
-    assert!(titles.contains(&(memory, "Memory Browser")));
+    assert!(titles.contains(&(
+        apps,
+        std_egui::i18n::t("studio.workspace_panes.app_manager")
+    )));
+    assert!(titles.contains(&(
+        memory,
+        std_egui::i18n::t("studio.workspace_panes.memory_browser")
+    )));
     assert!(titles.contains(&(settings, std_egui::i18n::t("studio.settings.title"))));
 }
 

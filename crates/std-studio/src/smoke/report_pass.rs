@@ -22,8 +22,8 @@ impl StudioSmokeReport {
             && self.pane_deduplicated
             && self.pane_content_keys.contains("dashboard")
             && self.pane_content_keys.contains("settings")
-            && self.pane_focused_title == "Plugin Manager"
-            && self.pane_restored_title == "Plugin Manager"
+            && self.pane_focused_title == "插件管理"
+            && self.pane_restored_title == "插件管理"
             && self.pane_settings_kind == "Settings"
             && self.pane_closed_removed
             && self.pane_state_preserved
@@ -40,9 +40,9 @@ impl StudioSmokeReport {
             && self
                 .pane_focus_label
                 .contains("forbidden=native-child-windows:false|detached-panels:false")
-            && self.pane_focus_label.contains("title=Plugin Manager")
+            && self.pane_focus_label.contains("title=插件管理")
             && self.pane_focus_label.contains("tabs=tabs=")
-            && self.pane_focus_label.contains("focused=Plugin Manager")
+            && self.pane_focus_label.contains("focused=插件管理")
             && self.pane_focus_label.contains("cycle=previous|next")
             && self.pane_focus_label.contains("close_hit=28x28")
             && self.pane_focus_label.contains("keyboard_close=true")
@@ -51,7 +51,7 @@ impl StudioSmokeReport {
                 .contains("Workspace pane tab, Dashboard")
             && self
                 .pane_focus_label
-                .contains("Close workspace pane, Plugin Manager")
+                .contains("Close workspace pane, 插件管理")
             && self
                 .pane_host_policy
                 .contains("single-borderless-egui-viewport")

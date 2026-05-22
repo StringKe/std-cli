@@ -19,7 +19,7 @@ fn workspace_tab_specs_mark_only_focused_pane() {
     assert_eq!(specs.len(), 2);
     assert!(!specs[0].focused);
     assert!(specs[1].focused);
-    assert_eq!(specs[1].title, "Settings");
+    assert_eq!(specs[1].title, i18n::t("studio.settings.title"));
     assert_eq!(specs[0].position, 1);
     assert_eq!(specs[1].position, 2);
     assert_eq!(specs[0].total, 2);
@@ -37,8 +37,8 @@ fn close_tab_keyboard_command_targets_focused_pane() {
 
 #[test]
 fn cycle_controls_use_workspace_focus_commands() {
-    assert_eq!(i18n::t("studio.workspace_panes.previous"), "Previous");
-    assert_eq!(i18n::t("studio.workspace_panes.next"), "Next");
+    assert_eq!(i18n::t("studio.workspace_panes.previous"), "上一个");
+    assert_eq!(i18n::t("studio.workspace_panes.next"), "下一个");
     assert_eq!(
         workspace_tab_cycle_commands(),
         [
@@ -109,7 +109,7 @@ fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
         },
         WorkspaceTabSpec {
             id: WorkspacePaneId::new(2),
-            title: "Plugin Manager".to_string(),
+            title: i18n::t("studio.workspace_panes.plugin_manager").to_string(),
             focused: true,
             position: 2,
             total: 2,
@@ -118,10 +118,10 @@ fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
     let contract = workspace_tabs_contract(&specs);
 
     assert!(contract.contains("tabs=2"));
-    assert!(contract.contains("focused=Plugin Manager"));
+    assert!(contract.contains("focused=插件管理"));
     assert!(contract.contains("cycle=previous|next"));
     assert!(contract.contains("close_hit=28x28"));
     assert!(contract.contains("keyboard_close=true"));
     assert!(contract.contains("Workspace pane tab, Settings"));
-    assert!(contract.contains("Close workspace pane, Plugin Manager"));
+    assert!(contract.contains("Close workspace pane, 插件管理"));
 }

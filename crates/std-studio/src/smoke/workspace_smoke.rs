@@ -59,7 +59,7 @@ pub(crate) fn run_workspace_pane_smoke(
     let reopened = studio.open_memory_browser_pane();
     let open_count_after_reopen = studio.open_workspace_panes().count();
     let reopened_restored = reopened == close_target
-        && pane_title(studio, reopened) == "Memory Browser"
+        && pane_content_key(studio, reopened) == "memory"
         && pane_lines(studio, reopened)
             .iter()
             .any(|line| line.starts_with("memories="));

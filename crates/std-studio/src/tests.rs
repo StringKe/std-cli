@@ -37,11 +37,26 @@ fn studio_switches_panes() {
     studio.switch_pane(StudioPane::Plugins);
 
     assert_eq!(studio.active_pane, StudioPane::Plugins);
-    assert_eq!(StudioPane::Plugins.label(), "Plugins");
-    assert_eq!(StudioPane::Apps.label(), "Apps");
-    assert_eq!(StudioPane::Memory.label(), "Memory");
-    assert_eq!(StudioPane::Settings.label(), "Settings");
-    assert_eq!(StudioPane::Operations.label(), "Operations");
+    assert_eq!(
+        StudioPane::Plugins.label(),
+        std_egui::i18n::t("studio.plugins.title")
+    );
+    assert_eq!(
+        StudioPane::Apps.label(),
+        std_egui::i18n::t("studio.apps.title")
+    );
+    assert_eq!(
+        StudioPane::Memory.label(),
+        std_egui::i18n::t("studio.memory.title")
+    );
+    assert_eq!(
+        StudioPane::Settings.label(),
+        std_egui::i18n::t("studio.settings.title")
+    );
+    assert_eq!(
+        StudioPane::Operations.label(),
+        std_egui::i18n::t("studio.operations.title")
+    );
     assert_eq!(StudioPane::Operations.content_key(), "operations");
     assert_eq!(StudioPane::all().len(), 9);
 }
