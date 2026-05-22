@@ -62,6 +62,11 @@ pub(crate) fn background_harness_request_from_args(
             background_harness_blocked_reason(),
         ));
     }
+    if background_harness_token().is_none() {
+        return Some(BackgroundHarnessRequest::Blocked(
+            "background UI harness requires STD_BACKGROUND_UI_HARNESS_TOKEN".to_string(),
+        ));
+    }
     Some(BackgroundHarnessRequest::Run(
         args.get(2)
             .and_then(|value| value.parse::<u64>().ok())
@@ -98,12 +103,15 @@ pub(crate) fn run_background_harness(timeout_ms: u64) -> eframe::Result<()> {
 }
 
 fn background_harness_title() -> String {
-    match env::var(HARNESS_TOKEN_ENV) {
-        Ok(token) if !token.trim().is_empty() => {
-            format!("{HARNESS_TITLE_PREFIX} {}", token.trim())
-        }
-        _ => HARNESS_TITLE_PREFIX.to_string(),
-    }
+    let token = background_harness_token().unwrap_or_else(|| "missing-token".to_string());
+    format!("{HARNESS_TITLE_PREFIX} {token}")
+}
+
+fn background_harness_token() -> Option<String> {
+    env::var(HARNESS_TOKEN_ENV)
+        .ok()
+        .map(|token| token.trim().to_string())
+        .filter(|token| !token.is_empty())
 }
 
 fn background_harness_native_options() -> eframe::NativeOptions {
@@ -143,11 +151,15 @@ mod tests {
 
     #[test]
     fn background_harness_uses_whitelisted_window_title() {
+        std::env::set_var(HARNESS_TOKEN_ENV, "test-token");
         let options = background_harness_native_options();
         let description = format!("{:?}", options.viewport);
 
         assert_eq!(HARNESS_TITLE_PREFIX, "std-cli Background UI Harness");
-        assert_eq!(background_harness_title(), "std-cli Background UI Harness");
+        assert_eq!(
+            background_harness_title(),
+            "std-cli Background UI Harness test-token"
+        );
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("resizable: Some(false)"));
@@ -155,6 +167,28 @@ mod tests {
         assert!(background_harness_window_contract().starts_with(
             "native=transparent-carrier,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,size=720x"
         ));
+        std::env::remove_var(HARNESS_TOKEN_ENV);
+    }
+
+    #[test]
+    fn background_harness_token_contract_rejects_blank_values() {
+        std::env::remove_var(HARNESS_TOKEN_ENV);
+        assert_eq!(background_harness_token(), None);
+        assert_eq!(
+            background_harness_title(),
+            "std-cli Background UI Harness missing-token"
+        );
+
+        std::env::set_var(HARNESS_TOKEN_ENV, "   ");
+        assert_eq!(background_harness_token(), None);
+
+        std::env::set_var(HARNESS_TOKEN_ENV, "run-42");
+        assert_eq!(background_harness_token().as_deref(), Some("run-42"));
+        assert_eq!(
+            background_harness_title(),
+            "std-cli Background UI Harness run-42"
+        );
+        std::env::remove_var(HARNESS_TOKEN_ENV);
     }
 
     #[test]
