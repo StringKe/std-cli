@@ -140,6 +140,10 @@ pub fn studio_command_palette_slash() -> KeyBinding {
     KeyBinding::ModNamed(egui::Key::Slash)
 }
 
+pub fn studio_new_workflow() -> KeyBinding {
+    KeyBinding::Mod('N')
+}
+
 pub fn studio_quick_open() -> KeyBinding {
     KeyBinding::Mod('P')
 }
@@ -300,6 +304,7 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
         'K' => egui::Key::K,
         'L' => egui::Key::L,
         'H' => egui::Key::H,
+        'N' => egui::Key::N,
         'O' => egui::Key::O,
         'P' => egui::Key::P,
         'S' => egui::Key::S,
@@ -345,6 +350,7 @@ mod tests {
     fn studio_palette_binding_matches_docs() {
         assert!(studio_command_palette().label().ends_with("+P"));
         assert!(studio_command_palette_slash().label().ends_with("+/"));
+        assert!(studio_new_workflow().label().ends_with("+N"));
         assert!(studio_quick_open().label().ends_with("+P"));
         assert!(studio_settings().label().ends_with("+,"));
         assert!(studio_analysis_relation_toggle().label().ends_with("+L"));

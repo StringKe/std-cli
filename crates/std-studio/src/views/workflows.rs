@@ -240,13 +240,16 @@ impl StudioEguiApp {
 }
 
 impl StudioEguiApp {
-    fn create_workflow_from_form(&mut self) {
+    pub(crate) fn create_workflow_from_form(&mut self) {
         match self
             .app
             .create_workflow(&self.workflow_name, &self.workflow_description)
         {
             Ok(path) => {
                 self.workflow_selected_path = Some(path.clone());
+                let id = self.app.open_workflow_builder(path.clone());
+                self.pending_workspace_focus = Some(id);
+                self.app.switch_pane(std_studio::StudioPane::Workflows);
                 self.status = format!("created {}", path.display());
             }
             Err(error) => self.status = error.to_string(),

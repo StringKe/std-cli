@@ -43,6 +43,8 @@ mod studio_smoke_cli;
 mod ui;
 mod viewport;
 mod views;
+#[cfg(test)]
+mod workflow_keyboard_tests;
 mod workspace_lifecycle;
 mod workspace_pane_content;
 mod workspace_panes;
@@ -188,6 +190,7 @@ impl eframe::App for StudioEguiApp {
         ));
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
+        self.handle_workflow_creation_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
         self.handle_bottom_panel_keyboard(ctx);
         self.handle_workflow_builder_keyboard(ctx);
@@ -212,6 +215,16 @@ impl StudioEguiApp {
         }
         if std_egui::input::studio_settings().pressed(ctx) {
             self.open_settings_workspace_pane();
+            self.layout.close_overlays();
+        }
+    }
+
+    fn handle_workflow_creation_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        if std_egui::input::studio_new_workflow().pressed(ctx) {
+            self.create_workflow_from_form();
             self.layout.close_overlays();
         }
     }

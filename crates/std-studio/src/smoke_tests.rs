@@ -363,6 +363,10 @@ fn assert_keyboard_summary(summary: &str) {
         "studio_quick_open_path={}:command>quick-open",
         input::studio_quick_open().label()
     )));
+    assert!(summary.contains(&format!(
+        "studio_new_workflow_path={}:closed>builder",
+        input::studio_new_workflow().label()
+    )));
     assert!(summary.contains("studio_workspace_focus_path=dashboard>plugins>settings>dashboard"));
     assert!(
         summary.contains("studio_analysis_focus_path=target>tabs>content>query>coverage>target")
