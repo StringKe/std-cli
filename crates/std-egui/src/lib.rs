@@ -13,6 +13,7 @@ mod memory;
 pub mod motion;
 mod plugin;
 pub mod tokens;
+pub mod ui_capture;
 
 pub use dashboard::StudioDashboardViewModel;
 pub use launcher::{

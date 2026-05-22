@@ -1,6 +1,7 @@
 use crate::preview_evidence::{
     preview_matrix, preview_size_summary, preview_state_summary, required_capture_states_summary,
 };
+use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewSmokeReport {
@@ -79,23 +80,22 @@ pub(crate) struct StudioCaptureManifest {
 impl StudioCaptureManifest {
     fn for_scenarios(scenarios: &[String]) -> Self {
         Self {
-            out_dir: "artifacts/ui/manual-acceptance",
-            manifest_path: "artifacts/ui/manual-acceptance/manifest.txt",
+            out_dir: ui_capture::UI_CAPTURE_DIR,
+            manifest_path: ui_capture::UI_CAPTURE_MANIFEST,
             expected_files: scenarios
                 .iter()
                 .map(|scenario| format!("studio-{scenario}.png"))
                 .collect(),
-            capture_command: "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
-            verify_rule: "manifest-current-run-png-files-by-theme-state",
-            pixel_evidence_rule:
-                "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
-            carrier_reject_rule: "reject-single-color+dominant-black+dominant-white-carrier",
+            capture_command: ui_capture::UI_CAPTURE_COMMAND,
+            verify_rule: ui_capture::UI_CAPTURE_VERIFY_RULE,
+            pixel_evidence_rule: ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE,
+            carrier_reject_rule: ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE,
         }
     }
 
     pub(crate) fn pass(&self, scenarios: &[String]) -> bool {
-        self.out_dir == "artifacts/ui/manual-acceptance"
-            && self.manifest_path == "artifacts/ui/manual-acceptance/manifest.txt"
+        self.out_dir == ui_capture::UI_CAPTURE_DIR
+            && self.manifest_path == ui_capture::UI_CAPTURE_MANIFEST
             && self.expected_files
                 == scenarios
                     .iter()
@@ -105,25 +105,14 @@ impl StudioCaptureManifest {
                 .expected_files
                 .iter()
                 .all(|file| file.starts_with("studio-") && file.ends_with(".png"))
-            && self.capture_command == "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"
-            && self.verify_rule == "manifest-current-run-png-files-by-theme-state"
-            && self.pixel_evidence_rule
-                == "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
-            && self.carrier_reject_rule
-                == "reject-single-color+dominant-black+dominant-white-carrier"
+            && self.capture_command == ui_capture::UI_CAPTURE_COMMAND
+            && self.verify_rule == ui_capture::UI_CAPTURE_VERIFY_RULE
+            && self.pixel_evidence_rule == ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
+            && self.carrier_reject_rule == ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
     }
 
     fn summary(&self) -> String {
-        format!(
-            "expected_capture_manifest={},capture_out_dir={},expected_capture_files={},capture_command={},verify_rule={},pixel_evidence_rule={},carrier_reject_rule={}",
-            self.manifest_path,
-            self.out_dir,
-            self.expected_files.join(","),
-            self.capture_command,
-            self.verify_rule,
-            self.pixel_evidence_rule,
-            self.carrier_reject_rule
-        )
+        ui_capture::capture_manifest_summary(&self.expected_files)
     }
 }
 
