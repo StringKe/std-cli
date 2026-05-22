@@ -362,6 +362,13 @@ fn check_launcher_keyboard_ime_evidence(root: &std::path::Path) -> Result<(), Cl
         "user_enter_route",
         "Enter>handle_keyboard_input_by_user>LauncherUser",
         "user_enter_deferred",
+        "user_enter_open_contract",
+        "ui_enter=handle_keyboard_input_by_user",
+        "mode=LauncherUser",
+        "production_gate=user_desktop_open_allowed_for_test_mode(false)=true",
+        "runner=open <app-path>",
+        "test_gate=STD_TEST_MODE blocks before runner",
+        "hide_policy=Completed->hide,NeedsExternalRunner->keep-open",
     ] {
         check_text(&evidence, required)?;
     }

@@ -47,6 +47,7 @@ impl LauncherState {
             user_enter_route: user_enter.route,
             user_enter_deferred: user_enter.deferred,
             user_enter_defer_reason: user_enter.defer_reason,
+            user_enter_open_contract: user_enter.open_contract,
             user_enter_feedback_visible: user_enter.feedback_visible,
             user_enter_feedback_title: user_enter.feedback_title,
             user_enter_keeps_launcher_open: user_enter.keeps_launcher_open,
@@ -148,6 +149,7 @@ struct UserEnterEvidence {
     route: String,
     deferred: bool,
     defer_reason: String,
+    open_contract: String,
     feedback_visible: bool,
     feedback_title: String,
     keeps_launcher_open: bool,
@@ -288,6 +290,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
             route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
             deferred: false,
             defer_reason: "none".to_string(),
+            open_contract: user_enter_open_contract(),
             feedback_visible: false,
             feedback_title: "none".to_string(),
             keeps_launcher_open: false,
@@ -325,6 +328,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
         route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
         deferred,
         defer_reason,
+        open_contract: user_enter_open_contract(),
         feedback_visible,
         feedback_title,
         keeps_launcher_open,
@@ -334,6 +338,18 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
             window_commands
         },
     }
+}
+
+fn user_enter_open_contract() -> String {
+    [
+        "ui_enter=handle_keyboard_input_by_user",
+        "mode=LauncherUser",
+        "production_gate=user_desktop_open_allowed_for_test_mode(false)=true",
+        "runner=open <app-path>",
+        "test_gate=STD_TEST_MODE blocks before runner",
+        "hide_policy=Completed->hide,NeedsExternalRunner->keep-open",
+    ]
+    .join(";")
 }
 
 fn write_keyboard_smoke_app(config: &StdConfig) {

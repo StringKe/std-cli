@@ -51,6 +51,7 @@ pub struct LauncherKeyboardReport {
     pub user_enter_route: String,
     pub user_enter_deferred: bool,
     pub user_enter_defer_reason: String,
+    pub user_enter_open_contract: String,
     pub user_enter_feedback_visible: bool,
     pub user_enter_feedback_title: String,
     pub user_enter_keeps_launcher_open: bool,
