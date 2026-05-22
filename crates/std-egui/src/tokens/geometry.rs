@@ -186,6 +186,51 @@ impl NavigationSize {
     }
 }
 
+pub struct HostChromeSize;
+
+impl HostChromeSize {
+    pub const DRAG_MIN_WIDTH: f32 = 320.0;
+    pub const ACTION_RESERVE_WIDTH: f32 = 520.0;
+    pub const TEST_CHROME_WIDTH: f32 = 1280.0;
+    pub const TEST_CHROME_HEIGHT: f32 = 52.0;
+
+    pub fn control_size() -> egui::Vec2 {
+        egui::vec2(Space::xl() as f32, Space::lg() as f32)
+    }
+
+    pub fn close_icon_half() -> f32 {
+        Space::two_xs() as f32
+    }
+
+    pub fn minimize_icon_half_width() -> f32 {
+        Space::xs() as f32 * 0.5
+    }
+
+    pub fn minimize_icon_y_offset() -> f32 {
+        Space::xs() as f32 * 0.5
+    }
+
+    pub fn maximize_icon_size() -> egui::Vec2 {
+        egui::vec2(Space::sm() as f32, Space::xs() as f32)
+    }
+
+    pub fn drag_inset() -> egui::Vec2 {
+        egui::vec2(Space::sm() as f32, Space::xs() as f32)
+    }
+
+    pub fn drag_min_width() -> f32 {
+        UiScale::from_env().f32(Self::DRAG_MIN_WIDTH)
+    }
+
+    pub fn action_reserve_width() -> f32 {
+        UiScale::from_env().f32(Self::ACTION_RESERVE_WIDTH)
+    }
+
+    pub fn test_chrome_size() -> egui::Vec2 {
+        egui::vec2(Self::TEST_CHROME_WIDTH, Self::TEST_CHROME_HEIGHT)
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -319,6 +364,19 @@ mod tests {
         assert_eq!(NavigationSize::pane_state_center_x(), 10.0);
         assert_eq!(NavigationSize::pane_state_radius(), 3.0);
         assert_eq!(NavigationSize::close_glyph_half(), 4.0);
+    }
+
+    #[test]
+    fn host_chrome_sizes_export_studio_window_geometry() {
+        assert_eq!(HostChromeSize::control_size(), egui::vec2(32.0, 24.0));
+        assert_eq!(HostChromeSize::close_icon_half(), 4.0);
+        assert_eq!(HostChromeSize::minimize_icon_half_width(), 4.0);
+        assert_eq!(HostChromeSize::minimize_icon_y_offset(), 4.0);
+        assert_eq!(HostChromeSize::maximize_icon_size(), egui::vec2(12.0, 8.0));
+        assert_eq!(HostChromeSize::drag_inset(), egui::vec2(12.0, 8.0));
+        assert_eq!(HostChromeSize::drag_min_width(), 320.0);
+        assert_eq!(HostChromeSize::action_reserve_width(), 520.0);
+        assert_eq!(HostChromeSize::test_chrome_size(), egui::vec2(1280.0, 52.0));
     }
 
     #[test]
