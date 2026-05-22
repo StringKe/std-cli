@@ -58,6 +58,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert_preview_affordance_contract(&report);
     assert_required_capture_state_contract(&report);
     assert_preview_capture_contract(&report);
+    assert_preview_capture_manifest_contract(&report);
     assert_preview_ui_completion_boundary(&report);
 }
 
@@ -191,6 +192,20 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("no-host-background"));
+}
+
+fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(report.capture_manifest.pass(&report.scenarios));
+    assert!(
+        summary.contains("expected_capture_manifest=artifacts/ui/manual-acceptance/manifest.txt")
+    );
+    assert!(summary.contains("capture_out_dir=artifacts/ui/manual-acceptance"));
+    assert!(summary.contains("expected_capture_files=launcher-light-collapsed.png"));
+    assert!(summary.contains("launcher-dark-action-panel.png"));
+    assert!(summary.contains("capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
+    assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
 }
 
 fn assert_preview_ui_completion_boundary(report: &LauncherPreviewSmokeReport) {

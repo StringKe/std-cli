@@ -1,4 +1,5 @@
 use crate::app::LauncherApp;
+use crate::preview_capture::LauncherCaptureManifest;
 use crate::preview_evidence::{preview_size_summary, preview_state_summary};
 use crate::ui;
 use crate::ui_completion_boundary::{
@@ -33,12 +34,14 @@ pub(crate) struct LauncherPreviewSmokeReport {
     pub(crate) required_capture_states: Vec<String>,
     pub(crate) surface_contract: String,
     pub(crate) capture_contract: &'static str,
+    pub(crate) capture_manifest: LauncherCaptureManifest,
     pub(crate) ui_completion_boundary: String,
 }
 
 impl LauncherPreviewSmokeReport {
     pub(crate) fn new() -> Self {
         let scenarios = preview_matrix();
+        let capture_manifest = LauncherCaptureManifest::for_scenarios(&scenarios);
         Self {
             commands: scenarios
                 .iter()
@@ -50,6 +53,7 @@ impl LauncherPreviewSmokeReport {
             surface_contract: std_launcher::LauncherSurfaceContract::new().summary(),
             scenarios,
             capture_contract: preview_capture_contract(),
+            capture_manifest,
             ui_completion_boundary: launcher_ui_completion_boundary_summary(),
         }
     }
@@ -65,12 +69,13 @@ impl LauncherPreviewSmokeReport {
                 .surface_contract
                 .contains("launcher_surface_contract PASS")
             && self.capture_contract == preview_capture_contract()
+            && self.capture_manifest.pass(&self.scenarios)
             && launcher_ui_completion_boundary_passes(&self.ui_completion_boundary)
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\nlauncher_surface_contract={}\npreview_capture_contract={}\n{}",
+            "launcher_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\nlauncher_surface_contract={}\npreview_capture_contract={}\n{}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios
                 .iter()
@@ -83,6 +88,7 @@ impl LauncherPreviewSmokeReport {
             self.required_capture_states.join(","),
             self.surface_contract.replace('\n', ";"),
             self.capture_contract,
+            self.capture_manifest.summary(),
             self.ui_completion_boundary
         )
     }
