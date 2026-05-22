@@ -22,6 +22,7 @@ pub(crate) struct StudioLayoutState {
     pub bottom_panel_open: bool,
     pub command_palette_open: bool,
     pub quick_open_open: bool,
+    pub context_help_open: bool,
     pub command_query: String,
     pub quick_open_query: String,
     pub overlay_selected: usize,
@@ -38,6 +39,7 @@ impl Default for StudioLayoutState {
             bottom_panel_open: false,
             command_palette_open: false,
             quick_open_open: false,
+            context_help_open: false,
             command_query: String::new(),
             quick_open_query: String::new(),
             overlay_selected: 0,
@@ -55,6 +57,9 @@ impl StudioLayoutState {
         }
         if std_egui::input::studio_sidebar_toggle().pressed(ctx) {
             self.sidebar_open = !self.sidebar_open;
+        }
+        if std_egui::input::studio_context_help().pressed(ctx) {
+            self.open_context_help();
         }
         if std_egui::input::studio_inspector_toggle().pressed(ctx) {
             self.inspector_open = !self.inspector_open;
@@ -74,6 +79,7 @@ impl StudioLayoutState {
     pub(crate) fn open_command_palette(&mut self) {
         self.command_palette_open = true;
         self.quick_open_open = false;
+        self.context_help_open = false;
         self.command_query.clear();
         self.quick_open_query.clear();
         self.overlay_selected = 0;
@@ -82,6 +88,16 @@ impl StudioLayoutState {
     pub(crate) fn open_quick_open(&mut self) {
         self.quick_open_open = true;
         self.command_palette_open = false;
+        self.context_help_open = false;
+        self.command_query.clear();
+        self.quick_open_query.clear();
+        self.overlay_selected = 0;
+    }
+
+    pub(crate) fn open_context_help(&mut self) {
+        self.context_help_open = true;
+        self.command_palette_open = false;
+        self.quick_open_open = false;
         self.command_query.clear();
         self.quick_open_query.clear();
         self.overlay_selected = 0;
@@ -90,6 +106,7 @@ impl StudioLayoutState {
     pub(crate) fn close_overlays(&mut self) {
         self.command_palette_open = false;
         self.quick_open_open = false;
+        self.context_help_open = false;
         self.command_query.clear();
         self.quick_open_query.clear();
         self.overlay_selected = 0;
@@ -140,6 +157,7 @@ mod tests {
         assert!(!layout.bottom_panel_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(!layout.context_help_open);
         assert!(layout.command_query.is_empty());
         assert!(layout.quick_open_query.is_empty());
         assert_eq!(layout.overlay_selected, 0);
@@ -185,17 +203,25 @@ mod tests {
         layout.overlay_selected = 1;
         assert!(layout.quick_open_open);
         assert!(!layout.command_palette_open);
+        assert!(!layout.context_help_open);
 
         layout.open_command_palette();
         assert!(layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(!layout.context_help_open);
         assert!(layout.quick_open_query.is_empty());
         assert!(layout.command_query.is_empty());
         assert_eq!(layout.overlay_selected, 0);
 
+        layout.open_context_help();
+        assert!(layout.context_help_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
+
         layout.close_overlays();
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(!layout.context_help_open);
         assert_eq!(layout.overlay_selected, 0);
     }
 
@@ -235,6 +261,7 @@ mod tests {
         assert!(!layout.bottom_panel_open);
         assert!(!layout.command_palette_open);
         assert!(!layout.quick_open_open);
+        assert!(!layout.context_help_open);
     }
 
     fn ime_preedit_global_shortcut_input() -> egui::RawInput {
@@ -261,6 +288,65 @@ mod tests {
                         command: true,
                         ..Default::default()
                     },
+                },
+            ],
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn studio_layout_f1_opens_context_help_and_esc_closes_it() {
+        let ctx = egui::Context::default();
+        let mut layout = StudioLayoutState::default();
+
+        let _ = ctx.run(plain_key_input(egui::Key::F1), |ctx| {
+            layout.handle_keyboard(ctx);
+        });
+        assert!(layout.context_help_open);
+        assert!(!layout.command_palette_open);
+        assert!(!layout.quick_open_open);
+
+        let _ = ctx.run(plain_key_input(egui::Key::Escape), |_ctx| {
+            layout.close_overlays();
+        });
+        assert!(!layout.context_help_open);
+    }
+
+    #[test]
+    fn studio_layout_f1_respects_ime_preedit_frame() {
+        let ctx = egui::Context::default();
+        let mut layout = StudioLayoutState::default();
+
+        let _ = ctx.run(ime_preedit_f1_input(), |ctx| {
+            layout.handle_keyboard(ctx);
+        });
+
+        assert!(!layout.context_help_open);
+    }
+
+    fn plain_key_input(key: egui::Key) -> egui::RawInput {
+        egui::RawInput {
+            events: vec![egui::Event::Key {
+                key,
+                physical_key: Some(key),
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn ime_preedit_f1_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("bang".to_string())),
+                egui::Event::Key {
+                    key: egui::Key::F1,
+                    physical_key: Some(egui::Key::F1),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
                 },
             ],
             ..Default::default()

@@ -156,6 +156,10 @@ pub fn studio_zoom_out() -> KeyBinding {
     KeyBinding::ModNamed(egui::Key::Minus)
 }
 
+pub fn studio_context_help() -> KeyBinding {
+    KeyBinding::Plain(egui::Key::F1)
+}
+
 pub fn studio_quick_open() -> KeyBinding {
     KeyBinding::Mod('P')
 }

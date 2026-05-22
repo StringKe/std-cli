@@ -45,6 +45,7 @@ pub fn named_key_label(key: egui::Key) -> &'static str {
             }
         }
         egui::Key::Escape => "Esc",
+        egui::Key::F1 => "F1",
         egui::Key::Minus => "-",
         egui::Key::Num0 => "0",
         egui::Key::Questionmark => "?",

@@ -13,6 +13,7 @@ mod bottom_panel;
 mod bottom_panel_keyboard_tests;
 mod bottom_panel_model;
 mod commands;
+mod context_help;
 mod host_chrome;
 mod host_chrome_drag;
 mod layout;

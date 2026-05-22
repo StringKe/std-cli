@@ -44,6 +44,7 @@ impl StudioEguiApp {
             .frame(panel_frame(ctx, std_egui::tokens::Color::bg_surface_0(ctx)))
             .show(ctx, |ui| self.render_active_workspace(ui));
         self.render_overlays(ctx);
+        self.render_context_help_overlay(ctx);
     }
 
     fn render_active_workspace(&mut self, ui: &mut egui::Ui) {
