@@ -194,7 +194,10 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
+    assert!(summary.contains("host-gutter-16px"));
     assert!(summary.contains("no-host-background"));
+    assert!(summary.contains("no-shadow-clip"));
+    assert!(!summary.contains("host-gap-0"));
 }
 
 fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport) {
@@ -305,7 +308,9 @@ fn preview_evidence_names_transparent_host_not_preview_viewport() {
     assert!(!surface.contains("preview_viewport="));
     assert!(preview.contains("transparent-native-host"));
     assert!(preview.contains("opaque-panel-surface"));
+    assert!(preview.contains("host-gutter-16px"));
     assert!(preview.contains("no-host-background"));
+    assert!(!preview.contains("host-gap-0"));
     assert!(!preview.contains("preview_viewport"));
     assert!(!preview.contains("preview_viewport_contract"));
 }

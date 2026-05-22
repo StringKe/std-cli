@@ -180,7 +180,7 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
 }
 
 fn preview_capture_contract() -> &'static str {
-    "transparent-native-host,opaque-panel-surface,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,host-gap-0,no-host-background"
+    "transparent-native-host,opaque-panel-surface,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,host-gutter-16px,no-host-background,no-shadow-clip"
 }
 
 fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {

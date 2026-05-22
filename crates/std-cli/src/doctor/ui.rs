@@ -291,6 +291,8 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         "self.scenarios == preview_matrix()",
         "transparent-native-host,opaque-panel-surface,opt-in-only",
         "no-default-window",
+        "host-gutter-16px",
+        "no-shadow-clip",
         "preview_surface_summary",
         "preview_size_summary",
         "panel_token=bg/surface-0",
@@ -320,6 +322,11 @@ fn check_preview_matrices(root: &std::path::Path) -> Result<(), CliError> {
         return Err(CliError::Doctor(format!(
             "required text missing: {required}"
         )));
+    }
+    if launcher.contains("host-gap-0") {
+        return Err(CliError::Doctor(
+            "launcher preview capture contract must use host-gutter-16px".to_string(),
+        ));
     }
     let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
     let studio_evidence = read_required(&root.join("crates/std-studio/src/preview_evidence.rs"))?;
