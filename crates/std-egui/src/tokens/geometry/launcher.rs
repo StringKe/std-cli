@@ -51,6 +51,18 @@ impl LauncherSize {
     pub const RESULT_PRIMARY_KEYCAP_WIDTH: f32 = 52.0;
     pub const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
     pub const RESULT_RIGHT_GAP: f32 = 8.0;
+    pub const ASK_AI_ROW_HEIGHT: f32 = 34.0;
+    pub const ACTION_BAR_HEIGHT: f32 = 36.0;
+    pub const ACTION_BAR_CONTENT_HEIGHT: f32 = 24.0;
+    pub const ACTION_BAR_RIGHT_WIDTH: f32 = 272.0;
+    pub const ACTION_BAR_RIGHT_WIDTH_RATIO: f32 = 0.48;
+    pub const ACTION_BAR_MIN_LEFT_WIDTH: f32 = 160.0;
+    pub const ACTION_SUMMARY_LABEL_HEIGHT: f32 = 18.0;
+    pub const FEEDBACK_TEXT_HEIGHT: f32 = 58.0;
+    pub const FEEDBACK_DETAIL_HEIGHT: f32 = 36.0;
+    pub const FEEDBACK_MIN_TEXT_WIDTH: f32 = 240.0;
+    pub const FEEDBACK_ACTION_WIDTH: f32 = 76.0;
+    pub const FEEDBACK_ICON_STROKE_WIDTH: f32 = 1.5;
 
     pub fn panel_surface_width(scale: UiScale) -> f32 {
         scale.f32(Self::PANEL_WIDTH)
@@ -271,5 +283,63 @@ impl LauncherSize {
 
     pub fn result_right_gap(scale: UiScale) -> f32 {
         scale.f32(Self::RESULT_RIGHT_GAP)
+    }
+
+    pub fn ask_ai_row_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ASK_AI_ROW_HEIGHT)
+    }
+
+    pub fn action_bar_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ACTION_BAR_HEIGHT)
+    }
+
+    pub fn action_bar_content_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ACTION_BAR_CONTENT_HEIGHT)
+    }
+
+    pub fn action_bar_right_width(available_width: f32) -> f32 {
+        Self::ACTION_BAR_RIGHT_WIDTH.min(available_width * Self::ACTION_BAR_RIGHT_WIDTH_RATIO)
+    }
+
+    pub fn action_bar_left_width(scale: UiScale, available_width: f32, right_width: f32) -> f32 {
+        let gap = scale.f32(Space::XS as f32);
+        (available_width - right_width - gap).max(scale.f32(Self::ACTION_BAR_MIN_LEFT_WIDTH))
+    }
+
+    pub fn action_summary_label_height(scale: UiScale) -> f32 {
+        scale.f32(Self::ACTION_SUMMARY_LABEL_HEIGHT)
+    }
+
+    pub fn feedback_text_height(scale: UiScale) -> f32 {
+        scale.f32(Self::FEEDBACK_TEXT_HEIGHT)
+    }
+
+    pub fn feedback_detail_height(scale: UiScale) -> f32 {
+        scale.f32(Self::FEEDBACK_DETAIL_HEIGHT)
+    }
+
+    pub fn feedback_text_width(scale: UiScale, available_width: f32, actions_width: f32) -> f32 {
+        let gap = Space::sm() as f32;
+        (available_width - actions_width - gap).max(scale.f32(Self::FEEDBACK_MIN_TEXT_WIDTH))
+    }
+
+    pub fn feedback_actions_width(scale: UiScale, action_count: usize) -> f32 {
+        scale.f32(action_count as f32 * Self::FEEDBACK_ACTION_WIDTH)
+    }
+
+    pub fn feedback_icon_size(scale: UiScale) -> egui::Vec2 {
+        egui::vec2(scale.f32(Space::MD as f32), scale.f32(Space::MD as f32))
+    }
+
+    pub fn feedback_icon_radius(scale: UiScale) -> f32 {
+        scale.f32(Space::XS as f32)
+    }
+
+    pub fn feedback_icon_half(scale: UiScale) -> f32 {
+        scale.f32(Space::TWO_XS as f32)
+    }
+
+    pub fn feedback_icon_stroke_width(scale: UiScale) -> f32 {
+        scale.f32(Self::FEEDBACK_ICON_STROKE_WIDTH)
     }
 }

@@ -259,6 +259,54 @@ fn launcher_sizes_export_result_row_regions() {
 }
 
 #[test]
+fn launcher_sizes_export_action_bar_geometry() {
+    let scale = UiScale::new(1.5);
+    let right_width = LauncherSize::action_bar_right_width(720.0);
+
+    assert_eq!(LauncherSize::ASK_AI_ROW_HEIGHT, 34.0);
+    assert_eq!(LauncherSize::ACTION_BAR_HEIGHT, 36.0);
+    assert_eq!(LauncherSize::ACTION_BAR_CONTENT_HEIGHT, 24.0);
+    assert_eq!(LauncherSize::ACTION_BAR_RIGHT_WIDTH, 272.0);
+    assert_eq!(LauncherSize::ACTION_BAR_RIGHT_WIDTH_RATIO, 0.48);
+    assert_eq!(LauncherSize::ACTION_BAR_MIN_LEFT_WIDTH, 160.0);
+    assert_eq!(LauncherSize::ACTION_SUMMARY_LABEL_HEIGHT, 18.0);
+    assert_eq!(LauncherSize::ask_ai_row_height(scale), 51.0);
+    assert_eq!(LauncherSize::action_bar_height(scale), 54.0);
+    assert_eq!(LauncherSize::action_bar_content_height(scale), 36.0);
+    assert_eq!(right_width, 272.0);
+    assert_eq!(
+        LauncherSize::action_bar_left_width(scale, 720.0, right_width),
+        436.0
+    );
+    assert_eq!(LauncherSize::action_summary_label_height(scale), 27.0);
+}
+
+#[test]
+fn launcher_sizes_export_feedback_geometry() {
+    let scale = UiScale::new(1.5);
+
+    assert_eq!(LauncherSize::FEEDBACK_TEXT_HEIGHT, 58.0);
+    assert_eq!(LauncherSize::FEEDBACK_DETAIL_HEIGHT, 36.0);
+    assert_eq!(LauncherSize::FEEDBACK_MIN_TEXT_WIDTH, 240.0);
+    assert_eq!(LauncherSize::FEEDBACK_ACTION_WIDTH, 76.0);
+    assert_eq!(LauncherSize::FEEDBACK_ICON_STROKE_WIDTH, 1.5);
+    assert_eq!(LauncherSize::feedback_text_height(scale), 87.0);
+    assert_eq!(LauncherSize::feedback_detail_height(scale), 54.0);
+    assert_eq!(
+        LauncherSize::feedback_text_width(scale, 720.0, 228.0),
+        480.0
+    );
+    assert_eq!(LauncherSize::feedback_actions_width(scale, 2), 228.0);
+    assert_eq!(
+        LauncherSize::feedback_icon_size(scale),
+        egui::vec2(24.0, 24.0)
+    );
+    assert_eq!(LauncherSize::feedback_icon_radius(scale), 12.0);
+    assert_eq!(LauncherSize::feedback_icon_half(scale), 6.0);
+    assert_eq!(LauncherSize::feedback_icon_stroke_width(scale), 2.25);
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {

@@ -5,7 +5,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     i18n, input,
-    tokens::{Color, Space, Text},
+    tokens::{Color, LauncherSize, Space, Text},
     LauncherPhase,
 };
 use std_launcher::{ActionBarPreviewSummary, LauncherState};
@@ -30,9 +30,12 @@ pub(crate) fn render(
     let content_rect = rect.shrink2(egui::vec2(Space::xs() as f32, Space::two_xs() as f32));
     ui.scope_builder(egui::UiBuilder::new().max_rect(content_rect), |ui| {
         ui.horizontal(|ui| {
-            let right_width = 272.0_f32.min(ui.available_width() * 0.48);
-            let left_width = (ui.available_width() - right_width - Space::xs() as f32)
-                .max(ui_metrics::scale().f32(160.0));
+            let right_width = LauncherSize::action_bar_right_width(ui.available_width());
+            let left_width = LauncherSize::action_bar_left_width(
+                ui_metrics::scale(),
+                ui.available_width(),
+                right_width,
+            );
             ui.allocate_ui_with_layout(
                 egui::vec2(left_width, ui_metrics::action_bar_content_height()),
                 egui::Layout::left_to_right(egui::Align::Center),

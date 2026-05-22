@@ -2,7 +2,7 @@ use crate::{ui_metrics, ui_parts::keycap};
 use eframe::egui;
 use std_egui::{
     i18n, input,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, LauncherSize, Radius, Space, Text},
     LauncherFeedback, LauncherFeedbackAction,
 };
 use std_launcher::LauncherState;
@@ -71,8 +71,8 @@ fn render_contents(
 ) -> FeedbackCommand {
     let ctx = ui.ctx().clone();
     let actions_width = feedback_actions_width(feedback);
-    let text_width = (ui.available_width() - actions_width - Space::sm() as f32)
-        .max(ui_metrics::scale().f32(240.0));
+    let text_width =
+        LauncherSize::feedback_text_width(ui_metrics::scale(), ui.available_width(), actions_width);
     let mut command = FeedbackCommand::None;
     ui.horizontal(|ui| {
         render_text(ui, &ctx, feedback, text_width);
@@ -214,8 +214,7 @@ fn feedback_trigger(index: usize, action: LauncherFeedbackAction) -> FeedbackCom
 }
 
 fn feedback_actions_width(feedback: &LauncherFeedback) -> f32 {
-    let count = feedback.actions().len() as f32;
-    ui_metrics::scale().f32(count * 76.0)
+    LauncherSize::feedback_actions_width(ui_metrics::scale(), feedback.actions().len())
 }
 
 fn feedback_button(

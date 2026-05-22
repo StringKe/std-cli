@@ -4,7 +4,7 @@ use std_egui::LauncherPhase;
 use std_launcher::LauncherState;
 
 pub(crate) const SEARCH_HEIGHT: f32 = 64.0;
-pub(crate) const ACTION_BAR_HEIGHT: f32 = 36.0;
+pub(crate) const ACTION_BAR_HEIGHT: f32 = LauncherSize::ACTION_BAR_HEIGHT;
 pub(crate) const MAX_RESULT_ROWS: f32 = LauncherSize::MAX_RESULT_ROWS;
 pub(crate) const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
 #[cfg(test)]
@@ -111,7 +111,7 @@ pub(crate) fn result_right_affordance_layout(
 }
 
 pub(crate) fn ask_ai_row_height() -> f32 {
-    scale().f32(34.0)
+    LauncherSize::ask_ai_row_height(scale())
 }
 
 pub(crate) fn no_matches_icon_size() -> egui::Vec2 {
@@ -125,15 +125,15 @@ pub(crate) fn no_matches_icon_geometry(
 }
 
 pub(crate) fn action_bar_content_height() -> f32 {
-    scale().f32(24.0)
+    LauncherSize::action_bar_content_height(scale())
 }
 
 pub(crate) fn action_bar_height() -> f32 {
-    scale().f32(ACTION_BAR_HEIGHT)
+    LauncherSize::action_bar_height(scale())
 }
 
 pub(crate) fn action_summary_label_height() -> f32 {
-    scale().f32(18.0)
+    LauncherSize::action_summary_label_height(scale())
 }
 
 pub(crate) fn feedback_text_height() -> f32 {
@@ -141,7 +141,7 @@ pub(crate) fn feedback_text_height() -> f32 {
 }
 
 pub(crate) fn feedback_detail_height() -> f32 {
-    scale().f32(36.0)
+    LauncherSize::feedback_detail_height(scale())
 }
 
 pub(crate) fn feedback_panel_height_for_scale(scale: UiScale) -> f32 {
@@ -149,7 +149,7 @@ pub(crate) fn feedback_panel_height_for_scale(scale: UiScale) -> f32 {
 }
 
 fn feedback_text_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(58.0)
+    LauncherSize::feedback_text_height(scale)
 }
 
 pub(crate) struct FeedbackIconGeometry {
@@ -170,19 +170,18 @@ pub(crate) struct FeedbackIconGeometry {
 }
 
 pub(crate) fn feedback_icon_size() -> egui::Vec2 {
-    let scale = scale();
-    egui::vec2(scale.f32(Space::MD as f32), scale.f32(Space::MD as f32))
+    LauncherSize::feedback_icon_size(scale())
 }
 
 pub(crate) fn feedback_icon_geometry(rect: egui::Rect) -> FeedbackIconGeometry {
     let scale = scale();
     let center = rect.center();
-    let radius = scale.f32(Space::XS as f32);
-    let half = scale.f32(Space::TWO_XS as f32);
+    let radius = LauncherSize::feedback_icon_radius(scale);
+    let half = LauncherSize::feedback_icon_half(scale);
     FeedbackIconGeometry {
         center,
         radius,
-        stroke_width: scale.f32(1.5),
+        stroke_width: LauncherSize::feedback_icon_stroke_width(scale),
         check_start: egui::pos2(center.x - half, center.y),
         check_mid: egui::pos2(center.x, center.y + half),
         check_end: egui::pos2(center.x + radius, center.y - half),
@@ -193,7 +192,7 @@ pub(crate) fn feedback_icon_geometry(rect: egui::Rect) -> FeedbackIconGeometry {
         alert_top: egui::pos2(center.x, center.y - half),
         alert_mid: center,
         alert_dot: egui::pos2(center.x, center.y + half),
-        dot_radius: scale.f32(1.5),
+        dot_radius: LauncherSize::feedback_icon_stroke_width(scale),
     }
 }
 
@@ -361,9 +360,9 @@ fn row_metrics_for_scale(scale: UiScale) -> (f32, f32, f32, f32, f32) {
     (
         LauncherSize::result_row_height(scale),
         LauncherSize::group_header_slot_height(scale),
-        scale.f32(34.0),
-        scale.f32(24.0),
-        scale.f32(18.0),
+        LauncherSize::ask_ai_row_height(scale),
+        LauncherSize::action_bar_content_height(scale),
+        LauncherSize::action_summary_label_height(scale),
     )
 }
 
