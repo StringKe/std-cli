@@ -143,11 +143,9 @@ impl StudioEguiApp {
         let Some(profile) = self.theme_profile else {
             return;
         };
-        ui.label(format!(
-            "{} {:?} / {:?}",
-            i18n::t("studio.settings.theme.active"),
-            profile.requested,
-            profile.effective
+        ui.label(theme_profile_summary(
+            profile,
+            self.app.core.config.ui_scale(),
         ));
     }
 
@@ -306,5 +304,47 @@ impl StudioEguiApp {
             Err(error) => self.status = error,
         }
         self.sync_settings_from_app();
+    }
+}
+
+fn theme_profile_summary(profile: std_egui::tokens::ThemeProfile, ui_scale: f32) -> String {
+    format!(
+        "{} {:?} / {:?} / high_contrast={} / reduce_transparency={} / reduce_motion={} / focus_ring={} / ui_scale={:.2}",
+        i18n::t("studio.settings.theme.active"),
+        profile.requested,
+        profile.effective,
+        profile.high_contrast,
+        profile.reduce_transparency,
+        profile.reduce_motion,
+        profile.focus_ring_width,
+        ui_scale
+    )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std_egui::tokens::{EffectiveTheme, ThemeMode, ThemeProfile};
+
+    #[test]
+    fn theme_profile_summary_exposes_accessibility_state() {
+        let summary = theme_profile_summary(
+            ThemeProfile {
+                requested: ThemeMode::Dark,
+                effective: EffectiveTheme::Dark,
+                high_contrast: true,
+                reduce_transparency: true,
+                reduce_motion: true,
+                focus_ring_width: 3,
+            },
+            1.25,
+        );
+
+        assert!(summary.contains("Dark / Dark"));
+        assert!(summary.contains("high_contrast=true"));
+        assert!(summary.contains("reduce_transparency=true"));
+        assert!(summary.contains("reduce_motion=true"));
+        assert!(summary.contains("focus_ring=3"));
+        assert!(summary.contains("ui_scale=1.25"));
     }
 }
