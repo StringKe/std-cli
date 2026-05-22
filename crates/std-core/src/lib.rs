@@ -4,6 +4,7 @@
 
 mod actions;
 mod app_bundle;
+mod app_bundle_profile;
 mod apps;
 mod bootstrap;
 pub mod config;

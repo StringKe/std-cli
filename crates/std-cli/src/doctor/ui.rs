@@ -379,8 +379,9 @@ fn check_launcher_app_localization_evidence(root: &std::path::Path) -> Result<()
     let smoke = read_required(&root.join("crates/std-launcher/src/app_localization_smoke.rs"))?;
     let cli = read_required(&root.join("crates/std-launcher/src/cli.rs"))?;
     let core = read_required(&root.join("crates/std-core/src/app_bundle.rs"))?;
+    let core_profile = read_required(&root.join("crates/std-core/src/app_bundle_profile.rs"))?;
     let tests = read_required(&root.join("crates/std-launcher/src/app_tests.rs"))?;
-    let evidence = format!("{smoke}\n{cli}\n{core}\n{tests}");
+    let evidence = format!("{smoke}\n{cli}\n{core}\n{core_profile}\n{tests}");
     for required in [
         "--app-localization-smoke",
         "launcher_app_localization_smoke",
