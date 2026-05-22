@@ -1,4 +1,7 @@
-use std_egui::input;
+use std_egui::{
+    i18n::{self, Locale},
+    input,
+};
 use std_types::{Action, ActionType};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -88,12 +91,16 @@ impl ActionPanel {
 
 impl ActionPanelItem {
     pub fn title(&self) -> &str {
+        i18n::t(self.title_key())
+    }
+
+    fn title_key(&self) -> &'static str {
         match self {
-            Self::Run => "Run",
-            Self::ReviewFirst => "Review first",
-            Self::Defer => "Defer",
-            Self::OpenInStudio => "Open in Studio",
-            Self::CopyCommand(_) => "Copy command",
+            Self::Run => "launcher.action.run",
+            Self::ReviewFirst => "launcher.action.review_first",
+            Self::Defer => "launcher.action.defer",
+            Self::OpenInStudio => "launcher.action.open_in_studio",
+            Self::CopyCommand(_) => "launcher.action.copy_command",
         }
     }
 
@@ -109,6 +116,9 @@ impl ActionPanelItem {
 
     fn matches(&self, query: &str) -> bool {
         self.title().to_lowercase().contains(query)
+            || i18n::translate(Locale::EnUs, self.title_key())
+                .to_lowercase()
+                .contains(query)
             || self.shortcut_label().to_lowercase().contains(query)
     }
 }

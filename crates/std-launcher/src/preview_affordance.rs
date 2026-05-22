@@ -1,5 +1,5 @@
 use crate::preview::apply_preview_scenario;
-use std_egui::{input, LauncherPhase, LauncherResultMode};
+use std_egui::{i18n, input, LauncherPhase, LauncherResultMode};
 use std_launcher::{suggested_workflow_rows, LauncherState};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,7 +37,14 @@ impl LauncherAffordanceSummary {
                     && self.feedback_action_shortcuts == "Copy:Enter,Retry:Enter,OpenStudio:Enter"
             }
             "action-panel" => {
-                self.action_panel_actions == "Review first,Defer,Open in Studio,Copy command"
+                self.action_panel_actions
+                    == [
+                        i18n::t("launcher.action.review_first"),
+                        i18n::t("launcher.action.defer"),
+                        i18n::t("launcher.action.open_in_studio"),
+                        i18n::t("launcher.action.copy_command"),
+                    ]
+                    .join(",")
             }
             _ => true,
         }
@@ -142,7 +149,13 @@ mod tests {
         );
         assert_eq!(
             action_panel.action_panel_actions,
-            "Review first,Defer,Open in Studio,Copy command"
+            [
+                i18n::t("launcher.action.review_first"),
+                i18n::t("launcher.action.defer"),
+                i18n::t("launcher.action.open_in_studio"),
+                i18n::t("launcher.action.copy_command"),
+            ]
+            .join(",")
         );
         for scenario in ["empty", "no-results", "defer", "error", "action-panel"] {
             assert!(LauncherAffordanceSummary::for_scenario(scenario).passes(scenario));

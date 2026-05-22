@@ -126,6 +126,18 @@ mod tests {
             "Action Panel 过滤"
         );
         assert_eq!(
+            translate(Locale::EnUs, "launcher.action.review_first"),
+            "Review first"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.review_first"),
+            "先检查"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "launcher.action.open_in_studio"),
+            "在 Studio 打开"
+        );
+        assert_eq!(
             translate(Locale::ZhCn, "launcher.action.no_matches"),
             "没有匹配的操作"
         );

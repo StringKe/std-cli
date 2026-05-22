@@ -32,7 +32,9 @@ impl LauncherUiSemanticsReport {
                     i18n::translate(Locale::EnUs, "launcher.action.actions"),
                     input::launcher_action_panel().label()
                 )
-            && self.action_panel_actions.contains("Open in Studio")
+            && self
+                .action_panel_actions
+                .contains(i18n::t("launcher.action.open_in_studio"))
             && self.action_panel_reader_label.contains("Actions for")
             && self.action_panel_reader_label.contains("list of")
             && self

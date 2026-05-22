@@ -1,6 +1,7 @@
 use crate::{LauncherKey, LauncherState};
 use std::time::Instant;
 use std_core::{StdConfig, StdCore};
+use std_egui::i18n;
 
 const ACTION_PANEL_BUDGET_MS: u128 = 50;
 
@@ -45,8 +46,8 @@ impl LauncherActionPanelSmokeReport {
         self.opened
             && self.focus_section == "ActionPanel"
             && self.action_count >= 2
-            && self.selected_title == "Run"
-            && self.external_primary_title == "Review first"
+            && self.selected_title == i18n::t("launcher.action.run")
+            && self.external_primary_title == i18n::t("launcher.action.review_first")
             && self.open_ms <= self.budget_ms
     }
 
@@ -102,8 +103,11 @@ mod tests {
 
         assert!(report.pass(), "{}", report.summary());
         assert_eq!(report.focus_section, "ActionPanel");
-        assert_eq!(report.selected_title, "Run");
-        assert_eq!(report.external_primary_title, "Review first");
+        assert_eq!(report.selected_title, i18n::t("launcher.action.run"));
+        assert_eq!(
+            report.external_primary_title,
+            i18n::t("launcher.action.review_first")
+        );
         assert!(report.open_ms <= report.budget_ms);
     }
 }

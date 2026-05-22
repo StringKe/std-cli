@@ -118,7 +118,13 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("feedback_actions=Copy,Retry,OpenStudio"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
-    assert!(summary.contains("action_panel_actions=Review first,Defer,Open in Studio,Copy command"));
+    assert!(summary.contains(&format!(
+        "action_panel_actions={},{},{},{}",
+        std_egui::i18n::t("launcher.action.review_first"),
+        std_egui::i18n::t("launcher.action.defer"),
+        std_egui::i18n::t("launcher.action.open_in_studio"),
+        std_egui::i18n::t("launcher.action.copy_command")
+    )));
     assert!(summary.contains("dark-searching=PASS:phase=Searching,results=0,feedback=none"));
     assert!(summary.contains(
         "state_behavior=search_indicator:search,loading_progress:2px-accent-indeterminate,empty_progress:not-rendered,input:editable"

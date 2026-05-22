@@ -235,7 +235,9 @@ fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
         .selected_action_hint
         .starts_with(&format!("{enter} ")));
     assert_eq!(report.action_bar_hint, format!("Actions {actions}"));
-    assert!(report.action_panel_actions.contains("Open in Studio"));
+    assert!(report
+        .action_panel_actions
+        .contains(std_egui::i18n::t("launcher.action.open_in_studio")));
     assert!(report
         .action_panel_open_studio_command
         .starts_with("studio-pane://"));

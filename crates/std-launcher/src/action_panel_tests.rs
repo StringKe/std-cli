@@ -24,7 +24,10 @@ fn action_panel_opens_for_selected_result_and_closes_on_search_change() {
 
     assert!(opened);
     assert!(state.action_panel.action_name.contains("Terminal"));
-    assert_eq!(first_item, "Review first");
+    assert_eq!(
+        first_item,
+        std_egui::i18n::t("launcher.action.review_first")
+    );
     assert!(!state.action_panel.open);
 }
 
@@ -48,7 +51,7 @@ fn action_panel_includes_open_in_studio_for_launcher_results() {
         .map(|item| item.title().to_string())
         .collect::<Vec<_>>();
 
-    assert!(titles.contains(&"Open in Studio".to_string()));
+    assert!(titles.contains(&std_egui::i18n::t("launcher.action.open_in_studio").to_string()));
 }
 
 #[test]
@@ -71,9 +74,14 @@ fn action_panel_labels_external_primary_as_review_first() {
         .map(|item| item.title().to_string())
         .collect::<Vec<_>>();
 
-    assert_eq!(titles.first().unwrap(), "Review first");
-    assert!(titles.contains(&"Defer".to_string()));
-    assert!(!titles.iter().any(|title| title == "Run"));
+    assert_eq!(
+        titles.first().unwrap(),
+        std_egui::i18n::t("launcher.action.review_first")
+    );
+    assert!(titles.contains(&std_egui::i18n::t("launcher.action.defer").to_string()));
+    assert!(!titles
+        .iter()
+        .any(|title| title == std_egui::i18n::t("launcher.action.run")));
 }
 
 #[test]
@@ -83,7 +91,10 @@ fn action_panel_labels_safe_primary_as_run() {
     state.update_query("index");
     state.open_action_panel();
 
-    assert_eq!(state.action_panel.items.first().unwrap().title(), "Run");
+    assert_eq!(
+        state.action_panel.items.first().unwrap().title(),
+        std_egui::i18n::t("launcher.action.run")
+    );
 }
 
 #[test]
@@ -124,7 +135,10 @@ fn action_panel_keyboard_path_defers_external_runner_by_default() {
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
 
-    assert_eq!(state.action_panel.selected_item().unwrap().title(), "Defer");
+    assert_eq!(
+        state.action_panel.selected_item().unwrap().title(),
+        std_egui::i18n::t("launcher.action.defer")
+    );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
 }
 
@@ -146,7 +160,7 @@ fn action_panel_default_enter_on_review_first_still_defers_external_runner() {
 
     assert_eq!(
         state.action_panel.selected_item().unwrap().title(),
-        "Review first"
+        std_egui::i18n::t("launcher.action.review_first")
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     assert!(execution.action_name.starts_with("Review Command:"));
@@ -178,7 +192,7 @@ fn review_first_shows_command_without_triggering_external_action() {
 
     assert_eq!(
         state.action_panel.selected_item().unwrap().title(),
-        "Review first"
+        std_egui::i18n::t("launcher.action.review_first")
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
     assert_eq!(
@@ -276,10 +290,13 @@ fn action_panel_filters_actions_and_resets_selection() {
         .collect::<Vec<_>>();
 
     assert_eq!(state.action_panel.selected, 0);
-    assert_eq!(visible_titles, vec!["Copy command"]);
+    assert_eq!(
+        visible_titles,
+        vec![std_egui::i18n::t("launcher.action.copy_command")]
+    );
     assert_eq!(
         state.action_panel.selected_item().unwrap().title(),
-        "Copy command"
+        std_egui::i18n::t("launcher.action.copy_command")
     );
 }
 
@@ -307,7 +324,10 @@ fn action_panel_filter_is_keyboard_reachable_from_panel_focus() {
 
     assert_eq!(state.action_panel.query, "co");
     assert_eq!(state.action_panel.selected, 0);
-    assert_eq!(visible_titles, vec!["Copy command"]);
+    assert_eq!(
+        visible_titles,
+        vec![std_egui::i18n::t("launcher.action.copy_command")]
+    );
 }
 
 #[test]
