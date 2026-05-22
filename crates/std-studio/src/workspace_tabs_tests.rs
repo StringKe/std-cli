@@ -96,3 +96,32 @@ fn workspace_tab_close_rect_uses_token_sized_hit_target() {
     assert_eq!(close.height(), TAB_HEIGHT);
     assert_eq!(close.right(), rect.right());
 }
+
+#[test]
+fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
+    let specs = vec![
+        WorkspaceTabSpec {
+            id: WorkspacePaneId::new(1),
+            title: "Settings".to_string(),
+            focused: false,
+            position: 1,
+            total: 2,
+        },
+        WorkspaceTabSpec {
+            id: WorkspacePaneId::new(2),
+            title: "Plugin Manager".to_string(),
+            focused: true,
+            position: 2,
+            total: 2,
+        },
+    ];
+    let contract = workspace_tabs_contract(&specs);
+
+    assert!(contract.contains("tabs=2"));
+    assert!(contract.contains("focused=Plugin Manager"));
+    assert!(contract.contains("cycle=previous|next"));
+    assert!(contract.contains("close_hit=28x28"));
+    assert!(contract.contains("keyboard_close=true"));
+    assert!(contract.contains("Workspace pane tab, Settings"));
+    assert!(contract.contains("Close workspace pane, Plugin Manager"));
+}

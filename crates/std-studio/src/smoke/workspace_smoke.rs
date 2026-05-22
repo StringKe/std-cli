@@ -44,6 +44,9 @@ pub(crate) fn run_workspace_pane_smoke(
     let focused_title = pane_title(studio, plugin);
     let focused_key = pane_content_key(studio, plugin);
     let content_keys = workspace_content_keys(studio);
+    let tabs =
+        crate::workspace_tabs::workspace_tab_specs(&studio.workspace_panes, studio.focused_pane);
+    let tabs_contract = crate::workspace_tabs::workspace_tabs_contract(&tabs);
     let state_preserved_after_focus = pane_lines(studio, plugin)
         .iter()
         .any(|line| line.contains("action=reload,search,manifest_check,preview,run"));
@@ -98,6 +101,7 @@ pub(crate) fn run_workspace_pane_smoke(
         &restored_title,
         reopened_restored,
         state_preserved_after_focus,
+        &tabs_contract,
     );
     WorkspacePaneSmoke {
         opened,
@@ -143,9 +147,10 @@ fn workspace_management_evidence(
     restored_title: &str,
     reopened_restored: bool,
     state_preserved_after_focus: bool,
+    tabs_contract: &str,
 ) -> String {
     format!(
-        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_restored={reopened_restored}",
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,state_preserved={state_preserved_after_focus},forbidden=native-child-windows:false|detached-panels:false,focused={},title={restored_title},reopened_memory={},reopened_restored={reopened_restored},tabs={tabs_contract}",
         focused.value(),
         reopened.value()
     )

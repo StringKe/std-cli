@@ -39,6 +39,13 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("state_preserved=true"));
     assert!(summary.contains("focused="));
     assert!(summary.contains("title=Plugin Manager"));
+    assert!(summary.contains("tabs=tabs="));
+    assert!(summary.contains("focused=Plugin Manager"));
+    assert!(summary.contains("cycle=previous|next"));
+    assert!(summary.contains("close_hit=28x28"));
+    assert!(summary.contains("keyboard_close=true"));
+    assert!(summary.contains("Workspace pane tab, Dashboard"));
+    assert!(summary.contains("Close workspace pane, Plugin Manager"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
     assert!(summary.contains("reopened_memory="));
     assert!(summary.contains("reopened_restored=true"));

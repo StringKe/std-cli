@@ -43,6 +43,34 @@ pub(crate) fn workspace_tab_specs(
         .collect()
 }
 
+pub(crate) fn workspace_tabs_contract(specs: &[WorkspaceTabSpec]) -> String {
+    let focused = specs
+        .iter()
+        .find(|spec| spec.focused)
+        .map(|spec| spec.title.as_str())
+        .unwrap_or("none");
+    let first_label = specs
+        .first()
+        .map(workspace_tab_a11y_label)
+        .unwrap_or_else(|| "none".to_string());
+    let focused_close = specs
+        .iter()
+        .find(|spec| spec.focused)
+        .map(workspace_tab_close_a11y_label)
+        .unwrap_or_else(|| "none".to_string());
+    format!(
+        "tabs={},focused={},cycle=previous|next,close_hit={}x{},a11y={},close_a11y={},keyboard_close={}",
+        specs.len(),
+        focused,
+        TAB_CLOSE_HIT_SIZE as u32,
+        TAB_HEIGHT as u32,
+        first_label,
+        focused_close,
+        workspace_tab_keyboard_command(specs.iter().find(|spec| spec.focused).map(|spec| spec.id))
+            .is_some()
+    )
+}
+
 pub(crate) fn render_workspace_tabs(
     ui: &mut egui::Ui,
     specs: &[WorkspaceTabSpec],

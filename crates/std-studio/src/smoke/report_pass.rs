@@ -38,6 +38,17 @@ impl StudioSmokeReport {
                 .pane_focus_label
                 .contains("forbidden=native-child-windows:false|detached-panels:false")
             && self.pane_focus_label.contains("title=Plugin Manager")
+            && self.pane_focus_label.contains("tabs=tabs=")
+            && self.pane_focus_label.contains("focused=Plugin Manager")
+            && self.pane_focus_label.contains("cycle=previous|next")
+            && self.pane_focus_label.contains("close_hit=28x28")
+            && self.pane_focus_label.contains("keyboard_close=true")
+            && self
+                .pane_focus_label
+                .contains("Workspace pane tab, Dashboard")
+            && self
+                .pane_focus_label
+                .contains("Close workspace pane, Plugin Manager")
             && self
                 .pane_host_policy
                 .contains("single-borderless-egui-viewport")
