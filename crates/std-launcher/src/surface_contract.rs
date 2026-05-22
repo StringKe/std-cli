@@ -14,6 +14,7 @@ pub struct LauncherSurfaceContract {
     pub executing_state: String,
     pub defer_state: String,
     pub error_state: String,
+    pub visible_structure: String,
 }
 
 impl LauncherSurfaceContract {
@@ -43,6 +44,7 @@ impl LauncherSurfaceContract {
             executing_state: executing_state_contract(),
             defer_state: defer_state_contract(),
             error_state: error_state_contract(),
+            visible_structure: visible_structure_contract(),
         }
     }
 
@@ -83,11 +85,20 @@ impl LauncherSurfaceContract {
             && self.executing_state.contains("input_locked=true")
             && self.defer_state.contains("NeedsExternalRunner")
             && self.error_state.contains("copy,retry,open_studio")
+            && self
+                .visible_structure
+                .contains("search=input|placeholder|focus-ring|mode-tag|ime-chip")
+            && self
+                .visible_structure
+                .contains("results=group-header|row-icon|title|subtitle|keycap|enter-action")
+            && self
+                .visible_structure
+                .contains("states=empty|no-results|loading|executing|defer|error")
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}",
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}\nvisible_structure_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_bar,
             self.result_list,
@@ -98,7 +109,8 @@ impl LauncherSurfaceContract {
             self.nl_suggestion,
             self.executing_state,
             self.defer_state,
-            self.error_state
+            self.error_state,
+            self.visible_structure
         )
     }
 }
@@ -234,6 +246,18 @@ fn error_state_contract() -> String {
         "status={:?};title={};actions=copy,retry,open_studio",
         feedback.status, feedback.title
     )
+}
+
+fn visible_structure_contract() -> String {
+    [
+        "search=input|placeholder|focus-ring|mode-tag|ime-chip",
+        "results=group-header|row-icon|title|subtitle|keycap|enter-action",
+        "preview=breadcrumb|primary-command|examples",
+        "feedback=status-icon|title|message|copy|retry|open-studio",
+        "states=empty|no-results|loading|executing|defer|error",
+        "carrier=transparent-viewport|opaque-panel-surface",
+    ]
+    .join(";")
 }
 
 fn execution(name: &str, status: ActionExecutionStatus) -> ActionExecution {

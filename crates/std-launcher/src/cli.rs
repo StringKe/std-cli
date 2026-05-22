@@ -264,6 +264,15 @@ mod tests {
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));
         assert!(report.summary().contains("reduced_focus_ring_ms=0"));
+        assert!(report.summary().contains(
+            "visible_structure_contract=search=input|placeholder|focus-ring|mode-tag|ime-chip"
+        ));
+        assert!(report
+            .summary()
+            .contains("results=group-header|row-icon|title|subtitle|keycap|enter-action"));
+        assert!(report
+            .summary()
+            .contains("states=empty|no-results|loading|executing|defer|error"));
     }
 
     #[test]
