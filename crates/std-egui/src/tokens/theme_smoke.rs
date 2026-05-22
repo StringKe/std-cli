@@ -23,6 +23,7 @@ pub struct ThemeSmokeReport {
     pub high_contrast_dark_accent_weak_alpha: u8,
     pub high_contrast_light_accent_weak_alpha: u8,
     pub high_contrast_focus_ring_width: u32,
+    pub bold_text_profile: String,
     pub min_text_contrast_x100: u16,
     pub min_secondary_text_contrast_x100: u16,
     pub min_tertiary_text_contrast_x100: u16,
@@ -74,6 +75,10 @@ impl ThemeSmokeReport {
             )
             .a(),
             high_contrast_focus_ring_width: high_contrast_a11y.focus_ring_width() as u32,
+            bold_text_profile: super::typography::font_profile(&AccessibilityContext {
+                bold_text: true,
+                ..standard_a11y.clone()
+            }),
             min_text_contrast_x100: contrast_x100(super::contrast::min_text_contrast_ratio()),
             min_secondary_text_contrast_x100: contrast_x100(
                 super::contrast::min_secondary_text_contrast_ratio(),
@@ -111,6 +116,7 @@ impl ThemeSmokeReport {
             && self.high_contrast_dark_accent_weak_alpha == 82
             && self.high_contrast_light_accent_weak_alpha == 56
             && self.high_contrast_focus_ring_width == 3
+            && self.bold_text_profile == "bold-text"
             && self.min_text_contrast_x100 >= 450
             && self.min_secondary_text_contrast_x100 >= 450
             && self.min_tertiary_text_contrast_x100 >= 300
@@ -127,7 +133,7 @@ impl ThemeSmokeReport {
 
     pub fn summary(&self, surface: &str) -> String {
         format!(
-            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_dark_accent_weak_alpha={}\nhigh_contrast_light_accent_weak_alpha={}\nhigh_contrast_focus_ring_width={}\nmin_text_contrast_x100={}\nmin_secondary_text_contrast_x100={}\nmin_tertiary_text_contrast_x100={}\nmin_high_contrast_secondary_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\ntypography_contract={}\nstatus_contract={}\nno_pure_black_white_tokens={}",
+            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_dark_accent_weak_alpha={}\nhigh_contrast_light_accent_weak_alpha={}\nhigh_contrast_focus_ring_width={}\nbold_text_profile={}\nmin_text_contrast_x100={}\nmin_secondary_text_contrast_x100={}\nmin_tertiary_text_contrast_x100={}\nmin_high_contrast_secondary_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\ntypography_contract={}\nstatus_contract={}\nno_pure_black_white_tokens={}",
             if self.pass() { "PASS" } else { "FAIL" },
             color_hex(self.dark_surface_0),
             color_hex(self.dark_surface_1),
@@ -148,6 +154,7 @@ impl ThemeSmokeReport {
             self.high_contrast_dark_accent_weak_alpha,
             self.high_contrast_light_accent_weak_alpha,
             self.high_contrast_focus_ring_width,
+            self.bold_text_profile,
             self.min_text_contrast_x100,
             self.min_secondary_text_contrast_x100,
             self.min_tertiary_text_contrast_x100,
@@ -270,6 +277,10 @@ mod tests {
         assert_eq!(report.light_accent_weak_alpha, 31);
         assert_eq!(report.high_contrast_dark_accent_weak_alpha, 82);
         assert_eq!(report.high_contrast_light_accent_weak_alpha, 56);
+        assert_eq!(report.bold_text_profile, "bold-text");
+        assert!(report
+            .summary("studio")
+            .contains("bold_text_profile=bold-text"));
         assert!(report.min_text_contrast_x100 >= 450);
         assert!(report.min_secondary_text_contrast_x100 >= 450);
         assert!(report.min_tertiary_text_contrast_x100 >= 300);

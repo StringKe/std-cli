@@ -309,13 +309,14 @@ impl StudioEguiApp {
 
 fn theme_profile_summary(profile: std_egui::tokens::ThemeProfile, ui_scale: f32) -> String {
     format!(
-        "{} {:?} / {:?} / high_contrast={} / reduce_transparency={} / reduce_motion={} / focus_ring={} / ui_scale={:.2}",
+        "{} {:?} / {:?} / high_contrast={} / reduce_transparency={} / reduce_motion={} / bold_text={} / focus_ring={} / ui_scale={:.2}",
         i18n::t("studio.settings.theme.active"),
         profile.requested,
         profile.effective,
         profile.high_contrast,
         profile.reduce_transparency,
         profile.reduce_motion,
+        profile.bold_text,
         profile.focus_ring_width,
         ui_scale
     )
@@ -335,6 +336,7 @@ mod tests {
                 high_contrast: true,
                 reduce_transparency: true,
                 reduce_motion: true,
+                bold_text: true,
                 focus_ring_width: 3,
             },
             1.25,
@@ -344,6 +346,7 @@ mod tests {
         assert!(summary.contains("high_contrast=true"));
         assert!(summary.contains("reduce_transparency=true"));
         assert!(summary.contains("reduce_motion=true"));
+        assert!(summary.contains("bold_text=true"));
         assert!(summary.contains("focus_ring=3"));
         assert!(summary.contains("ui_scale=1.25"));
     }

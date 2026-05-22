@@ -119,6 +119,7 @@ fn check_runtime_theme_profiles(root: &std::path::Path) -> Result<(), CliError> 
         "pub effective: EffectiveTheme",
         "pub high_contrast: bool",
         "pub reduce_motion: bool",
+        "pub bold_text: bool",
     ] {
         check_text(&egui_tokens, required)?;
     }

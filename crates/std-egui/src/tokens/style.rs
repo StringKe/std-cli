@@ -19,6 +19,7 @@ pub struct ThemeProfile {
     pub high_contrast: bool,
     pub reduce_transparency: bool,
     pub reduce_motion: bool,
+    pub bold_text: bool,
     pub focus_ring_width: u32,
 }
 
@@ -64,6 +65,7 @@ impl ThemeProfile {
             high_contrast: a11y.high_contrast,
             reduce_transparency: a11y.reduce_transparency,
             reduce_motion: MotionContext::from_env().is_reduced(),
+            bold_text: a11y.bold_text,
             focus_ring_width: a11y.focus_ring_width() as u32,
         }
     }
@@ -193,6 +195,7 @@ mod tests {
         assert!(!ctx.style().visuals.dark_mode);
         assert_eq!(profile.focus_ring_width, 2);
         assert!(!profile.high_contrast);
+        assert!(!profile.bold_text);
     }
 
     #[test]
@@ -238,5 +241,22 @@ mod tests {
 
         assert_eq!(ctx.style().text_styles[&TextStyle::Body].size, 16.25);
         assert_eq!(ctx.style().spacing.indent, 20.0);
+    }
+
+    #[test]
+    fn theme_profile_reports_bold_text_from_accessibility_context() {
+        let ctx = egui::Context::default();
+        let a11y = AccessibilityContext {
+            reduce_motion: false,
+            reduce_transparency: false,
+            high_contrast: false,
+            bold_text: true,
+        };
+
+        apply_theme_with_scale(&ctx, ThemeMode::Dark, UiScale::default(), &a11y);
+        let profile = ThemeProfile::from_applied(&ctx, ThemeMode::Dark, &a11y);
+
+        assert!(profile.bold_text);
+        assert_eq!(profile.focus_ring_width, 2);
     }
 }
