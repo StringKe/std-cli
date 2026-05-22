@@ -1,6 +1,13 @@
 use crate::i18n::Locale;
 
 pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
+    overview_translate(locale, key)
+        .or_else(|| debug_toolbar_translate(locale, key))
+        .or_else(|| steps_properties_translate(locale, key))
+        .or_else(|| ai_translate(locale, key))
+}
+
+fn overview_translate(locale: Locale, key: &str) -> Option<&'static str> {
     match (locale, key) {
         (Locale::ZhCn, "studio.workflow_builder.title") => Some("Workflow Builder"),
         (Locale::EnUs, "studio.workflow_builder.title") => Some("Workflow Builder"),
@@ -8,6 +15,14 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workflow_builder.detail") => Some("steps, properties, AI assist"),
         (Locale::ZhCn, "studio.workflow_builder.goal.hint") => Some("描述 workflow 目标"),
         (Locale::EnUs, "studio.workflow_builder.goal.hint") => Some("Describe workflow goal"),
+        (Locale::ZhCn, "studio.workflow_builder.goal.empty") => Some("空"),
+        (Locale::EnUs, "studio.workflow_builder.goal.empty") => Some("empty"),
+        (Locale::ZhCn, "studio.workflow_builder.goal.a11y") => {
+            Some("Workflow 目标，文本框，当前值 {value}")
+        }
+        (Locale::EnUs, "studio.workflow_builder.goal.a11y") => {
+            Some("Workflow goal, text box, value {value}")
+        }
         (Locale::ZhCn, "studio.workflow_builder.plan") => Some("Plan"),
         (Locale::EnUs, "studio.workflow_builder.plan") => Some("Plan"),
         (Locale::ZhCn, "studio.workflow_builder.simulate") => Some("Simulate"),
@@ -28,6 +43,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workflow_builder.flow.run") => Some("Run"),
         (Locale::ZhCn, "studio.workflow_builder.flow.trace") => Some("Trace"),
         (Locale::EnUs, "studio.workflow_builder.flow.trace") => Some("Trace"),
+        _ => None,
+    }
+}
+
+fn debug_toolbar_translate(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
         (Locale::ZhCn, "studio.workflow_builder.debug.title") => Some("Batch Debug"),
         (Locale::EnUs, "studio.workflow_builder.debug.title") => Some("Batch Debug"),
         (Locale::ZhCn, "studio.workflow_builder.debug.detail") => Some("simulate / run trace"),
@@ -42,6 +63,24 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workflow_builder.toolbar.cancel") => Some("Cancel"),
         (Locale::ZhCn, "studio.workflow_builder.toolbar.zoom") => Some("Zoom"),
         (Locale::EnUs, "studio.workflow_builder.toolbar.zoom") => Some("Zoom"),
+        (Locale::ZhCn, "studio.workflow_builder.toolbar.button.a11y") => {
+            Some("{label}，工具栏按钮")
+        }
+        (Locale::EnUs, "studio.workflow_builder.toolbar.button.a11y") => {
+            Some("{label}, toolbar button")
+        }
+        (Locale::ZhCn, "studio.workflow_builder.toolbar.button_shortcut.a11y") => {
+            Some("{label}，工具栏按钮，快捷键 {shortcut}")
+        }
+        (Locale::EnUs, "studio.workflow_builder.toolbar.button_shortcut.a11y") => {
+            Some("{label}, toolbar button, shortcut {shortcut}")
+        }
+        _ => None,
+    }
+}
+
+fn steps_properties_translate(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
         (Locale::ZhCn, "studio.workflow_builder.steps.title") => Some("Steps"),
         (Locale::EnUs, "studio.workflow_builder.steps.title") => Some("Steps"),
         (Locale::ZhCn, "studio.workflow_builder.steps.empty") => Some("选择或规划一个 workflow"),
@@ -74,6 +113,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workflow_builder.move_down") => Some("Move Down"),
         (Locale::ZhCn, "studio.workflow_builder.remove") => Some("Remove"),
         (Locale::EnUs, "studio.workflow_builder.remove") => Some("Remove"),
+        _ => None,
+    }
+}
+
+fn ai_translate(locale: Locale, key: &str) -> Option<&'static str> {
+    match (locale, key) {
         (Locale::ZhCn, "studio.workflow_builder.ai.title") => Some("AI Assist"),
         (Locale::EnUs, "studio.workflow_builder.ai.title") => Some("AI Assist"),
         (Locale::ZhCn, "studio.workflow_builder.ai.detail") => Some("从目标生成计划"),
@@ -119,6 +164,8 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.workflow_builder.title" => Some("Workflow Builder"),
         "studio.workflow_builder.detail" => Some("steps, properties, AI assist"),
         "studio.workflow_builder.goal.hint" => Some("Describe workflow goal"),
+        "studio.workflow_builder.goal.empty" => Some("empty"),
+        "studio.workflow_builder.goal.a11y" => Some("Workflow goal, text box, value {value}"),
         "studio.workflow_builder.plan" => Some("Plan"),
         "studio.workflow_builder.simulate" => Some("Simulate"),
         "studio.workflow_builder.run" => Some("Run"),
@@ -136,6 +183,10 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.workflow_builder.toolbar.test" => Some("Test"),
         "studio.workflow_builder.toolbar.cancel" => Some("Cancel"),
         "studio.workflow_builder.toolbar.zoom" => Some("Zoom"),
+        "studio.workflow_builder.toolbar.button.a11y" => Some("{label}, toolbar button"),
+        "studio.workflow_builder.toolbar.button_shortcut.a11y" => {
+            Some("{label}, toolbar button, shortcut {shortcut}")
+        }
         "studio.workflow_builder.steps.title" => Some("Steps"),
         "studio.workflow_builder.steps.empty" => Some("Select or plan a workflow"),
         "studio.workflow_builder.preview.empty" => Some("No preview yet"),

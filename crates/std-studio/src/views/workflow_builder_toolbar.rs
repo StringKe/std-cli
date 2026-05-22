@@ -201,17 +201,19 @@ pub(crate) fn toolbar_contract() -> &'static str {
 
 fn workflow_goal_a11y_label(goal: &str) -> String {
     let value = if goal.trim().is_empty() {
-        "empty"
+        i18n::t("studio.workflow_builder.goal.empty")
     } else {
         goal.trim()
     };
-    format!("Workflow goal, text box, value {value}")
+    i18n::t("studio.workflow_builder.goal.a11y").replace("{value}", value)
 }
 
 fn toolbar_button_a11y_label(label: &str, shortcut: Option<&str>) -> String {
     match shortcut {
-        Some(shortcut) => format!("{label}, toolbar button, shortcut {shortcut}"),
-        None => format!("{label}, toolbar button"),
+        Some(shortcut) => i18n::t("studio.workflow_builder.toolbar.button_shortcut.a11y")
+            .replace("{label}", label)
+            .replace("{shortcut}", shortcut),
+        None => i18n::t("studio.workflow_builder.toolbar.button.a11y").replace("{label}", label),
     }
 }
 
@@ -254,11 +256,13 @@ mod tests {
     fn toolbar_button_a11y_labels_include_shortcut_when_available() {
         assert_eq!(
             toolbar_button_a11y_label("Save", Some("Mod+S")),
-            "Save, toolbar button, shortcut Mod+S"
+            i18n::t("studio.workflow_builder.toolbar.button_shortcut.a11y")
+                .replace("{label}", "Save")
+                .replace("{shortcut}", "Mod+S")
         );
         assert_eq!(
             toolbar_button_a11y_label("Plan", None),
-            "Plan, toolbar button"
+            i18n::t("studio.workflow_builder.toolbar.button.a11y").replace("{label}", "Plan")
         );
     }
 
@@ -266,11 +270,12 @@ mod tests {
     fn workflow_goal_a11y_label_exposes_textbox_value() {
         assert_eq!(
             workflow_goal_a11y_label("ship ui"),
-            "Workflow goal, text box, value ship ui"
+            i18n::t("studio.workflow_builder.goal.a11y").replace("{value}", "ship ui")
         );
         assert_eq!(
             workflow_goal_a11y_label("   "),
-            "Workflow goal, text box, value empty"
+            i18n::t("studio.workflow_builder.goal.a11y")
+                .replace("{value}", i18n::t("studio.workflow_builder.goal.empty"))
         );
     }
 }

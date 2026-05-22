@@ -307,6 +307,17 @@ mod tests {
             translate(Locale::ZhCn, "studio.workflow_builder.properties.empty"),
             "选择已保存 workflow 以编辑步骤"
         );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.workflow_builder.goal.a11y"),
+            "Workflow 目标，文本框，当前值 {value}"
+        );
+        assert_eq!(
+            translate(
+                Locale::EnUs,
+                "studio.workflow_builder.toolbar.button_shortcut.a11y"
+            ),
+            "{label}, toolbar button, shortcut {shortcut}"
+        );
     }
 
     #[test]
