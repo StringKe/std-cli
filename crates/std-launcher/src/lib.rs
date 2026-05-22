@@ -65,8 +65,9 @@ pub use suggested::{suggested_workflow_rows, SuggestedWorkflowRow};
 pub use surface_contract::LauncherSurfaceContract;
 pub use surface_smoke::LauncherSurfaceSmokeReport;
 pub use viewport_contract::{
-    launcher_clear_color_contract, launcher_viewport_frame_contract,
-    transparent_hidden_panel_contract, transparent_visible_panel_contract,
+    launcher_clear_color_contract, launcher_panel_native_options, launcher_panel_viewport,
+    launcher_viewport_frame_contract, transparent_hidden_panel_contract,
+    transparent_visible_panel_contract,
 };
 pub use voice::clean_voice_transcript;
 

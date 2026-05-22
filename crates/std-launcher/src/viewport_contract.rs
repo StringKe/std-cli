@@ -1,5 +1,20 @@
 use eframe::egui;
 
+pub fn launcher_panel_native_options(size: egui::Vec2, visible: bool) -> eframe::NativeOptions {
+    eframe::NativeOptions {
+        viewport: launcher_panel_viewport(size, visible),
+        ..Default::default()
+    }
+}
+
+pub fn launcher_panel_viewport(size: egui::Vec2, visible: bool) -> egui::ViewportBuilder {
+    egui::ViewportBuilder::default()
+        .with_inner_size(size)
+        .with_decorations(false)
+        .with_transparent(true)
+        .with_visible(visible)
+}
+
 pub fn transparent_hidden_panel_contract(size: egui::Vec2) -> String {
     viewport_contract(size, false)
 }
@@ -37,6 +52,19 @@ mod tests {
             transparent_visible_panel_contract(egui::vec2(720.0, 320.0)),
             "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x320"
         );
+    }
+
+    #[test]
+    fn launcher_panel_native_options_match_contract() {
+        let hidden = launcher_panel_native_options(egui::vec2(720.0, 64.0), false);
+        let visible = launcher_panel_native_options(egui::vec2(720.0, 320.0), true);
+        let hidden_viewport = format!("{:?}", hidden.viewport);
+        let visible_viewport = format!("{:?}", visible.viewport);
+
+        assert!(hidden_viewport.contains("transparent: Some(true)"));
+        assert!(hidden_viewport.contains("decorations: Some(false)"));
+        assert!(hidden_viewport.contains("visible: Some(false)"));
+        assert!(visible_viewport.contains("visible: Some(true)"));
     }
 
     #[test]

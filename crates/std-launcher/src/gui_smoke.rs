@@ -88,14 +88,10 @@ pub(crate) fn run_gui_hotkey_smoke(
         }
     });
 
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(ui::launcher_initial_window_inner_size())
-            .with_decorations(false)
-            .with_transparent(true)
-            .with_visible(false),
-        ..Default::default()
-    };
+    let options = std_launcher::launcher_panel_native_options(
+        ui::launcher_initial_window_inner_size(),
+        false,
+    );
     eframe::run_native(
         "std-cli Launcher GUI Hotkey Smoke",
         options,

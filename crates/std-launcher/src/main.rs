@@ -38,7 +38,6 @@ use background_harness::{
     background_harness_request_from_args, blocked_background_harness_summary,
     run_background_harness, BackgroundHarnessRequest,
 };
-use eframe::egui;
 use preview::{
     blocked_preview_summary, preview_request_from_args, run_preview, LauncherPreviewRequest,
 };
@@ -88,19 +87,13 @@ fn run_launcher_app() -> eframe::Result<()> {
 }
 
 fn launcher_native_options() -> eframe::NativeOptions {
-    eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(ui::launcher_initial_window_inner_size())
-            .with_decorations(false)
-            .with_transparent(true)
-            .with_visible(false),
-        ..Default::default()
-    }
+    std_launcher::launcher_panel_native_options(ui::launcher_initial_window_inner_size(), false)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use eframe::egui;
 
     #[test]
     fn launcher_window_uses_transparent_hidden_chrome() {

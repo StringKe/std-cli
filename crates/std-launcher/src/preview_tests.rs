@@ -204,6 +204,18 @@ fn ui_preview_uses_native_panel_surface_window() {
 }
 
 #[test]
+fn launcher_entrypoints_share_panel_native_options() {
+    let main = include_str!("main.rs");
+    let preview = include_str!("preview.rs");
+    let gui_smoke = include_str!("gui_smoke.rs");
+
+    for source in [main, preview, gui_smoke] {
+        assert!(source.contains("launcher_panel_native_options"));
+        assert!(!source.contains("ViewportBuilder::default()"));
+    }
+}
+
+#[test]
 fn preview_evidence_names_native_panel_surface_not_preview_viewport() {
     let surface = include_str!("surface_smoke.rs");
     let preview = include_str!("preview.rs");

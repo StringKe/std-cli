@@ -245,14 +245,7 @@ pub(crate) fn preview_capture_window_contract(config: &LauncherPreviewConfig) ->
 }
 
 fn preview_native_options_for_size(size: egui::Vec2) -> eframe::NativeOptions {
-    eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(size)
-            .with_decorations(false)
-            .with_transparent(true)
-            .with_visible(true),
-        ..Default::default()
-    }
+    std_launcher::launcher_panel_native_options(size, true)
 }
 
 pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) {
