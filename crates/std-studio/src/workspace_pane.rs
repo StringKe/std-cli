@@ -1,7 +1,8 @@
 use crate::{StudioApp, StudioPane};
+use serde::{Deserialize, Serialize};
 use std_egui::i18n;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct WorkspacePaneId(u64);
 
 impl WorkspacePaneId {
@@ -14,7 +15,7 @@ impl WorkspacePaneId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum WorkspacePaneKind {
     Pane(StudioPane),
     WorkflowBuilder { workflow_path: std::path::PathBuf },
@@ -108,17 +109,17 @@ pub struct WorkspacePaneContent {
     pub lines: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WorkspacePaneCloseSnapshot {
     pub id: WorkspacePaneId,
     pub kind: WorkspacePaneKind,
     pub identity_key: String,
-    pub content_key: &'static str,
+    pub content_key: String,
     pub title: String,
     pub focused: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WorkspacePaneCloseGuard {
     pub panes: Vec<WorkspacePaneCloseSnapshot>,
     pub focused_pane: Option<WorkspacePaneId>,
@@ -227,7 +228,7 @@ impl StudioApp {
                     id: pane.id,
                     kind: pane.kind.clone(),
                     identity_key: pane.kind.identity_key(),
-                    content_key: pane.kind.content_key(),
+                    content_key: pane.kind.content_key().to_string(),
                     title: pane.title.clone(),
                     focused: self.focused_pane == Some(pane.id),
                 })

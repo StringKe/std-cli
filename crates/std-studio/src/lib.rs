@@ -15,6 +15,7 @@ pub mod plugin_security;
 pub mod plugin_status;
 mod trace;
 mod workflow;
+mod workspace_closeguard;
 mod workspace_pane;
 mod workspace_policy;
 
@@ -41,7 +42,7 @@ pub use workspace_pane::{
 };
 pub use workspace_policy::{HostWindowPolicy, PaneSystemPolicy, StudioWorkspacePolicy};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum StudioPane {
     Dashboard,
     Workflows,
