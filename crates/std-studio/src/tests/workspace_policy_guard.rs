@@ -63,6 +63,21 @@ fn workspace_policy_never_claims_headless_smoke_completes_ui() {
     assert!(report.contains("operations-runtime-evidence"));
 }
 
+#[test]
+fn studio_product_ui_uses_theme_tokens_not_hardcoded_colors() {
+    let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let src_dir = crate_dir.join("src");
+    let mut violations = Vec::new();
+
+    scan_rs_files_for_hardcoded_colors(&src_dir, &mut violations);
+
+    assert!(
+        violations.is_empty(),
+        "Studio product UI must use std-egui theme tokens instead of hardcoded colors: {}",
+        violations.join(", ")
+    );
+}
+
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;
@@ -92,6 +107,30 @@ fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
         }
         for pattern in forbidden_studio_window_patterns() {
             if body.contains(&pattern) {
+                violations.push(format!("{} contains {}", path.display(), pattern));
+            }
+        }
+    }
+}
+
+fn scan_rs_files_for_hardcoded_colors(dir: &Path, violations: &mut Vec<String>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if path.is_dir() {
+            scan_rs_files_for_hardcoded_colors(&path, violations);
+            continue;
+        }
+        if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
+            || hardcoded_color_file_allowed(&path)
+        {
+            continue;
+        }
+        let body = fs::read_to_string(&path).unwrap();
+        for pattern in hardcoded_color_patterns() {
+            if body.contains(pattern) {
                 violations.push(format!("{} contains {}", path.display(), pattern));
             }
         }
@@ -221,6 +260,32 @@ fn is_policy_evidence_file(path: &Path) -> bool {
             )
         })
         .unwrap_or(false)
+}
+
+fn hardcoded_color_file_allowed(path: &Path) -> bool {
+    let Some(relative) = studio_src_relative_path(path) else {
+        return false;
+    };
+    matches!(
+        relative.as_str(),
+        "src/tests/workspace_policy_guard.rs"
+            | "src/smoke/surface_smoke.rs"
+            | "src/preview_evidence.rs"
+            | "src/preview_tests.rs"
+            | "src/smoke_tests.rs"
+            | "src/smoke/report_pass.rs"
+    )
+}
+
+fn hardcoded_color_patterns() -> &'static [&'static str] {
+    &[
+        "Color32::from_rgb",
+        "Color32::from_rgba",
+        "from_black_alpha",
+        "#000",
+        "#fff",
+        "#FFF",
+    ]
 }
 
 fn studio_src_relative_path(path: &Path) -> Option<String> {

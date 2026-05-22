@@ -98,6 +98,7 @@ fn launcher_native_options() -> eframe::NativeOptions {
 mod tests {
     use super::*;
     use eframe::egui;
+    use std::{fs, path::Path};
 
     #[test]
     fn launcher_window_uses_transparent_hidden_chrome() {
@@ -142,5 +143,78 @@ mod tests {
             native_app_blocked_by_test_mode(),
             Some("launcher_native_app SKIP reason=STD_TEST_MODE blocked native app startup")
         );
+    }
+
+    #[test]
+    fn launcher_product_ui_uses_theme_tokens_not_hardcoded_colors() {
+        let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let src_dir = crate_dir.join("src");
+        let mut violations = Vec::new();
+
+        scan_rs_files_for_hardcoded_colors(&src_dir, &mut violations);
+
+        assert!(
+            violations.is_empty(),
+            "Launcher product UI must use std-egui theme tokens instead of hardcoded colors: {}",
+            violations.join(", ")
+        );
+    }
+
+    fn scan_rs_files_for_hardcoded_colors(dir: &Path, violations: &mut Vec<String>) {
+        let Ok(entries) = fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.filter_map(Result::ok) {
+            let path = entry.path();
+            if path.is_dir() {
+                scan_rs_files_for_hardcoded_colors(&path, violations);
+                continue;
+            }
+            if path.extension().and_then(|ext| ext.to_str()) != Some("rs")
+                || hardcoded_color_file_allowed(&path)
+            {
+                continue;
+            }
+            let body = fs::read_to_string(&path).unwrap();
+            for pattern in hardcoded_color_patterns() {
+                if body.contains(pattern) {
+                    violations.push(format!("{} contains {}", path.display(), pattern));
+                }
+            }
+        }
+    }
+
+    fn hardcoded_color_file_allowed(path: &Path) -> bool {
+        let Some(relative) = launcher_src_relative_path(path) else {
+            return false;
+        };
+        matches!(
+            relative.as_str(),
+            "src/main.rs"
+                | "src/resident.rs"
+                | "src/surface_smoke.rs"
+                | "src/preview_evidence.rs"
+                | "src/preview_tests.rs"
+                | "src/cli.rs"
+        )
+    }
+
+    fn hardcoded_color_patterns() -> &'static [&'static str] {
+        &[
+            "Color32::from_rgb",
+            "Color32::from_rgba",
+            "from_black_alpha",
+            "#000",
+            "#fff",
+            "#FFF",
+        ]
+    }
+
+    fn launcher_src_relative_path(path: &Path) -> Option<String> {
+        let crate_dir = Path::new(env!("CARGO_MANIFEST_DIR"));
+        path.strip_prefix(crate_dir)
+            .ok()
+            .and_then(|relative| relative.to_str())
+            .map(|relative| relative.replace('\\', "/"))
     }
 }
