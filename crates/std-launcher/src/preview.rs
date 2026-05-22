@@ -1,6 +1,8 @@
 use crate::app::LauncherApp;
 use crate::preview_capture::LauncherCaptureManifest;
-use crate::preview_evidence::{preview_size_summary, preview_state_summary};
+use crate::preview_evidence::{
+    preview_size_summary, preview_state_summary, required_capture_states_summary,
+};
 use crate::ui;
 use crate::ui_completion_boundary::{
     launcher_ui_completion_boundary_passes, launcher_ui_completion_boundary_summary,
@@ -85,7 +87,9 @@ impl LauncherPreviewSmokeReport {
             self.commands.join(";"),
             self.states.join(";"),
             self.sizes.join(";"),
-            self.required_capture_states.join(","),
+            required_capture_states_summary()
+                .strip_prefix("required_capture_states=")
+                .unwrap_or(""),
             self.surface_contract.replace('\n', ";"),
             self.capture_contract,
             self.capture_manifest.summary(),

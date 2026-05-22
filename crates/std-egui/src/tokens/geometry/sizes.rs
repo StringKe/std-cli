@@ -231,3 +231,38 @@ impl StudioSize {
         egui::vec2(width, 0.0)
     }
 }
+
+pub struct LauncherSize;
+
+impl LauncherSize {
+    pub const PANEL_WIDTH: f32 = 720.0;
+    pub const WINDOW_VERTICAL_ANCHOR: f32 = 0.28;
+    pub const HIDDEN_HOST_SIZE: f32 = 1.0;
+
+    pub fn panel_surface_width(scale: UiScale) -> f32 {
+        scale.f32(Self::PANEL_WIDTH)
+    }
+
+    pub fn host_gutter(scale: UiScale) -> f32 {
+        scale.f32(Space::MD as f32)
+    }
+
+    pub fn hidden_host_size() -> egui::Vec2 {
+        egui::vec2(Self::HIDDEN_HOST_SIZE, Self::HIDDEN_HOST_SIZE)
+    }
+
+    pub fn host_size(panel_size: egui::Vec2, scale: UiScale) -> egui::Vec2 {
+        let gutter = Self::host_gutter(scale) * 2.0;
+        egui::vec2(panel_size.x + gutter, panel_size.y + gutter)
+    }
+
+    pub fn panel_position_for_monitor(
+        monitor_size: egui::Vec2,
+        viewport_size: egui::Vec2,
+    ) -> egui::Pos2 {
+        let x = ((monitor_size.x - viewport_size.x) * 0.5).max(0.0);
+        let y = (monitor_size.y * Self::WINDOW_VERTICAL_ANCHOR)
+            .min((monitor_size.y - viewport_size.y).max(0.0));
+        egui::pos2(x, y)
+    }
+}

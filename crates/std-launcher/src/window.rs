@@ -1,7 +1,6 @@
 use eframe::egui;
+use std_egui::tokens::LauncherSize;
 use std_launcher::LauncherWindowCommand;
-
-const WINDOW_VERTICAL_ANCHOR: f32 = 0.28;
 
 pub(crate) fn apply_window_commands(
     ctx: &egui::Context,
@@ -46,14 +45,11 @@ fn launcher_window_position_for_monitor(
     monitor_size: egui::Vec2,
     viewport_size: egui::Vec2,
 ) -> egui::Pos2 {
-    let x = ((monitor_size.x - viewport_size.x) * 0.5).max(0.0);
-    let y =
-        (monitor_size.y * WINDOW_VERTICAL_ANCHOR).min((monitor_size.y - viewport_size.y).max(0.0));
-    egui::pos2(x, y)
+    LauncherSize::panel_position_for_monitor(monitor_size, viewport_size)
 }
 
 pub(crate) fn hidden_host_size() -> egui::Vec2 {
-    egui::vec2(1.0, 1.0)
+    LauncherSize::hidden_host_size()
 }
 
 #[cfg(test)]

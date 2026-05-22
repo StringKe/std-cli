@@ -10,6 +10,10 @@ use crate::{
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
 
+pub(crate) fn required_capture_states_summary() -> &'static str {
+    "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+}
+
 pub(crate) fn preview_matrix() -> Vec<String> {
     [
         "light-dashboard",

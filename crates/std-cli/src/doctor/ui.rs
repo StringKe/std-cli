@@ -228,7 +228,7 @@ fn check_launcher_panel_viewport(root: &std::path::Path) -> Result<(), CliError>
     let launcher_metrics = read_required(&root.join("crates/std-launcher/src/ui_metrics.rs"))?;
     let launcher_layout =
         read_required(&root.join("crates/std-launcher/src/ui_metrics_layout.rs"))?;
-    check_text(&launcher_layout, "scale.f32(PANEL_WIDTH)")?;
+    check_text(&launcher_layout, "LauncherSize::host_size")?;
     let launcher_metrics_tests =
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(

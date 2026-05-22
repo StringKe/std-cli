@@ -1,6 +1,6 @@
 use super::{
-    elevation::elevation_blur, ControlSize, Elevation, FocusRing, HostChromeSize, NavigationSize,
-    OverlaySize, Radius, Space, StudioSize,
+    elevation::elevation_blur, ControlSize, Elevation, FocusRing, HostChromeSize, LauncherSize,
+    NavigationSize, OverlaySize, Radius, Space, StudioSize,
 };
 use crate::{a11y::AccessibilityContext, tokens::typography::UiScale};
 
@@ -123,6 +123,28 @@ fn studio_sizes_export_workflow_builder_geometry() {
     assert_eq!(
         StudioSize::workflow_builder_pane_size(320.0),
         egui::vec2(320.0, 0.0)
+    );
+}
+
+#[test]
+fn launcher_sizes_export_transparent_host_geometry() {
+    let scale = UiScale::default();
+
+    assert_eq!(LauncherSize::PANEL_WIDTH, 720.0);
+    assert_eq!(LauncherSize::WINDOW_VERTICAL_ANCHOR, 0.28);
+    assert_eq!(LauncherSize::panel_surface_width(scale), 720.0);
+    assert_eq!(LauncherSize::host_gutter(scale), 16.0);
+    assert_eq!(
+        LauncherSize::host_size(egui::vec2(720.0, 64.0), scale),
+        egui::vec2(752.0, 96.0)
+    );
+    assert_eq!(LauncherSize::hidden_host_size(), egui::vec2(1.0, 1.0));
+    assert_eq!(
+        LauncherSize::panel_position_for_monitor(
+            egui::vec2(1440.0, 900.0),
+            egui::vec2(720.0, 64.0)
+        ),
+        egui::pos2(360.0, 252.0)
     );
 }
 

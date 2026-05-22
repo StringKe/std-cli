@@ -1,7 +1,9 @@
-pub const PANEL_WIDTH: f32 = 720.0;
+use std_egui::tokens::{LauncherSize, UiScale};
+
+pub const PANEL_WIDTH: f32 = LauncherSize::PANEL_WIDTH;
 
 pub fn panel_surface_width(scale: f32) -> f32 {
-    PANEL_WIDTH * scale
+    LauncherSize::panel_surface_width(UiScale::new(scale))
 }
 
 #[cfg(test)]

@@ -1,4 +1,6 @@
-use crate::preview_evidence::{preview_matrix, preview_size_summary, preview_state_summary};
+use crate::preview_evidence::{
+    preview_matrix, preview_size_summary, preview_state_summary, required_capture_states_summary,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewSmokeReport {
@@ -54,7 +56,9 @@ impl StudioPreviewSmokeReport {
             self.commands.join(";"),
             self.states.join(";"),
             self.sizes.join(";"),
-            self.required_capture_states.join(","),
+            required_capture_states_summary()
+                .strip_prefix("required_capture_states=")
+                .unwrap_or(""),
             self.capture_contract,
             self.capture_manifest.summary()
         )

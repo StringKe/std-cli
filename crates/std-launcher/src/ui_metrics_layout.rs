@@ -1,12 +1,12 @@
 use eframe::egui;
-use std_egui::tokens::{Space, UiScale};
+use std_egui::tokens::{LauncherSize, Space, UiScale};
 use std_launcher::{LauncherState, PANEL_WIDTH};
 
 const SEARCH_BAR_MIN_CONTENT_HEIGHT: f32 = 40.0;
 const VOICE_ROW_HEIGHT: f32 = 44.0;
 
 pub(crate) fn host_gutter_for_scale(scale: UiScale) -> f32 {
-    scale.f32(Space::MD as f32)
+    LauncherSize::host_gutter(scale)
 }
 
 pub(crate) struct LauncherLayoutBudget {
@@ -15,15 +15,14 @@ pub(crate) struct LauncherLayoutBudget {
 }
 
 pub(crate) fn initial_window_inner_size_for_scale(scale: UiScale) -> egui::Vec2 {
-    let gutter = host_gutter_for_scale(scale) * 2.0;
-    egui::vec2(
-        scale.f32(PANEL_WIDTH) + gutter,
-        collapsed_panel_height_for_scale(scale) + gutter,
-    )
+    let panel_size = egui::vec2(
+        scale.f32(PANEL_WIDTH),
+        collapsed_panel_height_for_scale(scale),
+    );
+    LauncherSize::host_size(panel_size, scale)
 }
 
 pub(crate) fn window_inner_size_for_scale(state: &LauncherState, scale: UiScale) -> egui::Vec2 {
-    let gutter = host_gutter_for_scale(scale) * 2.0;
     let mut panel_height = crate::ui_metrics::DEFAULT_VIEWPORT_HEIGHT;
     for _ in 0..4 {
         let body_height = body_height_for_scale(state, panel_height, scale);
@@ -34,7 +33,7 @@ pub(crate) fn window_inner_size_for_scale(state: &LauncherState, scale: UiScale)
         }
         panel_height = next_height;
     }
-    egui::vec2(scale.f32(PANEL_WIDTH) + gutter, panel_height + gutter)
+    LauncherSize::host_size(egui::vec2(scale.f32(PANEL_WIDTH), panel_height), scale)
 }
 
 pub(crate) fn panel_height_for_scale(
