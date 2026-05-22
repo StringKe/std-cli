@@ -1,4 +1,5 @@
 use crate::{
+    doctor::ui_capture_pixels::{verify_pixel_evidence, CapturePixelEvidence},
     doctor::ui_capture_png::{verify_capture_png, CaptureManifestEntry},
     doctor::workspace::{check_text, read_required},
     CliError,
@@ -113,7 +114,9 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "completion_rule=current-run-png-only",
         "/usr/bin/sips -g pixelWidth",
         "/usr/bin/sips -g pixelHeight",
+        "/usr/bin/sips -g pixelColor",
         "width=$width height=$height",
+        "samples=$samples unique_colors=$unique_colors black_pixels=$black_pixels white_pixels=$white_pixels",
         "record_capture launcher",
         "record_capture studio",
         "manifest=$manifest",
@@ -176,6 +179,13 @@ fn verify_capture_line(
     let bytes = capture_field(line, "bytes=")?;
     let width = capture_dimension(line, "width=", surface, theme, scenario)?;
     let height = capture_dimension(line, "height=", surface, theme, scenario)?;
+    let evidence = CapturePixelEvidence {
+        samples: capture_dimension(line, "samples=", surface, theme, scenario)?,
+        unique_colors: capture_dimension(line, "unique_colors=", surface, theme, scenario)?,
+        black_pixels: capture_count(line, "black_pixels=", surface, theme, scenario)?,
+        white_pixels: capture_count(line, "white_pixels=", surface, theme, scenario)?,
+    };
+    verify_pixel_evidence(surface, theme, scenario, &evidence)?;
     let expected_name = format!("{surface}-{theme}-{scenario}.png");
     if !path.ends_with(&expected_name) {
         return Err(CliError::Doctor(format!(
@@ -230,10 +240,26 @@ fn capture_dimension(
         })
 }
 
+fn capture_count(
+    line: &str,
+    key: &str,
+    surface: &str,
+    theme: &str,
+    scenario: &str,
+) -> Result<u32, CliError> {
+    capture_field(line, key)?.parse::<u32>().map_err(|_| {
+        CliError::Doctor(format!(
+            "capture manifest {key} must be a non-negative count for {surface} {theme} {scenario}"
+        ))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::doctor::workspace::find_workspace_root;
+
+    const SAMPLE_EVIDENCE: &str = "samples=9 unique_colors=3 black_pixels=0 white_pixels=0";
 
     #[test]
     fn ui_capture_scripts_require_explicit_preview_opt_in() {
@@ -255,7 +281,7 @@ mod tests {
         let png_bytes = sample_png_bytes(720, 64).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=720 height=64\n"
+                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=720 height=64 {SAMPLE_EVIDENCE}\n"
             ),
             "",
         );
@@ -271,9 +297,9 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1080 height=640",
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1080 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
@@ -313,9 +339,9 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
             ),
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1080 height=640",
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1080 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
@@ -329,8 +355,8 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         write_sample_pngs(temp.path());
         let manifest = sample_manifest().replace(
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1080 height=640",
-            "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1081 height=640",
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1081 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
@@ -346,14 +372,35 @@ mod tests {
         let bytes = sample_png_bytes(500, 64);
         fs::write(temp.path().join("launcher-light-collapsed.png"), bytes).unwrap();
         let manifest = sample_manifest().replace(
-            "launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=720 height=64",
-            "launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=500 height=64",
+            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=720 height=64 {SAMPLE_EVIDENCE}"),
+            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=500 height=64 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(temp.path())).unwrap_err();
         assert!(error
             .to_string()
             .contains("capture PNG too small for launcher light collapsed"));
+    }
+
+    #[test]
+    fn ui_capture_manifest_rejects_all_black_or_white_carrier_evidence() {
+        let black = sample_manifest().replace(
+            SAMPLE_EVIDENCE,
+            "samples=9 unique_colors=3 black_pixels=9 white_pixels=0",
+        );
+        let white = sample_manifest().replace(
+            SAMPLE_EVIDENCE,
+            "samples=9 unique_colors=3 black_pixels=0 white_pixels=9",
+        );
+
+        assert!(verify_ui_capture_manifest_with_root(&black, None)
+            .unwrap_err()
+            .to_string()
+            .contains("all black host background"));
+        assert!(verify_ui_capture_manifest_with_root(&white, None)
+            .unwrap_err()
+            .to_string()
+            .contains("all white host background"));
     }
 
     fn sample_manifest() -> String {
@@ -370,12 +417,12 @@ mod tests {
         ];
         for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
             lines.push(format!(
-                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={launcher_bytes} width=720 height=64"
+                "launcher theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/launcher-{theme}-{scenario}.png bytes={launcher_bytes} width=720 height=64 {SAMPLE_EVIDENCE}"
             ));
         }
         for (theme, scenario) in STUDIO_CAPTURE_STATES {
             lines.push(format!(
-                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={studio_bytes} width=1080 height=640"
+                "studio theme={theme} scenario={scenario} path=artifacts/ui/manual-acceptance/studio-{theme}-{scenario}.png bytes={studio_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
             ));
         }
         lines.join("\n")
