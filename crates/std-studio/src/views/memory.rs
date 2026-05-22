@@ -1,5 +1,5 @@
 use crate::{
-    ui,
+    studio_metrics, ui,
     views::memory_rows::{self, MemoryRowEvent},
     StudioEguiApp,
 };
@@ -22,7 +22,7 @@ impl StudioEguiApp {
 
     fn render_memory_workspace(&mut self, ui: &mut egui::Ui) {
         let available_width = ui.available_width();
-        if available_width < 900.0 {
+        if available_width < studio_metrics::WIDE_WORKSPACE_BREAKPOINT {
             self.render_memory_records(ui);
             ui.add_space(MEMORY_PANEL_GAP);
             self.render_memory_detail(ui);
@@ -30,7 +30,7 @@ impl StudioEguiApp {
             self.render_memory_writer(ui);
             return;
         }
-        let column_width = (available_width - MEMORY_PANEL_GAP * 2.0) / 3.0;
+        let column_width = studio_metrics::thirds_column_width(available_width, MEMORY_PANEL_GAP);
         ui.horizontal_top(|ui| {
             ui.allocate_ui_with_layout(
                 egui::vec2(column_width, 0.0),
@@ -56,7 +56,13 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui.horizontal(|ui| {
                 let query_response = ui.add_sized(
-                    [ui.available_width() - 110.0, 28.0],
+                    [
+                        studio_metrics::toolbar_field_width(
+                            ui.available_width(),
+                            studio_metrics::FORM_BUTTON_RESERVE_WIDTH,
+                        ),
+                        studio_metrics::INPUT_HEIGHT,
+                    ],
                     egui::TextEdit::singleline(&mut self.memory_query)
                         .hint_text(i18n::t("studio.memory.search.hint")),
                 );
@@ -89,7 +95,7 @@ impl StudioEguiApp {
             }
             let mut clicked_memory = None;
             egui::ScrollArea::vertical()
-                .max_height(590.0)
+                .max_height(studio_metrics::MEMORY_LIST_MAX_HEIGHT)
                 .show(ui, |ui| {
                     for (index, memory) in self.app.memory_browser.memories.iter().enumerate() {
                         let selected = index == self.app.memory_browser.selected;
@@ -120,7 +126,7 @@ impl StudioEguiApp {
             memory_rows::memory_metadata(ui, memory);
             ui.add_space(Space::XS as f32);
             egui::ScrollArea::vertical()
-                .max_height(480.0)
+                .max_height(studio_metrics::DETAIL_BODY_MAX_HEIGHT)
                 .show(ui, |ui| {
                     ui.label(&memory.body);
                 });
@@ -199,7 +205,7 @@ fn memory_query_a11y_label(query: &str) -> String {
 fn memory_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
     ui.label(label);
     let response = ui.add_sized(
-        [ui.available_width(), 28.0],
+        [ui.available_width(), studio_metrics::INPUT_HEIGHT],
         egui::TextEdit::singleline(value),
     );
     response.widget_info(|| {
@@ -214,7 +220,7 @@ fn memory_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
 fn memory_body_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
     ui.label(label);
     let response = ui.add_sized(
-        [ui.available_width(), 220.0],
+        [ui.available_width(), studio_metrics::MULTILINE_INPUT_HEIGHT],
         egui::TextEdit::multiline(value),
     );
     response.widget_info(|| {

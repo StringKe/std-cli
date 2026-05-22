@@ -3,17 +3,12 @@ use crate::{
     analysis_query_panel::{self, AnalysisQueryAction},
     analysis_state::AnalysisFocusArea,
     analysis_tab_content::{self, AnalysisTabRenderState},
-    ui, StudioEguiApp,
+    studio_metrics, ui, StudioEguiApp,
 };
 use eframe::egui;
 use std_egui::{i18n, tokens::Space};
 use std_index::IndexSearchResult;
 use std_studio::{AnalysisWorkbenchTab, AnalysisWorkbenchViewModel};
-
-const ANALYSIS_TOOLBAR_HEIGHT: f32 = 44.0;
-const ANALYSIS_TABS_HEIGHT: f32 = 36.0;
-const ANALYSIS_TARGET_MIN_WIDTH: f32 = 260.0;
-const ANALYSIS_QA_MIN_WIDTH: f32 = 260.0;
 
 impl StudioEguiApp {
     pub(crate) fn handle_analysis_workbench_keyboard(&mut self, ctx: &egui::Context) {
@@ -51,13 +46,17 @@ impl StudioEguiApp {
 
     fn render_analysis_toolbar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui.set_min_height(ANALYSIS_TOOLBAR_HEIGHT);
+            ui.set_min_height(studio_metrics::TOOLBAR_HEIGHT);
             ui.horizontal(|ui| {
                 let available = ui.available_width();
-                let target_width = ((available * 0.38).max(ANALYSIS_TARGET_MIN_WIDTH))
-                    .min((available - 420.0).max(ANALYSIS_TARGET_MIN_WIDTH));
+                let target_width = ((available * 0.38)
+                    .max(studio_metrics::ANALYSIS_FIELD_MIN_WIDTH))
+                .min(studio_metrics::toolbar_field_width(
+                    available,
+                    studio_metrics::ANALYSIS_TOOLBAR_ACTIONS_WIDTH,
+                ));
                 let response = ui.add_sized(
-                    [target_width, 28.0],
+                    [target_width, studio_metrics::INPUT_HEIGHT],
                     egui::TextEdit::singleline(&mut self.analysis.path)
                         .id(AnalysisFocusArea::Target.focus_id())
                         .hint_text(i18n::t("studio.analysis.path.hint")),
@@ -76,7 +75,10 @@ impl StudioEguiApp {
                     self.analyze_current_path();
                 }
                 ui.separator();
-                let query_width = (ui.available_width() - 176.0).max(ANALYSIS_QA_MIN_WIDTH);
+                let query_width = studio_metrics::toolbar_field_width(
+                    ui.available_width(),
+                    studio_metrics::ANALYSIS_QUERY_ACTIONS_WIDTH,
+                );
                 match analysis_query_panel::render_toolbar_query(
                     ui,
                     &mut self.analysis.query,
@@ -94,7 +96,7 @@ impl StudioEguiApp {
 
     fn render_analysis_tabs_bar(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui.set_min_height(ANALYSIS_TABS_HEIGHT);
+            ui.set_min_height(studio_metrics::TAB_BAR_HEIGHT);
             let model = self.analysis_workbench_model();
             render_analysis_tabs(
                 ui,
@@ -288,8 +290,8 @@ mod tests {
         let source = include_str!("analysis.rs");
         let implementation = source.split("#[cfg(test)]").next().unwrap();
 
-        assert!(implementation.contains("const ANALYSIS_TOOLBAR_HEIGHT: f32 = 44.0"));
-        assert!(implementation.contains("const ANALYSIS_TABS_HEIGHT: f32 = 36.0"));
+        assert!(implementation.contains("studio_metrics::TOOLBAR_HEIGHT"));
+        assert!(implementation.contains("studio_metrics::TAB_BAR_HEIGHT"));
         assert!(implementation.contains("fn render_analysis_toolbar"));
         assert!(implementation.contains("fn render_analysis_tabs_bar"));
         assert!(implementation.contains("fn render_analysis_content"));

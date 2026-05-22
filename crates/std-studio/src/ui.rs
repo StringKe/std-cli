@@ -82,7 +82,7 @@ pub(crate) fn section_header(ui: &mut egui::Ui, title: &str, detail: &str) {
 pub(crate) fn metric(ui: &mut egui::Ui, title: &str, value: impl ToString, detail: &str) {
     let ctx = ui.ctx().clone();
     ui.horizontal(|ui| {
-        ui.set_min_height(28.0);
+        ui.set_min_height(crate::studio_metrics::INPUT_HEIGHT);
         ui.label(
             egui::RichText::new(value.to_string())
                 .font(Text::title())

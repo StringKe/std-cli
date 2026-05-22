@@ -1,5 +1,5 @@
 use crate::{
-    ui,
+    studio_metrics, ui,
     views::{
         plugin_inspector_model::PluginInspectorModel,
         plugin_rows::{self, PluginActionRowEvent},
@@ -39,7 +39,13 @@ impl StudioEguiApp {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             ui.horizontal(|ui| {
                 let query_response = ui.add_sized(
-                    [ui.available_width() - 230.0, 28.0],
+                    [
+                        studio_metrics::toolbar_field_width(
+                            ui.available_width(),
+                            studio_metrics::PLUGIN_TOOLBAR_ACTIONS_WIDTH,
+                        ),
+                        studio_metrics::INPUT_HEIGHT,
+                    ],
                     egui::TextEdit::singleline(&mut self.plugin_query)
                         .hint_text(i18n::t("studio.plugins.search.hint")),
                 );
@@ -82,7 +88,7 @@ impl StudioEguiApp {
                 ui::empty_state(ui, i18n::t("studio.plugins.manifests.empty"));
             } else {
                 egui::ScrollArea::vertical()
-                    .max_height(560.0)
+                    .max_height(studio_metrics::PANEL_LIST_MAX_HEIGHT)
                     .show(ui, |ui| {
                         for path in &self.app.plugin_manager.manifest_paths {
                             plugin_rows::manifest_row(ui, path);
@@ -105,7 +111,7 @@ impl StudioEguiApp {
             }
             let mut clicked_plugin = None;
             egui::ScrollArea::vertical()
-                .max_height(560.0)
+                .max_height(studio_metrics::PANEL_LIST_MAX_HEIGHT)
                 .show(ui, |ui| {
                     for (index, result) in self.app.plugin_manager.plugin_actions.iter().enumerate()
                     {
@@ -177,7 +183,7 @@ impl StudioEguiApp {
             return;
         }
         egui::ScrollArea::vertical()
-            .max_height(190.0)
+            .max_height(studio_metrics::PLUGIN_CHECKS_MAX_HEIGHT)
             .show(ui, |ui| {
                 for report in &self.app.plugin_manager.check_reports {
                     plugin_security_rows::check_report_row(ui, report);

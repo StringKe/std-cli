@@ -1,6 +1,6 @@
 use crate::{
     app_rows::{self, AppRowEvent},
-    ui, StudioEguiApp,
+    studio_metrics, ui, StudioEguiApp,
 };
 use eframe::egui;
 use std::path::PathBuf;
@@ -20,7 +20,7 @@ impl StudioEguiApp {
 
     fn render_apps_workspace(&mut self, ui: &mut egui::Ui) {
         let available_width = ui.available_width();
-        if available_width < 900.0 {
+        if available_width < studio_metrics::WIDE_WORKSPACE_BREAKPOINT {
             self.render_app_registration(ui);
             ui.add_space(APP_PANEL_GAP);
             self.render_app_search(ui);
@@ -28,7 +28,7 @@ impl StudioEguiApp {
             self.render_registered_apps(ui);
             return;
         }
-        let column_width = (available_width - APP_PANEL_GAP * 2.0) / 3.0;
+        let column_width = studio_metrics::thirds_column_width(available_width, APP_PANEL_GAP);
         ui.horizontal_top(|ui| {
             ui.allocate_ui_with_layout(
                 egui::vec2(column_width, 0.0),
@@ -167,7 +167,7 @@ impl StudioEguiApp {
             return;
         }
         egui::ScrollArea::vertical()
-            .max_height(430.0)
+            .max_height(studio_metrics::SEARCH_RESULTS_MAX_HEIGHT)
             .show(ui, |ui| {
                 for result in results {
                     if let AppRowEvent::Select(name) = app_rows::search_result_row(ui, &result) {
@@ -181,7 +181,7 @@ impl StudioEguiApp {
 fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>) -> Option<String> {
     let mut selected_name = None;
     egui::ScrollArea::vertical()
-        .max_height(560.0)
+        .max_height(studio_metrics::PANEL_LIST_MAX_HEIGHT)
         .show(ui, |ui| {
             for path in apps {
                 if let AppRowEvent::Select(name) = app_rows::registered_app_row(ui, &path) {
@@ -195,7 +195,7 @@ fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>) -> Option<S
 fn app_text_input(ui: &mut egui::Ui, label: &str, value: &mut String) {
     ui.label(label);
     let response = ui.add_sized(
-        [ui.available_width(), 28.0],
+        [ui.available_width(), studio_metrics::INPUT_HEIGHT],
         egui::TextEdit::singleline(value),
     );
     response.widget_info(|| {
