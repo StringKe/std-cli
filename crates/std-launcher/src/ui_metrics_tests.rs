@@ -104,6 +104,14 @@ fn result_right_affordance_layout_reserves_fixed_keycap_and_action_regions() {
 }
 
 #[test]
+fn result_keycap_inset_scales_with_ui_zoom() {
+    assert_eq!(
+        crate::ui_metrics_results::result_keycap_shrink_for_scale(UiScale::new(1.5)),
+        egui::vec2(3.0, 9.0)
+    );
+}
+
+#[test]
 fn panel_rect_anchors_to_upper_screen_region() {
     let position = screen_anchor_position(egui::vec2(1440.0, 900.0), egui::vec2(720.0, 320.0));
 

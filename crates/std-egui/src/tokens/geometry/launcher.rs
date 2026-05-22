@@ -51,6 +51,8 @@ impl LauncherSize {
     pub const RESULT_PRIMARY_KEYCAP_WIDTH: f32 = 52.0;
     pub const RESULT_ACTION_LABEL_WIDTH: f32 = 92.0;
     pub const RESULT_RIGHT_GAP: f32 = 8.0;
+    pub const RESULT_KEYCAP_INSET_X: f32 = 2.0;
+    pub const RESULT_KEYCAP_INSET_Y: f32 = 6.0;
     pub const ASK_AI_ROW_HEIGHT: f32 = 34.0;
     pub const SEARCH_PANEL_HEIGHT: f32 = 64.0;
     pub const DEFAULT_VIEWPORT_HEIGHT: f32 = 520.0;
@@ -287,6 +289,13 @@ impl LauncherSize {
 
     pub fn result_right_gap(scale: UiScale) -> f32 {
         scale.f32(Self::RESULT_RIGHT_GAP)
+    }
+
+    pub fn result_keycap_shrink(scale: UiScale) -> egui::Vec2 {
+        egui::vec2(
+            scale.f32(Self::RESULT_KEYCAP_INSET_X),
+            scale.f32(Self::RESULT_KEYCAP_INSET_Y),
+        )
     }
 
     pub fn ask_ai_row_height(scale: UiScale) -> f32 {

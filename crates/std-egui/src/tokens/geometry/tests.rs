@@ -274,6 +274,10 @@ fn launcher_sizes_export_result_row_regions() {
     assert_eq!(LauncherSize::result_primary_keycap_width(scale), 78.0);
     assert_eq!(LauncherSize::result_action_label_width(scale), 138.0);
     assert_eq!(LauncherSize::result_right_gap(scale), 12.0);
+    assert_eq!(
+        LauncherSize::result_keycap_shrink(scale),
+        egui::vec2(3.0, 9.0)
+    );
 }
 
 #[test]

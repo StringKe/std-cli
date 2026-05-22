@@ -171,7 +171,7 @@ fn paint_action_hint_label(ui: &mut egui::Ui, rect: egui::Rect, label: &str) {
 
 fn paint_keycap(ui: &mut egui::Ui, rect: egui::Rect, label: &str) {
     let ctx = ui.ctx().clone();
-    let key_rect = rect.shrink2(egui::vec2(2.0, 6.0));
+    let key_rect = rect.shrink2(ui_metrics::result_keycap_shrink());
     ui.painter().rect_filled(
         key_rect,
         egui::CornerRadius::same(Radius::sm()),
@@ -243,5 +243,18 @@ mod tests {
         assert!(right_body.contains("paint_action_hint_label"));
         assert!(!right_body.contains("right_to_left"));
         assert!(!right_body.contains("crate::ui_parts::keycap"));
+    }
+
+    #[test]
+    fn keycap_uses_tokenized_inset() {
+        let source = include_str!("ui_result_row_paint.rs");
+        let keycap_body = source
+            .split("fn paint_keycap")
+            .nth(1)
+            .and_then(|body| body.split("#[cfg(test)]").next())
+            .unwrap();
+
+        assert!(keycap_body.contains("ui_metrics::result_keycap_shrink()"));
+        assert!(!keycap_body.contains("egui::vec2(2.0, 6.0)"));
     }
 }

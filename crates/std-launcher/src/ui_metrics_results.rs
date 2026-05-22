@@ -72,6 +72,10 @@ pub(crate) fn result_row_shrink(scale: UiScale) -> egui::Vec2 {
     LauncherSize::result_row_shrink(scale)
 }
 
+pub(crate) fn result_keycap_shrink(scale: UiScale) -> egui::Vec2 {
+    LauncherSize::result_keycap_shrink(scale)
+}
+
 pub(crate) fn result_row_layout(scale: UiScale, rect: egui::Rect) -> LauncherResultRowLayout {
     let icon_size = LauncherSize::result_icon_size(scale);
     let icon_rect = egui::Rect::from_center_size(
@@ -160,6 +164,11 @@ pub(crate) fn result_row_layout_metrics_for_scale(scale: UiScale, width: f32) ->
         layout.text_clip.width(),
         layout.right_rect.width(),
     )
+}
+
+#[cfg(test)]
+pub(crate) fn result_keycap_shrink_for_scale(scale: UiScale) -> egui::Vec2 {
+    result_keycap_shrink(scale)
 }
 
 #[cfg(test)]
