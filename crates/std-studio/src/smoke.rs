@@ -6,6 +6,7 @@ mod layout_smoke;
 mod operations_smoke;
 mod plugin_smoke;
 mod report;
+mod report_pass;
 pub(crate) mod surface_smoke;
 mod workflow_builder_smoke;
 pub(crate) mod workspace_policy_smoke;
