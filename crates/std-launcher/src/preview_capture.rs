@@ -10,6 +10,8 @@ pub(crate) struct LauncherCaptureManifest {
     pub(crate) expected_files: Vec<String>,
     pub(crate) capture_command: &'static str,
     pub(crate) verify_rule: &'static str,
+    pub(crate) pixel_evidence_rule: &'static str,
+    pub(crate) carrier_reject_rule: &'static str,
 }
 
 impl LauncherCaptureManifest {
@@ -20,6 +22,8 @@ impl LauncherCaptureManifest {
             expected_files: scenarios.iter().map(capture_file_name).collect(),
             capture_command: "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
             verify_rule: "manifest-current-run-png-files-by-theme-state",
+            pixel_evidence_rule: "samples+unique_colors+black_pixels+white_pixels",
+            carrier_reject_rule: "reject-single-color+all-black+all-white-carrier",
         }
     }
 
@@ -33,16 +37,20 @@ impl LauncherCaptureManifest {
                 .all(|file| file.starts_with("launcher-") && file.ends_with(".png"))
             && self.capture_command == "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"
             && self.verify_rule == "manifest-current-run-png-files-by-theme-state"
+            && self.pixel_evidence_rule == "samples+unique_colors+black_pixels+white_pixels"
+            && self.carrier_reject_rule == "reject-single-color+all-black+all-white-carrier"
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "expected_capture_manifest={},capture_out_dir={},expected_capture_files={},capture_command={},verify_rule={}",
+            "expected_capture_manifest={},capture_out_dir={},expected_capture_files={},capture_command={},verify_rule={},pixel_evidence_rule={},carrier_reject_rule={}",
             self.manifest_path,
             self.out_dir,
             self.expected_files.join(","),
             self.capture_command,
-            self.verify_rule
+            self.verify_rule,
+            self.pixel_evidence_rule,
+            self.carrier_reject_rule
         )
     }
 }
@@ -76,5 +84,7 @@ mod tests {
         );
         assert!(manifest.summary().contains("expected_capture_manifest="));
         assert!(manifest.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
+        assert!(manifest.summary().contains("samples+unique_colors"));
+        assert!(manifest.summary().contains("reject-single-color"));
     }
 }
