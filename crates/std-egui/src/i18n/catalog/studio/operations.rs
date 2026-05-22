@@ -78,6 +78,24 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.operations.workspace_policy.ui_completion.detail") => {
             Some("headless smoke is not UI completion evidence")
         }
+        (Locale::ZhCn, "studio.operations.workspace_policy.open_panes") => Some("Open panes"),
+        (Locale::EnUs, "studio.operations.workspace_policy.open_panes") => Some("Open panes"),
+        (Locale::ZhCn, "studio.operations.workspace_policy.open_panes.detail") => {
+            Some("当前实例内部 pane 数")
+        }
+        (Locale::EnUs, "studio.operations.workspace_policy.open_panes.detail") => {
+            Some("current internal pane count")
+        }
+        (Locale::ZhCn, "studio.operations.workspace_policy.focused") => Some("Focused pane"),
+        (Locale::EnUs, "studio.operations.workspace_policy.focused") => Some("Focused pane"),
+        (Locale::ZhCn, "studio.operations.workspace_policy.restore") => Some("Restore"),
+        (Locale::EnUs, "studio.operations.workspace_policy.restore") => Some("Restore"),
+        (Locale::ZhCn, "studio.operations.workspace_policy.restore.detail") => {
+            Some("关闭主窗口前保存内部 pane 状态")
+        }
+        (Locale::EnUs, "studio.operations.workspace_policy.restore.detail") => {
+            Some("internal pane state is saved before host close")
+        }
         (Locale::ZhCn, "studio.operations.workspace_policy.manual_gates") => Some("Manual gates"),
         (Locale::EnUs, "studio.operations.workspace_policy.manual_gates") => Some("Manual gates"),
         (Locale::ZhCn, "studio.operations.workspace_policy.manual_gates.detail") => {
@@ -132,6 +150,15 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.operations.workspace_policy.ui_completion" => Some("UI completion"),
         "studio.operations.workspace_policy.ui_completion.detail" => {
             Some("headless smoke is not UI completion evidence")
+        }
+        "studio.operations.workspace_policy.open_panes" => Some("Open panes"),
+        "studio.operations.workspace_policy.open_panes.detail" => {
+            Some("current internal pane count")
+        }
+        "studio.operations.workspace_policy.focused" => Some("Focused pane"),
+        "studio.operations.workspace_policy.restore" => Some("Restore"),
+        "studio.operations.workspace_policy.restore.detail" => {
+            Some("internal pane state is saved before host close")
         }
         "studio.operations.workspace_policy.manual_gates" => Some("Manual gates"),
         "studio.operations.workspace_policy.manual_gates.detail" => {

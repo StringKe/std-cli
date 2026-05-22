@@ -4,11 +4,8 @@ import CoreGraphics
 import Foundation
 
 struct Config {
-    let harnessPid: pid_t
-    let windowId: Int
-    let bundleId: String
-    let windowTitle: String
-    let harnessToken: String
+    let harnessPid: pid_t, windowId: Int
+    let bundleId: String, windowTitle: String, harnessToken: String
 }
 
 let requiredBundleId = "dev.std-cli.background-ui-harness"
@@ -70,14 +67,11 @@ print("background_driver PASS target_pid=\(config.harnessPid) window_id=\(config
 struct WindowInfo {
     let ownerPid: pid_t
     let bounds: CGRect
-    let title: String
 }
 
 final class BackgroundActivationSession {
-    private let previousPid: pid_t
-    private let targetPid: pid_t
-    private var previousTap: CFMachPort?
-    private var targetTap: CFMachPort?
+    private let previousPid: pid_t, targetPid: pid_t
+    private var previousTap: CFMachPort?, targetTap: CFMachPort?
 
     init(previousPid: pid_t, targetPid: pid_t) {
         self.previousPid = previousPid
@@ -232,7 +226,7 @@ func findWindow(_ config: Config) -> WindowInfo? {
               let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary) else {
             return nil
         }
-        return WindowInfo(ownerPid: ownerPid, bounds: bounds, title: title)
+        return WindowInfo(ownerPid: ownerPid, bounds: bounds)
     }
     return nil
 }
@@ -243,8 +237,7 @@ func frontmostPid() -> pid_t {
 
 struct RunningAppInfo {
     let pid: pid_t
-    let bundleId: String
-    let name: String
+    let bundleId: String, name: String
 }
 
 func frontmostAppInfo() -> RunningAppInfo {
@@ -261,8 +254,15 @@ func frontmostAppInfo() -> RunningAppInfo {
 func isForbiddenFrontmostApp(_ app: RunningAppInfo) -> Bool {
     let bundleId = app.bundleId.lowercased()
     let name = app.name.lowercased()
-    let forbiddenBundleFragments = ["com.1password", "com.agilebits.onepassword", "com.apple.terminal", "com.googlecode.iterm2", "com.tencent.xinwechat", "com.tencent.wechat", "com.apple.systempreferences", "com.apple.systemsettings"]
-    let forbiddenNames = ["1password", "terminal", "iterm", "iterm2", "wechat", "weixin", "微信", "system settings", "system preferences"]
+    let forbiddenBundleFragments = [
+        "com.1password", "com.agilebits.onepassword", "com.apple.terminal",
+        "com.googlecode.iterm2", "com.tencent.xinwechat", "com.tencent.wechat",
+        "com.apple.systempreferences", "com.apple.systemsettings",
+    ]
+    let forbiddenNames = [
+        "1password", "terminal", "iterm", "iterm2", "wechat", "weixin", "微信",
+        "system settings", "system preferences",
+    ]
     return forbiddenBundleFragments.contains { bundleId.contains($0) }
         || forbiddenNames.contains { name.contains($0) }
 }
@@ -289,13 +289,7 @@ func parseConfig() -> Config {
           let harnessToken = values["--harness-token"] else {
         fail("usage: background-ui-smoke.swift --harness-pid <pid> --window-id <id> --bundle-id <bundle> --window-title <title> --harness-token <token>")
     }
-    return Config(
-        harnessPid: pid,
-        windowId: windowId,
-        bundleId: bundleId,
-        windowTitle: windowTitle,
-        harnessToken: harnessToken
-    )
+    return Config(harnessPid: pid, windowId: windowId, bundleId: bundleId, windowTitle: windowTitle, harnessToken: harnessToken)
 }
 
 func fail(_ message: String) -> Never {

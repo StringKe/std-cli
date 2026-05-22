@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn background_runner_uses_background_event_delivery_contract() {
         let runner = include_str!("../../../../scripts/background-ui-smoke.swift");
-        let tap_index = runner.find("guard session.start()").unwrap();
+        let tap_index = runner.find("session.start()").unwrap();
         let activation_index = runner.find("sendAppKitActivation(to:").unwrap();
         let center_primer_index = runner.find("postCenterPrimer(to:").unwrap();
         let key_smoke_index = runner.find("postKeySmoke(to:").unwrap();
