@@ -6,7 +6,6 @@ use std_types::{ActionExecution, ActionExecutionStatus, ActionId, ActionType};
 pub struct LauncherSurfaceContract {
     pub search_bar: String,
     pub result_list: String,
-    pub preview_panel: String,
     pub action_bar: String,
     pub empty_state: String,
     pub no_match_state: String,
@@ -37,7 +36,6 @@ impl LauncherSurfaceContract {
         Self {
             search_bar: search_bar_contract(),
             result_list: result_list_contract(result_count, &selected_type),
-            preview_panel: preview_panel_contract(preview),
             action_bar: action_bar_contract(preview),
             empty_state: empty_state_contract(),
             no_match_state: no_match_state_contract(),
@@ -68,10 +66,6 @@ impl LauncherSurfaceContract {
                 .result_list
                 .contains(&format!("primary_shortcut={}", input::enter().label()))
             && self.action_bar.contains("height=36")
-            && self.preview_panel.contains("preview_panel=visible")
-            && self.preview_panel.contains("surface=bg/surface-2")
-            && self.preview_panel.contains("primary_command=true")
-            && self.preview_panel.contains("a11y=preview-title-command")
             && self.action_bar.contains("left=breadcrumb+primary-command")
             && self.action_bar.contains("breadcrumb=命令 > Rebuild Index")
             && self
@@ -99,7 +93,7 @@ impl LauncherSurfaceContract {
                 .contains("results=group-header|row-icon|title|subtitle|keycap|enter-action")
             && self
                 .visible_structure
-                .contains("preview=surface|title|primary-command|examples|a11y")
+                .contains("preview=action-bar-summary|result-row-action-hint")
             && self
                 .visible_structure
                 .contains("states=empty|no-results|loading|executing|defer|error")
@@ -107,11 +101,10 @@ impl LauncherSurfaceContract {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\npreview_panel_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}\nvisible_structure_contract={}",
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}\nvisible_structure_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_bar,
             self.result_list,
-            self.preview_panel,
             self.action_bar,
             self.empty_state,
             self.no_match_state,
@@ -154,15 +147,6 @@ fn action_bar_contract(preview: &std_types::ActionPreview) -> String {
         input::enter().label(),
         input::launcher_action_panel().label(),
         summary.contract()
-    )
-}
-
-fn preview_panel_contract(preview: &std_types::ActionPreview) -> String {
-    format!(
-        "preview_panel=visible;surface=bg/surface-2;border=stroke/border;title={};primary_command={};examples={};a11y=preview-title-command",
-        !preview.title.trim().is_empty(),
-        !preview.primary_command.trim().is_empty(),
-        preview.examples.len().min(2)
     )
 }
 
@@ -271,7 +255,7 @@ fn visible_structure_contract() -> String {
     [
         "search=input|placeholder|focus-ring|mode-tag|ime-chip",
         "results=group-header|row-icon|title|subtitle|keycap|enter-action",
-        "preview=surface|title|primary-command|examples|a11y",
+        "preview=action-bar-summary|result-row-action-hint",
         "feedback=status-icon|title|message|copy|retry|open-studio",
         "states=empty|no-results|loading|executing|defer|error",
         "host=transparent-native-host|opaque-panel-surface|host-gap-0",
@@ -333,7 +317,7 @@ mod tests {
             .contains("result_list_contract=groups=Action / Workflow"));
         assert!(contract
             .summary()
-            .contains("preview_panel_contract=preview_panel=visible"));
+            .contains("preview=action-bar-summary|result-row-action-hint"));
         assert!(contract.summary().contains(&format!(
             "direct_shortcut={}",
             input::launcher_result_keycap(0).unwrap()

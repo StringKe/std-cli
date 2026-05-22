@@ -1,6 +1,6 @@
 use crate::{
     ui_action_bar, ui_action_panel, ui_feedback, ui_keyboard, ui_metrics, ui_parts::quiet_button,
-    ui_preview_panel, ui_results, ui_search,
+    ui_results, ui_search,
 };
 use eframe::egui;
 use std_egui::{
@@ -100,10 +100,6 @@ pub(crate) fn render_launcher_panel(
             }
             ui.add_space(Space::xs() as f32);
             hide_requested |= render_body(ui, state, body_height);
-            if ui_preview_panel::should_render(state) {
-                ui.add_space(Space::xs() as f32);
-                ui_preview_panel::render(ui, state);
-            }
             ui.add_space(Space::xs() as f32);
             let action_bar = ui_action_bar::render(ui, state, hotkey_status, resident_status);
             match action_bar.command {
@@ -241,6 +237,14 @@ mod tests {
         assert!(production_source.contains("ui_keyboard::execution_hides_launcher(&execution)"));
         assert!(production_source.contains("trigger.copy_to_clipboard"));
         assert!(production_source.contains("ui.ctx().copy_text(execution.message)"));
+    }
+
+    #[test]
+    fn launcher_primary_structure_has_no_separate_preview_panel() {
+        let source = include_str!("ui.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(!production_source.contains("ui_preview_panel"));
     }
 
     #[test]

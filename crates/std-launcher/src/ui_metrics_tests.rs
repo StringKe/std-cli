@@ -217,8 +217,6 @@ fn native_host_window_height_includes_panel_inner_padding() {
         + Space::XS as f32
         + body
         + Space::XS as f32
-        + crate::ui_metrics::preview_panel_height_for_scale(UiScale::default())
-        + Space::XS as f32
         + ACTION_BAR_HEIGHT;
 
     assert_eq!(window_inner_size(&state).y, expected);

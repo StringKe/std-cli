@@ -145,8 +145,8 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("action_bar:cancel-and-background-hints"));
     assert!(summary.contains("action_bar:feedback-actions"));
     assert!(summary.contains("action_bar:action-panel-open"));
-    assert!(summary.contains("preview_panel=visible"));
-    assert!(summary.contains("preview_panel_contract"));
+    assert!(summary.contains("preview=action-bar-summary|result-row-action-hint"));
+    assert!(!summary.contains("preview_panel_contract"));
 }
 
 fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {

@@ -104,18 +104,9 @@ fn launcher_content_height_for_scale(
     search_section_height_for_scale(scale)
         + scale.f32(Space::XS as f32)
         + body_height
-        + launcher_preview_height_for_scale(state, scale)
         + scale.f32(Space::XS as f32)
         + scale.f32(crate::ui_metrics::ACTION_BAR_HEIGHT)
         + launcher_status_height_for_scale(state, scale)
-}
-
-fn launcher_preview_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
-    if crate::ui_preview_panel::should_render(state) {
-        scale.f32(Space::XS as f32) + crate::ui_metrics::preview_panel_height_for_scale(scale)
-    } else {
-        0.0
-    }
 }
 
 fn voice_status_height_for_scale(state: &LauncherState, scale: UiScale) -> f32 {
