@@ -22,6 +22,7 @@ mod operations;
 mod operations_rows;
 mod preview;
 mod preview_evidence;
+mod preview_smoke;
 #[cfg(test)]
 mod preview_tests;
 #[cfg(test)]
@@ -59,8 +60,9 @@ use layout::StudioLayoutState;
 use native_app::{native_app_blocked_by_test_mode, run_studio_native_app};
 use preview::{
     blocked_studio_preview_summary, run_studio_preview, studio_preview_request_from_args,
-    StudioPreviewRequest, StudioPreviewSmokeReport,
+    StudioPreviewRequest,
 };
+use preview_smoke::StudioPreviewSmokeReport;
 use smoke::smoke_from_args;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};

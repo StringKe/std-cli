@@ -1,8 +1,4 @@
-use crate::{
-    preview_evidence::{preview_matrix, preview_size_summary, preview_state_summary},
-    viewport::studio_native_options,
-    StudioEguiApp, StudioPane,
-};
+use crate::{viewport::studio_native_options, StudioEguiApp, StudioPane};
 use eframe::egui;
 use std::env;
 use std_core::{StdConfig, StdCore};
@@ -20,67 +16,6 @@ pub(crate) struct StudioPreviewConfig {
 pub(crate) enum StudioPreviewRequest {
     Run(StudioPreviewConfig),
     Blocked(String),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct StudioPreviewSmokeReport {
-    pub(crate) scenarios: Vec<String>,
-    pub(crate) commands: Vec<String>,
-    pub(crate) states: Vec<String>,
-    pub(crate) sizes: Vec<String>,
-    pub(crate) required_capture_states: Vec<String>,
-    pub(crate) capture_contract: &'static str,
-}
-
-impl StudioPreviewSmokeReport {
-    pub(crate) fn new() -> Self {
-        let scenarios = preview_matrix();
-        Self {
-            commands: scenarios
-                .iter()
-                .map(|scenario| {
-                    let (theme, name) = scenario.split_once('-').unwrap_or(("dark", "dashboard"));
-                    format!(
-                        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview {theme} {name} 8000"
-                    )
-                })
-                .collect(),
-            states: scenarios
-                .iter()
-                .map(|scenario| preview_state_summary(scenario))
-                .collect(),
-            sizes: scenarios
-                .iter()
-                .map(|scenario| preview_size_summary(scenario))
-                .collect(),
-            required_capture_states: required_capture_states(&scenarios),
-            scenarios,
-            capture_contract: preview_capture_contract(),
-        }
-    }
-
-    pub(crate) fn pass(&self) -> bool {
-        self.scenarios == preview_matrix()
-            && self.commands.len() == self.scenarios.len()
-            && self.states.iter().all(|state| state.contains("PASS"))
-            && self.sizes.iter().all(|size| size.contains("PASS"))
-            && self.required_capture_states == required_capture_states(&self.scenarios)
-            && required_capture_states_pass(&self.required_capture_states)
-            && self.capture_contract == preview_capture_contract()
-    }
-
-    pub(crate) fn summary(&self) -> String {
-        format!(
-            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}",
-            if self.pass() { "PASS" } else { "FAIL" },
-            self.scenarios.join(","),
-            self.commands.join(";"),
-            self.states.join(";"),
-            self.sizes.join(";"),
-            self.required_capture_states.join(","),
-            self.capture_contract
-        )
-    }
 }
 
 struct StudioPreviewApp {
@@ -182,61 +117,6 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
         studio_native_options(),
         Box::new(|_cc| Ok(Box::new(StudioPreviewApp::new(config)))),
     )
-}
-
-fn preview_capture_contract() -> &'static str {
-    "explicit-opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,normal-viewport-close"
-}
-
-fn required_capture_states(scenarios: &[String]) -> Vec<String> {
-    [
-        "light-dashboard",
-        "dark-dashboard",
-        "light-workflow",
-        "dark-workflow",
-        "light-workflow-error",
-        "dark-workflow-error",
-        "light-analysis",
-        "dark-analysis",
-        "light-plugins",
-        "dark-plugins",
-        "light-plugin-permission",
-        "dark-plugin-permission",
-        "light-operations",
-        "dark-operations",
-        "light-settings",
-        "dark-settings",
-        "light-panes",
-        "dark-panes",
-    ]
-    .into_iter()
-    .filter(|required| scenarios.iter().any(|scenario| scenario == *required))
-    .map(str::to_string)
-    .collect()
-}
-
-fn required_capture_states_pass(states: &[String]) -> bool {
-    states
-        == [
-            "light-dashboard",
-            "dark-dashboard",
-            "light-workflow",
-            "dark-workflow",
-            "light-workflow-error",
-            "dark-workflow-error",
-            "light-analysis",
-            "dark-analysis",
-            "light-plugins",
-            "dark-plugins",
-            "light-plugin-permission",
-            "dark-plugin-permission",
-            "light-operations",
-            "dark-operations",
-            "light-settings",
-            "dark-settings",
-            "light-panes",
-            "dark-panes",
-        ]
 }
 
 pub(crate) fn studio_preview_window_title() -> &'static str {

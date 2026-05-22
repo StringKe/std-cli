@@ -1,4 +1,7 @@
-use crate::{preview::*, smoke::smoke_from_args, StudioEguiApp, StudioPane};
+use crate::{
+    preview::*, preview_smoke::StudioPreviewSmokeReport, smoke::smoke_from_args, StudioEguiApp,
+    StudioPane,
+};
 use std_core::{StdConfig, StdCore};
 
 #[test]
