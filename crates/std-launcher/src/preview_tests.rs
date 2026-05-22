@@ -118,6 +118,14 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
     assert!(summary.contains("action_panel_actions=Review first,Defer,Open in Studio,Copy command"));
+    assert!(summary.contains("state_behavior=search_indicator:spinner"));
+    assert!(summary.contains("loading_progress:2px-accent-indeterminate"));
+    assert!(summary.contains("empty_progress:visible"));
+    assert!(summary.contains("state_behavior=search_indicator:executing"));
+    assert!(summary.contains("input:locked"));
+    assert!(summary.contains("action_bar:cancel-and-background-hints"));
+    assert!(summary.contains("action_bar:feedback-actions"));
+    assert!(summary.contains("action_bar:action-panel-open"));
 }
 
 fn assert_required_capture_state_contract(report: &LauncherPreviewSmokeReport) {
