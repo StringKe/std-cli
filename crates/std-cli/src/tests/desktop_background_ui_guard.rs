@@ -185,6 +185,7 @@ fn background_cli_contract_terms() -> &'static [&'static str] {
         "tap_order=install_previous_and_target_taps_before_primer",
         "event_tap_then_appkit_defined_primer_then_center_primer",
         "event_route=postToPid_target_pid_only",
+        "key_smoke=Enter_to_isolated_echo_result",
         "frontmost_policy=previous_app_never_targeted",
         "frontmost_sensitive_app_policy=fail_before_event_tap",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
@@ -260,6 +261,7 @@ fn background_runner_contract_terms() -> &'static [&'static str] {
         "mouseEventWindowUnderMousePointerThatCanHandleThisEvent",
         "CGEventField(rawValue: 51)",
         "CGEventField(rawValue: 58)",
+        "virtualKey: 36",
         "requiredBundleId",
         "requiredWindowTitle",
     ]
@@ -272,6 +274,7 @@ fn assert_no_previous_pid_event_delivery(runner: &str) {
         "sendAppKitActivation(to: previousPid",
         "postCenterPrimer(to: previousPid",
         "postKeySmoke(to: previousPid",
+        "virtualKey: 53",
     ] {
         assert!(
             !runner.contains(forbidden),

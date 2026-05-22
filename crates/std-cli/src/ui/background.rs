@@ -81,6 +81,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "tap_failure=fail_before_any_primer_or_input".to_string(),
         "activation=event_tap_then_appkit_defined_primer_then_center_primer".to_string(),
         "event_route=postToPid_target_pid_only".to_string(),
+        "key_smoke=Enter_to_isolated_echo_result".to_string(),
         "frontmost_policy=previous_app_never_targeted".to_string(),
         "frontmost_preservation=frontmost_before_equals_frontmost_after_required".to_string(),
         "frontmost_sensitive_app_policy=fail_before_event_tap".to_string(),

@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 use std_launcher::LauncherState;
 
 const HARNESS_TITLE: &str = "std-cli Background UI Harness";
+const HARNESS_QUERY: &str = "Echo";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum BackgroundHarnessRequest {
@@ -33,7 +34,7 @@ impl BackgroundHarnessApp {
 fn visible_harness_state() -> LauncherState {
     let mut state = LauncherState::new();
     state.controller.show();
-    state.update_query("index");
+    state.update_query(HARNESS_QUERY);
     state
 }
 
@@ -142,7 +143,9 @@ mod tests {
         let state = visible_harness_state();
 
         assert!(state.controller.visible);
+        assert_eq!(state.view.query, HARNESS_QUERY);
         assert!(!state.view.results.is_empty());
+        assert_eq!(state.view.results[0].action.name, HARNESS_QUERY);
         assert!(crate::ui_metrics::panel_is_only_visible_surface(&state));
     }
 }

@@ -71,8 +71,8 @@ fn std_core_app_open_allows_launcher_user_enter_outside_test_mode() {
     let body = fs::read_to_string(root.join("crates/std-core/src/execution.rs")).unwrap();
 
     assert!(
-        body.contains("fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool"),
-        "app and file open must have a distinct user-enter permission gate"
+        body.contains("fn user_desktop_open_allowed_for_test_mode("),
+        "app and file open must have a distinct user-enter permission gate with test-mode input"
     );
     assert!(
         body.contains("ExternalExecutionMode::LauncherUser"),
@@ -181,6 +181,7 @@ fn background_ui_smoke_documents_safe_background_event_route() {
         "focus_guard=drop_previous_app_deactivation",
         "focus_policy=allow_target_activation_only",
         "event_route=postToPid_target_pid_only",
+        "key_smoke=Enter_to_isolated_echo_result",
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
     ] {
         assert!(
@@ -237,6 +238,8 @@ fn background_ui_runner_fails_when_event_taps_are_unavailable() {
         "guard session.start() else",
         "sendAppKitActivation(to: config.harnessPid",
     );
+    assert!(body.contains("virtualKey: 36"));
+    assert!(!body.contains("virtualKey: 53"));
 }
 
 #[test]

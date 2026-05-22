@@ -188,8 +188,8 @@ func postMouse(type: CGEventType, to pid: pid_t, windowId: Int, point: CGPoint, 
 }
 
 func postKeySmoke(to pid: pid_t, windowId: Int) {
-    guard let down = CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: true),
-          let up = CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: false) else {
+    guard let down = CGEvent(keyboardEventSource: nil, virtualKey: 36, keyDown: true),
+          let up = CGEvent(keyboardEventSource: nil, virtualKey: 36, keyDown: false) else {
         return
     }
     for event in [down, up] {
