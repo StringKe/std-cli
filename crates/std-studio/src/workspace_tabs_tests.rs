@@ -66,15 +66,15 @@ fn workspace_tab_a11y_labels_include_role_title_and_state() {
 
     assert_eq!(
         workspace_tab_a11y_label(&spec),
-        "Workspace pane tab, Workflow Builder, focused, 2 of 4, press Enter to focus"
+        "工作区面板标签，Workflow Builder，已聚焦，第 2 / 4 项，按 Enter 聚焦"
     );
     assert_eq!(
         workspace_tab_close_a11y_label(&spec),
-        "Close workspace pane, Workflow Builder, button, press Enter to close"
+        "关闭工作区面板，Workflow Builder，按钮，按 Enter 关闭"
     );
     assert_eq!(
-        workspace_cycle_a11y_label("Next", "Mod+Shift+Down"),
-        "Next workspace pane, shortcut Mod+Shift+Down"
+        workspace_cycle_a11y_label(i18n::t("studio.workspace_panes.next"), "Mod+Shift+Down"),
+        "下一个工作区面板，快捷键 Mod+Shift+Down"
     );
 }
 
@@ -122,6 +122,6 @@ fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
     assert!(contract.contains("cycle=previous|next"));
     assert!(contract.contains("close_hit=28x28"));
     assert!(contract.contains("keyboard_close=true"));
-    assert!(contract.contains("Workspace pane tab, Settings"));
-    assert!(contract.contains("Close workspace pane, 插件管理"));
+    assert!(contract.contains("工作区面板标签，Settings"));
+    assert!(contract.contains("关闭工作区面板，插件管理"));
 }

@@ -205,7 +205,9 @@ fn render_workspace_toolbar(
 }
 
 pub(crate) fn workspace_pane_a11y_label(spec: &StudioWorkspaceSpec) -> String {
-    format!("Workspace pane, {}, {}", spec.heading, spec.content_key)
+    i18n::t("studio.workspace_panes.pane.a11y")
+        .replace("{heading}", &spec.heading)
+        .replace("{kind}", spec.content_key)
 }
 
 pub(crate) fn workspace_pane_focus_id(id: WorkspacePaneId) -> egui::Id {
@@ -363,12 +365,12 @@ pub(crate) fn workspace_action_a11y_label(
     shortcut: Option<&str>,
 ) -> String {
     let suffix = shortcut
-        .map(|value| format!(", shortcut {value}"))
+        .map(|value| i18n::t("studio.workspace_panes.shortcut_suffix").replace("{shortcut}", value))
         .unwrap_or_default();
-    format!(
-        "{label}, workspace pane action, {}, button, press Enter{suffix}",
-        spec.title
-    )
+    i18n::t("studio.workspace_panes.action.a11y")
+        .replace("{action}", label)
+        .replace("{title}", &spec.title)
+        .replace("{shortcut}", &suffix)
 }
 
 fn push_command(commands: &WorkspaceCommandQueue, command: StudioWorkspaceCommand) {

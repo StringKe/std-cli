@@ -332,6 +332,14 @@ mod tests {
             translate(Locale::ZhCn, "studio.status.workspace_pane_opened"),
             "已打开工作区面板"
         );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.workspace_panes.tab.a11y"),
+            "工作区面板标签，{title}，{state}，第 {position} / {total} 项，按 Enter 聚焦"
+        );
+        assert_eq!(
+            translate(Locale::EnUs, "studio.workspace_panes.action.a11y"),
+            "{action}, workspace pane action, {title}, button, press Enter{shortcut}"
+        );
     }
 
     #[test]

@@ -243,22 +243,26 @@ fn paint_workspace_tab_close(ui: &egui::Ui, rect: egui::Rect, hovered: bool) {
 }
 
 pub(crate) fn workspace_tab_a11y_label(spec: &WorkspaceTabSpec) -> String {
-    let state = if spec.focused { "focused" } else { "inactive" };
-    format!(
-        "Workspace pane tab, {}, {}, {} of {}, press Enter to focus",
-        spec.title, state, spec.position, spec.total
-    )
+    let state_key = if spec.focused {
+        "studio.workspace_panes.state.focused"
+    } else {
+        "studio.workspace_panes.state.inactive"
+    };
+    i18n::t("studio.workspace_panes.tab.a11y")
+        .replace("{title}", &spec.title)
+        .replace("{state}", i18n::t(state_key))
+        .replace("{position}", &spec.position.to_string())
+        .replace("{total}", &spec.total.to_string())
 }
 
 pub(crate) fn workspace_tab_close_a11y_label(spec: &WorkspaceTabSpec) -> String {
-    format!(
-        "Close workspace pane, {}, button, press Enter to close",
-        spec.title
-    )
+    i18n::t("studio.workspace_panes.tab.close.a11y").replace("{title}", &spec.title)
 }
 
 pub(crate) fn workspace_cycle_a11y_label(direction: &str, shortcut: &str) -> String {
-    format!("{direction} workspace pane, shortcut {shortcut}")
+    i18n::t("studio.workspace_panes.cycle.a11y")
+        .replace("{direction}", direction)
+        .replace("{shortcut}", shortcut)
 }
 
 fn push_command(

@@ -46,12 +46,8 @@ impl StudioSmokeReport {
             && self.pane_focus_label.contains("cycle=previous|next")
             && self.pane_focus_label.contains("close_hit=28x28")
             && self.pane_focus_label.contains("keyboard_close=true")
-            && self
-                .pane_focus_label
-                .contains("Workspace pane tab, Dashboard")
-            && self
-                .pane_focus_label
-                .contains("Close workspace pane, 插件管理")
+            && self.pane_focus_label.contains("工作区面板标签，Dashboard")
+            && self.pane_focus_label.contains("关闭工作区面板，插件管理")
             && self
                 .pane_host_policy
                 .contains("single-borderless-egui-viewport")

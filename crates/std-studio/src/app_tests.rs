@@ -154,7 +154,7 @@ fn workspace_pane_a11y_label_includes_heading_and_kind() {
     assert_eq!(spec.id, settings);
     assert_eq!(
         crate::workspace_panes::workspace_pane_a11y_label(&spec),
-        "Workspace pane, 设置, settings"
+        "工作区面板，设置，settings"
     );
 }
 
@@ -166,11 +166,11 @@ fn workspace_action_labels_include_pane_title_role_and_shortcut() {
 
     assert_eq!(
         crate::workspace_panes::workspace_action_a11y_label("Close", &spec, Some("Mod+W")),
-        "Close, workspace pane action, 设置, button, press Enter, shortcut Mod+W"
+        "Close，工作区面板操作，设置，按钮，按 Enter，快捷键 Mod+W"
     );
     assert_eq!(
         crate::workspace_panes::workspace_action_a11y_label("Refresh", &spec, None),
-        "Refresh, workspace pane action, 设置, button, press Enter"
+        "Refresh，工作区面板操作，设置，按钮，按 Enter"
     );
 }
 

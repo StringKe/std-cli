@@ -61,8 +61,8 @@ fn assert_workspace_tab_summary(summary: &str) {
     assert!(summary.contains("cycle=previous|next"));
     assert!(summary.contains("close_hit=28x28"));
     assert!(summary.contains("keyboard_close=true"));
-    assert!(summary.contains("Workspace pane tab, Dashboard"));
-    assert!(summary.contains("Close workspace pane, 插件管理"));
+    assert!(summary.contains("工作区面板标签，Dashboard"));
+    assert!(summary.contains("关闭工作区面板，插件管理"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
 }
 

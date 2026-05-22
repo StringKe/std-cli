@@ -38,6 +38,40 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.workspace_panes.next") => Some("Next"),
         (Locale::ZhCn, "studio.workspace_panes.close") => Some("关闭"),
         (Locale::EnUs, "studio.workspace_panes.close") => Some("Close"),
+        (Locale::ZhCn, "studio.workspace_panes.state.focused") => Some("已聚焦"),
+        (Locale::EnUs, "studio.workspace_panes.state.focused") => Some("focused"),
+        (Locale::ZhCn, "studio.workspace_panes.state.inactive") => Some("未激活"),
+        (Locale::EnUs, "studio.workspace_panes.state.inactive") => Some("inactive"),
+        (Locale::ZhCn, "studio.workspace_panes.tab.a11y") => {
+            Some("工作区面板标签，{title}，{state}，第 {position} / {total} 项，按 Enter 聚焦")
+        }
+        (Locale::EnUs, "studio.workspace_panes.tab.a11y") => Some(
+            "Workspace pane tab, {title}, {state}, {position} of {total}, press Enter to focus",
+        ),
+        (Locale::ZhCn, "studio.workspace_panes.tab.close.a11y") => {
+            Some("关闭工作区面板，{title}，按钮，按 Enter 关闭")
+        }
+        (Locale::EnUs, "studio.workspace_panes.tab.close.a11y") => {
+            Some("Close workspace pane, {title}, button, press Enter to close")
+        }
+        (Locale::ZhCn, "studio.workspace_panes.cycle.a11y") => {
+            Some("{direction}工作区面板，快捷键 {shortcut}")
+        }
+        (Locale::EnUs, "studio.workspace_panes.cycle.a11y") => {
+            Some("{direction} workspace pane, shortcut {shortcut}")
+        }
+        (Locale::ZhCn, "studio.workspace_panes.pane.a11y") => Some("工作区面板，{heading}，{kind}"),
+        (Locale::EnUs, "studio.workspace_panes.pane.a11y") => {
+            Some("Workspace pane, {heading}, {kind}")
+        }
+        (Locale::ZhCn, "studio.workspace_panes.action.a11y") => {
+            Some("{action}，工作区面板操作，{title}，按钮，按 Enter{shortcut}")
+        }
+        (Locale::EnUs, "studio.workspace_panes.action.a11y") => {
+            Some("{action}, workspace pane action, {title}, button, press Enter{shortcut}")
+        }
+        (Locale::ZhCn, "studio.workspace_panes.shortcut_suffix") => Some("，快捷键 {shortcut}"),
+        (Locale::EnUs, "studio.workspace_panes.shortcut_suffix") => Some(", shortcut {shortcut}"),
         (Locale::ZhCn, "studio.chrome.refresh") => Some("刷新"),
         (Locale::EnUs, "studio.chrome.refresh") => Some("Refresh"),
         (Locale::ZhCn, "studio.chrome.open_current_pane") => Some("打开当前面板"),
@@ -86,6 +120,22 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.workspace_panes.previous" => Some("Previous"),
         "studio.workspace_panes.next" => Some("Next"),
         "studio.workspace_panes.close" => Some("Close"),
+        "studio.workspace_panes.state.focused" => Some("focused"),
+        "studio.workspace_panes.state.inactive" => Some("inactive"),
+        "studio.workspace_panes.tab.a11y" => Some(
+            "Workspace pane tab, {title}, {state}, {position} of {total}, press Enter to focus",
+        ),
+        "studio.workspace_panes.tab.close.a11y" => {
+            Some("Close workspace pane, {title}, button, press Enter to close")
+        }
+        "studio.workspace_panes.cycle.a11y" => {
+            Some("{direction} workspace pane, shortcut {shortcut}")
+        }
+        "studio.workspace_panes.pane.a11y" => Some("Workspace pane, {heading}, {kind}"),
+        "studio.workspace_panes.action.a11y" => {
+            Some("{action}, workspace pane action, {title}, button, press Enter{shortcut}")
+        }
+        "studio.workspace_panes.shortcut_suffix" => Some(", shortcut {shortcut}"),
         "studio.chrome.refresh" => Some("Refresh"),
         "studio.chrome.open_current_pane" => Some("Open Current Pane"),
         "studio.chrome.workspace_panes" => Some("workspace panes"),
