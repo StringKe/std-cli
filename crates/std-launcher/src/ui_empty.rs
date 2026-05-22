@@ -23,8 +23,7 @@ pub(crate) fn render_no_results(
     }
 
     let fallback = render_no_matches(ui, trimmed, true);
-    let enter_pressed = !input::ime_composing(ui.ctx()) && input::enter().pressed(ui.ctx());
-    if fallback.clicked() || enter_pressed {
+    if fallback.clicked() {
         std_launcher::ask_ai_fallback_query(trimmed).map(EmptyAction::AskAi)
     } else {
         None
@@ -278,5 +277,6 @@ mod tests {
             .contains("fn ask_ai_row(ui: &mut egui::Ui, label: &str, selected: bool)"));
         assert!(production_source.contains("if selected {\n        Color::accent_weak(&ctx)"));
         assert!(production_source.contains("keycap(ui, &input::enter().label())"));
+        assert!(!production_source.contains("input::enter().pressed"));
     }
 }
