@@ -16,6 +16,8 @@ pub(crate) struct StudioSurfaceSmoke {
     dark_selected_surface_layer: String,
     light_selected_surface_layer: String,
     canvas_outer_frame: String,
+    native_clear_color_contract: &'static str,
+    host_viewport_contract: &'static str,
     host_chrome_contract: &'static str,
     standard_modal_enter_ms: u128,
     reduced_modal_enter_ms: u128,
@@ -95,6 +97,8 @@ impl StudioSurfaceSmoke {
                 theme.light_selection,
             ),
             canvas_outer_frame: canvas_outer_frame_contract(),
+            native_clear_color_contract: crate::studio_clear_color_contract(),
+            host_viewport_contract: crate::viewport::studio_host_viewport_contract(),
             host_chrome_contract: crate::host_chrome::host_chrome_surface_contract(),
             standard_modal_enter_ms: standard_motion.modal_enter().as_millis(),
             reduced_modal_enter_ms: reduced_motion.modal_enter().as_millis(),
@@ -138,6 +142,10 @@ impl StudioSurfaceSmoke {
             && self.dark_selected_surface_layer.contains("#4E9CFF@46")
             && self.light_selected_surface_layer.contains("#0A6BFF@31")
             && self.canvas_outer_frame == "unframed,no_nested_card"
+            && self.native_clear_color_contract
+                == "native_clear_color=bg/surface-0,not-transparent,not-system-black-white"
+            && self.host_viewport_contract
+                == "host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
             && self.host_chrome_contract
                 == "host_chrome=egui-owned,borderless,native-controls=false,surface=bg/surface-1"
             && self.standard_modal_enter_ms == 220
@@ -161,7 +169,7 @@ impl StudioSurfaceSmoke {
     pub(crate) fn output(&self) -> String {
         let status = if self.pass() { "PASS" } else { "FAIL" };
         format!(
-            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_host_chrome_surface_layer={}\nlight_host_chrome_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nhost_chrome_contract={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\nsettings_theme_contract={}\ndoc_reference={}",
+            "studio_surface_smoke {status}\ndark_canvas_surface_layer={}\nlight_canvas_surface_layer={}\ndark_sidebar_surface_layer={}\nlight_sidebar_surface_layer={}\ndark_inspector_surface_layer={}\nlight_inspector_surface_layer={}\ndark_bottom_panel_surface_layer={}\nlight_bottom_panel_surface_layer={}\ndark_status_surface_layer={}\nlight_status_surface_layer={}\ndark_host_chrome_surface_layer={}\nlight_host_chrome_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\ncanvas_outer_frame={}\nnative_clear_color_contract={}\nhost_viewport_contract={}\nhost_chrome_contract={}\nstandard_modal_enter_ms={}\nreduced_modal_enter_ms={}\nreduced_focus_ring_ms={}\nreduce_motion_contract={}\nsurface_contract={}\nsettings_theme_contract={}\ndoc_reference={}",
             self.dark_canvas_surface_layer,
             self.light_canvas_surface_layer,
             self.dark_sidebar_surface_layer,
@@ -177,6 +185,8 @@ impl StudioSurfaceSmoke {
             self.dark_selected_surface_layer,
             self.light_selected_surface_layer,
             self.canvas_outer_frame,
+            self.native_clear_color_contract,
+            self.host_viewport_contract,
             self.host_chrome_contract,
             self.standard_modal_enter_ms,
             self.reduced_modal_enter_ms,

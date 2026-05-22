@@ -166,6 +166,10 @@ impl StudioEguiApp {
 }
 
 impl eframe::App for StudioEguiApp {
+    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
+        studio_clear_color(visuals)
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.theme_profile = Some(ui::install_visuals(
             ctx,
@@ -183,6 +187,14 @@ impl eframe::App for StudioEguiApp {
         self.consume_workspace_commands();
         self.render_shell(ctx);
     }
+}
+
+pub(crate) fn studio_clear_color(visuals: &egui::Visuals) -> [f32; 4] {
+    visuals.panel_fill.to_normalized_gamma_f32()
+}
+
+pub(crate) fn studio_clear_color_contract() -> &'static str {
+    "native_clear_color=bg/surface-0,not-transparent,not-system-black-white"
 }
 
 impl StudioEguiApp {
@@ -301,4 +313,32 @@ fn main() -> eframe::Result<()> {
     }
 
     run_studio_native_app()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std_egui::tokens::{apply_theme, ThemeMode};
+
+    #[test]
+    fn studio_clear_color_uses_theme_surface_not_native_black_or_white() {
+        let ctx = egui::Context::default();
+        apply_theme(&ctx, ThemeMode::Dark);
+        let dark = ctx.style().visuals.clone();
+        apply_theme(&ctx, ThemeMode::Light);
+        let light = ctx.style().visuals.clone();
+
+        assert_eq!(
+            studio_clear_color_contract(),
+            "native_clear_color=bg/surface-0,not-transparent,not-system-black-white"
+        );
+        assert_eq!(
+            studio_clear_color(&dark),
+            [0.10980392, 0.11764706, 0.13333334, 1.0]
+        );
+        assert_eq!(
+            studio_clear_color(&light),
+            [0.98039216, 0.9843137, 0.99215686, 1.0]
+        );
+    }
 }

@@ -122,7 +122,7 @@ fn assert_shell_layout_summary(summary: &str) {
     assert!(summary.contains("host_window_size=1280x800"));
     assert!(summary.contains("min_window_size=1080x640"));
     assert!(summary.contains(
-        "host_viewport_contract=host_viewport=single-borderless-egui,decorations=false,native-child-windows=false"
+        "host_viewport_contract=host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
     ));
     assert!(summary
         .contains("host_chrome_contract=host_chrome=egui-owned,borderless,native-controls=false"));
