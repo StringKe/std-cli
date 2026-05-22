@@ -91,8 +91,18 @@ fn check_window_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "kCGWindowOwnerPID",
         "pid == ownerPid",
         "title.contains(titleFragment)",
+        "CGWindowListCreateImage",
+        ".optionIncludingWindow",
+        "UTType.png.identifier",
     ] {
         check_text(&driver, required)?;
+    }
+    for forbidden in ["/usr/sbin/screencapture", "-R"] {
+        if driver.contains(forbidden) {
+            return Err(CliError::Doctor(
+                "capture driver must capture by CGWindowID, not screen rectangle".to_string(),
+            ));
+        }
     }
     let sampler = read_required(&root.join("scripts/cg-sample-pixels.swift"))?;
     for required in [

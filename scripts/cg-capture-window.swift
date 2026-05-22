@@ -1,5 +1,7 @@
 import CoreGraphics
 import Foundation
+import ImageIO
+import UniformTypeIdentifiers
 
 let args = CommandLine.arguments
 guard args.count == 5 else {
@@ -32,20 +34,21 @@ for info in infoList {
         continue
     }
     if title.contains(titleFragment) {
-        _ = rawNumber
-        capture(bounds: bounds, to: outputURL)
+        capture(windowId: CGWindowID(rawNumber), bounds: bounds, to: outputURL)
     }
 }
 
 fputs("window not found: \(ownerPid) / \(ownerName) / \(titleFragment)\n", stderr)
 exit(1)
 
-func capture(bounds: [String: Any], to outputURL: URL) -> Never {
-    guard let x = bounds["X"] as? Int,
-          let y = bounds["Y"] as? Int,
-          let width = bounds["Width"] as? Int,
+func capture(windowId: CGWindowID, bounds: [String: Any], to outputURL: URL) -> Never {
+    guard let width = bounds["Width"] as? Int,
           let height = bounds["Height"] as? Int else {
         fputs("invalid window bounds\n", stderr)
+        exit(1)
+    }
+    guard width > 0 && height > 0 else {
+        fputs("invalid window size\n", stderr)
         exit(1)
     }
     do {
@@ -58,15 +61,28 @@ func capture(bounds: [String: Any], to outputURL: URL) -> Never {
         exit(1)
     }
 
-    let task = Process()
-    task.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-    task.arguments = ["-x", "-R\(x),\(y),\(width),\(height)", outputURL.path]
-    do {
-        try task.run()
-        task.waitUntilExit()
-    } catch {
-        fputs("failed to run screencapture: \(error)\n", stderr)
+    guard let image = CGWindowListCreateImage(
+        .null,
+        [.optionIncludingWindow],
+        windowId,
+        [.boundsIgnoreFraming, .bestResolution]
+    ) else {
+        fputs("failed to capture window image\n", stderr)
         exit(1)
     }
-    exit(task.terminationStatus)
+    guard let destination = CGImageDestinationCreateWithURL(
+        outputURL as CFURL,
+        UTType.png.identifier as CFString,
+        1,
+        nil
+    ) else {
+        fputs("failed to create png destination\n", stderr)
+        exit(1)
+    }
+    CGImageDestinationAddImage(destination, image, nil)
+    if !CGImageDestinationFinalize(destination) {
+        fputs("failed to write png\n", stderr)
+        exit(1)
+    }
+    exit(0)
 }
