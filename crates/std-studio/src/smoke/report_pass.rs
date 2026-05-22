@@ -11,6 +11,7 @@ impl StudioSmokeReport {
             && self.keyboard_contract_pass()
             && self.operations_contract_pass()
             && self.open_intent_contract_pass()
+            && self.motion_budget_contract_pass()
     }
 
     fn workspace_contract_pass(&self) -> bool {
@@ -422,6 +423,15 @@ impl StudioSmokeReport {
                 .contains("native_child_windows=false")
             && self.open_intent_summary.contains("detached_panels=false")
             && self.open_intent_summary.contains("focus_restored=true")
+    }
+
+    fn motion_budget_contract_pass(&self) -> bool {
+        self.motion_budget_summary
+            .contains("studio_motion_budget PASS")
+            && self.motion_budget_summary.contains("frame_budget_ms=8")
+            && self
+                .motion_budget_summary
+                .contains("active_animation_limit=8")
     }
 }
 

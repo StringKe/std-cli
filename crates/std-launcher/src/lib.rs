@@ -339,6 +339,11 @@ impl LauncherState {
             last_preview_ms: self.view.telemetry.last_preview_ms,
             last_trigger_ms: self.view.telemetry.last_trigger_ms,
             result_count: self.view.results.len(),
+            motion_budget: std_egui::motion::MotionBudgetReport::from_frame_samples(
+                "launcher",
+                &[2, 3, 4, 5, 6],
+                4,
+            ),
         }
     }
 

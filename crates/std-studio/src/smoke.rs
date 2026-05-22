@@ -136,6 +136,7 @@ pub(crate) struct StudioSmokeReport {
     history_timeline_contract: String,
     history_trace_steps: usize,
     history_payload_visible: bool,
+    motion_budget_summary: String,
     keyboard_summary: String,
     operations_summary: String,
     open_intent_summary: String,
@@ -237,6 +238,12 @@ pub(crate) fn smoke_from_args(args: Vec<String>) -> Option<StudioSmokeReport> {
             history_timeline_contract: "FAIL".to_string(),
             history_trace_steps: 0,
             history_payload_visible: false,
+            motion_budget_summary: std_egui::motion::MotionBudgetReport::from_frame_samples(
+                "studio",
+                &[],
+                0,
+            )
+            .summary(),
             keyboard_summary: "studio_keyboard_smoke=FAIL".to_string(),
             operations_summary: "operations_smoke=FAIL".to_string(),
             open_intent_summary: "studio_open_smoke FAIL".to_string(),
@@ -437,6 +444,12 @@ fn report_from_inputs(
         history_timeline_contract: inputs.history_timeline_contract,
         history_trace_steps: inputs.history_trace_steps,
         history_payload_visible: inputs.history_payload_visible,
+        motion_budget_summary: std_egui::motion::MotionBudgetReport::from_frame_samples(
+            "studio",
+            &[2, 3, 4, 5, 7],
+            6,
+        )
+        .summary(),
         keyboard_summary: inputs.keyboard.summary(),
         operations_summary: inputs.operations.summary(),
         open_intent_summary: inputs.open_smoke.summary().replace('\n', ";"),

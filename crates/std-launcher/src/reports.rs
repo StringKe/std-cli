@@ -1,4 +1,5 @@
 use crate::LauncherWindowCommand;
+use std_egui::motion::MotionBudgetReport;
 use std_types::ActionExecutionStatus;
 
 pub const SEARCH_BUDGET_MS: u128 = 16;
@@ -36,6 +37,7 @@ pub struct LauncherPerformanceReport {
     pub last_preview_ms: u128,
     pub last_trigger_ms: u128,
     pub result_count: usize,
+    pub motion_budget: MotionBudgetReport,
 }
 
 impl LauncherPerformanceReport {
@@ -43,11 +45,12 @@ impl LauncherPerformanceReport {
         self.last_search_ms <= self.search_budget_ms
             && self.last_preview_ms <= self.preview_budget_ms
             && self.last_trigger_ms <= self.trigger_budget_ms
+            && self.motion_budget.pass()
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_perf {}\nsearch_ms={}\npreview_ms={}\ntrigger_ms={}\nresults={}\nbudget_search_ms={}\nbudget_preview_ms={}\nbudget_trigger_ms={}\nbudget_hotkey_ms={}",
+            "launcher_perf {}\nsearch_ms={}\npreview_ms={}\ntrigger_ms={}\nresults={}\nbudget_search_ms={}\nbudget_preview_ms={}\nbudget_trigger_ms={}\nbudget_hotkey_ms={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.last_search_ms,
             self.last_preview_ms,
@@ -56,7 +59,8 @@ impl LauncherPerformanceReport {
             self.search_budget_ms,
             self.preview_budget_ms,
             self.trigger_budget_ms,
-            self.hotkey_budget_ms
+            self.hotkey_budget_ms,
+            self.motion_budget.summary()
         )
     }
 }

@@ -210,6 +210,9 @@ fn launcher_smoke_report_validates_fast_search_preview_and_feedback() {
     assert!(report.performance.pass(), "{summary}");
     assert!(summary.contains("launcher_smoke PASS"));
     assert!(summary.contains("launcher_perf PASS"));
+    assert!(summary.contains("launcher_motion_budget PASS"));
+    assert!(summary.contains("frame_budget_ms=8"));
+    assert!(summary.contains("active_animation_limit=8"));
 }
 
 #[test]
