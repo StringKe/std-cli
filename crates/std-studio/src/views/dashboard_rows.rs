@@ -21,14 +21,7 @@ pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: 
         .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), title));
     if ui.is_rect_visible(rect) {
         paint_row_frame(ui, rect, response.hovered());
-        let value_text = value.to_string();
-        ui.painter().text(
-            egui::pos2(rect.left() + row_metrics::TEXT_INSET_X, rect.center().y),
-            egui::Align2::LEFT_CENTER,
-            value_text,
-            Text::title(),
-            ui::strong_text(ui.ctx()),
-        );
+        paint_metric_value(ui, rect, value);
         paint_title_detail_at(
             ui,
             rect,
@@ -41,6 +34,20 @@ pub(crate) fn metric_tile(ui: &mut egui::Ui, title: &str, value: usize, detail: 
             },
         );
     }
+}
+
+fn paint_metric_value(ui: &mut egui::Ui, rect: egui::Rect, value: usize) {
+    let chip_rect = egui::Rect::from_min_size(
+        egui::pos2(
+            rect.left() + row_metrics::TEXT_INSET_X,
+            rect.center().y - row_metrics::STATUS_CHIP_Y_OFFSET,
+        ),
+        egui::vec2(
+            row_metrics::STATUS_CHIP_WIDTH,
+            row_metrics::STATUS_CHIP_HEIGHT,
+        ),
+    );
+    paint_chip(ui, chip_rect, &value.to_string(), ui::panel_alt(ui.ctx()));
 }
 
 pub(crate) fn plan_goal_row(ui: &mut egui::Ui, label: &str, goal: &str) {
@@ -238,5 +245,29 @@ fn preview_text(text: &str, limit: usize) -> String {
         format!("{preview}...")
     } else {
         preview
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn metric_tile_uses_status_chip_not_hero_metric_number() {
+        let source = include_str!("dashboard_rows.rs");
+        let metric_body = source
+            .split("pub(crate) fn metric_tile")
+            .nth(1)
+            .and_then(|body| body.split("pub(crate) fn plan_goal_row").next())
+            .unwrap();
+
+        assert!(metric_body.contains("paint_metric_value(ui, rect, value)"));
+        assert!(!metric_body.contains("Text::title()"));
+        assert!(source.contains("row_metrics::STATUS_CHIP_WIDTH"));
+        assert!(source.contains("ui::panel_alt(ui.ctx())"));
+    }
+
+    #[test]
+    fn preview_text_truncates_by_chars() {
+        assert_eq!(super::preview_text("abcdef", 4), "abcd...");
+        assert_eq!(super::preview_text("abc", 4), "abc");
     }
 }
