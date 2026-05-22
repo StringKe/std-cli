@@ -142,6 +142,13 @@ fn assert_doctor_ui_output(output: &str) {
     assert!(output.contains("manual_desktop_acceptance=explicit_opt_in_only"));
     assert!(output.contains("background_ui_acceptance=explicit_opt_in_only"));
     assert!(output.contains("ui_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
+    assert!(output.contains("completion_audit=PASS"));
+    assert!(output.contains("completion_matrix=PASS"));
+    assert!(output.contains("completion_areas=UI docs 18-24,Launcher,Studio"));
+    assert!(
+        output.contains("completion_manual_blockers=Launcher 截图仍需按 docs/18-21 做像素级审计")
+    );
+    assert!(output.contains("final_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
 
 #[test]
@@ -185,6 +192,12 @@ fn doctor_command_can_print_machine_readable_json() {
     std::env::remove_var("STDCLI_CONFIG");
 
     let report: serde_json::Value = serde_json::from_str(&output).unwrap();
+    assert_doctor_json_runtime(&report);
+    assert_doctor_json_ui(&report);
+    assert_doctor_json_completion(&report);
+}
+
+fn assert_doctor_json_runtime(report: &serde_json::Value) {
     assert_eq!(report["status"].as_str(), Some("PASS"));
     assert_eq!(report["storage"].as_str(), Some("PASS"));
     assert_eq!(report["quality"].as_str(), Some("PASS"));
@@ -196,6 +209,16 @@ fn doctor_command_can_print_machine_readable_json() {
     assert!(report["max_config_lines"].as_u64().unwrap() <= 300);
     assert_eq!(report["launcher"].as_str(), Some("PASS"));
     assert_eq!(report["studio"].as_str(), Some("PASS"));
+    assert_eq!(report["release_plan"].as_str(), Some("PASS"));
+    assert_eq!(report["install_plan"].as_str(), Some("PASS"));
+    assert!(report["quality_tools"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|tool| tool.as_str() == Some("dylint")));
+}
+
+fn assert_doctor_json_ui(report: &serde_json::Value) {
     assert_eq!(report["ui_docs"].as_str(), Some("PASS"));
     assert_eq!(report["ui_docs_count"].as_u64(), Some(7));
     assert_eq!(
@@ -229,13 +252,25 @@ fn doctor_command_can_print_machine_readable_json() {
         .unwrap()
         .iter()
         .any(|gate| gate.as_str() == Some("preview-smoke")));
-    assert_eq!(report["release_plan"].as_str(), Some("PASS"));
-    assert_eq!(report["install_plan"].as_str(), Some("PASS"));
-    assert!(report["quality_tools"]
+}
+
+fn assert_doctor_json_completion(report: &serde_json::Value) {
+    assert_eq!(report["completion_audit"].as_str(), Some("PASS"));
+    assert_eq!(report["completion_matrix"].as_str(), Some("PASS"));
+    assert_eq!(
+        report["final_completion"].as_str(),
+        Some("INCOMPLETE_REAL_GUI_REQUIRED")
+    );
+    assert!(report["completion_areas"]
         .as_array()
         .unwrap()
         .iter()
-        .any(|tool| tool.as_str() == Some("dylint")));
+        .any(|area| area.as_str() == Some("UI docs 18-24")));
+    assert!(report["completion_manual_blockers"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|blocker| blocker.as_str() == Some("Studio UI 仍需按 docs/18-24 重新验收")));
 }
 
 #[test]

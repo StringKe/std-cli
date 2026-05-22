@@ -1,3 +1,4 @@
+mod completion;
 mod dylint;
 mod report;
 mod ui;
@@ -7,6 +8,7 @@ mod workspace;
 
 use crate::CliError;
 use crate::{install_plan, release_plan};
+use completion::check_completion_gate;
 use report::DoctorReport;
 use std::path::Path;
 use std_core::{discover_plugin_manifests, AiPlanner, StdConfig, StdCore};
@@ -57,6 +59,7 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
 
     let workspace = check_workspace_quality()?;
     let ui = check_ui_completion_evidence()?;
+    let completion = check_completion_gate()?;
     let release = release_plan(core, "1.0.0")?;
     check_text(&release, "verify=mise run quality")?;
     check_text(&release, "std release verify --dist")?;
@@ -100,6 +103,11 @@ fn doctor_report(core: &StdCore) -> Result<DoctorReport, CliError> {
         background_ui_acceptance: ui.background_ui_acceptance,
         desktop_automation_default: ui.desktop_automation_default,
         ui_completion: ui.completion,
+        completion_audit: completion.audit,
+        completion_matrix: completion.matrix,
+        completion_areas: completion.areas,
+        completion_manual_blockers: completion.blockers,
+        final_completion: completion.final_completion,
         release_plan: "PASS",
         install_plan: "PASS",
         config_path: StdConfig::writable_config_path(),
