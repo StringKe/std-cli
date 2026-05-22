@@ -176,6 +176,10 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("light-dashboard=PASS"));
     assert!(summary.contains("dark-dashboard=PASS"));
     assert!(summary.contains("host=1280x800,min=1080x640"));
+    assert!(summary.contains("host_layout=1280x800:chrome=52,sidebar=240"));
+    assert!(summary.contains("min_layout=1080x640:chrome=52,sidebar=240"));
+    assert!(summary.contains("status=24"));
+    assert!(summary.contains("fits=true"));
     assert!(summary.contains("native_child_windows=false,detached_panels=false"));
     assert!(summary.contains("dark-settings=PASS"));
     assert!(summary.contains("light-settings=PASS"));

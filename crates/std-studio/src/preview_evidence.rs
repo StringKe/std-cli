@@ -1,4 +1,8 @@
 use crate::{
+    layout::{
+        BOTTOM_PANEL_DEFAULT_HEIGHT, HOST_CHROME_HEIGHT, INSPECTOR_DEFAULT_WIDTH,
+        SIDEBAR_DEFAULT_WIDTH, STATUS_BAR_HEIGHT,
+    },
     preview::seeded_preview_app,
     viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
     StudioEguiApp, StudioPane,
@@ -62,20 +66,26 @@ pub(crate) fn preview_size_summary(scenario: &str) -> String {
     let app = seeded_preview_app(theme, name);
     let host = format_window_size(STUDIO_WINDOW_SIZE);
     let min = format_window_size(STUDIO_MIN_WINDOW_SIZE);
+    let host_layout = StudioPreviewGeometry::for_window(STUDIO_WINDOW_SIZE, &app);
+    let min_layout = StudioPreviewGeometry::for_window(STUDIO_MIN_WINDOW_SIZE, &app);
     let valid = matches!(theme, "dark" | "light")
         && !app.app.workspace_policy.allows_native_child_windows()
         && !app.app.workspace_policy.allows_detached_panels()
         && host == "1280x800"
-        && min == "1080x640";
+        && min == "1080x640"
+        && host_layout.passes()
+        && min_layout.passes();
     format!(
-        "{scenario}={}:host={},min={},workspace={},native_child_windows={},detached_panels={},settings_surface={}",
+        "{scenario}={}:host={},min={},workspace={},native_child_windows={},detached_panels={},settings_surface={},host_layout={},min_layout={}",
         if valid { "PASS" } else { "FAIL" },
         host,
         min,
         app.app.open_workspace_panes().count(),
         app.app.workspace_policy.allows_native_child_windows(),
         app.app.workspace_policy.allows_detached_panels(),
-        settings_surface_policy(&app, name)
+        settings_surface_policy(&app, name),
+        host_layout.summary(),
+        min_layout.summary()
     )
 }
 
@@ -263,6 +273,72 @@ fn preview_surface_passes(surface: &PreviewSurfaceSummary, theme: &str) -> bool 
 
 fn format_window_size(size: [f32; 2]) -> String {
     format!("{}x{}", size[0] as u32, size[1] as u32)
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct StudioPreviewGeometry {
+    width: f32,
+    height: f32,
+    host_chrome: f32,
+    sidebar: f32,
+    inspector: f32,
+    bottom_panel: f32,
+    status_bar: f32,
+    canvas_width: f32,
+    canvas_height: f32,
+}
+
+impl StudioPreviewGeometry {
+    fn for_window(size: [f32; 2], app: &StudioEguiApp) -> Self {
+        let sidebar = app.layout.sidebar_width();
+        let inspector = if app.layout.inspector_open {
+            app.layout.inspector_width()
+        } else {
+            0.0
+        };
+        let bottom_panel = if app.layout.bottom_panel_open {
+            app.layout.bottom_panel_height()
+        } else {
+            0.0
+        };
+        Self {
+            width: size[0],
+            height: size[1],
+            host_chrome: HOST_CHROME_HEIGHT,
+            sidebar,
+            inspector,
+            bottom_panel,
+            status_bar: STATUS_BAR_HEIGHT,
+            canvas_width: size[0] - sidebar - inspector,
+            canvas_height: size[1] - HOST_CHROME_HEIGHT - bottom_panel - STATUS_BAR_HEIGHT,
+        }
+    }
+
+    fn passes(&self) -> bool {
+        self.host_chrome == 52.0
+            && self.status_bar == 24.0
+            && self.sidebar == SIDEBAR_DEFAULT_WIDTH
+            && self.inspector <= INSPECTOR_DEFAULT_WIDTH
+            && self.bottom_panel <= BOTTOM_PANEL_DEFAULT_HEIGHT
+            && self.canvas_width >= 520.0
+            && self.canvas_height >= 324.0
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "{}x{}:chrome={},sidebar={},inspector={},bottom={},status={},canvas={}x{},fits={}",
+            self.width as u32,
+            self.height as u32,
+            self.host_chrome as u32,
+            self.sidebar as u32,
+            self.inspector as u32,
+            self.bottom_panel as u32,
+            self.status_bar as u32,
+            self.canvas_width as u32,
+            self.canvas_height as u32,
+            self.passes()
+        )
+    }
 }
 
 fn color_hex(color: egui::Color32) -> String {
