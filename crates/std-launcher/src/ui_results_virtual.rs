@@ -104,6 +104,7 @@ mod tests {
                 matched: false,
             }],
             subtitle: "Test row".to_string(),
+            match_badge: None,
             kind: "Command".to_string(),
             icon_label: "CMD".to_string(),
             group: "Action / Workflow".to_string(),

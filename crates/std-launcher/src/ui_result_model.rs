@@ -12,6 +12,7 @@ pub(crate) struct LauncherResultRowModel {
     pub(crate) title: String,
     pub(crate) title_segments: Vec<TitleSegment>,
     pub(crate) subtitle: String,
+    pub(crate) match_badge: Option<String>,
     pub(crate) kind: String,
     pub(crate) icon_label: String,
     pub(crate) group: String,
@@ -43,6 +44,7 @@ impl LauncherResultRowModel {
             title: result.action.name.clone(),
             title_segments: title_segments(result, query),
             subtitle: result_subtitle(result, preview),
+            match_badge: match_badge(result),
             kind: action_kind(&result.action.action_type).to_string(),
             icon_label: action_icon_label(&result.action.action_type).to_string(),
             group: action_group(result),
@@ -123,6 +125,24 @@ fn result_subtitle(result: &SearchResult, preview: Option<&ActionPreview>) -> St
         .filter(|subtitle| !subtitle.trim().is_empty())
         .unwrap_or(result.action.description.as_str())
         .to_string()
+}
+
+fn match_badge(result: &SearchResult) -> Option<String> {
+    if result
+        .matched_fields
+        .iter()
+        .any(|field| field == "tags" || field == "tags:fuzzy")
+    {
+        Some(i18n::t("launcher.results.match.alias").to_string())
+    } else if result
+        .matched_fields
+        .iter()
+        .any(|field| field == "description" || field == "when_to_use")
+    {
+        Some(i18n::t("launcher.results.match.detail").to_string())
+    } else {
+        None
+    }
 }
 
 fn title_segments(result: &SearchResult, query: &str) -> Vec<TitleSegment> {
@@ -358,12 +378,25 @@ mod tests {
         fuzzy_result.matched_fields = vec!["name:fuzzy".to_string()];
 
         assert_eq!(
-            LauncherResultRowModel::from_result(&tag_result, None, "weixin", 0, 1, false)
-                .title_segments,
-            vec![TitleSegment {
-                text: "WeChat".to_string(),
-                matched: false
-            }]
+            LauncherResultRowModel::from_result(&tag_result, None, "weixin", 0, 1, false),
+            LauncherResultRowModel {
+                title: "WeChat".to_string(),
+                title_segments: vec![TitleSegment {
+                    text: "WeChat".to_string(),
+                    matched: false
+                }],
+                subtitle: "WeChat description".to_string(),
+                match_badge: Some(i18n::t("launcher.results.match.alias").to_string()),
+                kind: i18n::t("launcher.results.kind.app").to_string(),
+                icon_label: "APP".to_string(),
+                group: i18n::t("launcher.results.group.app_file").to_string(),
+                position: "1 of 1".to_string(),
+                direct_shortcut: input::launcher_result_keycap(0),
+                primary_shortcut: None,
+                action_hint: None,
+                action_label: i18n::t("launcher.action.run").to_string(),
+                result_index: 0,
+            }
         );
         assert_eq!(
             LauncherResultRowModel::from_result(&fuzzy_result, None, "ri", 0, 1, false)

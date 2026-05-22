@@ -114,6 +114,10 @@ fn result_list_translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.results.kind.file") => Some("File"),
         (Locale::ZhCn, "launcher.results.kind.custom") => Some("自定义"),
         (Locale::EnUs, "launcher.results.kind.custom") => Some("Custom"),
+        (Locale::ZhCn, "launcher.results.match.alias") => Some("别名"),
+        (Locale::EnUs, "launcher.results.match.alias") => Some("alias"),
+        (Locale::ZhCn, "launcher.results.match.detail") => Some("描述"),
+        (Locale::EnUs, "launcher.results.match.detail") => Some("detail"),
         _ => None,
     }
 }
@@ -169,6 +173,8 @@ fn result_list_fallback(key: &str) -> Option<&'static str> {
         "launcher.results.kind.clipboard" => Some("Clipboard"),
         "launcher.results.kind.file" => Some("File"),
         "launcher.results.kind.custom" => Some("Custom"),
+        "launcher.results.match.alias" => Some("alias"),
+        "launcher.results.match.detail" => Some("detail"),
         _ => None,
     }
 }

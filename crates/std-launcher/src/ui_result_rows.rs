@@ -5,7 +5,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
-    tokens::{Color, Radius, Text},
+    tokens::{Color, Radius, Space, Text},
     LauncherViewModel,
 };
 
@@ -70,6 +70,9 @@ pub(crate) fn result_accessibility_label(
     if let Some(primary) = model.primary_shortcut.as_deref() {
         label.push_str(&format!(", press {primary} to {}", model.action_label));
     }
+    if let Some(badge) = model.match_badge.as_deref() {
+        label.push_str(&format!(", matched by {badge}"));
+    }
     label
 }
 
@@ -119,7 +122,7 @@ fn paint_result_text(
             render_title_segments(ui, &model.title_segments, selected, ctx);
         });
     });
-    painter.text(
+    let subtitle_rect = painter.text(
         layout.subtitle_pos,
         egui::Align2::LEFT_CENTER,
         &model.subtitle,
@@ -130,6 +133,19 @@ fn paint_result_text(
             Color::fg_tertiary(ctx)
         },
     );
+    if let Some(badge) = model.match_badge.as_deref() {
+        let badge_pos = egui::pos2(
+            layout.subtitle_pos.x + subtitle_rect.width() + Space::XS as f32,
+            layout.subtitle_pos.y,
+        );
+        painter.text(
+            badge_pos,
+            egui::Align2::LEFT_CENTER,
+            badge,
+            Text::caption(),
+            Color::accent_base(ctx),
+        );
+    }
 }
 
 fn render_title_segments(
@@ -330,6 +346,31 @@ mod tests {
         assert!(selected_label.contains(&format!("press Enter to {}", selected.action_label)));
         assert!(idle_label.contains("shortcut"));
         assert!(!idle_label.contains(&format!("press Enter to {}", idle.action_label)));
+    }
+
+    #[test]
+    fn result_accessibility_label_includes_alias_match_source() {
+        let mut result = SearchResult {
+            action: std_types::Action::new(
+                "Open App: WeChat",
+                "Aliases include weixin",
+                "test",
+                std_types::ActionType::AppLaunch,
+            ),
+            score: 1.0,
+            matched_fields: vec!["tags".to_string()],
+        };
+        let core = std_core::StdCore::default();
+        let mut view = LauncherViewModel::new(&core);
+        view.results = vec![result.clone()];
+        let row = LauncherResultRowModel::from_result(&result, None, "weixin", 0, 1, true);
+
+        assert_eq!(row.match_badge.as_deref(), Some("别名"));
+        assert!(result_accessibility_label(&row, &view).contains("matched by"));
+
+        result.matched_fields = vec!["name".to_string()];
+        let title_row = LauncherResultRowModel::from_result(&result, None, "wechat", 0, 1, true);
+        assert!(title_row.match_badge.is_none());
     }
 
     #[test]
