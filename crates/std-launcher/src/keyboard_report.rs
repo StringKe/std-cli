@@ -32,6 +32,9 @@ impl LauncherKeyboardReport {
             && self.user_enter_feedback_title == std_egui::i18n::t("launcher.feedback.deferred")
             && self.user_enter_keeps_launcher_open
             && self.user_enter_window_commands == "none"
+            && self.pinned_enter_status == Some(ActionExecutionStatus::Completed)
+            && self.pinned_enter_keeps_launcher_open
+            && self.pinned_enter_window_commands == "none"
             && self.closed_after_escape
             && self.ime_selection_unchanged
             && self.ime_action_panel_selection_unchanged
@@ -84,7 +87,7 @@ impl LauncherKeyboardReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_defer_reason={}\nuser_enter_open_contract={}\nuser_enter_feedback_visible={}\nuser_enter_feedback_title={}\nuser_enter_keeps_launcher_open={}\nuser_enter_window_commands={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ncompletion_focus_contract={}\nfocus_visible_contract={}\nshortcut_help_contract={}\nnormalized_query={}\ntoken_delete_query={}\ntoken_delete_normalized_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
+            "launcher_keyboard_smoke {}\nselected_before={}\nselected_after_down={}\nselected_after_up={}\nnavigation_boundary_path={}\ndirect_trigger_status={}\ntrigger_status={}\nuser_enter_status={}\nuser_enter_route={}\nuser_enter_deferred={}\nuser_enter_defer_reason={}\nuser_enter_open_contract={}\nuser_enter_feedback_visible={}\nuser_enter_feedback_title={}\nuser_enter_keeps_launcher_open={}\nuser_enter_window_commands={}\npinned_enter_status={}\npinned_enter_keeps_launcher_open={}\npinned_enter_window_commands={}\nclosed_after_escape={}\nime_selection_unchanged={}\nime_action_panel_selection_unchanged={}\nime_trigger_blocked={}\nime_escape_blocked={}\nime_enter_owned_by_ime={}\nime_composition_path={}\nime_preedit_query_unchanged={}\nime_commit_query={}\nime_commit_trigger_status={}\nempty_suggestion_keyboard_path={}\nfocus_after_tab={:?}\nfocus_after_shift_tab={:?}\nfocus_path={}\naction_panel_focus_path={}\ncompleted_query={}\ncompletion_focus_contract={}\nfocus_visible_contract={}\nshortcut_help_contract={}\nnormalized_query={}\ntoken_delete_query={}\ntoken_delete_normalized_query={}\nenter_window={}\nui_handler_contract={}\nime_visible_state_contract={}\nmodel_contract={}\nreal_interaction_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.selected_before,
             self.selected_after_down,
@@ -101,6 +104,9 @@ impl LauncherKeyboardReport {
             self.user_enter_feedback_title,
             self.user_enter_keeps_launcher_open,
             self.user_enter_window_commands,
+            status_label(self.pinned_enter_status.as_ref()),
+            self.pinned_enter_keeps_launcher_open,
+            self.pinned_enter_window_commands,
             self.closed_after_escape,
             self.ime_selection_unchanged,
             self.ime_action_panel_selection_unchanged,

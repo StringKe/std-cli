@@ -113,7 +113,7 @@ pub fn launcher_cancel() -> KeyBinding {
 }
 
 pub fn launcher_defer() -> KeyBinding {
-    KeyBinding::ShiftNamed(egui::Key::Enter)
+    KeyBinding::ModShiftNamed(egui::Key::Enter)
 }
 
 pub fn launcher_open_studio() -> KeyBinding {
@@ -352,12 +352,12 @@ mod tests {
         if cfg!(target_os = "macos") {
             assert_eq!(enter().label(), "↵");
             assert_eq!(tab().label(), "⇥");
-            assert_eq!(launcher_defer().label(), "⇧+↵");
+            assert_eq!(launcher_defer().label(), "⌘+⇧+↵");
             assert_eq!(launcher_delete_previous_token().label(), "⌘+⌫");
         } else {
             assert_eq!(enter().label(), "Enter");
             assert_eq!(tab().label(), "Tab");
-            assert_eq!(launcher_defer().label(), "Shift+Enter");
+            assert_eq!(launcher_defer().label(), "Ctrl+Shift+Enter");
             assert_eq!(launcher_delete_previous_token().label(), "Ctrl+Backspace");
         }
     }
@@ -423,7 +423,10 @@ mod tests {
             .label()
             .ends_with(&format!("+{backspace}")));
         assert_eq!(enter().label(), enter_label);
-        assert_eq!(launcher_defer().label(), format!("{shift}+{enter_label}"));
+        assert_eq!(
+            launcher_defer().label(),
+            format!("{}+{shift}+{enter_label}", primary_modifier_label())
+        );
         assert_eq!(KeyBinding::Ctrl('C').label(), "Ctrl+C");
         assert_eq!(launcher_cancel().label(), "Ctrl+C");
         assert!(launcher_open_studio().label().ends_with("+O"));

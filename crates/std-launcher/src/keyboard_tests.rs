@@ -118,6 +118,12 @@ fn assert_deferred_enter_feedback(report: &LauncherKeyboardReport) {
     );
     assert!(report.user_enter_keeps_launcher_open);
     assert_eq!(report.user_enter_window_commands, "none");
+    assert_eq!(
+        report.pinned_enter_status,
+        Some(ActionExecutionStatus::Completed)
+    );
+    assert!(report.pinned_enter_keeps_launcher_open);
+    assert_eq!(report.pinned_enter_window_commands, "none");
     assert!(report.enter_window.pass());
 }
 
@@ -134,6 +140,9 @@ fn assert_trigger_summary(summary: &str) {
     )));
     assert!(summary.contains("user_enter_keeps_launcher_open=true"));
     assert!(summary.contains("user_enter_window_commands=none"));
+    assert!(summary.contains("pinned_enter_status=Completed"));
+    assert!(summary.contains("pinned_enter_keeps_launcher_open=true"));
+    assert!(summary.contains("pinned_enter_window_commands=none"));
     assert!(summary.contains("enter_window=completed_status=Completed"));
     assert!(summary.contains("completed_hide=true"));
     assert!(summary.contains("completed_commands=Visible(false)"));

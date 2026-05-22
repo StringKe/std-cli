@@ -31,6 +31,9 @@ pub(crate) fn handle_search_shortcuts(
     if input::enter().pressed(ctx) {
         handle_user_execution(state, LauncherKey::Enter, hide_requested);
     }
+    if input::launcher_defer().pressed(ctx) {
+        handle_pinned_user_execution(state);
+    }
     if input::shift_tab().pressed(ctx) {
         state.handle_keyboard_input(LauncherKey::FocusPrevious, false);
     } else if input::tab().pressed(ctx)
@@ -62,6 +65,10 @@ fn handle_user_execution(state: &mut LauncherState, key: LauncherKey, hide_reque
     }
 }
 
+fn handle_pinned_user_execution(state: &mut LauncherState) {
+    let _ = state.handle_keyboard_input_by_user(LauncherKey::Enter, false);
+}
+
 pub(crate) fn execution_hides_launcher(execution: &ActionExecution) -> bool {
     launcher_execution_hides_window(execution)
 }
@@ -91,6 +98,7 @@ mod tests {
             .find("input::launcher_cancel().pressed(ctx)")
             .unwrap();
         let enter_index = source.find("input::enter().pressed(ctx)").unwrap();
+        let pinned_index = source.find("input::launcher_defer().pressed(ctx)").unwrap();
         let executing_index = source.find("LauncherPhase::Executing").unwrap();
         let user_trigger_index = source
             .find("state.handle_keyboard_input_by_user(key, false)")
@@ -98,7 +106,51 @@ mod tests {
 
         assert!(guard_index < cancel_index);
         assert!(cancel_index < enter_index);
+        assert!(enter_index < pinned_index);
         assert!(executing_index < user_trigger_index);
+    }
+
+    #[test]
+    fn launcher_pinned_execution_keeps_window_open_without_hide_request() {
+        let ctx = egui::Context::default();
+        let mut state = LauncherState::new();
+        state.controller.show();
+        state.update_query("index");
+        let mut hide_requested = false;
+
+        let _ = ctx.run(mod_shift_enter_input(), |ctx| {
+            handle_search_shortcuts(ctx, &mut state, &mut hide_requested);
+        });
+
+        assert_eq!(
+            state
+                .view
+                .last_execution
+                .as_ref()
+                .map(|execution| execution.status.clone()),
+            Some(ActionExecutionStatus::Completed)
+        );
+        assert!(state.controller.visible);
+        assert!(!hide_requested);
+    }
+
+    fn mod_shift_enter_input() -> egui::RawInput {
+        let modifiers = egui::Modifiers {
+            command: true,
+            shift: true,
+            ..Default::default()
+        };
+        egui::RawInput {
+            events: vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: Some(egui::Key::Enter),
+                pressed: true,
+                repeat: false,
+                modifiers,
+            }],
+            modifiers,
+            ..Default::default()
+        }
     }
 
     #[test]

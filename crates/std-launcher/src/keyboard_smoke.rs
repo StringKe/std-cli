@@ -35,6 +35,7 @@ impl LauncherState {
             .handle_keyboard_input(LauncherKey::Enter, false)
             .map(|execution| execution.status);
         let user_enter = user_enter_defer_evidence();
+        let pinned_enter = pinned_enter_evidence();
         state.handle_keyboard_input(LauncherKey::Escape, false);
         state.handle_keyboard_input(LauncherKey::Escape, false);
         LauncherKeyboardReport {
@@ -53,6 +54,9 @@ impl LauncherState {
             user_enter_feedback_title: user_enter.feedback_title,
             user_enter_keeps_launcher_open: user_enter.keeps_launcher_open,
             user_enter_window_commands: user_enter.window_commands,
+            pinned_enter_status: pinned_enter.status,
+            pinned_enter_keeps_launcher_open: pinned_enter.keeps_launcher_open,
+            pinned_enter_window_commands: pinned_enter.window_commands,
             closed_after_escape: !state.controller.visible,
             ime_selection_unchanged: ime.selection_unchanged,
             ime_action_panel_selection_unchanged: ime.action_panel_selection_unchanged,
@@ -154,6 +158,12 @@ struct UserEnterEvidence {
     open_contract: String,
     feedback_visible: bool,
     feedback_title: String,
+    keeps_launcher_open: bool,
+    window_commands: String,
+}
+
+struct PinnedEnterEvidence {
+    status: Option<ActionExecutionStatus>,
     keeps_launcher_open: bool,
     window_commands: String,
 }
@@ -334,6 +344,26 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
         feedback_visible,
         feedback_title,
         keeps_launcher_open,
+        window_commands: if window_commands.is_empty() {
+            "none".to_string()
+        } else {
+            window_commands
+        },
+    }
+}
+
+fn pinned_enter_evidence() -> PinnedEnterEvidence {
+    let mut state = LauncherState::new();
+    state.controller.show();
+    state.update_query("index");
+    let execution = state.handle_keyboard_input_by_user(LauncherKey::Enter, false);
+    let window_commands = crate::format_window_commands(&LauncherState::enter_window_commands(
+        true,
+        state.controller.visible,
+    ));
+    PinnedEnterEvidence {
+        status: execution.map(|execution| execution.status),
+        keeps_launcher_open: state.controller.visible,
         window_commands: if window_commands.is_empty() {
             "none".to_string()
         } else {
