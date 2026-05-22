@@ -244,8 +244,9 @@ mod tests {
     use std_types::SearchResult;
 
     #[test]
-    fn group_header_label_is_uppercase() {
-        assert_eq!(group_header_label("Action / Workflow"), "ACTION / WORKFLOW");
+    fn group_header_label_preserves_readable_title_case() {
+        assert_eq!(group_header_label("Action / Workflow"), "Action / Workflow");
+        assert_eq!(group_header_label("  App / File  "), "App / File");
     }
 
     #[test]

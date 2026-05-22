@@ -156,7 +156,7 @@ pub(crate) fn action_icon_label(action_type: &ActionType) -> &str {
 }
 
 pub(crate) fn group_header_label(group: &str) -> String {
-    group.to_uppercase()
+    group.trim().to_string()
 }
 
 #[cfg(test)]
