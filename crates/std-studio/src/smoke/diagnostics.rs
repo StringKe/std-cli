@@ -95,7 +95,12 @@ impl StudioSmokeReport {
             ),
             (
                 "builder_bottom_panel",
-                self.builder_bottom_panel_contract == "batch-debug-open",
+                self.builder_bottom_panel_contract
+                    .contains("batch-debug=simulate:open|run:open|planned-run:open|history:open")
+                    && self.builder_bottom_panel_contract.contains("helper=open")
+                    && self
+                        .builder_bottom_panel_contract
+                        .contains("role=bottom-panel-tabs"),
             ),
             ("builder_debug_panel_prefix", self.debug_panel_prefix_pass()),
             (

@@ -1,5 +1,6 @@
-use crate::views::{
-    self, workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace,
+use crate::{
+    bottom_panel::BottomPanelTabModel,
+    views::{self, workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace},
 };
 use std_egui::input;
 use std_studio::StudioApp;
@@ -92,10 +93,47 @@ pub(crate) fn run_workflow_builder_smoke(
         trace_status,
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),
         next_action: "complete".to_string(),
-        bottom_panel_contract: "batch-debug-open".to_string(),
+        bottom_panel_contract: builder_bottom_panel_contract(),
         debug_panel_contract,
         visual_contract,
     })
+}
+
+fn builder_bottom_panel_contract() -> String {
+    let builder_source = include_str!("../views/workflow_builder.rs");
+    let bottom_panel_source = include_str!("../bottom_panel.rs");
+    let simulate = action_opens_batch_debug(builder_source, "preview_workflow_path");
+    let run = action_opens_batch_debug(builder_source, "run_workflow_path");
+    let planned_run = action_opens_batch_debug(builder_source, "run_planned_workflow");
+    let history = action_opens_batch_debug(builder_source, "open_workflow_history");
+    let helper = bottom_panel_source.contains("self.layout.open_bottom_panel();")
+        && bottom_panel_source.contains("self.bottom_panel_tab = BottomPanelTab::BatchDebug;");
+    format!(
+        "batch-debug=simulate:{simulate}|run:{run}|planned-run:{planned_run}|history:{history};helper={};{}",
+        open_closed(helper),
+        BottomPanelTabModel::docs22_default().contract()
+    )
+}
+
+fn action_opens_batch_debug(source: &str, action: &str) -> &'static str {
+    let Some(action_index) = source.find(&format!("fn {action}")) else {
+        return "missing";
+    };
+    let tail = &source[action_index..];
+    let next_method_index = tail
+        .find("\n    pub(crate) fn ")
+        .filter(|index| *index > 0)
+        .unwrap_or(tail.len());
+    let action_body = &tail[..next_method_index];
+    open_closed(action_body.contains("self.open_batch_debug_panel();"))
+}
+
+fn open_closed(open: bool) -> &'static str {
+    if open {
+        "open"
+    } else {
+        "closed"
+    }
 }
 
 fn builder_visual_contract() -> String {

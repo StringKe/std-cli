@@ -57,9 +57,9 @@ impl WorkflowBuilderStatus {
 
     pub(crate) fn bottom_panel_contract(self) -> &'static str {
         if self.simulated || self.ran {
-            "batch-debug-open"
+            "batch-debug=simulate-or-run:open"
         } else {
-            "batch-debug-pending"
+            "batch-debug=simulate-or-run:pending"
         }
     }
 }
@@ -151,7 +151,10 @@ mod tests {
             "planned=true,saved=true,simulated=true,ran=true,traced=true"
         );
         assert_eq!(status.next_action(), "complete");
-        assert_eq!(status.bottom_panel_contract(), "batch-debug-open");
+        assert_eq!(
+            status.bottom_panel_contract(),
+            "batch-debug=simulate-or-run:open"
+        );
     }
 
     #[test]
@@ -197,7 +200,13 @@ mod tests {
         assert_eq!(saved.next_action(), "simulate");
         assert_eq!(simulated.next_action(), "run");
         assert_eq!(ran.next_action(), "trace");
-        assert_eq!(saved.bottom_panel_contract(), "batch-debug-pending");
-        assert_eq!(simulated.bottom_panel_contract(), "batch-debug-open");
+        assert_eq!(
+            saved.bottom_panel_contract(),
+            "batch-debug=simulate-or-run:pending"
+        );
+        assert_eq!(
+            simulated.bottom_panel_contract(),
+            "batch-debug=simulate-or-run:open"
+        );
     }
 }

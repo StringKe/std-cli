@@ -195,7 +195,13 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
     assert!(summary.contains("builder_next_action=complete"));
-    assert!(summary.contains("builder_bottom_panel_contract=batch-debug-open"));
+    assert!(summary.contains(
+        "builder_bottom_panel_contract=batch-debug=simulate:open|run:open|planned-run:open|history:open"
+    ));
+    assert!(summary.contains("helper=open"));
+    assert!(summary.contains("tabs=Batch Debug|Logs|Problems|Performance"));
+    assert!(summary.contains("selected=Batch Debug"));
+    assert!(summary.contains("role=bottom-panel-tabs"));
     assert!(summary.contains("history_timeline_contract=timeline=expanded"));
     assert!(summary.contains("columns=step,status,started,finished,payload"));
     assert!(summary.contains("history_trace_steps=1"));

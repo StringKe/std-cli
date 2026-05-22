@@ -185,7 +185,7 @@ impl StudioSmokeReport {
             && self.builder_trace_status == "Completed"
             && self.builder_side_effect_model == "simulate=dry-run,run=audit-log"
             && self.builder_next_action == "complete"
-            && self.builder_bottom_panel_contract == "batch-debug-open"
+            && builder_bottom_panel_contract_pass(&self.builder_bottom_panel_contract)
             && self
                 .builder_debug_panel_contract
                 .contains("debug_panel=true,dry_run=true,execution=true,statuses=")
@@ -430,6 +430,18 @@ fn settings_contract_pass(contract: &str) -> bool {
         "focus-ring|ui-scale",
         "ai_control=token-toggle-row",
         "storage_control=token-path-row",
+    ]
+    .into_iter()
+    .all(|term| contract.contains(term))
+}
+
+fn builder_bottom_panel_contract_pass(contract: &str) -> bool {
+    [
+        "batch-debug=simulate:open|run:open|planned-run:open|history:open",
+        "helper=open",
+        "tabs=Batch Debug|Logs|Problems|Performance",
+        "selected=Batch Debug",
+        "role=bottom-panel-tabs",
     ]
     .into_iter()
     .all(|term| contract.contains(term))
