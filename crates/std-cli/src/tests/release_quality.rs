@@ -53,7 +53,7 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
         "manual_ui_evidence=background_ui_rule=isolated-harness-only",
-        "manual_ui_evidence_rule=ui_capture_pixels=samples+unique_colors+black_pixels+white_pixels",
+        "manual_ui_evidence_rule=ui_capture_pixels=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
         "manual_ui_evidence_rule=ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
     ] {
         assert!(report.contains(required), "{required}");

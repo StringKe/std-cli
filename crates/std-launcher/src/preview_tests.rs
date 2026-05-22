@@ -212,7 +212,9 @@ fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport)
     assert!(summary.contains("launcher-dark-action-panel.png"));
     assert!(summary.contains("capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
     assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
-    assert!(summary.contains("pixel_evidence_rule=samples+unique_colors+black_pixels+white_pixels"));
+    assert!(summary.contains(
+        "pixel_evidence_rule=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
+    ));
     assert!(summary
         .contains("carrier_reject_rule=reject-single-color+dominant-black+dominant-white-carrier"));
 }

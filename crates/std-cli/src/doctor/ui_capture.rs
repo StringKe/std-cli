@@ -62,9 +62,11 @@ fn verify_capture_line(
     let height = capture_dimension(line, "height=", surface, theme, scenario)?;
     let evidence = CapturePixelEvidence {
         samples: capture_dimension(line, "samples=", surface, theme, scenario)?,
+        opaque_samples: capture_dimension(line, "opaque_samples=", surface, theme, scenario)?,
         unique_colors: capture_dimension(line, "unique_colors=", surface, theme, scenario)?,
         black_pixels: capture_count(line, "black_pixels=", surface, theme, scenario)?,
         white_pixels: capture_count(line, "white_pixels=", surface, theme, scenario)?,
+        transparent_pixels: capture_count(line, "transparent_pixels=", surface, theme, scenario)?,
     };
     verify_pixel_evidence(surface, theme, scenario, &evidence)?;
     let expected_name = format!("{surface}-{theme}-{scenario}.png");
@@ -140,7 +142,7 @@ mod tests {
     use super::*;
     use crate::doctor::workspace::find_workspace_root;
 
-    const SAMPLE_EVIDENCE: &str = "samples=9 unique_colors=3 black_pixels=0 white_pixels=0";
+    const SAMPLE_EVIDENCE: &str = "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=0 transparent_pixels=0";
 
     #[test]
     fn ui_capture_scripts_require_explicit_preview_opt_in() {
@@ -272,11 +274,11 @@ mod tests {
     fn ui_capture_manifest_rejects_dominant_black_or_white_carrier_evidence() {
         let black = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 unique_colors=3 black_pixels=7 white_pixels=0",
+            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=7 white_pixels=0 transparent_pixels=0",
         );
         let white = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 unique_colors=3 black_pixels=0 white_pixels=7",
+            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=7 transparent_pixels=0",
         );
 
         assert!(verify_ui_capture_manifest_with_root(&black, None)

@@ -83,7 +83,8 @@ impl StudioCaptureManifest {
                 .collect(),
             capture_command: "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
             verify_rule: "manifest-current-run-png-files-by-theme-state",
-            pixel_evidence_rule: "samples+unique_colors+black_pixels+white_pixels",
+            pixel_evidence_rule:
+                "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
             carrier_reject_rule: "reject-single-color+dominant-black+dominant-white-carrier",
         }
     }
@@ -102,7 +103,8 @@ impl StudioCaptureManifest {
                 .all(|file| file.starts_with("studio-") && file.ends_with(".png"))
             && self.capture_command == "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"
             && self.verify_rule == "manifest-current-run-png-files-by-theme-state"
-            && self.pixel_evidence_rule == "samples+unique_colors+black_pixels+white_pixels"
+            && self.pixel_evidence_rule
+                == "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
             && self.carrier_reject_rule
                 == "reject-single-color+dominant-black+dominant-white-carrier"
     }

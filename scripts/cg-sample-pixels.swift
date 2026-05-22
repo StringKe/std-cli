@@ -40,8 +40,10 @@ let xPercents = [25, 50, 75]
 let yPercents = [25, 50, 75]
 var colors = Set<String>()
 var samples = 0
+var opaqueSamples = 0
 var blackPixels = 0
 var whitePixels = 0
+var transparentPixels = 0
 
 for xPercent in xPercents {
     for yPercent in yPercents {
@@ -51,9 +53,15 @@ for xPercent in xPercents {
         let r = pixels[offset]
         let g = pixels[offset + 1]
         let b = pixels[offset + 2]
+        let a = pixels[offset + 3]
+        samples += 1
+        if a == 0 {
+            transparentPixels += 1
+            continue
+        }
+        opaqueSamples += 1
         let color = String(format: "%02X%02X%02X", r, g, b)
         colors.insert(color)
-        samples += 1
         if r == 0 && g == 0 && b == 0 {
             blackPixels += 1
         }
@@ -63,4 +71,4 @@ for xPercent in xPercents {
     }
 }
 
-print("samples=\(samples) unique_colors=\(colors.count) black_pixels=\(blackPixels) white_pixels=\(whitePixels)")
+print("samples=\(samples) opaque_samples=\(opaqueSamples) unique_colors=\(colors.count) black_pixels=\(blackPixels) white_pixels=\(whitePixels) transparent_pixels=\(transparentPixels)")

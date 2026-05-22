@@ -88,9 +88,11 @@ fn check_window_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "CGContext(",
         "xPercents = [25, 50, 75]",
         "yPercents = [25, 50, 75]",
+        "opaqueSamples",
         "unique_colors",
         "black_pixels",
         "white_pixels",
+        "transparent_pixels",
     ] {
         check_text(&sampler, required)?;
     }
