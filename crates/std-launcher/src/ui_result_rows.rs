@@ -1,6 +1,6 @@
 use crate::{
     ui_metrics, ui_result_icons,
-    ui_result_model::{group_header_label, LauncherResultRowModel},
+    ui_result_model::{group_header_label, LauncherResultRowModel, TitleSegment},
 };
 use eframe::egui;
 use std_egui::{
@@ -116,11 +116,7 @@ fn paint_result_text(
     let painter = ui.painter().with_clip_rect(layout.text_clip);
     ui.scope_builder(egui::UiBuilder::new().max_rect(layout.text_clip), |ui| {
         ui.scope_builder(egui::UiBuilder::new().max_rect(layout.title_rect), |ui| {
-            let text = egui::RichText::new(&model.title)
-                .font(Text::body())
-                .color(Color::fg_primary(ctx));
-            let text = if selected { text.strong() } else { text };
-            ui.add(egui::Label::new(text).truncate());
+            render_title_segments(ui, &model.title_segments, selected, ctx);
         });
     });
     painter.text(
@@ -134,6 +130,33 @@ fn paint_result_text(
             Color::fg_tertiary(ctx)
         },
     );
+}
+
+fn render_title_segments(
+    ui: &mut egui::Ui,
+    segments: &[TitleSegment],
+    selected: bool,
+    ctx: &egui::Context,
+) {
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 0.0;
+        for segment in segments {
+            let color = if segment.matched {
+                Color::fg_primary(ctx)
+            } else {
+                Color::fg_tertiary(ctx)
+            };
+            let text = egui::RichText::new(&segment.text)
+                .font(Text::body())
+                .color(color);
+            let text = if selected || segment.matched {
+                text.strong()
+            } else {
+                text
+            };
+            ui.label(text);
+        }
+    });
 }
 
 fn paint_result_right(
@@ -258,6 +281,16 @@ mod tests {
     }
 
     #[test]
+    fn title_renderer_uses_segmented_rich_text_for_query_highlight() {
+        let source = include_str!("ui_result_rows.rs");
+
+        assert!(source.contains("render_title_segments"));
+        assert!(source.contains("segment.matched"));
+        assert!(source.contains("Color::fg_primary(ctx)"));
+        assert!(source.contains("Color::fg_tertiary(ctx)"));
+    }
+
+    #[test]
     fn result_row_background_uses_selected_hover_and_idle_layers() {
         let ctx = egui::Context::default();
 
@@ -287,8 +320,8 @@ mod tests {
         let core = std_core::StdCore::default();
         let mut view = LauncherViewModel::new(&core);
         view.results = vec![result.clone()];
-        let selected = LauncherResultRowModel::from_result(&result, None, 0, 1, true);
-        let idle = LauncherResultRowModel::from_result(&result, None, 0, 1, false);
+        let selected = LauncherResultRowModel::from_result(&result, None, "index", 0, 1, true);
+        let idle = LauncherResultRowModel::from_result(&result, None, "index", 0, 1, false);
 
         let selected_label = result_accessibility_label(&selected, &view);
         let idle_label = result_accessibility_label(&idle, &view);

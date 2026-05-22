@@ -99,6 +99,10 @@ mod tests {
     fn row(title: &str, result_index: usize) -> LauncherResultRowModel {
         LauncherResultRowModel {
             title: title.to_string(),
+            title_segments: vec![crate::ui_result_model::TitleSegment {
+                text: title.to_string(),
+                matched: false,
+            }],
             subtitle: "Test row".to_string(),
             kind: "Command".to_string(),
             icon_label: "CMD".to_string(),

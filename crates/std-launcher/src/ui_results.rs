@@ -44,6 +44,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
     let items = list_items(
         &state.view.results,
         state.view.preview.as_ref(),
+        &state.view.query,
         state.view.selected,
     );
     egui::ScrollArea::vertical()
@@ -199,7 +200,7 @@ mod tests {
             score: 1.0,
             matched_fields: vec!["name".to_string()],
         };
-        let row = LauncherResultRowModel::from_result(&result, None, 0, 1, true);
+        let row = LauncherResultRowModel::from_result(&result, None, "rebuild", 0, 1, true);
 
         assert_eq!(
             result_row_keyboard_affordance(&row).0,
@@ -227,7 +228,7 @@ mod tests {
             score: 1.0,
             matched_fields: vec!["name".to_string()],
         };
-        let row = LauncherResultRowModel::from_result(&result, None, 2, 5, true);
+        let row = LauncherResultRowModel::from_result(&result, None, "studio", 2, 5, true);
         let (direct, primary, action) = result_row_keyboard_affordance(&row);
 
         assert_eq!(direct, std_egui::input::launcher_result_keycap(2).unwrap());
