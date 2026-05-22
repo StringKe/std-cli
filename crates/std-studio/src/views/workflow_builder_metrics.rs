@@ -1,39 +1,23 @@
 use eframe::egui;
-use std_egui::tokens::Space;
+use std_egui::tokens::{Space, StudioSize};
 
 use super::row_metrics;
 
 pub(crate) const BUILDER_PANEL_GAP: f32 = Space::SM as f32;
-pub(crate) const BUILDER_TOOLBAR_HEIGHT: f32 = 44.0;
-pub(crate) const BUILDER_WIDE_BREAKPOINT: f32 = 560.0;
-pub(crate) const BUILDER_LEFT_RATIO: f32 = 0.48;
-pub(crate) const BUILDER_PANE_MIN_WIDTH: f32 = 260.0;
-pub(crate) const BUILDER_GOAL_INPUT_MAX_WIDTH: f32 = BUILDER_PANE_MIN_WIDTH;
-pub(crate) const BUILDER_GOAL_INPUT_HEIGHT: f32 = 28.0;
-pub(crate) const BUILDER_PARAMETERS_HEIGHT: f32 = 92.0;
-pub(crate) const BUILDER_AI_INPUT_HEIGHT: f32 = Space::XL as f32;
+pub(crate) const BUILDER_TOOLBAR_HEIGHT: f32 = StudioSize::TOOLBAR_HEIGHT;
 pub(crate) const PROPERTY_SINGLE_LINE_HEIGHT: f32 = Space::LG as f32;
 pub(crate) const PROPERTY_LABEL_HEIGHT: f32 = Space::LG as f32;
 
 pub(crate) fn builder_columns(available_width: f32) -> Option<(f32, f32)> {
-    if available_width < BUILDER_WIDE_BREAKPOINT {
-        return None;
-    }
-    let left =
-        ((available_width - BUILDER_PANEL_GAP) * BUILDER_LEFT_RATIO).max(BUILDER_PANE_MIN_WIDTH);
-    let right = (available_width - left - BUILDER_PANEL_GAP).max(BUILDER_PANE_MIN_WIDTH);
-    Some((left, right))
+    StudioSize::workflow_builder_columns(available_width)
 }
 
 pub(crate) fn goal_input_size(available_width: f32) -> [f32; 2] {
-    [
-        available_width.min(BUILDER_GOAL_INPUT_MAX_WIDTH),
-        BUILDER_GOAL_INPUT_HEIGHT,
-    ]
+    StudioSize::workflow_builder_goal_input_size(available_width)
 }
 
 pub(crate) fn parameter_editor_size(available_width: f32) -> [f32; 2] {
-    [available_width, BUILDER_PARAMETERS_HEIGHT]
+    StudioSize::workflow_builder_parameter_editor_size(available_width)
 }
 
 pub(crate) fn step_index_size() -> [f32; 2] {
@@ -44,11 +28,11 @@ pub(crate) fn step_index_size() -> [f32; 2] {
 }
 
 pub(crate) fn ai_input_size(available_width: f32) -> [f32; 2] {
-    [available_width, BUILDER_AI_INPUT_HEIGHT]
+    StudioSize::workflow_builder_ai_input_size(available_width)
 }
 
 pub(crate) fn builder_pane_size(width: f32) -> egui::Vec2 {
-    egui::vec2(width, 0.0)
+    StudioSize::workflow_builder_pane_size(width)
 }
 
 #[cfg(test)]
@@ -60,12 +44,19 @@ mod tests {
         assert_eq!(BUILDER_TOOLBAR_HEIGHT, 44.0);
         assert_eq!(row_metrics::BUILDER_STEP_ROW_HEIGHT, 48.0);
         assert_eq!(BUILDER_PANEL_GAP, Space::SM as f32);
-        assert_eq!(BUILDER_AI_INPUT_HEIGHT, Space::XL as f32);
+        assert_eq!(StudioSize::WORKFLOW_BUILDER_WIDE_BREAKPOINT, 560.0);
+        assert_eq!(
+            StudioSize::workflow_builder_ai_input_size(640.0),
+            [640.0, Space::XL as f32]
+        );
     }
 
     #[test]
     fn narrow_builder_uses_stacked_layout() {
-        assert_eq!(builder_columns(BUILDER_WIDE_BREAKPOINT - 1.0), None);
+        assert_eq!(
+            builder_columns(StudioSize::WORKFLOW_BUILDER_WIDE_BREAKPOINT - 1.0),
+            None
+        );
     }
 
     #[test]

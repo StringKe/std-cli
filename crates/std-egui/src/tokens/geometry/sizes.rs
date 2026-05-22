@@ -180,6 +180,10 @@ impl StudioSize {
     pub const MEMORY_LIST_MAX_HEIGHT: f32 = 590.0;
     pub const PLUGIN_CHECKS_MAX_HEIGHT: f32 = 190.0;
     pub const MULTILINE_INPUT_HEIGHT: f32 = 220.0;
+    pub const WORKFLOW_BUILDER_WIDE_BREAKPOINT: f32 = 560.0;
+    pub const WORKFLOW_BUILDER_LEFT_RATIO: f32 = 0.48;
+    pub const WORKFLOW_BUILDER_PANE_MIN_WIDTH: f32 = 260.0;
+    pub const WORKFLOW_BUILDER_PARAMETERS_HEIGHT: f32 = 92.0;
 
     pub fn input_size(width: f32) -> egui::Vec2 {
         egui::vec2(width, UiScale::from_env().f32(Self::INPUT_HEIGHT))
@@ -191,5 +195,39 @@ impl StudioSize {
 
     pub fn thirds_column_width(available_width: f32, gap: f32) -> f32 {
         (available_width - gap * 2.0) / 3.0
+    }
+
+    pub fn workflow_builder_panel_gap() -> f32 {
+        Space::sm() as f32
+    }
+
+    pub fn workflow_builder_columns(available_width: f32) -> Option<(f32, f32)> {
+        if available_width < Self::WORKFLOW_BUILDER_WIDE_BREAKPOINT {
+            return None;
+        }
+        let gap = Self::workflow_builder_panel_gap();
+        let left = ((available_width - gap) * Self::WORKFLOW_BUILDER_LEFT_RATIO)
+            .max(Self::WORKFLOW_BUILDER_PANE_MIN_WIDTH);
+        let right = (available_width - left - gap).max(Self::WORKFLOW_BUILDER_PANE_MIN_WIDTH);
+        Some((left, right))
+    }
+
+    pub fn workflow_builder_goal_input_size(available_width: f32) -> [f32; 2] {
+        [
+            available_width.min(Self::WORKFLOW_BUILDER_PANE_MIN_WIDTH),
+            Self::INPUT_HEIGHT,
+        ]
+    }
+
+    pub fn workflow_builder_parameter_editor_size(available_width: f32) -> [f32; 2] {
+        [available_width, Self::WORKFLOW_BUILDER_PARAMETERS_HEIGHT]
+    }
+
+    pub fn workflow_builder_ai_input_size(available_width: f32) -> [f32; 2] {
+        [available_width, Space::xl() as f32]
+    }
+
+    pub fn workflow_builder_pane_size(width: f32) -> egui::Vec2 {
+        egui::vec2(width, 0.0)
     }
 }

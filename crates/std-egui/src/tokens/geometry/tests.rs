@@ -98,6 +98,35 @@ fn studio_sizes_export_workspace_layout_geometry() {
 }
 
 #[test]
+fn studio_sizes_export_workflow_builder_geometry() {
+    assert_eq!(StudioSize::WORKFLOW_BUILDER_WIDE_BREAKPOINT, 560.0);
+    assert_eq!(StudioSize::WORKFLOW_BUILDER_LEFT_RATIO, 0.48);
+    assert_eq!(StudioSize::WORKFLOW_BUILDER_PANE_MIN_WIDTH, 260.0);
+    assert_eq!(StudioSize::workflow_builder_panel_gap(), 12.0);
+    assert_eq!(StudioSize::workflow_builder_columns(559.0), None);
+    assert_eq!(
+        StudioSize::workflow_builder_columns(800.0),
+        Some((378.24, 409.76))
+    );
+    assert_eq!(
+        StudioSize::workflow_builder_goal_input_size(800.0),
+        [260.0, 28.0]
+    );
+    assert_eq!(
+        StudioSize::workflow_builder_parameter_editor_size(640.0),
+        [640.0, 92.0]
+    );
+    assert_eq!(
+        StudioSize::workflow_builder_ai_input_size(640.0),
+        [640.0, 32.0]
+    );
+    assert_eq!(
+        StudioSize::workflow_builder_pane_size(320.0),
+        egui::vec2(320.0, 0.0)
+    );
+}
+
+#[test]
 fn exported_elevation_matches_documented_shadow_levels() {
     let ctx = egui::Context::default();
     let a11y = AccessibilityContext {
