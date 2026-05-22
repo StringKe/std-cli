@@ -131,15 +131,23 @@ fn action_panel_keyboard_path_defers_external_runner_by_default() {
     state.update_query("terminal");
     state.handle_keyboard_input(LauncherKey::ActionPanel, false);
     state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let selected_before_trigger = state
+        .action_panel
+        .selected_item()
+        .unwrap()
+        .title()
+        .to_string();
     let execution = state
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
 
     assert_eq!(
-        state.action_panel.selected_item().unwrap().title(),
+        selected_before_trigger,
         std_egui::i18n::t("launcher.action.defer")
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert!(!state.action_panel.open);
+    assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
 }
 
 #[test]
@@ -154,12 +162,18 @@ fn action_panel_default_enter_on_review_first_still_defers_external_runner() {
 
     state.update_query("terminal");
     state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    let selected_before_trigger = state
+        .action_panel
+        .selected_item()
+        .unwrap()
+        .title()
+        .to_string();
     let execution = state
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
 
     assert_eq!(
-        state.action_panel.selected_item().unwrap().title(),
+        selected_before_trigger,
         std_egui::i18n::t("launcher.action.review_first")
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
@@ -186,12 +200,18 @@ fn review_first_shows_command_without_triggering_external_action() {
 
     state.update_query("terminal");
     state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    let selected_before_trigger = state
+        .action_panel
+        .selected_item()
+        .unwrap()
+        .title()
+        .to_string();
     let execution = state
         .handle_keyboard_input(LauncherKey::Enter, false)
         .unwrap();
 
     assert_eq!(
-        state.action_panel.selected_item().unwrap().title(),
+        selected_before_trigger,
         std_egui::i18n::t("launcher.action.review_first")
     );
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
@@ -204,6 +224,52 @@ fn review_first_shows_command_without_triggering_external_action() {
         Some("review command before running external action")
     );
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
+    assert!(!state.action_panel.open);
+    assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
+}
+
+#[test]
+fn action_panel_trigger_closes_before_feedback_rendering() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    state.update_action_panel_query("copy");
+    let execution = state
+        .handle_keyboard_input(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::Completed);
+    assert!(!state.action_panel.open);
+    assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
+    assert!(state.view.feedback.is_some());
+}
+
+#[test]
+fn action_panel_open_in_studio_closes_panel_and_restores_search_focus() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("index");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    state.update_action_panel_query("studio");
+    let execution = state.handle_keyboard_input(LauncherKey::Enter, false);
+
+    assert!(execution.is_none());
+    assert!(!state.action_panel.open);
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(state.studio_intent.is_some());
 }
 
 #[test]
@@ -343,12 +409,15 @@ fn action_panel_copy_execution_uses_stable_action_kind_not_display_name() {
     state.update_query("terminal");
     state.open_action_panel();
     state.update_action_panel_query("copy");
+    let selected_before_trigger = state.action_panel.selected_item().cloned();
     let execution = state.trigger_action_panel_selection().unwrap();
 
     assert!(matches!(
-        state.action_panel.selected_item(),
+        selected_before_trigger,
         Some(ActionPanelItem::CopyCommand(_))
     ));
+    assert!(!state.action_panel.open);
+    assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
     assert!(execution.action_name.starts_with("Copy Command:"));
     assert_ne!(execution.action_name, "Copy Action Command");
     assert_eq!(execution.status, ActionExecutionStatus::Completed);

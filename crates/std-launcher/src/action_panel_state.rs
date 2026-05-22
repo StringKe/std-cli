@@ -52,7 +52,8 @@ impl LauncherState {
         &mut self,
         allow_external_runner: bool,
     ) -> Option<ActionExecution> {
-        match self.action_panel.selected_item()?.clone() {
+        let selected = self.action_panel.selected_item()?.clone();
+        let execution = match selected {
             ActionPanelItem::Run => {
                 self.trigger_selected_with_external_runner(allow_external_runner)
             }
@@ -63,6 +64,14 @@ impl LauncherState {
                 None
             }
             ActionPanelItem::CopyCommand(command) => Some(self.complete_action_panel_copy(command)),
+        };
+        self.action_panel.close();
+        if execution.is_some() {
+            self.focus_section = LauncherFocusSection::Feedback;
+        } else {
+            self.focus_section = LauncherFocusSection::Search;
         }
+        self.focus_source = LauncherFocusSource::Keyboard;
+        execution
     }
 }
