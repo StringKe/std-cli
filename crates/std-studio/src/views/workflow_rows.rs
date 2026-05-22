@@ -388,7 +388,7 @@ mod tests {
     #[test]
     fn builder_type_chip_width_is_bounded() {
         assert_eq!(
-            builder_type_chip_width("Action"),
+            builder_type_chip_width("Run"),
             row_metrics::BUILDER_TYPE_CHIP_MIN_WIDTH
         );
         assert_eq!(

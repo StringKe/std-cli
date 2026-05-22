@@ -320,7 +320,11 @@ fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
         egui::Sense::hover(),
     );
     response.widget_info(|| {
-        egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), &row.name)
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            bottom_panel_row_a11y_label(row),
+        )
     });
     if ui.is_rect_visible(rect) {
         let fill = if response.hovered() {
@@ -358,6 +362,10 @@ fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
         );
     }
     ui.add_space(Space::TWO_XS as f32);
+}
+
+fn bottom_panel_row_a11y_label(row: &BottomPanelRow) -> String {
+    format!("{}, status {}, {}", row.name, row.status, row.detail)
 }
 
 fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
@@ -439,5 +447,19 @@ mod tests {
         assert!(app.layout.bottom_panel_open);
         assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
         assert_eq!(app.bottom_panel_snapshot().title, "Batch Debug");
+    }
+
+    #[test]
+    fn bottom_panel_rows_expose_status_and_detail_to_accessibility() {
+        let row = BottomPanelRow {
+            name: "Run tests".to_string(),
+            status: "Completed".to_string(),
+            detail: "started=1 finished=2".to_string(),
+        };
+
+        assert_eq!(
+            bottom_panel_row_a11y_label(&row),
+            "Run tests, status Completed, started=1 finished=2"
+        );
     }
 }
