@@ -111,52 +111,59 @@ fn render_status_icon(ui: &mut egui::Ui, ctx: &egui::Context, feedback: &Launche
 
 fn render_actions(ui: &mut egui::Ui, state: &mut LauncherState, feedback: &LauncherFeedback) {
     let actions = feedback.actions();
-    ui.horizontal_wrapped(|ui| {
-        for (index, action) in actions.into_iter().enumerate() {
-            let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
-                && state.view.selected_feedback_action == index;
-            match action {
-                LauncherFeedbackAction::Copy => {
-                    if feedback_button(
-                        ui,
-                        i18n::t("launcher.feedback.copy"),
-                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::Copy),
-                        selected,
-                    )
-                    .clicked()
-                    {
-                        if let Some(execution) = state.copy_feedback_to_clipboard_model() {
-                            ui.ctx().copy_text(execution.message);
+    ui.allocate_ui_with_layout(
+        egui::vec2(ui.available_width(), ui_metrics::feedback_action_height()),
+        egui::Layout::left_to_right(egui::Align::Center),
+        |ui| {
+            for (index, action) in actions.into_iter().enumerate() {
+                let selected = state.focus_section == std_launcher::LauncherFocusSection::Feedback
+                    && state.view.selected_feedback_action == index;
+                match action {
+                    LauncherFeedbackAction::Copy => {
+                        if feedback_button(
+                            ui,
+                            i18n::t("launcher.feedback.copy"),
+                            feedback_action_a11y_label(feedback, LauncherFeedbackAction::Copy),
+                            selected,
+                        )
+                        .clicked()
+                        {
+                            if let Some(execution) = state.copy_feedback_to_clipboard_model() {
+                                ui.ctx().copy_text(execution.message);
+                            }
+                        }
+                    }
+                    LauncherFeedbackAction::Retry => {
+                        if feedback_button(
+                            ui,
+                            i18n::t("launcher.feedback.retry"),
+                            feedback_action_a11y_label(feedback, LauncherFeedbackAction::Retry),
+                            selected,
+                        )
+                        .clicked()
+                        {
+                            state.trigger_selected_by_user();
+                        }
+                    }
+                    LauncherFeedbackAction::OpenStudio => {
+                        if feedback_button(
+                            ui,
+                            i18n::t("launcher.feedback.open_studio"),
+                            feedback_action_a11y_label(
+                                feedback,
+                                LauncherFeedbackAction::OpenStudio,
+                            ),
+                            selected,
+                        )
+                        .clicked()
+                        {
+                            state.open_studio_execution_history_from_feedback();
                         }
                     }
                 }
-                LauncherFeedbackAction::Retry => {
-                    if feedback_button(
-                        ui,
-                        i18n::t("launcher.feedback.retry"),
-                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::Retry),
-                        selected,
-                    )
-                    .clicked()
-                    {
-                        state.trigger_selected_by_user();
-                    }
-                }
-                LauncherFeedbackAction::OpenStudio => {
-                    if feedback_button(
-                        ui,
-                        i18n::t("launcher.feedback.open_studio"),
-                        feedback_action_a11y_label(feedback, LauncherFeedbackAction::OpenStudio),
-                        selected,
-                    )
-                    .clicked()
-                    {
-                        state.open_studio_execution_history_from_feedback();
-                    }
-                }
             }
-        }
-    });
+        },
+    );
 }
 
 fn feedback_button(

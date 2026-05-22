@@ -76,7 +76,7 @@ fn feedback_detail_surface_wraps_two_lines_without_truncating() {
     assert!(source.contains(".wrap()"));
     assert!(!source.contains(".truncate()"));
     assert!(metrics.contains("feedback_text_height()"));
-    assert!(metrics.contains("scale().f32(58.0)"));
+    assert!(metrics.contains("scale.f32(58.0)"));
     assert!(metrics.contains("scale().f32(36.0)"));
 }
 
@@ -99,8 +99,25 @@ fn feedback_surface_stacks_text_above_actions() {
 
     assert!(render_contents.contains("render_text(ui, &ctx, feedback);"));
     assert!(render_contents.contains("render_actions(ui, state, feedback);"));
-    assert!(source.contains("ui.horizontal_wrapped"));
+    assert!(source.contains("ui_metrics::feedback_action_height()"));
+    assert!(source.contains("Layout::left_to_right"));
     assert!(!render_contents.contains("right_to_left"));
+}
+
+#[test]
+fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
+    let metrics = include_str!("ui_metrics.rs");
+    let source = include_str!("ui_feedback.rs");
+
+    assert!(metrics.contains("feedback_panel_height_for_scale"));
+    assert!(metrics.contains("feedback_text_height()"));
+    assert!(metrics.contains("feedback_action_height()"));
+    assert!(
+        metrics.contains("feedback_panel_height_for_scale(scale) + scale.f32(Space::XS as f32)")
+    );
+    assert!(metrics.contains("feedback_action_height_for_scale"));
+    assert!(!metrics.contains("scale.f32(66.0)"));
+    assert!(source.contains("ui_metrics::feedback_action_height()"));
 }
 
 #[test]

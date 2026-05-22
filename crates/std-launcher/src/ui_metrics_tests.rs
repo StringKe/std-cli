@@ -191,6 +191,20 @@ fn native_host_window_height_includes_panel_inner_padding() {
 }
 
 #[test]
+fn feedback_status_height_budget_covers_rendered_panel() {
+    let mut state = LauncherState::new();
+    crate::preview::apply_preview_scenario(&mut state, "defer");
+    let scale = UiScale::default();
+    let budget = extra_status_height_for_scale(&state, scale);
+    let rendered_panel = feedback_panel_height_for_scale(scale);
+    let rendered_budget = rendered_panel + scale.f32(Space::XS as f32);
+
+    assert_eq!(feedback_panel_height_for_scale(scale), 98.0);
+    assert_eq!(budget, rendered_budget);
+    assert_eq!(budget, 106.0);
+}
+
+#[test]
 fn body_height_counts_virtual_group_header_slots() {
     let mut state = LauncherState::new();
     state.update_query("terminal");
