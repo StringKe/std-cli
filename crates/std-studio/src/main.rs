@@ -20,6 +20,8 @@ mod preview;
 mod preview_evidence;
 #[cfg(test)]
 mod preview_tests;
+#[cfg(test)]
+mod settings_tests;
 mod shell;
 mod shell_icons;
 mod shell_nav_model;
