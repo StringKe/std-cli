@@ -1,6 +1,8 @@
 use crate::launcher_feedback::{LauncherFeedback, LauncherFeedbackAction};
 use crate::launcher_query::{normalize_query, LauncherQueryRequest};
-use crate::launcher_results::{is_action_result, is_command_result, sort_launcher_results};
+use crate::launcher_results::{
+    exact_app_alias_index, is_action_result, is_command_result, sort_launcher_results,
+};
 use std::time::Instant;
 use std_core::StdCore;
 use std_types::{ActionExecution, ActionPreview, SearchResult};
@@ -140,7 +142,7 @@ impl LauncherViewModel {
         self.telemetry.last_result_count = self.results.len();
         self.telemetry.last_total_matches = self.results.len() + usize::from(overflowed);
         self.telemetry.last_overflowed = overflowed;
-        self.selected = 0;
+        self.selected = exact_app_alias_index(&self.results, &query.search_query).unwrap_or(0);
         self.refresh_preview(core);
     }
 

@@ -166,12 +166,12 @@ mod tests {
     }
 
     #[test]
-    fn launcher_exact_alias_results_remain_available_inside_documented_group_order() {
+    fn launcher_exact_alias_query_selects_app_without_reordering_groups() {
         let core = test_core();
         core.register_action(std_types::RegistryEntry::from_action(
             std_types::Action::new(
                 "Open App: WeChat",
-                "Launch fixture macOS app from test apps dir",
+                "Aliases: WeChat, weixin, 微信 / Path: /tmp/WeChat.app",
                 "When opening this local macOS application",
                 ActionType::AppLaunch,
             ),
@@ -196,7 +196,12 @@ mod tests {
             .iter()
             .find(|result| result.action.name == "Open App: WeChat")
             .unwrap();
-        assert_eq!(wechat.matched_fields, vec!["tags".to_string()]);
+        assert!(wechat.matched_fields.contains(&"tags".to_string()));
+        assert_eq!(
+            model.selected_result().unwrap().action.name,
+            "Open App: WeChat"
+        );
+        assert_eq!(model.preview.as_ref().unwrap().title, "Open App: WeChat");
     }
 
     #[test]
