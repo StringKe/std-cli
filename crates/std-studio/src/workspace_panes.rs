@@ -196,15 +196,7 @@ fn render_workspace_toolbar(
     commands: &WorkspaceCommandQueue,
     pending_focus: &mut Option<WorkspacePaneId>,
 ) {
-    let response = ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
-    response.widget_info(|| {
-        egui::WidgetInfo::labeled(
-            egui::WidgetType::Label,
-            ui.is_enabled(),
-            workspace_pane_a11y_label(spec),
-        )
-    });
-    request_workspace_focus(ui, spec.id, pending_focus);
+    workspace_focus_sentinel(ui, spec, pending_focus);
     ui.horizontal_wrapped(|ui| {
         ui.label(egui::RichText::new(&spec.heading).color(ui::strong_text(ui.ctx())));
         render_workspace_summary(ui, spec);
@@ -231,6 +223,26 @@ fn request_workspace_focus(
     ui.ctx()
         .memory_mut(|memory| memory.request_focus(workspace_pane_focus_id(id)));
     *pending_focus = None;
+}
+
+fn workspace_focus_sentinel(
+    ui: &mut egui::Ui,
+    spec: &StudioWorkspaceSpec,
+    pending_focus: &mut Option<WorkspacePaneId>,
+) {
+    let response = ui.interact(
+        egui::Rect::from_min_size(ui.cursor().min, egui::Vec2::ZERO),
+        workspace_pane_focus_id(spec.id),
+        egui::Sense::focusable_noninteractive(),
+    );
+    request_workspace_focus(ui, spec.id, pending_focus);
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            workspace_pane_a11y_label(spec),
+        )
+    });
 }
 
 fn render_workspace_summary(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
@@ -362,5 +374,30 @@ pub(crate) fn workspace_action_a11y_label(
 fn push_command(commands: &WorkspaceCommandQueue, command: StudioWorkspaceCommand) {
     if let Ok(mut queue) = commands.lock() {
         queue.push(command);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn workspace_pane_toolbar_has_real_focus_sentinel() {
+        let source = include_str!("workspace_panes.rs");
+        let sentinel = source.find("fn workspace_focus_sentinel").unwrap();
+        let interact = source[sentinel..].find("ui.interact(").unwrap();
+        let focusable = source[sentinel..]
+            .find("egui::Sense::focusable_noninteractive()")
+            .unwrap();
+        let id = source[sentinel..]
+            .find("workspace_pane_focus_id(spec.id)")
+            .unwrap();
+        let request = source[sentinel..].find("request_workspace_focus(").unwrap();
+        let a11y = source[sentinel..]
+            .find("workspace_pane_a11y_label(spec)")
+            .unwrap();
+
+        assert!(interact < focusable);
+        assert!(id < focusable);
+        assert!(focusable < request);
+        assert!(request < a11y);
     }
 }
