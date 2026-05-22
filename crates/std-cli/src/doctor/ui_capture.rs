@@ -401,24 +401,24 @@ mod tests {
     }
 
     #[test]
-    fn ui_capture_manifest_rejects_all_black_or_white_carrier_evidence() {
+    fn ui_capture_manifest_rejects_dominant_black_or_white_carrier_evidence() {
         let black = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 unique_colors=3 black_pixels=9 white_pixels=0",
+            "samples=9 unique_colors=3 black_pixels=7 white_pixels=0",
         );
         let white = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 unique_colors=3 black_pixels=0 white_pixels=9",
+            "samples=9 unique_colors=3 black_pixels=0 white_pixels=7",
         );
 
         assert!(verify_ui_capture_manifest_with_root(&black, None)
             .unwrap_err()
             .to_string()
-            .contains("all black host background"));
+            .contains("dominant black host background"));
         assert!(verify_ui_capture_manifest_with_root(&white, None)
             .unwrap_err()
             .to_string()
-            .contains("all white host background"));
+            .contains("dominant white host background"));
     }
 
     fn sample_manifest() -> String {

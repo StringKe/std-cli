@@ -25,17 +25,21 @@ pub(crate) fn verify_pixel_evidence(
             "capture appears to be a single-color host carrier for {surface} {theme} {scenario}"
         )));
     }
-    if evidence.black_pixels == evidence.samples {
+    if dominant_carrier_pixels(evidence.black_pixels, evidence.samples) {
         return Err(CliError::Doctor(format!(
-            "capture appears to be all black host background for {surface} {theme} {scenario}"
+            "capture appears to be dominant black host background for {surface} {theme} {scenario}"
         )));
     }
-    if evidence.white_pixels == evidence.samples {
+    if dominant_carrier_pixels(evidence.white_pixels, evidence.samples) {
         return Err(CliError::Doctor(format!(
-            "capture appears to be all white host background for {surface} {theme} {scenario}"
+            "capture appears to be dominant white host background for {surface} {theme} {scenario}"
         )));
     }
     Ok(())
+}
+
+fn dominant_carrier_pixels(count: u32, samples: u32) -> bool {
+    count.saturating_mul(3) >= samples.saturating_mul(2)
 }
 
 #[cfg(test)]
@@ -69,29 +73,48 @@ mod tests {
     }
 
     #[test]
-    fn pixel_evidence_rejects_all_black_or_white_capture() {
+    fn pixel_evidence_rejects_dominant_black_or_white_capture() {
         let black = CapturePixelEvidence {
             samples: 9,
             unique_colors: 2,
-            black_pixels: 9,
+            black_pixels: 7,
             white_pixels: 0,
         };
         let white = CapturePixelEvidence {
             samples: 9,
             unique_colors: 2,
             black_pixels: 0,
-            white_pixels: 9,
+            white_pixels: 7,
         };
 
         assert!(verify_pixel_evidence("launcher", "dark", "results", &black)
             .unwrap_err()
             .to_string()
-            .contains("all black"));
+            .contains("dominant black"));
         assert!(
             verify_pixel_evidence("launcher", "light", "results", &white)
                 .unwrap_err()
                 .to_string()
-                .contains("all white")
+                .contains("dominant white")
         );
+    }
+
+    #[test]
+    fn pixel_evidence_accepts_non_dominant_black_or_white_samples() {
+        let dark = CapturePixelEvidence {
+            samples: 9,
+            unique_colors: 4,
+            black_pixels: 5,
+            white_pixels: 0,
+        };
+        let light = CapturePixelEvidence {
+            samples: 9,
+            unique_colors: 4,
+            black_pixels: 0,
+            white_pixels: 5,
+        };
+
+        verify_pixel_evidence("studio", "dark", "dashboard", &dark).unwrap();
+        verify_pixel_evidence("studio", "light", "dashboard", &light).unwrap();
     }
 }
