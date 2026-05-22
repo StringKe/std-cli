@@ -24,6 +24,9 @@ pub struct ThemeSmokeReport {
     pub high_contrast_light_accent_weak_alpha: u8,
     pub high_contrast_focus_ring_width: u32,
     pub min_text_contrast_x100: u16,
+    pub min_secondary_text_contrast_x100: u16,
+    pub min_tertiary_text_contrast_x100: u16,
+    pub min_high_contrast_secondary_text_contrast_x100: u16,
     pub min_accent_nontext_contrast_x100: u16,
     pub standard_launcher_enter_ms: u64,
     pub reduced_launcher_enter_ms: u64,
@@ -72,6 +75,15 @@ impl ThemeSmokeReport {
             .a(),
             high_contrast_focus_ring_width: high_contrast_a11y.focus_ring_width() as u32,
             min_text_contrast_x100: contrast_x100(super::contrast::min_text_contrast_ratio()),
+            min_secondary_text_contrast_x100: contrast_x100(
+                super::contrast::min_secondary_text_contrast_ratio(),
+            ),
+            min_tertiary_text_contrast_x100: contrast_x100(
+                super::contrast::min_tertiary_text_contrast_ratio(),
+            ),
+            min_high_contrast_secondary_text_contrast_x100: contrast_x100(
+                super::contrast::min_high_contrast_secondary_text_contrast_ratio(),
+            ),
             min_accent_nontext_contrast_x100: contrast_x100(
                 super::contrast::min_accent_nontext_contrast_ratio(),
             ),
@@ -100,6 +112,10 @@ impl ThemeSmokeReport {
             && self.high_contrast_light_accent_weak_alpha == 56
             && self.high_contrast_focus_ring_width == 3
             && self.min_text_contrast_x100 >= 450
+            && self.min_secondary_text_contrast_x100 >= 450
+            && self.min_tertiary_text_contrast_x100 >= 300
+            && self.min_high_contrast_secondary_text_contrast_x100
+                > self.min_secondary_text_contrast_x100
             && self.min_accent_nontext_contrast_x100 >= 300
             && self.standard_launcher_enter_ms == 320
             && self.reduced_launcher_enter_ms == 0
@@ -111,7 +127,7 @@ impl ThemeSmokeReport {
 
     pub fn summary(&self, surface: &str) -> String {
         format!(
-            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_dark_accent_weak_alpha={}\nhigh_contrast_light_accent_weak_alpha={}\nhigh_contrast_focus_ring_width={}\nmin_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\ntypography_contract={}\nstatus_contract={}\nno_pure_black_white_tokens={}",
+            "{surface}_theme_smoke {}\ndark_surface_0={}\ndark_surface_1={}\ndark_surface_2={}\ndark_surface_3={}\nlight_surface_0={}\nlight_surface_1={}\nlight_surface_2={}\nlight_surface_3={}\ndark_selection={}\nlight_selection={}\ndark_accent={}\nlight_accent={}\ndark_accent_weak_alpha={}\nlight_accent_weak_alpha={}\ndark_mode_applied={}\nlight_mode_applied={}\nhigh_contrast_dark_accent_weak_alpha={}\nhigh_contrast_light_accent_weak_alpha={}\nhigh_contrast_focus_ring_width={}\nmin_text_contrast_x100={}\nmin_secondary_text_contrast_x100={}\nmin_tertiary_text_contrast_x100={}\nmin_high_contrast_secondary_text_contrast_x100={}\nmin_accent_nontext_contrast_x100={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\ntypography_contract={}\nstatus_contract={}\nno_pure_black_white_tokens={}",
             if self.pass() { "PASS" } else { "FAIL" },
             color_hex(self.dark_surface_0),
             color_hex(self.dark_surface_1),
@@ -133,6 +149,9 @@ impl ThemeSmokeReport {
             self.high_contrast_light_accent_weak_alpha,
             self.high_contrast_focus_ring_width,
             self.min_text_contrast_x100,
+            self.min_secondary_text_contrast_x100,
+            self.min_tertiary_text_contrast_x100,
+            self.min_high_contrast_secondary_text_contrast_x100,
             self.min_accent_nontext_contrast_x100,
             self.standard_launcher_enter_ms,
             self.reduced_launcher_enter_ms,
@@ -252,6 +271,12 @@ mod tests {
         assert_eq!(report.high_contrast_dark_accent_weak_alpha, 82);
         assert_eq!(report.high_contrast_light_accent_weak_alpha, 56);
         assert!(report.min_text_contrast_x100 >= 450);
+        assert!(report.min_secondary_text_contrast_x100 >= 450);
+        assert!(report.min_tertiary_text_contrast_x100 >= 300);
+        assert!(
+            report.min_high_contrast_secondary_text_contrast_x100
+                > report.min_secondary_text_contrast_x100
+        );
         assert!(report.min_accent_nontext_contrast_x100 >= 300);
         assert_eq!(report.standard_launcher_enter_ms, 320);
         assert_eq!(report.reduced_launcher_enter_ms, 0);
