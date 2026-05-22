@@ -8,9 +8,7 @@ use std_egui::{
     i18n, input,
     tokens::{Color, Elevation, Radius, Space, Text},
 };
-use std_launcher::{
-    ActionPanelItem, LauncherFocusSection, LauncherFocusSource, LauncherKey, LauncherState,
-};
+use std_launcher::{ActionPanelItem, LauncherFocusSection, LauncherFocusSource, LauncherState};
 use std_types::ActionExecution;
 
 pub(crate) fn render(
@@ -95,6 +93,9 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
             action_panel_filter_a11y_label(&state.action_panel.query),
         )
     });
+    if state.keyboard_focus_visible(LauncherFocusSection::ActionPanel) {
+        response.request_focus();
+    }
     if response.changed() {
         state.update_action_panel_query(state.action_panel.query.clone());
     }
@@ -142,29 +143,13 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) -> ActionPanelCommand {
     if input::ime_composing(ui.ctx()) {
         return ActionPanelCommand::None;
     }
-    for ch in typed_action_panel_chars(ui.ctx()) {
-        state.handle_keyboard_input_by_user(LauncherKey::TypeActionPanelQuery(ch), false);
-    }
     if input::arrow_down().pressed(ui.ctx()) {
-        state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
+        state.handle_keyboard_input_by_user(std_launcher::LauncherKey::ArrowDown, false);
     }
     if input::arrow_up().pressed(ui.ctx()) {
-        state.handle_keyboard_input_by_user(LauncherKey::ArrowUp, false);
+        state.handle_keyboard_input_by_user(std_launcher::LauncherKey::ArrowUp, false);
     }
     ActionPanelCommand::None
-}
-
-fn typed_action_panel_chars(ctx: &egui::Context) -> Vec<char> {
-    ctx.input(|input| {
-        input
-            .events
-            .iter()
-            .filter_map(|event| match event {
-                egui::Event::Text(text) => text.chars().next(),
-                _ => None,
-            })
-            .collect()
-    })
 }
 
 fn action_panel_filter_a11y_label(query: &str) -> String {
@@ -281,12 +266,60 @@ mod tests {
     #[test]
     fn action_panel_typed_filter_uses_text_events_after_ime_guard() {
         let source = include_str!("ui_action_panel.rs");
-        let guard_index = source.find("input::ime_composing(ui.ctx())").unwrap();
-        let typed_index = source.find("typed_action_panel_chars(ui.ctx())").unwrap();
-        let key_index = source.find("LauncherKey::TypeActionPanelQuery").unwrap();
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let guard_index = production_source
+            .find("input::ime_composing(ui.ctx())")
+            .unwrap();
+        let changed_index = production_source.find("response.changed()").unwrap();
+        let update_index = production_source
+            .find("state.update_action_panel_query")
+            .unwrap();
 
-        assert!(guard_index < typed_index);
-        assert!(typed_index < key_index);
+        assert!(changed_index < guard_index);
+        assert!(changed_index < update_index);
+        assert!(!production_source.contains("typed_action_panel_chars"));
+    }
+
+    #[test]
+    fn action_panel_filter_requests_egui_focus_when_keyboard_focused() {
+        let source = include_str!("ui_action_panel.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let focus_branch = production_source
+            .split("state.keyboard_focus_visible(LauncherFocusSection::ActionPanel)")
+            .nth(1)
+            .and_then(|body| body.split("if response.changed()").next())
+            .unwrap();
+
+        assert!(focus_branch.contains("response.request_focus();"));
+    }
+
+    #[test]
+    fn action_panel_filter_textedit_owns_text_input() {
+        let ctx = egui::Context::default();
+        let mut state = LauncherState::new();
+        state.update_query("terminal");
+        state.open_action_panel();
+
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                search(ui, &mut state);
+            });
+        });
+        let _ = ctx.run(action_panel_text_input("co"), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                search(ui, &mut state);
+            });
+        });
+
+        assert_eq!(state.action_panel.query, "co");
+        assert_eq!(state.action_panel.selected, 0);
+    }
+
+    fn action_panel_text_input(text: &str) -> egui::RawInput {
+        egui::RawInput {
+            events: vec![egui::Event::Text(text.to_string())],
+            ..Default::default()
+        }
     }
 
     #[test]
