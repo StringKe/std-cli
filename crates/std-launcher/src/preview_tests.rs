@@ -291,6 +291,14 @@ fn ui_preview_uses_transparent_host_with_opaque_panel() {
 }
 
 #[test]
+fn ui_preview_app_forwards_transparent_clear_color() {
+    let source = include_str!("preview.rs");
+
+    assert!(source.contains("fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4]"));
+    assert!(source.contains("self.app.clear_color(visuals)"));
+}
+
+#[test]
 fn launcher_entrypoints_share_panel_native_options() {
     let main = include_str!("main.rs");
     let preview = include_str!("preview.rs");

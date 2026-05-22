@@ -41,6 +41,10 @@ fn visible_harness_state() -> LauncherState {
 }
 
 impl eframe::App for BackgroundHarnessApp {
+    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
+        self.app.clear_color(visuals)
+    }
+
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.app.update(ctx, frame);
         if self.started_at.elapsed() >= Duration::from_millis(self.timeout_ms) {
@@ -219,5 +223,13 @@ mod tests {
         assert!(!state.view.results.is_empty());
         assert_eq!(state.view.results[0].action.name, HARNESS_QUERY);
         assert!(crate::ui_metrics::panel_is_only_visible_surface(&state));
+    }
+
+    #[test]
+    fn background_harness_forwards_transparent_clear_color() {
+        let source = include_str!("background_harness.rs");
+
+        assert!(source.contains("fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4]"));
+        assert!(source.contains("self.app.clear_color(visuals)"));
     }
 }

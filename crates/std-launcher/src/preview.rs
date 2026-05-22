@@ -117,6 +117,10 @@ impl LauncherPreviewApp {
 }
 
 impl eframe::App for LauncherPreviewApp {
+    fn clear_color(&self, visuals: &egui::Visuals) -> [f32; 4] {
+        self.app.clear_color(visuals)
+    }
+
     fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         self.app.update(ctx, frame);
         if self.started_at.elapsed() >= Duration::from_millis(self.timeout_ms) {
