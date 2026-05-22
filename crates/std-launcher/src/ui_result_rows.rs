@@ -175,11 +175,7 @@ fn render_title_segments(
     ui.horizontal(|ui| {
         ui.spacing_mut().item_spacing.x = 0.0;
         for segment in segments {
-            let color = if segment.matched {
-                Color::fg_primary(ctx)
-            } else {
-                Color::fg_tertiary(ctx)
-            };
+            let color = title_segment_color(segment.matched, selected, ctx);
             let text = egui::RichText::new(&segment.text)
                 .font(Text::body())
                 .color(color);
@@ -191,6 +187,14 @@ fn render_title_segments(
             ui.label(text);
         }
     });
+}
+
+fn title_segment_color(matched: bool, selected: bool, ctx: &egui::Context) -> egui::Color32 {
+    if matched || selected {
+        Color::fg_primary(ctx)
+    } else {
+        Color::fg_tertiary(ctx)
+    }
 }
 
 fn paint_result_right(
@@ -431,8 +435,26 @@ mod tests {
     fn selected_result_title_uses_strong_text_contract() {
         let source = include_str!("ui_result_rows.rs");
 
-        assert!(source.contains("let text = if selected { text.strong() } else { text };"));
+        assert!(source.contains("let text = if selected || segment.matched"));
         assert!(source.contains(".font(Text::body())"));
+    }
+
+    #[test]
+    fn selected_result_title_uses_primary_text_even_without_name_match() {
+        let ctx = egui::Context::default();
+
+        assert_eq!(
+            title_segment_color(false, true, &ctx),
+            Color::fg_primary(&ctx)
+        );
+        assert_eq!(
+            title_segment_color(true, false, &ctx),
+            Color::fg_primary(&ctx)
+        );
+        assert_eq!(
+            title_segment_color(false, false, &ctx),
+            Color::fg_tertiary(&ctx)
+        );
     }
 
     #[test]
