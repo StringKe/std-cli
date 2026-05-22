@@ -1,4 +1,8 @@
-use crate::{shell_icons, ui, StudioEguiApp};
+use crate::{
+    shell_icons, ui,
+    workspace_panes::{StudioWorkspaceCommand, WorkspaceCommandQueue},
+    StudioEguiApp,
+};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -149,10 +153,16 @@ impl StudioEguiApp {
                 let focused = self.app.focused_pane == Some(id);
                 let action = pane_manager_row(ui, &title, open, focused);
                 if action.focus_requested {
-                    self.app.focus_workspace_pane(id);
+                    push_workspace_command(
+                        &self.workspace_commands,
+                        StudioWorkspaceCommand::Focus(id),
+                    );
                 }
                 if action.close_requested {
-                    self.app.close_workspace_pane(id);
+                    push_workspace_command(
+                        &self.workspace_commands,
+                        StudioWorkspaceCommand::Close(id),
+                    );
                 }
             }
         });
@@ -371,6 +381,12 @@ fn pane_state_center(rect: egui::Rect) -> egui::Pos2 {
     egui::pos2(rect.left() + PANE_STATE_CENTER_X, rect.center().y)
 }
 
+fn push_workspace_command(commands: &WorkspaceCommandQueue, command: StudioWorkspaceCommand) {
+    if let Ok(mut queue) = commands.lock() {
+        queue.push(command);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -411,5 +427,22 @@ mod tests {
         assert_eq!(state.y, rect.center().y);
         assert_eq!(state.x, PANE_STATE_CENTER_X);
         assert_eq!(CLOSE_GLYPH_HALF, Space::XS as f32 / 2.0);
+    }
+
+    #[test]
+    fn pane_manager_routes_focus_and_close_through_workspace_command_queue() {
+        let source = include_str!("shell_navigation.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let pane_manager = production_source
+            .split("pub(crate) fn render_workspace_pane_manager")
+            .nth(1)
+            .and_then(|body| body.split("fn nav_row").next())
+            .unwrap();
+
+        assert!(pane_manager.contains("StudioWorkspaceCommand::Focus(id)"));
+        assert!(pane_manager.contains("StudioWorkspaceCommand::Close(id)"));
+        assert!(pane_manager.contains("push_workspace_command(&self.workspace_commands"));
+        assert!(!pane_manager.contains("self.app.focus_workspace_pane(id)"));
+        assert!(!pane_manager.contains("self.app.close_workspace_pane(id)"));
     }
 }
