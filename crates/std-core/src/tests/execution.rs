@@ -1,5 +1,8 @@
 use super::*;
-use crate::execution::{user_desktop_open_allowed_for_test_mode, ExternalExecutionMode};
+use crate::execution::{
+    execute_registry_entry_for_test_mode, user_desktop_open_allowed_for_test_mode,
+    ExternalExecutionMode,
+};
 use std::sync::{Arc, Mutex};
 use std_types::{ActionExecutionStatus, ActionType, RegistryEntry};
 
@@ -177,6 +180,45 @@ fn launcher_user_app_open_is_blocked_by_test_mode_before_runner() {
 }
 
 #[test]
+fn launcher_user_app_open_attempt_is_still_blocked_by_process_test_mode() {
+    let temp = tempfile::tempdir().unwrap();
+    let app_path = temp.path().join("Fixture.app");
+    let commands = Arc::new(Mutex::new(Vec::<(String, Vec<String>)>::new()));
+    let recorded = Arc::clone(&commands);
+    let core = StdCore::with_config_and_command_runner(
+        StdConfig {
+            data_dir: temp.path().join("data"),
+            ..StdConfig::default()
+        },
+        move |program, args| {
+            recorded
+                .lock()
+                .unwrap()
+                .push((program.to_string(), args.to_vec()));
+            Ok(empty_output())
+        },
+    );
+    let entry = fixture_app_entry(&app_path.display().to_string());
+    core.register_action(entry.clone()).unwrap();
+
+    let execution = execute_registry_entry_for_test_mode(
+        &core,
+        &entry,
+        ExternalExecutionMode::LauncherUser,
+        false,
+    )
+    .unwrap();
+
+    assert_eq!(execution.status, ActionExecutionStatus::Failed);
+    assert!(execution
+        .message
+        .contains("STD_TEST_MODE blocked desktop command"));
+    assert!(execution.message.contains("open"));
+    assert!(execution.message.contains(&app_path.display().to_string()));
+    assert!(commands.lock().unwrap().is_empty());
+}
+
+#[test]
 fn launcher_user_mode_allows_only_user_open_routes_outside_test_mode() {
     assert!(user_desktop_open_allowed_for_test_mode(
         ExternalExecutionMode::LauncherUser,
@@ -305,14 +347,31 @@ fn fake_open_app_command() -> String {
 }
 
 fn register_fixture_app(core: &StdCore, path: &str) {
+    core.register_action(fixture_app_entry(path)).unwrap();
+}
+
+fn fixture_app_entry(path: &str) -> RegistryEntry {
     let mut action = make_test_action("Open StdNeverLaunchFixture");
     action.action_type = ActionType::AppLaunch;
-    core.register_action(
-        RegistryEntry::from_action(action, vec!["app".to_string()]).with_metadata("path", path),
-    )
-    .unwrap();
+    RegistryEntry::from_action(action, vec!["app".to_string()]).with_metadata("path", path)
 }
 
 fn blocked_real_app_path() -> String {
     ["/Appli", "cations/", "SensitiveVault", ".app"].concat()
+}
+
+fn empty_output() -> std::process::Output {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        std::process::Output {
+            status: std::process::ExitStatus::from_raw(0),
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        compile_error!("std-core tests require a manual Output constructor for this platform");
+    }
 }

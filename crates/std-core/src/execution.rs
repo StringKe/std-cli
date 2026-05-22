@@ -38,6 +38,20 @@ pub(crate) fn execute_registry_entry(
     entry: &RegistryEntry,
     external_mode: ExternalExecutionMode,
 ) -> Result<ActionExecution, CoreError> {
+    execute_registry_entry_with_test_mode(
+        core,
+        entry,
+        external_mode,
+        crate::std_test_mode_enabled(),
+    )
+}
+
+fn execute_registry_entry_with_test_mode(
+    core: &StdCore,
+    entry: &RegistryEntry,
+    external_mode: ExternalExecutionMode,
+    test_mode: bool,
+) -> Result<ActionExecution, CoreError> {
     let now = chrono::Utc::now();
     match &entry.action.action_type {
         ActionType::Command if entry.action.name == "Echo" => execute_echo(core, entry, now),
@@ -66,12 +80,14 @@ pub(crate) fn execute_registry_entry(
             rebuild_current_index(core, entry, now)
         }
         ActionType::Command => execute_command_action(core, entry, external_mode, now),
-        ActionType::AppLaunch if user_desktop_open_allowed(external_mode) => {
+        ActionType::AppLaunch
+            if user_desktop_open_allowed_for_test_mode(external_mode, test_mode) =>
+        {
             execute_app_launch(core, entry, now)
         }
         ActionType::AppLaunch => Ok(needs_external_runner(entry, now)),
         ActionType::Custom(kind) if kind == "file" => match entry.metadata.get("path") {
-            Some(path) if user_desktop_open_allowed(external_mode) => {
+            Some(path) if user_desktop_open_allowed_for_test_mode(external_mode, test_mode) => {
                 Ok(run_open_path(core, entry, path, now))
             }
             Some(_) => Ok(needs_external_runner(entry, now)),
@@ -105,10 +121,6 @@ pub(crate) fn external_runner_allowed_for_mode(external_mode: ExternalExecutionM
     external_runner_allowed(external_mode)
 }
 
-fn user_desktop_open_allowed(external_mode: ExternalExecutionMode) -> bool {
-    user_desktop_open_allowed_for_test_mode(external_mode, crate::std_test_mode_enabled())
-}
-
 pub(crate) fn user_desktop_open_allowed_for_test_mode(
     external_mode: ExternalExecutionMode,
     test_mode: bool,
@@ -117,6 +129,16 @@ pub(crate) fn user_desktop_open_allowed_for_test_mode(
         external_mode,
         ExternalExecutionMode::DesktopAutomation | ExternalExecutionMode::LauncherUser
     ) && !test_mode
+}
+
+#[cfg(test)]
+pub(crate) fn execute_registry_entry_for_test_mode(
+    core: &StdCore,
+    entry: &RegistryEntry,
+    external_mode: ExternalExecutionMode,
+    test_mode: bool,
+) -> Result<ActionExecution, CoreError> {
+    execute_registry_entry_with_test_mode(core, entry, external_mode, test_mode)
 }
 
 fn execute_echo(
