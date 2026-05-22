@@ -18,6 +18,10 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         }
         (Locale::ZhCn, "launcher.empty.ask_ai") => Some("询问 AI 关于"),
         (Locale::EnUs, "launcher.empty.ask_ai") => Some("Ask AI about"),
+        (Locale::ZhCn, "launcher.empty.ask_ai.a11y") => Some("{label}，备用操作，按 Enter"),
+        (Locale::EnUs, "launcher.empty.ask_ai.a11y") => {
+            Some("{label}, fallback action, press Enter")
+        }
         (Locale::ZhCn, "launcher.results.searching") => Some("正在搜索 registry 和本地 index"),
         (Locale::EnUs, "launcher.results.searching") => Some("Searching registry and local index"),
         (Locale::ZhCn, "launcher.results.searching.title") => Some("Searching"),
@@ -109,6 +113,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.empty.ready.title" => Some("Ready to search"),
         "launcher.empty.ready.detail" => Some("Press / for commands, ? to ask, Down for recent"),
         "launcher.empty.ask_ai" => Some("Ask AI about"),
+        "launcher.empty.ask_ai.a11y" => Some("{label}, fallback action, press Enter"),
         "launcher.results.searching" => Some("Searching registry and local index"),
         "launcher.results.searching.title" => Some("Searching"),
         "launcher.results.executing.title" => Some("Executing"),

@@ -188,7 +188,7 @@ fn ask_ai_row(ui: &mut egui::Ui, label: &str, selected: bool) -> egui::Response 
 }
 
 fn ask_ai_a11y_label(label: &str) -> String {
-    format!("{label}, fallback action, press Enter")
+    i18n::t("launcher.empty.ask_ai.a11y").replace("{label}", label)
 }
 
 #[cfg(test)]
@@ -263,8 +263,14 @@ mod tests {
         assert!(production_source.contains("ask_ai_a11y_label(label)"));
         assert_eq!(
             ask_ai_a11y_label("Ask AI about \"missing\""),
-            "Ask AI about \"missing\", fallback action, press Enter"
+            i18n::t("launcher.empty.ask_ai.a11y").replace("{label}", "Ask AI about \"missing\"")
         );
+    }
+
+    #[test]
+    fn ask_ai_fallback_a11y_copy_uses_i18n_template() {
+        assert_ne!(i18n::t("launcher.empty.ask_ai.a11y"), "UNKNOWN_I18N_KEY");
+        assert!(i18n::t("launcher.empty.ask_ai.a11y").contains("{label}"));
     }
 
     #[test]
