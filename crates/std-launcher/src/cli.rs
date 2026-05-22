@@ -221,6 +221,15 @@ mod tests {
         assert!(report
             .summary("launcher")
             .contains("high_contrast_light_accent_weak_alpha=56"));
+        assert!(report.summary("launcher").contains(
+            "typography_contract=text=caption:11,footnote:12,body:13,title:15,headline:18,display:24,code:12"
+        ));
+        assert!(report.summary("launcher").contains(
+            "status_contract=status=success:#3DCB7C/#138750,warning:#F5B643/#B27500,danger:#FF6A6A/#C8312B,info:#4E9CFF/#0A6BFF"
+        ));
+        assert!(report
+            .summary("launcher")
+            .contains("no_pure_black_white_tokens=true"));
     }
 
     #[test]
