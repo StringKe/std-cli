@@ -197,6 +197,12 @@ fn assert_background_harness_contract(root: &Path) {
         "STD_TEST_MODE blocks background UI automation",
         "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 required",
         "scripts/background-ui-harness.sh",
+        "background-ui-acceptance manifest",
+        "identity_rule=pid+window-id+bundle-id+window-title+harness-token",
+        "completion_rule=background-ui-smoke-PASS-and-frontmost-preserved",
+        "default_gate=manual-opt-in-only",
+        "STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST",
+        "--manifest",
         "bundle_id outside whitelist",
         "window_title outside whitelist",
         "harness_token missing",
@@ -204,6 +210,7 @@ fn assert_background_harness_contract(root: &Path) {
         "expected_smoke_command=",
         "--harness-token",
         "cargo run -p std-cli -- ui background-smoke",
+        "background_ui_acceptance PASS manifest=$manifest",
     ] {
         assert!(
             acceptance.contains(required),

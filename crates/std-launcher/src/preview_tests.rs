@@ -230,10 +230,13 @@ fn ui_preview_uses_transparent_host_with_opaque_panel() {
     assert!(description.contains("decorations: Some(false)"));
     assert!(description.contains("resizable: Some(false)"));
     assert!(description.contains("visible: Some(true)"));
-    assert_eq!(
-        preview_capture_window_contract(&config),
-        "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gap=0x0,size=720x448"
-    );
+    let mut state = std_launcher::LauncherState::new();
+    apply_preview_scenario(&mut state, &config.scenario);
+    let expected_size = ui::launcher_window_inner_size(&state);
+    let expected_contract = std_launcher::transparent_visible_panel_contract(expected_size);
+
+    assert_eq!(preview_window_inner_size(&config), expected_size);
+    assert_eq!(preview_capture_window_contract(&config), expected_contract);
 }
 
 #[test]
