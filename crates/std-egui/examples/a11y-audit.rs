@@ -3,7 +3,7 @@ use std_egui::{
     i18n::{self, Locale},
 };
 
-const REQUIRED_KEYS: [&str; 17] = [
+const REQUIRED_KEYS: [&str; 18] = [
     "launcher.empty.no_matches.title",
     "launcher.empty.no_matches.detail",
     "launcher.a11y.search.query",
@@ -11,6 +11,7 @@ const REQUIRED_KEYS: [&str; 17] = [
     "launcher.a11y.action_panel",
     "launcher.feedback.failed",
     "launcher.feedback.deferred",
+    "launcher.action.control.a11y",
     "launcher.results.group.action_workflow",
     "studio.settings.title",
     "studio.settings.motion.reduce",

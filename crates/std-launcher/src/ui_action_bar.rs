@@ -114,10 +114,16 @@ fn action_bar_control(ui: &mut egui::Ui, label: &str, shortcut: &str) -> egui::R
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
             ui.is_enabled(),
-            format!("{label}, shortcut {shortcut}"),
+            action_bar_control_a11y_label(label, shortcut),
         )
     });
     response
+}
+
+fn action_bar_control_a11y_label(label: &str, shortcut: &str) -> String {
+    i18n::t("launcher.action.control.a11y")
+        .replace("{label}", label)
+        .replace("{shortcut}", shortcut)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -239,7 +245,17 @@ mod tests {
         assert!(source.contains("ActionBarCommand::CancelExecuting"));
         assert!(source.contains("ActionBarCommand::MoveExecutingToBackground"));
         assert!(source.contains("WidgetType::Button"));
-        assert!(source.contains("shortcut {shortcut}"));
+        assert!(source.contains("launcher.action.control.a11y"));
+    }
+
+    #[test]
+    fn action_bar_control_accessibility_label_uses_i18n_template() {
+        let label = action_bar_control_a11y_label("Cancel", "Esc");
+
+        assert!(label.contains("Cancel"));
+        assert!(label.contains("Esc"));
+        assert!(!label.contains("{label}"));
+        assert!(!label.contains("{shortcut}"));
     }
 
     #[test]
