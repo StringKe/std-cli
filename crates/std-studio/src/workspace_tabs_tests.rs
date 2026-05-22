@@ -98,6 +98,29 @@ fn workspace_tab_close_rect_uses_token_sized_hit_target() {
 }
 
 #[test]
+fn workspace_tab_body_and_close_hit_regions_do_not_overlap() {
+    let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(180.0, TAB_HEIGHT));
+    let body = workspace_tab_body_rect(rect);
+    let close = workspace_tab_close_rect(rect);
+
+    assert_eq!(body.left(), rect.left());
+    assert_eq!(body.right(), close.left());
+    assert_eq!(close.right(), rect.right());
+    assert_eq!(body.intersect(close).width(), 0.0);
+}
+
+#[test]
+fn workspace_tab_render_uses_separate_focus_and_close_interactions() {
+    let source = include_str!("workspace_tabs.rs");
+    let render_source = source.split("fn render_workspace_tab(").nth(1).unwrap();
+
+    assert!(render_source.contains("body_rect = workspace_tab_body_rect(rect);"));
+    assert!(render_source.contains("(\"tab-focus\", spec.id.value())"));
+    assert!(render_source.contains("(\"tab-close\", spec.id.value())"));
+    assert!(!render_source.contains("response.clicked() && !close.clicked()"));
+}
+
+#[test]
 fn workspace_tabs_contract_exposes_visible_interaction_evidence() {
     let specs = vec![
         WorkspaceTabSpec {

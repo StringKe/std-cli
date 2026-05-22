@@ -142,8 +142,13 @@ fn render_workspace_tab(
     commands: &crate::workspace_panes::WorkspaceCommandQueue,
 ) {
     let width = workspace_tab_width(&spec.title);
-    let (rect, response) =
-        ui.allocate_exact_size(egui::vec2(width, TAB_HEIGHT), egui::Sense::click());
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(width, TAB_HEIGHT), egui::Sense::hover());
+    let body_rect = workspace_tab_body_rect(rect);
+    let response = ui.interact(
+        body_rect,
+        ui.id().with(("tab-focus", spec.id.value())),
+        egui::Sense::click(),
+    );
     response.widget_info(|| {
         egui::WidgetInfo::labeled(
             egui::WidgetType::Button,
@@ -183,6 +188,13 @@ fn workspace_tab_close_rect(rect: egui::Rect) -> egui::Rect {
     egui::Rect::from_min_max(
         egui::pos2(rect.right() - TAB_CLOSE_HIT_SIZE, rect.top()),
         rect.right_bottom(),
+    )
+}
+
+fn workspace_tab_body_rect(rect: egui::Rect) -> egui::Rect {
+    egui::Rect::from_min_max(
+        rect.min,
+        egui::pos2(rect.right() - TAB_CLOSE_HIT_SIZE, rect.bottom()),
     )
 }
 
