@@ -167,9 +167,22 @@ fn read_localized_info_plist_names(path: &Path) -> Vec<String> {
     entries
         .filter_map(Result::ok)
         .map(|entry| entry.path().join("InfoPlist.strings"))
-        .filter_map(|path| read_text_file(&path).ok())
-        .flat_map(|body| localized_name_values(&body))
+        .flat_map(|path| read_localized_names_file(&path))
         .collect()
+}
+
+fn read_localized_names_file(path: &Path) -> Vec<String> {
+    read_localized_names_plist(path).unwrap_or_else(|| {
+        read_text_file(path)
+            .map(|body| localized_name_values(&body))
+            .unwrap_or_default()
+    })
+}
+
+fn read_localized_names_plist(path: &Path) -> Option<Vec<String>> {
+    let value = Value::from_file(path).ok()?;
+    let dict = value.as_dictionary()?;
+    Some(bundle_display_name_fields(dict))
 }
 
 fn read_text_file(path: &Path) -> std::io::Result<String> {

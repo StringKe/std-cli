@@ -98,6 +98,35 @@ fn core_prefers_localized_app_name_over_bundle_identifier() {
     assert!(preview.metadata["aliases"].contains("weixin"));
 }
 
+#[test]
+fn core_searches_app_bundle_by_binary_localized_strings_plist() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("BinaryLocalizedWeixin.app");
+    write_binary_localized_strings_wechat_bundle(&app);
+    let core = StdCore::with_config(config);
+
+    core.register_local_content_actions().unwrap();
+    let test_path = app.display().to_string();
+    let chinese_results = core.search(wechat_chinese_name(), 10).unwrap();
+    let english_results = core.search("wechat", 10).unwrap();
+    let pinyin_results = core.search("weixin", 10).unwrap();
+    let chinese = find_app_result(&chinese_results, &test_path);
+    let english = find_app_result(&english_results, &test_path);
+    let pinyin = find_app_result(&pinyin_results, &test_path);
+
+    assert_eq!(chinese.action.id, english.action.id);
+    assert_eq!(chinese.action.id, pinyin.action.id);
+    assert_eq!(
+        chinese.action.name,
+        format!("Open App: {}", wechat_chinese_name())
+    );
+    assert!(chinese.matched_fields.contains(&"tags".to_string()));
+}
+
 fn write_escaped_unicode_app_bundle(app: &std::path::Path) {
     fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     fs::write(
@@ -117,6 +146,26 @@ fn write_escaped_unicode_app_bundle(app: &std::path::Path) {
         "\"CFBundleDisplayName\" = \"\\U6d4b\\U8bd5\\U5e94\\U7528\";",
     )
     .unwrap();
+}
+
+fn write_binary_localized_strings_wechat_bundle(app: &std::path::Path) {
+    let localized_dir = app.join("Contents").join("Resources").join("zh_CN.lproj");
+    fs::create_dir_all(&localized_dir).unwrap();
+    fs::write(
+        app.join("Contents").join("Info.plist"),
+        r#"<plist><dict>
+<key>CFBundleIdentifier</key><string>com.tencent.xinWeChat</string>
+</dict></plist>"#,
+    )
+    .unwrap();
+    let mut plist = plist::Dictionary::new();
+    plist.insert(
+        "CFBundleDisplayName".to_string(),
+        plist::Value::String(wechat_chinese_name().to_string()),
+    );
+    plist::Value::Dictionary(plist)
+        .to_file_binary(localized_dir.join("InfoPlist.strings"))
+        .unwrap();
 }
 
 fn write_wechat_bundle(app: &std::path::Path) {
