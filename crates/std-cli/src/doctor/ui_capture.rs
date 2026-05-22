@@ -113,44 +113,14 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "record_capture launcher",
         "record_capture studio",
         "manifest=$manifest",
-        "capture_launcher light collapsed",
-        "capture_launcher dark collapsed",
-        "capture_launcher light empty",
-        "capture_launcher dark empty",
-        "capture_launcher light results",
-        "capture_launcher dark results",
-        "capture_launcher light no-results",
-        "capture_launcher dark no-results",
-        "capture_launcher light searching",
-        "capture_launcher dark searching",
-        "capture_launcher light loading",
-        "capture_launcher dark loading",
-        "capture_launcher light executing",
-        "capture_launcher dark executing",
-        "capture_launcher light defer",
-        "capture_launcher dark defer",
-        "capture_launcher light error",
-        "capture_launcher dark error",
-        "capture_studio light dashboard",
-        "capture_studio dark dashboard",
-        "capture_studio light workflow",
-        "capture_studio dark workflow",
-        "capture_studio light workflow-error",
-        "capture_studio dark workflow-error",
-        "capture_studio light analysis",
-        "capture_studio dark analysis",
-        "capture_studio light plugins",
-        "capture_studio dark plugins",
-        "capture_studio light plugin-permission",
-        "capture_studio dark plugin-permission",
-        "capture_studio light operations",
-        "capture_studio dark operations",
-        "capture_studio light settings",
-        "capture_studio dark settings",
-        "capture_studio light panes",
-        "capture_studio dark panes",
     ] {
         check_text(&body, required)?;
+    }
+    for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
+        check_text(&body, &format!("capture_launcher {theme} {scenario}"))?;
+    }
+    for (theme, scenario) in STUDIO_CAPTURE_STATES {
+        check_text(&body, &format!("capture_studio {theme} {scenario}"))?;
     }
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher")?;
     assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher")?;
