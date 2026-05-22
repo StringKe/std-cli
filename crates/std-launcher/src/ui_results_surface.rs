@@ -1,9 +1,6 @@
-use crate::{
-    ui_metrics,
-    ui_parts::{draw_focus_ring, surface_frame},
-};
+use crate::ui_parts::{draw_focus_ring, surface_frame};
 use eframe::egui;
-use std_egui::{a11y::AccessibilityContext, tokens::Radius};
+use std_egui::tokens::FocusRing;
 use std_launcher::{LauncherFocusSection, LauncherState};
 
 pub(crate) fn show(
@@ -13,14 +10,7 @@ pub(crate) fn show(
 ) {
     let response = surface_frame(ui.ctx()).show(ui, |ui| contents(ui, state));
     if state.keyboard_focus_visible(LauncherFocusSection::Results) {
-        let a11y = AccessibilityContext::from_env();
-        draw_focus_ring(
-            ui,
-            response.response.rect,
-            Radius::md(),
-            ui_metrics::focus_ring_expand(),
-            a11y.focus_ring_width(),
-        );
+        draw_focus_ring(ui, response.response.rect, FocusRing::launcher_results());
     }
 }
 

@@ -70,6 +70,36 @@ impl Radius {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FocusRing {
+    pub radius: u8,
+    pub expand: f32,
+    pub width: f32,
+}
+
+impl FocusRing {
+    pub fn launcher_search() -> Self {
+        Self::new(Radius::lg(), 2.0)
+    }
+
+    pub fn launcher_results() -> Self {
+        Self::new(Radius::md(), 2.0)
+    }
+
+    pub fn launcher_action_panel() -> Self {
+        Self::new(Radius::md(), 1.0)
+    }
+
+    fn new(radius: u8, expand: f32) -> Self {
+        let a11y = AccessibilityContext::from_env();
+        Self {
+            radius,
+            expand: UiScale::from_env().f32(expand),
+            width: a11y.focus_ring_width(),
+        }
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -155,6 +185,19 @@ mod tests {
         assert_eq!(scale.i8(Space::SM), 18);
         assert_eq!(scale.u8(Radius::XL), 24);
         assert_eq!(Space::md_for_scale(scale), 24.0);
+    }
+
+    #[test]
+    fn launcher_focus_rings_use_token_geometry() {
+        let search = FocusRing::launcher_search();
+        let results = FocusRing::launcher_results();
+        let action_panel = FocusRing::launcher_action_panel();
+
+        assert_eq!(search.radius, Radius::lg());
+        assert_eq!(results.radius, Radius::md());
+        assert_eq!(action_panel.radius, Radius::md());
+        assert!(search.expand > action_panel.expand);
+        assert!(search.width >= 1.0);
     }
 
     #[test]

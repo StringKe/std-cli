@@ -229,10 +229,6 @@ pub(crate) fn search_icon_geometry(
     crate::ui_metrics_search::search_icon_geometry(scale(), rect)
 }
 
-pub(crate) fn focus_ring_expand() -> f32 {
-    crate::ui_metrics_search::focus_ring_expand(scale())
-}
-
 pub(crate) fn voice_input_width(available_width: f32) -> f32 {
     crate::ui_metrics_search::voice_input_width(scale(), available_width)
 }
@@ -260,10 +256,6 @@ pub(crate) fn action_panel_rect(anchor_rect: egui::Rect, item_count: usize) -> e
 
 pub(crate) fn action_panel_search_height() -> f32 {
     crate::ui_metrics_action_panel::search_height(scale())
-}
-
-pub(crate) fn action_panel_focus_expand() -> f32 {
-    crate::ui_metrics_action_panel::focus_expand(scale())
 }
 
 pub(crate) fn action_panel_row_height() -> f32 {

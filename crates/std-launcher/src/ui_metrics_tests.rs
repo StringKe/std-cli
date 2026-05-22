@@ -39,7 +39,7 @@ fn row_metrics_scale_with_ui_zoom() {
 fn search_metrics_scale_with_ui_zoom() {
     assert_eq!(
         crate::ui_metrics_search::search_metrics_for_scale(UiScale::new(1.5), 600.0),
-        (60.0, 492.0, 324.0, 54.0, 4.5, 42.0)
+        (60.0, 492.0, 324.0, 54.0, 42.0)
     );
 }
 
@@ -47,7 +47,7 @@ fn search_metrics_scale_with_ui_zoom() {
 fn action_panel_metrics_scale_with_ui_zoom() {
     assert_eq!(
         crate::ui_metrics_action_panel::metrics_for_scale(UiScale::new(1.5), 700.0),
-        (480.0, 219.0, 42.0, 3.0, 48.0)
+        (480.0, 219.0, 42.0, 48.0)
     );
 }
 

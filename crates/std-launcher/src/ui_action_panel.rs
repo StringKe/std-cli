@@ -4,9 +4,8 @@ use crate::{
 };
 use eframe::egui;
 use std_egui::{
-    a11y::AccessibilityContext,
     i18n, input,
-    tokens::{Color, Elevation, Radius, Space, Text},
+    tokens::{Color, Elevation, FocusRing, Radius, Space, Text},
 };
 use std_launcher::{ActionPanelItem, LauncherFocusSection, LauncherFocusSource, LauncherState};
 use std_types::ActionExecution;
@@ -100,14 +99,7 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
         state.update_action_panel_query(state.action_panel.query.clone());
     }
     if state.keyboard_focus_visible(LauncherFocusSection::ActionPanel) {
-        let a11y = AccessibilityContext::from_env();
-        draw_focus_ring(
-            ui,
-            response.rect,
-            Radius::md(),
-            ui_metrics::action_panel_focus_expand(),
-            a11y.focus_ring_width(),
-        );
+        draw_focus_ring(ui, response.rect, FocusRing::launcher_action_panel());
     }
 }
 

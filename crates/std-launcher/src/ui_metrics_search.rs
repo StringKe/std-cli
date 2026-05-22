@@ -12,7 +12,6 @@ const SEARCH_ICON_CENTER_Y_OFFSET: f32 = -2.0;
 const SEARCH_ICON_RADIUS: f32 = 5.0;
 const SEARCH_ICON_HANDLE_INSET: f32 = 4.0;
 const SEARCH_ICON_HANDLE_OUTSET: f32 = 9.0;
-const FOCUS_RING_EXPAND: f32 = 3.0;
 const VOICE_INPUT_WIDTH_RESERVE: f32 = 112.0;
 const VOICE_INPUT_HEIGHT: f32 = 28.0;
 
@@ -60,10 +59,6 @@ pub(crate) fn search_icon_geometry(scale: UiScale, rect: egui::Rect) -> SearchIc
     }
 }
 
-pub(crate) fn focus_ring_expand(scale: UiScale) -> f32 {
-    scale.f32(FOCUS_RING_EXPAND)
-}
-
 pub(crate) fn voice_input_width(scale: UiScale, available_width: f32) -> f32 {
     (available_width - scale.f32(VOICE_INPUT_WIDTH_RESERVE)).max(scale.f32(160.0))
 }
@@ -84,13 +79,12 @@ pub(crate) struct SearchIconGeometry {
 pub(crate) fn search_metrics_for_scale(
     scale: UiScale,
     available_width: f32,
-) -> (f32, f32, f32, f32, f32, f32) {
+) -> (f32, f32, f32, f32, f32) {
     (
         search_bar_min_height(scale),
         search_input_width(scale, available_width),
         search_input_width_with_ime(scale, available_width),
         search_input_height(scale),
-        focus_ring_expand(scale),
         voice_input_height(scale),
     )
 }

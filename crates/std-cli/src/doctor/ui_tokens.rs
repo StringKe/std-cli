@@ -192,8 +192,6 @@ fn ui_token_exception(path: &Path, term: &str) -> bool {
             | (_, "ui_metrics_empty.rs", "egui::vec2(")
             | (_, "ui_metrics_results.rs", "egui::vec2(")
             | (_, "ui_metrics_action_panel.rs", "egui::vec2(")
-            | (_, "ui_parts.rs", "Color32::from_rgba(")
-            | (_, "ui_parts.rs", "Color32::")
     )
 }
 
@@ -276,6 +274,13 @@ mod tests {
         let path = PathBuf::from("crates/std-launcher/src/ui_metrics.rs");
 
         assert!(ui_token_exception(&path, "egui::vec2("));
+    }
+
+    #[test]
+    fn launcher_shared_ui_parts_must_not_bypass_color_tokens() {
+        let path = PathBuf::from("crates/std-launcher/src/ui_parts.rs");
+
+        assert!(!ui_token_exception(&path, "Color32::"));
     }
 
     #[test]

@@ -3,7 +3,7 @@ use eframe::egui;
 use std_egui::{
     a11y::AccessibilityContext,
     i18n, input,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, FocusRing, Radius, Space, Text},
     LauncherLoadingState, LauncherPhase,
 };
 use std_launcher::{LauncherFocusSection, LauncherQueryMode, LauncherState};
@@ -66,13 +66,7 @@ fn render_search_bar_contents(
             )
         });
         if state.keyboard_focus_visible(LauncherFocusSection::Search) {
-            draw_focus_ring(
-                ui,
-                response.rect,
-                Radius::lg(),
-                ui_metrics::focus_ring_expand(),
-                a11y.focus_ring_width(),
-            );
+            draw_focus_ring(ui, response.rect, FocusRing::launcher_search());
         }
         if !executing && search_input_owns_egui_focus(state) && response.changed() {
             state.update_query(query_text);
