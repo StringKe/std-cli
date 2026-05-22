@@ -23,11 +23,16 @@
 
 ## Launcher
 
-状态：PASS
+状态：未完成
 
 证据：
 
-- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 7000` 返回 `PASS`
+- `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance` 返回 `PASS`
+- `frontmost_preserved=true`
+- `frontmost_before` 等于 `frontmost_after`
+- target bundle id 为 `dev.std-cli.background-ui-harness`
+- target window title 为 `std-cli Background UI Harness`
+- target identity 通过 bundle id、pid、window id、window title 四重匹配
 - `registered=true`
 - `commands=Visible(true),Focus`
 - `visible_after_close=false`
@@ -53,6 +58,7 @@
 缺口：
 
 - Launcher 截图仍需按 docs/18-21 做像素级审计，不得只用文件存在判定完成
+- 真实全局热键安装包验收仍需单独显式运行，不进入默认回归门禁
 - 焦点环、IME、A11y、reduce motion 和安装版 UI 需要真实证据
 
 ## Studio

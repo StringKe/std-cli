@@ -84,7 +84,8 @@ macOS 的 Cmd+W、Cmd+Q、Cmd+H、Cmd+,、Cmd+Tab，Windows 的 Alt+Tab、Alt+F4
 
 - 注册失败时不静默失败：Launcher 启动时输出 `hotkey_registration FAIL`，并在 macOS menu bar / 系统托盘提示
 - 提供 `std-launcher --hotkey-smoke <combo>` 用于非 GUI 注册验证
-- 真实桌面验证必须使用 `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke <combo>`
+- 真实焦点、Enter 打开、窗口 toggle 验收必须优先使用 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance`
+- `STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke <combo>` 只保留为人工安装包热键补充验收
 - 提供 `std doctor` 检测系统已占用快捷键并建议替代
 
 **用户自定义**：
