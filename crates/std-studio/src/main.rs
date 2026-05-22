@@ -242,12 +242,34 @@ impl StudioEguiApp {
         if std_egui::input::ime_composing(ctx) {
             return;
         }
+        if !self.focused_workspace_is_workflow_builder() {
+            return;
+        }
+        if std_egui::input::arrow_up().pressed(ctx) {
+            self.select_workflow_builder_step_by_keyboard(-1);
+        }
+        if std_egui::input::arrow_down().pressed(ctx) {
+            self.select_workflow_builder_step_by_keyboard(1);
+        }
         if std_egui::input::studio_workflow_step_move_up().pressed(ctx) {
             self.move_workflow_builder_step_by_keyboard(-1);
         }
         if std_egui::input::studio_workflow_step_move_down().pressed(ctx) {
             self.move_workflow_builder_step_by_keyboard(1);
         }
+    }
+
+    fn focused_workspace_is_workflow_builder(&self) -> bool {
+        self.app
+            .focused_pane
+            .and_then(|id| self.app.workspace_panes.iter().find(|pane| pane.id == id))
+            .map(|pane| {
+                matches!(
+                    pane.kind,
+                    std_studio::WorkspacePaneKind::WorkflowBuilder { .. }
+                )
+            })
+            .unwrap_or(false)
     }
 }
 

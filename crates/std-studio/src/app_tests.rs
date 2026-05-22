@@ -103,6 +103,47 @@ fn workflow_builder_keyboard_shortcuts_move_selected_loaded_step() {
 }
 
 #[test]
+fn workflow_builder_keyboard_selects_steps_only_when_builder_is_focused() {
+    let mut app = test_app();
+    app.workflow_goal = "Keyboard select".to_string();
+    app.plan_workflow_from_goal();
+    app.workflow_edit_index = "0".to_string();
+    let builder = app
+        .app
+        .open_workflow_builder(std::path::PathBuf::from("workflow.json"));
+    app.app.focus_workspace_pane(builder);
+
+    app.select_workflow_builder_step_by_keyboard(1);
+
+    assert_eq!(app.workflow_edit_index, "1");
+
+    app.app.open_settings_pane();
+    assert!(!app.focused_workspace_is_workflow_builder());
+    app.select_workflow_builder_step_by_keyboard(1);
+
+    assert_eq!(app.workflow_edit_index, "1");
+}
+
+#[test]
+fn workflow_builder_arrow_down_selects_next_step_from_raw_input() {
+    let ctx = eframe::egui::Context::default();
+    let mut app = test_app();
+    app.workflow_goal = "Keyboard select".to_string();
+    app.plan_workflow_from_goal();
+    app.workflow_edit_index = "0".to_string();
+    let builder = app
+        .app
+        .open_workflow_builder(std::path::PathBuf::from("workflow.json"));
+    app.app.focus_workspace_pane(builder);
+
+    let _ = ctx.run(key_input(eframe::egui::Key::ArrowDown), |ctx| {
+        app.handle_workflow_builder_keyboard(ctx);
+    });
+
+    assert_eq!(app.workflow_edit_index, "1");
+}
+
+#[test]
 fn workflow_ai_assist_apply_insert_and_replace_edit_planned_steps() {
     let mut app = test_app();
     app.workflow_goal = "release".to_string();
@@ -397,4 +438,17 @@ fn test_app() -> StudioEguiApp {
         ..StdConfig::default()
     }));
     app
+}
+
+fn key_input(key: eframe::egui::Key) -> eframe::egui::RawInput {
+    eframe::egui::RawInput {
+        events: vec![eframe::egui::Event::Key {
+            key,
+            physical_key: Some(key),
+            pressed: true,
+            repeat: false,
+            modifiers: eframe::egui::Modifiers::NONE,
+        }],
+        ..Default::default()
+    }
 }

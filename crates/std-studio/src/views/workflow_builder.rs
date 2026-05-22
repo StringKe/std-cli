@@ -329,6 +329,23 @@ impl StudioEguiApp {
         }
     }
 
+    pub(crate) fn select_workflow_builder_step_by_keyboard(&mut self, offset: isize) {
+        if !self.focused_workspace_is_workflow_builder() {
+            return;
+        }
+        let Some(current) = self.selected_step_index() else {
+            return;
+        };
+        let Some(last) = self
+            .workflow_step_count()
+            .and_then(|count| count.checked_sub(1))
+        else {
+            return;
+        };
+        let next = current.saturating_add_signed(offset).min(last);
+        self.select_workflow_builder_step(next);
+    }
+
     pub(crate) fn remove_selected_step(&mut self, path: &Path) {
         let Some(index) = self.selected_step_index() else {
             return;
@@ -390,6 +407,21 @@ impl StudioEguiApp {
         if let Some(step) = self.app.selected_planned_step(index) {
             self.workflow_step_parameters = step.parameters.to_string();
         }
+    }
+
+    fn select_workflow_builder_step(&mut self, index: usize) {
+        self.workflow_edit_index = index.to_string();
+        self.sync_selected_step_parameters(index);
+    }
+
+    fn workflow_step_count(&self) -> Option<usize> {
+        if let Some(workflow) = &self.app.planned_workflow {
+            return Some(workflow.steps.len());
+        }
+        self.app
+            .workflow_debug
+            .as_ref()
+            .map(|debug| debug.steps.len())
     }
 
     pub(crate) fn selected_step_index(&mut self) -> Option<usize> {
