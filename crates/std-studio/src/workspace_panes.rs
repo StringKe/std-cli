@@ -98,13 +98,15 @@ impl StudioEguiApp {
             );
             crate::workspace_tabs::render_workspace_tabs(ui, &tabs, &self.workspace_commands);
             ui.add_space(Space::XS as f32);
-            render_spec(
+            render_workspace_shell(
                 ui,
                 &spec,
                 i18n::t("studio.workspace_panes.active"),
                 &self.workspace_commands,
                 &mut self.pending_workspace_focus,
             );
+            ui.add_space(Space::XS as f32);
+            crate::workspace_pane_content::render_workspace_content(self, ui, &spec);
         });
         true
     }
@@ -196,7 +198,7 @@ impl StudioEguiApp {
     }
 }
 
-fn render_spec(
+fn render_workspace_shell(
     ui: &mut egui::Ui,
     spec: &StudioWorkspaceSpec,
     class_label: &str,
@@ -217,10 +219,6 @@ fn render_spec(
         render_workspace_summary(ui, spec);
         ui.add_space(Space::XS as f32);
         render_workspace_layout(ui, spec);
-        ui.add_space(Space::XS as f32);
-        for line in &spec.lines {
-            render_workspace_line(ui, line);
-        }
         ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
     });
@@ -284,33 +282,6 @@ fn render_workspace_summary(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
             );
         }
     });
-}
-
-fn render_workspace_line(ui: &mut egui::Ui, line: &str) {
-    let (label, value) = line.split_once('=').unwrap_or(("detail", line));
-    ui.horizontal(|ui| {
-        ui.set_min_height(24.0);
-        ui.label(egui::RichText::new(display_label(label)).color(ui::muted_text(ui.ctx())));
-        ui.label(egui::RichText::new(display_value(value)).color(ui::strong_text(ui.ctx())));
-    });
-}
-
-fn display_label(label: &str) -> &str {
-    match label {
-        "plugin_actions" => "Plugin actions",
-        "memories" => "Memory records",
-        "trace" => "Trace",
-        "path" => "Path",
-        "command" => "Command",
-        "config_path" => "Config",
-        "action" => "Actions",
-        "actions" => "Actions",
-        _ => label,
-    }
-}
-
-fn display_value(value: &str) -> String {
-    value.replace(',', ", ")
 }
 
 fn render_workspace_actions(

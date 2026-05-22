@@ -36,6 +36,7 @@ mod studio_smoke_cli;
 mod ui;
 mod viewport;
 mod views;
+mod workspace_pane_content;
 mod workspace_pane_layout;
 mod workspace_panes;
 mod workspace_policy_evidence;
