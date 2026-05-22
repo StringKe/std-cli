@@ -51,6 +51,18 @@ fn viewport_allowlist_uses_exact_src_relative_paths() {
     ));
 }
 
+#[test]
+fn workspace_policy_never_claims_headless_smoke_completes_ui() {
+    let policy = StudioWorkspacePolicy::studio_v1();
+    let report = policy.strict_report();
+
+    assert!(report.contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+    assert!(report.contains("manual_ui_evidence_gates=light-dark-screenshots"));
+    assert!(report.contains("workspace-pane-open-focus-close-restore"));
+    assert!(report.contains("keyboard-a11y-focus"));
+    assert!(report.contains("operations-runtime-evidence"));
+}
+
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;

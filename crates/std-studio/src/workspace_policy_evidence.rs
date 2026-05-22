@@ -49,6 +49,18 @@ pub(crate) fn render(ui: &mut egui::Ui, policy: StudioWorkspacePolicy) {
             StudioWorkspacePolicy::DOC_REFERENCE,
             i18n::t("studio.operations.workspace_policy.docs.detail"),
         );
+        operations_rows::gate_row(
+            ui,
+            i18n::t("studio.operations.workspace_policy.ui_completion"),
+            StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
+            i18n::t("studio.operations.workspace_policy.ui_completion.detail"),
+        );
+        operations_rows::gate_row(
+            ui,
+            i18n::t("studio.operations.workspace_policy.manual_gates"),
+            &StudioWorkspacePolicy::MANUAL_UI_EVIDENCE_GATES.join("|"),
+            i18n::t("studio.operations.workspace_policy.manual_gates.detail"),
+        );
     });
 }
 
@@ -87,5 +99,12 @@ mod tests {
         assert_eq!(policy_state_label(policy), "PASS");
         assert_eq!(bool_label(policy.allows_native_child_windows()), "false");
         assert_eq!(bool_label(policy.allows_detached_panels()), "false");
+        assert_eq!(
+            StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
+            "headless-smoke-is-not-ui-completion"
+        );
+        assert!(
+            StudioWorkspacePolicy::MANUAL_UI_EVIDENCE_GATES.contains(&"light-dark-screenshots")
+        );
     }
 }

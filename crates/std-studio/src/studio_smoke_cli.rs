@@ -75,6 +75,12 @@ mod tests {
             .output()
             .contains("source_guard=workspace_policy_guard.rs"));
         assert!(report.output().contains("forbidden_apis=egui::Window::new"));
+        assert!(report
+            .output()
+            .contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+        assert!(report
+            .output()
+            .contains("manual_ui_evidence_gates=light-dark-screenshots"));
     }
 
     #[test]

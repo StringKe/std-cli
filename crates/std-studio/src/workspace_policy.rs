@@ -37,6 +37,13 @@ impl StudioWorkspacePolicy {
         "ViewportId",
         "ViewportClass",
     ];
+    pub const UI_COMPLETION_BOUNDARY: &'static str = "headless-smoke-is-not-ui-completion";
+    pub const MANUAL_UI_EVIDENCE_GATES: &'static [&'static str] = &[
+        "light-dark-screenshots",
+        "workspace-pane-open-focus-close-restore",
+        "keyboard-a11y-focus",
+        "operations-runtime-evidence",
+    ];
 
     pub const fn studio_v1() -> Self {
         Self {
@@ -66,7 +73,7 @@ impl StudioWorkspacePolicy {
 
     pub fn strict_report(self) -> String {
         format!(
-            "host={};pane_system={};native_child_windows={};detached_panels={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={}",
+            "host={};pane_system={};native_child_windows={};detached_panels={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={};ui_completion_boundary={};manual_ui_evidence_gates={}",
             self.host_window.label(),
             self.pane_system.label(),
             self.native_child_windows,
@@ -74,7 +81,9 @@ impl StudioWorkspacePolicy {
             Self::DOC_REFERENCE,
             Self::VIEWPORT_TOUCHPOINTS.join("|"),
             Self::NATIVE_ENTRYPOINTS.join("|"),
-            Self::FORBIDDEN_WORKBENCH_APIS.join("|")
+            Self::FORBIDDEN_WORKBENCH_APIS.join("|"),
+            Self::UI_COMPLETION_BOUNDARY,
+            Self::MANUAL_UI_EVIDENCE_GATES.join("|")
         )
     }
 }

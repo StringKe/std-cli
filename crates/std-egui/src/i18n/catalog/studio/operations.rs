@@ -70,6 +70,26 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "studio.operations.workspace_policy.docs.detail") => {
             Some("single UI source of truth")
         }
+        (Locale::ZhCn, "studio.operations.workspace_policy.ui_completion") => {
+            Some("UI completion")
+        }
+        (Locale::EnUs, "studio.operations.workspace_policy.ui_completion") => {
+            Some("UI completion")
+        }
+        (Locale::ZhCn, "studio.operations.workspace_policy.ui_completion.detail") => {
+            Some("headless smoke 不能作为 UI 完成证据")
+        }
+        (Locale::EnUs, "studio.operations.workspace_policy.ui_completion.detail") => {
+            Some("headless smoke is not UI completion evidence")
+        }
+        (Locale::ZhCn, "studio.operations.workspace_policy.manual_gates") => Some("Manual gates"),
+        (Locale::EnUs, "studio.operations.workspace_policy.manual_gates") => Some("Manual gates"),
+        (Locale::ZhCn, "studio.operations.workspace_policy.manual_gates.detail") => {
+            Some("截图、焦点、键盘和运行时证据")
+        }
+        (Locale::EnUs, "studio.operations.workspace_policy.manual_gates.detail") => {
+            Some("screenshots, focus, keyboard and runtime evidence")
+        }
         (Locale::ZhCn, "studio.operations.completion.title") => Some("Completion Audit"),
         (Locale::EnUs, "studio.operations.completion.title") => Some("Completion Audit"),
         (Locale::ZhCn, "studio.operations.completion.detail") => Some("未证明前不算完成"),
@@ -113,6 +133,14 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "studio.operations.workspace_policy.detached.detail" => Some("forbidden on main path"),
         "studio.operations.workspace_policy.docs" => Some("Docs"),
         "studio.operations.workspace_policy.docs.detail" => Some("single UI source of truth"),
+        "studio.operations.workspace_policy.ui_completion" => Some("UI completion"),
+        "studio.operations.workspace_policy.ui_completion.detail" => {
+            Some("headless smoke is not UI completion evidence")
+        }
+        "studio.operations.workspace_policy.manual_gates" => Some("Manual gates"),
+        "studio.operations.workspace_policy.manual_gates.detail" => {
+            Some("screenshots, focus, keyboard and runtime evidence")
+        }
         "studio.operations.completion.title" => Some("Completion Audit"),
         "studio.operations.completion.detail" => Some("not complete until proven"),
         "studio.operations.completion.note" => {

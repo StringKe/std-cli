@@ -11,6 +11,8 @@ pub(crate) struct WorkspacePolicySmoke {
     pub(crate) viewport_touchpoints: String,
     pub(crate) native_entrypoints: String,
     pub(crate) forbidden_apis: String,
+    pub(crate) ui_completion_boundary: &'static str,
+    pub(crate) manual_ui_evidence_gates: String,
     pub(crate) source_guard: &'static str,
 }
 
@@ -30,6 +32,8 @@ impl WorkspacePolicySmoke {
             viewport_touchpoints: StudioWorkspacePolicy::VIEWPORT_TOUCHPOINTS.join("|"),
             native_entrypoints: StudioWorkspacePolicy::NATIVE_ENTRYPOINTS.join("|"),
             forbidden_apis: StudioWorkspacePolicy::FORBIDDEN_WORKBENCH_APIS.join("|"),
+            ui_completion_boundary: StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
+            manual_ui_evidence_gates: StudioWorkspacePolicy::MANUAL_UI_EVIDENCE_GATES.join("|"),
             source_guard: "workspace_policy_guard.rs",
         }
     }
@@ -47,12 +51,25 @@ impl WorkspacePolicySmoke {
             && self.forbidden_apis.contains("egui::Window::new")
             && self.forbidden_apis.contains("ViewportBuilder::default")
             && self.forbidden_apis.contains("send_viewport_cmd")
+            && self.ui_completion_boundary == "headless-smoke-is-not-ui-completion"
+            && self
+                .manual_ui_evidence_gates
+                .contains("light-dark-screenshots")
+            && self
+                .manual_ui_evidence_gates
+                .contains("workspace-pane-open-focus-close-restore")
+            && self
+                .manual_ui_evidence_gates
+                .contains("keyboard-a11y-focus")
+            && self
+                .manual_ui_evidence_gates
+                .contains("operations-runtime-evidence")
             && self.source_guard == "workspace_policy_guard.rs"
     }
 
     pub(crate) fn output(&self) -> String {
         format!(
-            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nforbidden_apis={}\nsource_guard={}",
+            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nforbidden_apis={}\nui_completion_boundary={}\nmanual_ui_evidence_gates={}\nsource_guard={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.host_window,
             self.pane_system,
@@ -63,6 +80,8 @@ impl WorkspacePolicySmoke {
             self.viewport_touchpoints,
             self.native_entrypoints,
             self.forbidden_apis,
+            self.ui_completion_boundary,
+            self.manual_ui_evidence_gates,
             self.source_guard
         )
     }
@@ -95,5 +114,11 @@ mod tests {
         assert!(report
             .output()
             .contains("source_guard=workspace_policy_guard.rs"));
+        assert!(report
+            .output()
+            .contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+        assert!(report
+            .output()
+            .contains("manual_ui_evidence_gates=light-dark-screenshots"));
     }
 }

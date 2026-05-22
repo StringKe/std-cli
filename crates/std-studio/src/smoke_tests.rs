@@ -22,6 +22,15 @@ fn studio_smoke_reports_internal_workspace_pane_management() {
 }
 
 fn assert_workspace_policy_summary(summary: &str) {
+    assert_workspace_pane_state_summary(summary);
+    assert_workspace_tab_summary(summary);
+    assert_workspace_forbidden_policy_summary(summary);
+    assert_workspace_pane_lifecycle_summary(summary);
+    assert_workspace_ui_completion_boundary(summary);
+    assert_studio_open_intent_summary(summary);
+}
+
+fn assert_workspace_pane_state_summary(summary: &str) {
     assert!(summary.contains("pane_opened=true"));
     assert!(summary.contains("pane_focus_switched=true"));
     assert!(summary.contains("pane_closed=true"));
@@ -33,6 +42,11 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("pane_restored_title=Plugin Manager"));
     assert!(summary.contains("pane_closed_removed=true"));
     assert!(summary.contains("pane_state_preserved=true"));
+    assert!(summary.contains("reopened_memory="));
+    assert!(summary.contains("reopened_restored=true"));
+}
+
+fn assert_workspace_tab_summary(summary: &str) {
     assert!(summary.contains("pane_focus_label=strategy=internal-egui-workspace-panes"));
     assert!(summary.contains("host=single-borderless-egui-viewport"));
     assert!(summary.contains("sequence=open>focus>switch>close>reopen>restore"));
@@ -47,11 +61,6 @@ fn assert_workspace_policy_summary(summary: &str) {
     assert!(summary.contains("Workspace pane tab, Dashboard"));
     assert!(summary.contains("Close workspace pane, Plugin Manager"));
     assert!(summary.contains("strategy=internal-egui-workspace-panes"));
-    assert!(summary.contains("reopened_memory="));
-    assert!(summary.contains("reopened_restored=true"));
-    assert_workspace_forbidden_policy_summary(summary);
-    assert_workspace_pane_lifecycle_summary(summary);
-    assert_studio_open_intent_summary(summary);
 }
 
 fn assert_workspace_forbidden_policy_summary(summary: &str) {
@@ -83,6 +92,14 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     assert!(summary.contains("viewport_id=forbidden"));
     assert!(summary.contains("egui_window=forbidden"));
     assert!(summary.contains("settings_overlay=forbidden"));
+}
+
+fn assert_workspace_ui_completion_boundary(summary: &str) {
+    assert!(summary.contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+    assert!(summary.contains("manual_ui_evidence_gates=light-dark-screenshots"));
+    assert!(summary.contains("workspace-pane-open-focus-close-restore"));
+    assert!(summary.contains("keyboard-a11y-focus"));
+    assert!(summary.contains("operations-runtime-evidence"));
 }
 
 fn assert_studio_open_intent_summary(summary: &str) {
