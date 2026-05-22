@@ -96,7 +96,15 @@ pub(crate) fn launcher_clear_color() -> [f32; 4] {
 
 impl LauncherApp {
     pub(crate) fn apply_theme_profile(&mut self, ctx: &egui::Context) {
-        self.theme_profile = Some(ThemeProfile::apply(ctx, self.theme_mode));
+        let config = &self.state.core.config;
+        self.theme_profile = Some(ThemeProfile::apply_with_accessibility(
+            ctx,
+            self.theme_mode,
+            config.reduce_motion(),
+            config.high_contrast(),
+            config.reduce_transparency(),
+            config.ui_scale(),
+        ));
     }
 
     pub(crate) fn for_preview(theme_mode: ThemeMode) -> Self {
@@ -199,6 +207,24 @@ mod tests {
         let profile = app.theme_profile.unwrap();
         assert_eq!(profile.requested, ThemeMode::Light);
         assert_eq!(profile.effective, std_egui::tokens::EffectiveTheme::Light);
+    }
+
+    #[test]
+    fn launcher_theme_profile_merges_configured_accessibility() {
+        let mut app = LauncherApp::for_preview(ThemeMode::Dark);
+        app.state.core.config.appearance.reduce_motion = true;
+        app.state.core.config.appearance.high_contrast = true;
+        app.state.core.config.appearance.reduce_transparency = true;
+        app.state.core.config.appearance.ui_scale = 1.25;
+        let ctx = egui::Context::default();
+
+        app.apply_theme_profile(&ctx);
+
+        let profile = app.theme_profile.unwrap();
+        assert!(profile.reduce_motion);
+        assert!(profile.high_contrast);
+        assert!(profile.reduce_transparency);
+        assert_eq!(profile.focus_ring_width, 3);
     }
 
     #[test]
