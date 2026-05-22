@@ -304,4 +304,62 @@ mod tests {
             Some("window_title outside whitelist")
         );
     }
+
+    #[test]
+    fn background_runner_uses_background_event_delivery_contract() {
+        let runner = include_str!("../../../../scripts/background-ui-smoke.swift");
+        let tap_index = runner.find("guard session.start()").unwrap();
+        let activation_index = runner.find("sendAppKitActivation(to:").unwrap();
+        let center_primer_index = runner.find("postCenterPrimer(to:").unwrap();
+        let key_smoke_index = runner.find("postKeySmoke(to:").unwrap();
+
+        assert!(tap_index < activation_index);
+        assert!(activation_index < center_primer_index);
+        assert!(center_primer_index < key_smoke_index);
+        assert!(runner.contains("CGEvent.tapCreateForPid"));
+        assert!(runner.contains("NSEvent.otherEvent"));
+        assert!(runner.contains("with: .appKitDefined"));
+        assert!(runner.contains("subtype: subtype"));
+        assert!(runner.contains("postToPid(pid)"));
+        assert!(runner.contains("frontmost_before"));
+        assert!(runner.contains("frontmost_after"));
+    }
+
+    #[test]
+    fn background_runner_forbids_frontmost_and_global_event_routes() {
+        let runner = include_str!("../../../../scripts/background-ui-smoke.swift");
+
+        for forbidden in [
+            "System Events",
+            "osascript",
+            "CGWarpMouseCursorPosition",
+            ".post(tap:",
+            ".cghidEventTap",
+            "NSWorkspace.shared.open",
+            "activate(options:",
+        ] {
+            assert!(!runner.contains(forbidden), "{forbidden}");
+        }
+        assert!(runner.contains("isForbiddenFrontmostApp"));
+        assert!(runner.contains("frontmost app is forbidden for event tap"));
+        assert!(runner.contains("frontmost app changed"));
+    }
+
+    #[test]
+    fn background_runner_names_multilingual_sensitive_apps() {
+        let runner = include_str!("../../../../scripts/background-ui-smoke.swift");
+
+        for name in [
+            "1password",
+            "terminal",
+            "iterm",
+            "wechat",
+            "weixin",
+            "微信",
+            "system settings",
+            "system preferences",
+        ] {
+            assert!(runner.contains(name), "{name}");
+        }
+    }
 }
