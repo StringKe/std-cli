@@ -4,7 +4,7 @@ use crate::{
 };
 use std_egui::{
     motion::MotionContext,
-    tokens::{apply_theme, Color, Radius, Space, ThemeMode},
+    tokens::{apply_theme, Color, LauncherSize, Radius, Space, ThemeMode, UiScale},
     LauncherFeedback,
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
@@ -20,6 +20,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub native_host_window_contract: String,
     pub capture_window_contract: String,
     pub capture_surface_contract: String,
+    pub visible_host_geometry_contract: String,
     pub panel_inner_padding: i8,
     pub dark_search_surface_layer: String,
     pub light_search_surface_layer: String,
@@ -62,6 +63,7 @@ impl LauncherSurfaceSmokeReport {
             native_host_window_contract: native_host_window_contract(),
             capture_window_contract: capture_window_contract(),
             capture_surface_contract: capture_surface_contract(),
+            visible_host_geometry_contract: visible_host_geometry_contract(),
             panel_inner_padding: Space::md(),
             dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
             light_search_surface_layer: layer("light_search", "bg/surface-1", &light),
@@ -101,6 +103,24 @@ impl LauncherSurfaceSmokeReport {
                 == "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=16px,no_host_background"
             && self.capture_surface_contract
                 == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=16px,no_host_background,no_shadow_clip"
+            && self
+                .visible_host_geometry_contract
+                .contains("results:native_host=")
+            && self
+                .visible_host_geometry_contract
+                .contains("defer:native_host=")
+            && self
+                .visible_host_geometry_contract
+                .contains("error:native_host=")
+            && self
+                .visible_host_geometry_contract
+                .contains("panel_origin=16x16")
+            && self
+                .visible_host_geometry_contract
+                .contains("frame_clear=true")
+            && self
+                .visible_host_geometry_contract
+                .contains("panel_floats=true")
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -141,7 +161,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -152,6 +172,7 @@ impl LauncherSurfaceSmokeReport {
             self.native_host_window_contract,
             self.capture_window_contract,
             self.capture_surface_contract,
+            self.visible_host_geometry_contract,
             self.panel_inner_padding,
             self.dark_search_surface_layer,
             self.light_search_surface_layer,
@@ -239,6 +260,32 @@ fn capture_window_contract() -> String {
 fn capture_surface_contract() -> String {
     "capture_surface=opaque_panel_surface,transparent_host,host_gutter=16px,no_host_background,no_shadow_clip"
         .to_string()
+}
+
+fn visible_host_geometry_contract() -> String {
+    ["results", "defer", "error"]
+        .into_iter()
+        .map(|scenario| format!("{scenario}:{}", visible_host_geometry_for_height(360.0)))
+        .collect::<Vec<_>>()
+        .join("|")
+}
+
+fn visible_host_geometry_for_height(panel_height: f32) -> String {
+    let scale = UiScale::default();
+    let panel = egui::vec2(PANEL_WIDTH, panel_height);
+    let host = LauncherSize::host_size(panel, scale);
+    let gutter = LauncherSize::host_gutter(scale);
+    format!(
+        "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear=true;panel_floats=true",
+        host.x.round() as u32,
+        host.y.round() as u32,
+        gutter.round() as i32,
+        gutter.round() as i32,
+        panel.x.round() as u32,
+        panel.y.round() as u32,
+        (host.x - panel.x).round() as i32,
+        (host.y - panel.y).round() as i32
+    )
 }
 
 fn action_bar_preview_state() -> String {
@@ -334,5 +381,9 @@ mod tests {
         assert!(summary.contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
         assert!(summary.contains("feedback_text_contract=layout=inline-toast"));
         assert!(summary.contains("detail=max-2-lines"));
+        assert!(summary.contains("visible_host_geometry_contract=results:"));
+        assert!(summary.contains("panel_origin=16x16"));
+        assert!(summary.contains("host_gap=32x32"));
+        assert!(summary.contains("panel_floats=true"));
     }
 }
