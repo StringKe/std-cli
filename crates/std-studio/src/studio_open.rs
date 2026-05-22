@@ -1,5 +1,5 @@
 use crate::StudioEguiApp;
-use std_studio::StudioPane;
+use std_studio::{PaneSystemPolicy, StudioPane, StudioWorkspacePolicy};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StudioOpenRequest {
@@ -94,6 +94,9 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
 pub(crate) struct StudioOpenSmokeReport {
     pub targets: usize,
     pub route: &'static str,
+    pub host_policy: &'static str,
+    pub pane_system: &'static str,
+    pub docs: &'static str,
     pub internal_panes: usize,
     pub native_child_windows: bool,
     pub detached_panels: bool,
@@ -121,6 +124,9 @@ impl StudioOpenSmokeReport {
         Self {
             targets: all_open_requests().len(),
             route: "internal-egui-workspace-pane-intent",
+            host_policy: policy.host_window.label(),
+            pane_system: policy.pane_system.label(),
+            docs: StudioWorkspacePolicy::DOC_REFERENCE,
             internal_panes: keys.len(),
             native_child_windows: policy.allows_native_child_windows(),
             detached_panels: policy.allows_detached_panels(),
@@ -130,8 +136,12 @@ impl StudioOpenSmokeReport {
     }
 
     pub(crate) fn pass(&self) -> bool {
+        let policy = StudioWorkspacePolicy::studio_v1();
         self.targets == 7
             && self.route == "internal-egui-workspace-pane-intent"
+            && self.host_policy == policy.host_window.label()
+            && self.pane_system == policy.pane_system.label()
+            && open_intent_policy_passes(policy)
             && self.internal_panes == 7
             && !self.native_child_windows
             && !self.detached_panels
@@ -141,9 +151,12 @@ impl StudioOpenSmokeReport {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_open_smoke {}\nroute={}\ntargets={}\ninternal_panes={}\nnative_child_windows={}\ndetached_panels={}\nfocus_restored={}\ncontent_keys={}",
+            "studio_open_smoke {}\nroute={}\nhost_policy={}\npane_system={}\ndocs={}\ntargets={}\ninternal_panes={}\nnative_child_windows={}\ndetached_panels={}\nfocus_restored={}\ncontent_keys={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.route,
+            self.host_policy,
+            self.pane_system,
+            self.docs,
             self.targets,
             self.internal_panes,
             self.native_child_windows,
@@ -182,8 +195,11 @@ pub(crate) fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp 
 pub(crate) fn studio_open_intent_summary(request: StudioOpenRequest) -> String {
     let app = app_for_open_request(request);
     format!(
-        "studio_open_intent PASS\ntarget={}\nroute=internal-egui-workspace-pane-intent\nhost_window=existing-studio-host\nfocused_pane={}\nworkspace_panes={}\nnative_child_windows={}\ndetached_panels={}",
+        "studio_open_intent PASS\ntarget={}\nroute=internal-egui-workspace-pane-intent\nhost_window=existing-studio-host\nhost_policy={}\npane_system={}\ndocs={}\nfocused_pane={}\nworkspace_panes={}\nnative_child_windows={}\ndetached_panels={}",
         request.target(),
+        app.app.workspace_policy.host_window.label(),
+        app.app.workspace_policy.pane_system.label(),
+        StudioWorkspacePolicy::DOC_REFERENCE,
         app.app
             .focused_pane
             .map(|id| id.value().to_string())
@@ -204,6 +220,14 @@ fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
         StudioOpenRequest::Workflows => Some(StudioPane::Workflows),
         StudioOpenRequest::History => None,
     }
+}
+
+pub(crate) fn open_intent_policy_passes(policy: StudioWorkspacePolicy) -> bool {
+    policy.host_window.label() == "single-borderless-egui-viewport"
+        && policy.pane_system == PaneSystemPolicy::InternalEguiWorkspacePanes
+        && !policy.allows_native_child_windows()
+        && !policy.allows_detached_panels()
+        && StudioWorkspacePolicy::DOC_REFERENCE == "docs/22 + docs/24"
 }
 
 pub(crate) fn all_open_requests() -> [StudioOpenRequest; 7] {

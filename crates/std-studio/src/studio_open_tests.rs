@@ -39,8 +39,18 @@ fn open_smoke_reports_internal_pane_intents_without_native_windows() {
     assert!(report
         .summary()
         .contains("route=internal-egui-workspace-pane-intent"));
+    assert!(report
+        .summary()
+        .contains("host_policy=single-borderless-egui-viewport"));
+    assert!(report
+        .summary()
+        .contains("pane_system=internal-egui-workspace-panes"));
+    assert!(report.summary().contains("docs=docs/22 + docs/24"));
     assert!(report.summary().contains("native_child_windows=false"));
     assert!(report.summary().contains("detached_panels=false"));
+    assert!(open_intent_policy_passes(
+        std_studio::StudioWorkspacePolicy::studio_v1()
+    ));
 }
 
 #[test]
@@ -51,6 +61,9 @@ fn open_request_emits_internal_intent_without_launching_host_window() {
     assert!(summary.contains("target=plugins"));
     assert!(summary.contains("route=internal-egui-workspace-pane-intent"));
     assert!(summary.contains("host_window=existing-studio-host"));
+    assert!(summary.contains("host_policy=single-borderless-egui-viewport"));
+    assert!(summary.contains("pane_system=internal-egui-workspace-panes"));
+    assert!(summary.contains("docs=docs/22 + docs/24"));
     assert!(summary.contains("workspace_panes=1"));
     assert!(summary.contains("native_child_windows=false"));
     assert!(summary.contains("detached_panels=false"));

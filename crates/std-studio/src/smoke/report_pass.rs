@@ -359,6 +359,13 @@ impl StudioSmokeReport {
                 .contains("route=internal-egui-workspace-pane-intent")
             && self
                 .open_intent_summary
+                .contains("host_policy=single-borderless-egui-viewport")
+            && self
+                .open_intent_summary
+                .contains("pane_system=internal-egui-workspace-panes")
+            && self.open_intent_summary.contains("docs=docs/22 + docs/24")
+            && self
+                .open_intent_summary
                 .contains("native_child_windows=false")
             && self.open_intent_summary.contains("detached_panels=false")
             && self.open_intent_summary.contains("focus_restored=true")

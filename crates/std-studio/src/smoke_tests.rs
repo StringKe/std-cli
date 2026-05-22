@@ -79,6 +79,9 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
 fn assert_studio_open_intent_summary(summary: &str) {
     assert!(summary.contains("studio_open_smoke PASS"));
     assert!(summary.contains("route=internal-egui-workspace-pane-intent"));
+    assert!(summary.contains("host_policy=single-borderless-egui-viewport"));
+    assert!(summary.contains("pane_system=internal-egui-workspace-panes"));
+    assert!(summary.contains("docs=docs/22 + docs/24"));
     assert!(summary.contains("targets=7"));
     assert!(summary.contains("internal_panes=7"));
     assert!(summary.contains("focus_restored=true"));
