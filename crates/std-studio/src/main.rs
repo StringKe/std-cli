@@ -9,6 +9,8 @@ mod app_rows;
 mod app_tests;
 mod app_view;
 mod bottom_panel;
+#[cfg(test)]
+mod bottom_panel_keyboard_tests;
 mod bottom_panel_model;
 mod commands;
 mod host_chrome;
@@ -187,6 +189,7 @@ impl eframe::App for StudioEguiApp {
         self.layout.handle_keyboard(ctx);
         self.handle_settings_keyboard(ctx);
         self.handle_workspace_tab_keyboard(ctx);
+        self.handle_bottom_panel_keyboard(ctx);
         self.handle_workflow_builder_keyboard(ctx);
         self.handle_analysis_workbench_keyboard(ctx);
         self.consume_workspace_commands();
@@ -230,6 +233,26 @@ impl StudioEguiApp {
                 self.queue_workspace_tab_command(command);
             }
         }
+    }
+
+    fn handle_bottom_panel_keyboard(&mut self, ctx: &egui::Context) {
+        if std_egui::input::ime_composing(ctx) {
+            return;
+        }
+        if !self.layout.bottom_panel_open {
+            return;
+        }
+        let delta = if std_egui::input::studio_previous_bottom_panel_tab().pressed(ctx) {
+            -1
+        } else if std_egui::input::studio_next_bottom_panel_tab().pressed(ctx) {
+            1
+        } else {
+            return;
+        };
+        let mut model =
+            crate::bottom_panel_model::BottomPanelTabModel::for_selected(self.bottom_panel_tab);
+        model.move_selection(delta);
+        self.bottom_panel_tab = model.selected;
     }
 
     fn queue_workspace_tab_command(&self, command: StudioWorkspaceCommand) {

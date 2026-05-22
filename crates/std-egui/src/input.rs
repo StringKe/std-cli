@@ -1,3 +1,7 @@
+pub use crate::input_labels::{
+    alt_modifier_label, named_key_label, primary_modifier_label, shift_modifier_label,
+};
+
 const IME_COMPOSING_ID: &str = "std-egui.ime-composing";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -100,30 +104,6 @@ impl KeyBinding {
     }
 }
 
-pub fn primary_modifier_label() -> &'static str {
-    if cfg!(target_os = "macos") {
-        "⌘"
-    } else {
-        "Ctrl"
-    }
-}
-
-pub fn alt_modifier_label() -> &'static str {
-    if cfg!(target_os = "macos") {
-        "⌥"
-    } else {
-        "Alt"
-    }
-}
-
-pub fn shift_modifier_label() -> &'static str {
-    if cfg!(target_os = "macos") {
-        "⇧"
-    } else {
-        "Shift"
-    }
-}
-
 pub fn launcher_action_panel() -> KeyBinding {
     KeyBinding::Mod('K')
 }
@@ -210,6 +190,14 @@ pub fn studio_workflow_history() -> KeyBinding {
 
 pub fn studio_bottom_panel_toggle() -> KeyBinding {
     KeyBinding::Mod('J')
+}
+
+pub fn studio_previous_bottom_panel_tab() -> KeyBinding {
+    KeyBinding::ModNamed(egui::Key::ArrowLeft)
+}
+
+pub fn studio_next_bottom_panel_tab() -> KeyBinding {
+    KeyBinding::ModNamed(egui::Key::ArrowRight)
 }
 
 pub fn studio_close_tab() -> KeyBinding {
@@ -320,39 +308,6 @@ fn pressed_alpha(input: &egui::InputState, key: char) -> bool {
     input.key_pressed(key)
 }
 
-pub fn named_key_label(key: egui::Key) -> &'static str {
-    match key {
-        egui::Key::ArrowDown => "↓",
-        egui::Key::ArrowUp => "↑",
-        egui::Key::Backspace => {
-            if cfg!(target_os = "macos") {
-                "⌫"
-            } else {
-                "Backspace"
-            }
-        }
-        egui::Key::Comma => ",",
-        egui::Key::Enter => {
-            if cfg!(target_os = "macos") {
-                "↵"
-            } else {
-                "Enter"
-            }
-        }
-        egui::Key::Escape => "Esc",
-        egui::Key::Questionmark => "?",
-        egui::Key::Slash => "/",
-        egui::Key::Tab => {
-            if cfg!(target_os = "macos") {
-                "⇥"
-            } else {
-                "Tab"
-            }
-        }
-        _ => "Key",
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -428,6 +383,10 @@ mod tests {
         assert!(studio_next_workspace_pane()
             .label()
             .ends_with(&format!("+{shift}+{down}")));
+        assert!(studio_previous_bottom_panel_tab()
+            .label()
+            .ends_with("+Left"));
+        assert!(studio_next_bottom_panel_tab().label().ends_with("+Right"));
     }
 
     fn assert_launcher_bindings() {

@@ -48,6 +48,18 @@ impl BottomPanelTabModel {
         self.tabs.iter().map(|tab| tab.label()).collect()
     }
 
+    pub(crate) fn move_selection(&mut self, delta: isize) {
+        let selected_index = self
+            .tabs
+            .iter()
+            .position(|tab| *tab == self.selected)
+            .unwrap_or(0);
+        let next_index = crate::commands::move_selection(selected_index, delta, self.tabs.len());
+        if let Some(tab) = self.tabs.get(next_index) {
+            self.selected = *tab;
+        }
+    }
+
     pub(crate) fn contract(&self) -> String {
         format!(
             "tabs={};selected={};role=bottom-panel-tabs",
@@ -107,6 +119,23 @@ mod tests {
             model.contract(),
             "tabs=批量调试|日志|问题|性能;selected=批量调试;role=bottom-panel-tabs"
         );
+    }
+
+    #[test]
+    fn bottom_panel_tabs_move_selection_without_wrap() {
+        let mut model = BottomPanelTabModel::docs22_default();
+
+        model.move_selection(-1);
+        assert_eq!(model.selected, BottomPanelTab::BatchDebug);
+
+        model.move_selection(1);
+        assert_eq!(model.selected, BottomPanelTab::Logs);
+
+        model.move_selection(9);
+        assert_eq!(model.selected, BottomPanelTab::Performance);
+
+        model.move_selection(-2);
+        assert_eq!(model.selected, BottomPanelTab::Logs);
     }
 
     #[test]

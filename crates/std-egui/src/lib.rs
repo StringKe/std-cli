@@ -4,6 +4,7 @@ pub mod a11y;
 mod dashboard;
 pub mod i18n;
 pub mod input;
+mod input_labels;
 mod launcher;
 mod launcher_feedback;
 mod launcher_query;
