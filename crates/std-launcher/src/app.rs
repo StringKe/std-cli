@@ -126,6 +126,29 @@ impl LauncherApp {
         app
     }
 
+    pub(crate) fn for_background_harness() -> Self {
+        let mut app = Self::for_preview(ThemeMode::Dark);
+        app.hotkey_status = "harness disabled".to_string();
+        app.resident_status = "harness disabled".to_string();
+        app
+    }
+
+    #[cfg(test)]
+    pub(crate) fn system_resource_contract(&self) -> String {
+        let status = if self.hotkey_status == "harness disabled"
+            && self.resident_status == "harness disabled"
+        {
+            "harness"
+        } else {
+            "runtime"
+        };
+        format!(
+            "hotkey={},resident={},status={status}",
+            self.hotkey_runtime.is_registered(),
+            self.resident_entry.is_some()
+        )
+    }
+
     fn resident(state: LauncherState) -> Self {
         let plan = state.controller.registration_plan();
         let (hotkey_runtime, hotkey_status) = match GlobalHotkeyRuntime::register(plan.clone()) {
@@ -195,6 +218,16 @@ mod tests {
         assert!(app.resident_entry.is_none());
         assert_eq!(app.hotkey_status, "preview disabled");
         assert_eq!(app.resident_status, "preview");
+    }
+
+    #[test]
+    fn launcher_background_harness_does_not_register_system_resources() {
+        let app = LauncherApp::for_background_harness();
+
+        assert_eq!(
+            app.system_resource_contract(),
+            "hotkey=false,resident=false,status=harness"
+        );
     }
 
     #[test]

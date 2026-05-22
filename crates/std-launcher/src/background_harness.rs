@@ -1,4 +1,5 @@
 use crate::app::LauncherApp;
+use crate::ui;
 use eframe::egui;
 use std::env;
 use std::time::{Duration, Instant};
@@ -21,7 +22,7 @@ struct BackgroundHarnessApp {
 
 impl BackgroundHarnessApp {
     fn new(timeout_ms: u64) -> Self {
-        let mut app = LauncherApp::default();
+        let mut app = LauncherApp::for_background_harness();
         app.state = visible_harness_state();
         Self {
             app,
@@ -96,14 +97,17 @@ pub(crate) fn run_background_harness(timeout_ms: u64) -> eframe::Result<()> {
 }
 
 fn background_harness_native_options() -> eframe::NativeOptions {
-    eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size(egui::vec2(720.0, 360.0))
-            .with_decorations(false)
-            .with_transparent(true)
-            .with_visible(true),
-        ..Default::default()
-    }
+    std_launcher::launcher_panel_native_options(
+        ui::launcher_window_inner_size(&visible_harness_state()),
+        true,
+    )
+}
+
+#[cfg(test)]
+fn background_harness_window_contract() -> String {
+    std_launcher::transparent_visible_panel_contract(ui::launcher_window_inner_size(
+        &visible_harness_state(),
+    ))
 }
 
 #[cfg(test)]
@@ -136,6 +140,19 @@ mod tests {
         assert!(description.contains("transparent: Some(true)"));
         assert!(description.contains("decorations: Some(false)"));
         assert!(description.contains("visible: Some(true)"));
+        assert!(background_harness_window_contract().starts_with(
+            "native=panel-surface,transparent=true,decorations=false,visible=true,size=720x"
+        ));
+    }
+
+    #[test]
+    fn background_harness_app_does_not_register_system_resources() {
+        let app = BackgroundHarnessApp::new(1000);
+
+        assert_eq!(
+            app.app.system_resource_contract(),
+            "hotkey=false,resident=false,status=harness"
+        );
     }
 
     #[test]
