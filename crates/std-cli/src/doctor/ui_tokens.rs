@@ -142,6 +142,7 @@ fn ui_shell_path(path: &Path) -> bool {
                     | "dashboard_rows.rs"
                     | "history_rows.rs"
                     | "memory_rows.rs"
+                    | "settings_toggle.rs"
                     | "settings_rows.rs"
                     | "operations_rows.rs"
             )

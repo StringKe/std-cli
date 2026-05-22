@@ -100,6 +100,26 @@ impl FocusRing {
     }
 }
 
+pub struct ControlSize;
+
+impl ControlSize {
+    pub const SWITCH_WIDTH: f32 = 48.0;
+    pub const SWITCH_HEIGHT: f32 = 24.0;
+    pub const SWITCH_RIGHT_INSET: f32 = 40.0;
+
+    pub fn switch_size() -> egui::Vec2 {
+        let scale = UiScale::from_env();
+        egui::vec2(
+            scale.f32(Self::SWITCH_WIDTH),
+            scale.f32(Self::SWITCH_HEIGHT),
+        )
+    }
+
+    pub fn switch_right_inset() -> f32 {
+        UiScale::from_env().f32(Self::SWITCH_RIGHT_INSET)
+    }
+}
+
 pub struct Elevation;
 
 impl Elevation {
@@ -198,6 +218,12 @@ mod tests {
         assert_eq!(action_panel.radius, Radius::md());
         assert!(search.expand > action_panel.expand);
         assert!(search.width >= 1.0);
+    }
+
+    #[test]
+    fn control_sizes_export_switch_geometry() {
+        assert_eq!(ControlSize::switch_size(), egui::vec2(48.0, 24.0));
+        assert_eq!(ControlSize::switch_right_inset(), 40.0);
     }
 
     #[test]

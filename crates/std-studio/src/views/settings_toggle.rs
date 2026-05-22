@@ -8,7 +8,7 @@ use crate::{
 use eframe::egui;
 use std_egui::{
     i18n,
-    tokens::{Color, Radius, Space, Text},
+    tokens::{Color, ControlSize, Radius, Space, Text},
 };
 
 pub(crate) enum ToggleRowEvent {
@@ -59,8 +59,11 @@ pub(crate) fn toggle_row(
 fn paint_toggle(ui: &mut egui::Ui, rect: egui::Rect, enabled: bool) {
     let ctx = ui.ctx().clone();
     let toggle_rect = egui::Rect::from_center_size(
-        egui::pos2(rect.right() - 40.0, rect.center().y),
-        egui::vec2(48.0, 24.0),
+        egui::pos2(
+            rect.right() - ControlSize::switch_right_inset(),
+            rect.center().y,
+        ),
+        ControlSize::switch_size(),
     );
     let fill = if enabled {
         Color::accent_weak(&ctx)
@@ -107,6 +110,9 @@ mod tests {
         assert!(implementation.contains("paint_toggle"));
         assert!(implementation.contains("WidgetType::Checkbox"));
         assert!(implementation.contains("Color::accent_weak"));
+        assert!(implementation.contains("ControlSize::switch_size()"));
         assert!(!implementation.contains("ui.checkbox"));
+        let forbidden_inline_size = ["egui::", "vec2(48.0, 24.0)"].concat();
+        assert!(!implementation.contains(&forbidden_inline_size));
     }
 }
