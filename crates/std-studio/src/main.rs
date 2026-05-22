@@ -22,6 +22,7 @@ mod preview_evidence;
 mod preview_tests;
 mod shell;
 mod shell_icons;
+mod shell_nav_model;
 mod shell_navigation;
 mod shell_overlays;
 mod shell_parts;

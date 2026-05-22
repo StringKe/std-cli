@@ -1,5 +1,7 @@
 use crate::{
-    shell_icons, ui,
+    shell_icons,
+    shell_nav_model::{studio_nav_sections, StudioNavItem},
+    ui,
     workspace_panes::{StudioWorkspaceCommand, WorkspaceCommandQueue},
     StudioEguiApp,
 };
@@ -11,15 +13,12 @@ use std_egui::{
 use std_studio::StudioPane;
 
 const NAV_ROW_HEIGHT: f32 = 28.0;
-const OPEN_ROW_HEIGHT: f32 = 44.0;
 const PANE_ROW_HEIGHT: f32 = 36.0;
 const ICON_SIZE: f32 = Space::MD as f32;
 const ICON_RAIL_WIDTH: f32 = Space::XL as f32;
 const ICON_RAIL_HEIGHT: f32 = NAV_ROW_HEIGHT;
 const PANE_CLOSE_SIZE: f32 = Space::LG as f32;
 const PANE_CLOSE_CENTER_INSET: f32 = Space::SM as f32 + Space::TWO_XS as f32 / 2.0;
-const OPEN_TITLE_BASELINE_Y: f32 = Space::SM as f32 + 1.0;
-const OPEN_DETAIL_BASELINE_Y: f32 = Space::XL as f32 - 3.0;
 const PANE_STATE_CENTER_X: f32 = Space::XS as f32 + Space::TWO_XS as f32 / 2.0;
 const PANE_STATE_RADIUS: f32 = 3.0;
 const CLOSE_GLYPH_HALF: f32 = Space::XS as f32 / 2.0;
@@ -35,13 +34,11 @@ impl StudioEguiApp {
         }
         self.render_workspace_nav(ui);
         ui.add_space(Space::LG as f32);
-        self.render_open_nav(ui);
-        ui.add_space(Space::LG as f32);
         self.render_workspace_pane_manager(ui);
     }
 
     fn render_icon_rail(&mut self, ui: &mut egui::Ui) {
-        for pane in StudioPane::all() {
+        for pane in icon_rail_panes() {
             let selected = self.app.active_pane == pane;
             if nav_icon_button(ui, pane, selected)
                 .on_hover_text(pane.label())
@@ -53,82 +50,50 @@ impl StudioEguiApp {
     }
 
     fn render_workspace_nav(&mut self, ui: &mut egui::Ui) {
-        ui.vertical(|ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.shell.workspace.title"),
-                i18n::t("studio.shell.workspace.detail"),
-            );
-            for pane in StudioPane::all() {
-                let selected = self.app.active_pane == pane;
-                if nav_row(ui, pane, pane.label(), selected).clicked() {
-                    self.app.switch_pane(pane);
+        for section in studio_nav_sections() {
+            ui.vertical(|ui| {
+                ui::section_header(ui, i18n::t(section.title_key), i18n::t(section.detail_key));
+                for item in section.items {
+                    self.render_nav_item(ui, &item);
                 }
+            });
+            ui.add_space(Space::LG as f32);
+        }
+    }
+
+    fn render_nav_item(&mut self, ui: &mut egui::Ui, item: &StudioNavItem) {
+        let selected = self.app.active_pane == item.pane;
+        if nav_row(ui, item.pane, item.title, selected).clicked() {
+            if item.opens_workspace_pane {
+                self.open_workspace_item(item.pane);
+            } else {
+                self.app.switch_pane(item.pane);
             }
-        });
+        }
     }
 
-    fn render_open_nav(&mut self, ui: &mut egui::Ui) {
-        ui.vertical(|ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.shell.open.title"),
-                i18n::t("studio.shell.open.detail"),
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.workflow.title"),
-                i18n::t("studio.shell.open.workflow.detail"),
-                StudioPane::Workflows,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.analysis.title"),
-                i18n::t("studio.shell.open.analysis.detail"),
-                StudioPane::Analysis,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.plugins.title"),
-                i18n::t("studio.shell.open.plugins.detail"),
-                StudioPane::Plugins,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.memory.title"),
-                i18n::t("studio.shell.open.memory.detail"),
-                StudioPane::Memory,
-            );
-            self.open_row(
-                ui,
-                i18n::t("studio.shell.open.history.title"),
-                i18n::t("studio.shell.open.history.detail"),
-                StudioPane::History,
-            );
-        });
+    fn open_workspace_item(&mut self, pane: StudioPane) {
+        let id = self.open_workspace_pane_for_nav(pane);
+        self.status = format!(
+            "{} {}",
+            i18n::t("studio.status.workspace_pane_opened"),
+            id.value()
+        );
     }
 
-    fn open_row(&mut self, ui: &mut egui::Ui, title: &str, detail: &str, pane: StudioPane) {
-        let response = open_nav_row(ui, pane, title, detail);
-        if response.clicked() {
-            let id = match pane {
-                StudioPane::Workflows => self
-                    .app
-                    .open_workflow_builder(self.app.core.config.workflows_dir()),
-                StudioPane::Analysis => self
-                    .app
-                    .open_analysis_workbench(std::path::PathBuf::from(&self.analysis.path)),
-                StudioPane::Plugins => self.app.open_plugin_manager_pane(),
-                StudioPane::Memory => self.app.open_memory_browser_pane(),
-                StudioPane::History => self.app.open_execution_history_pane(),
-                StudioPane::Settings => self.app.open_settings_pane(),
-                _ => self.app.open_workspace_pane(pane),
-            };
-            self.status = format!(
-                "{} {}",
-                i18n::t("studio.status.workspace_pane_opened"),
-                id.value()
-            );
+    fn open_workspace_pane_for_nav(&mut self, pane: StudioPane) -> std_studio::WorkspacePaneId {
+        match pane {
+            StudioPane::Workflows => self
+                .app
+                .open_workflow_builder(self.app.core.config.workflows_dir()),
+            StudioPane::Analysis => self
+                .app
+                .open_analysis_workbench(std::path::PathBuf::from(&self.analysis.path)),
+            StudioPane::Plugins => self.app.open_plugin_manager_pane(),
+            StudioPane::Memory => self.app.open_memory_browser_pane(),
+            StudioPane::History => self.app.open_execution_history_pane(),
+            StudioPane::Settings => self.app.open_settings_pane(),
+            _ => self.app.open_workspace_pane(pane),
         }
     }
 
@@ -167,6 +132,13 @@ impl StudioEguiApp {
             }
         });
     }
+}
+
+fn icon_rail_panes() -> Vec<StudioPane> {
+    studio_nav_sections()
+        .into_iter()
+        .flat_map(|section| section.items.into_iter().map(|item| item.pane))
+        .collect()
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -211,43 +183,6 @@ fn nav_icon_button(ui: &mut egui::Ui, pane: StudioPane, selected: bool) -> egui:
         let icon_rect =
             egui::Rect::from_center_size(rect.center(), egui::vec2(ICON_SIZE, ICON_SIZE));
         shell_icons::paint_pane_icon(ui, icon_rect, pane, selected);
-    }
-    response
-}
-
-fn open_nav_row(ui: &mut egui::Ui, pane: StudioPane, title: &str, detail: &str) -> egui::Response {
-    let (rect, response) = ui.allocate_exact_size(
-        egui::vec2(ui.available_width(), OPEN_ROW_HEIGHT),
-        egui::Sense::click(),
-    );
-    response.widget_info(|| {
-        egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), title)
-    });
-    if ui.is_rect_visible(rect) {
-        paint_nav_bg(ui, rect, response.hovered(), false);
-        let icon_rect = egui::Rect::from_min_size(
-            egui::pos2(
-                rect.left() + Space::SM as f32,
-                rect.top() + Space::SM as f32,
-            ),
-            egui::vec2(ICON_SIZE, ICON_SIZE),
-        );
-        shell_icons::paint_pane_icon(ui, icon_rect, pane, false);
-        let text_x = icon_rect.right() + Space::XS as f32;
-        ui.painter().text(
-            egui::pos2(text_x, rect.top() + OPEN_TITLE_BASELINE_Y),
-            egui::Align2::LEFT_CENTER,
-            title,
-            Text::body(),
-            ui::strong_text(ui.ctx()),
-        );
-        ui.painter().text(
-            egui::pos2(text_x, rect.top() + OPEN_DETAIL_BASELINE_Y),
-            egui::Align2::LEFT_CENTER,
-            detail,
-            Text::caption(),
-            ui::muted_text(ui.ctx()),
-        );
     }
     response
 }
@@ -394,7 +329,6 @@ mod tests {
     #[test]
     fn navigation_rows_match_documented_studio_metrics() {
         assert_eq!(NAV_ROW_HEIGHT, 28.0);
-        assert_eq!(OPEN_ROW_HEIGHT, 44.0);
         assert_eq!(PANE_ROW_HEIGHT, 36.0);
         assert_eq!(ICON_RAIL_WIDTH, Space::XL as f32);
         assert_eq!(PANE_CLOSE_SIZE, Space::LG as f32);
@@ -432,17 +366,24 @@ mod tests {
     #[test]
     fn pane_manager_routes_focus_and_close_through_workspace_command_queue() {
         let source = include_str!("shell_navigation.rs");
-        let production_source = source.split("#[cfg(test)]").next().unwrap();
-        let pane_manager = production_source
-            .split("pub(crate) fn render_workspace_pane_manager")
-            .nth(1)
-            .and_then(|body| body.split("fn nav_row").next())
-            .unwrap();
+        let production_source = source.split("mod tests").next().unwrap();
 
-        assert!(pane_manager.contains("StudioWorkspaceCommand::Focus(id)"));
-        assert!(pane_manager.contains("StudioWorkspaceCommand::Close(id)"));
-        assert!(pane_manager.contains("push_workspace_command(&self.workspace_commands"));
-        assert!(!pane_manager.contains("self.app.focus_workspace_pane(id)"));
-        assert!(!pane_manager.contains("self.app.close_workspace_pane(id)"));
+        assert!(production_source.contains("StudioWorkspaceCommand::Focus(id)"));
+        assert!(production_source.contains("StudioWorkspaceCommand::Close(id)"));
+        assert!(production_source.contains("push_workspace_command("));
+        assert!(production_source.contains("&self.workspace_commands"));
+        assert!(!production_source.contains("self.app.focus_workspace_pane(id)"));
+        assert!(!production_source.contains("self.app.close_workspace_pane(id)"));
+    }
+
+    #[test]
+    fn sidebar_uses_docs_22_navigation_sections_without_legacy_open_group() {
+        let source = include_str!("shell_navigation.rs");
+        let production_source = source.split("mod tests").next().unwrap();
+
+        assert!(production_source.contains("self.render_workspace_nav(ui);"));
+        assert!(!production_source.contains("self.render_open_nav(ui);"));
+        assert!(production_source.contains("studio_nav_sections()"));
+        assert!(production_source.contains("self.open_workspace_item(item.pane);"));
     }
 }
