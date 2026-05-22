@@ -249,7 +249,6 @@ impl StudioEguiApp {
                 self.workflow_selected_path = Some(path.clone());
                 let id = self.app.open_workflow_builder(path.clone());
                 self.pending_workspace_focus = Some(id);
-                self.app.switch_pane(std_studio::StudioPane::Workflows);
                 self.status = format!("created {}", path.display());
             }
             Err(error) => self.status = error.to_string(),

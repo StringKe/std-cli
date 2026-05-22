@@ -5,7 +5,7 @@ use crate::{
     },
     preview::seeded_preview_app,
     viewport::{STUDIO_MIN_WINDOW_SIZE, STUDIO_WINDOW_SIZE},
-    StudioEguiApp, StudioPane,
+    StudioEguiApp,
 };
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
@@ -50,9 +50,9 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_state_passes(&app, name)
         && preview_surface_passes(&surface, theme);
     format!(
-        "{scenario}={}:pane={:?},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{}",
+        "{scenario}={}:pane={},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{}",
         if valid { "PASS" } else { "FAIL" },
-        app.app.active_pane,
+        focused_content_key(&app),
         app.app.open_workspace_panes().count(),
         app.status,
         workflow_e2e_contract(&app, name),
@@ -95,7 +95,7 @@ pub(crate) fn preview_size_summary(scenario: &str) -> String {
 
 fn settings_surface_policy(app: &StudioEguiApp, scenario: &str) -> &'static str {
     if scenario == "settings"
-        && app.app.active_pane == StudioPane::Settings
+        && focused_content_key(app) == "settings"
         && !app.app.workspace_policy.allows_native_child_windows()
         && !app.app.workspace_policy.allows_detached_panels()
     {
@@ -107,14 +107,14 @@ fn settings_surface_policy(app: &StudioEguiApp, scenario: &str) -> &'static str 
 
 fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
     match scenario {
-        "dashboard" => app.app.active_pane == StudioPane::Dashboard,
+        "dashboard" => focused_content_key(app) == "dashboard",
         "workflow" => {
-            app.app.active_pane == StudioPane::Workflows
+            focused_content_key(app) == "workflows"
                 && app.app.workflow_debug.is_some()
                 && app.app.last_workflow_execution.is_some()
         }
         "workflow-error" => {
-            app.app.active_pane == StudioPane::Workflows
+            focused_content_key(app) == "workflows"
                 && app.app.last_workflow_execution.is_some()
                 && app.bottom_panel_tab == crate::bottom_panel_model::BottomPanelTab::Problems
                 && app
@@ -125,18 +125,17 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                     .unwrap_or(false)
         }
         "analysis" => {
-            app.app.active_pane == StudioPane::Analysis && !app.analysis.coverage_output.is_empty()
+            focused_content_key(app) == "analysis" && !app.analysis.coverage_output.is_empty()
         }
         "plugins" => {
-            app.app.active_pane == StudioPane::Plugins
-                && app.app.open_workspace_panes().count() >= 1
+            focused_content_key(app) == "plugins" && app.app.open_workspace_panes().count() >= 1
         }
         "plugin-permission" => {
-            app.app.active_pane == StudioPane::Plugins
+            focused_content_key(app) == "plugins"
                 && plugin_permission_contract(app) == "permissions|fs|network|review-prompt"
         }
-        "operations" => app.app.active_pane == StudioPane::Operations,
-        "settings" => app.app.active_pane == StudioPane::Settings,
+        "operations" => focused_content_key(app) == "operations",
+        "settings" => focused_content_key(app) == "settings",
         "panes" => {
             app.app.open_workspace_panes().count() >= 3
                 && !app.app.workspace_policy.allows_native_child_windows()
@@ -148,7 +147,7 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
 
 fn workflow_e2e_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
     if scenario == "workflow"
-        && app.app.active_pane == StudioPane::Workflows
+        && focused_content_key(app) == "workflows"
         && app.app.workflow_debug.is_some()
         && app.app.last_workflow_execution.is_some()
         && app.app.open_workspace_panes().count() >= 2
@@ -162,7 +161,7 @@ fn workflow_e2e_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
 
 fn workflow_error_contract(app: &StudioEguiApp, scenario: &str) -> &'static str {
     if scenario == "workflow-error"
-        && app.app.active_pane == StudioPane::Workflows
+        && focused_content_key(app) == "workflows"
         && app.layout.bottom_panel_open
         && app.bottom_panel_tab == crate::bottom_panel_model::BottomPanelTab::Problems
         && app
@@ -202,6 +201,12 @@ fn pane_management_contract(app: &StudioEguiApp, scenario: &str) -> &'static str
     } else {
         "not-panes"
     }
+}
+
+fn focused_content_key(app: &StudioEguiApp) -> &'static str {
+    crate::workspace_panes::focused_workspace_spec(&app.app)
+        .map(|spec| spec.content_key)
+        .unwrap_or("none")
 }
 
 fn plugin_permission_contract(app: &StudioEguiApp) -> &'static str {

@@ -281,7 +281,8 @@ fn workspace_commands_drive_main_workspace_and_workflow_preview() {
 
     app.consume_workspace_commands();
 
-    assert_eq!(app.app.active_pane, StudioPane::Workflows);
+    let focused = crate::workspace_panes::focused_workspace_spec(&app.app).unwrap();
+    assert_eq!(focused.content_key, "workflows");
     assert!(app.app.workflow_debug.is_some());
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);

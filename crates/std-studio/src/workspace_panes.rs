@@ -149,8 +149,9 @@ impl StudioEguiApp {
                 }
             }
             StudioWorkspaceCommand::ShowInMain(pane) => {
-                self.app.switch_pane(pane);
-                self.status = format!("showing {} in main workspace", pane.label());
+                let id = self.open_workspace_pane_for_nav(pane);
+                self.pending_workspace_focus = Some(id);
+                self.status = format!("showing {} in workspace pane {}", pane.label(), id.value());
             }
             StudioWorkspaceCommand::Refresh => {
                 self.app.refresh();

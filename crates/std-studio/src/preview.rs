@@ -1,4 +1,4 @@
-use crate::{viewport::studio_native_options, StudioEguiApp, StudioPane};
+use crate::{viewport::studio_native_options, StudioEguiApp};
 use eframe::egui;
 use std::env;
 use std_core::{StdConfig, StdCore};
@@ -130,12 +130,21 @@ pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &
         "analysis" => seed_analysis_preview(app),
         "plugins" => seed_plugin_preview(app),
         "plugin-permission" => seed_plugin_permission_preview(app),
-        "operations" => app.app.switch_pane(StudioPane::Operations),
-        "settings" => app.app.switch_pane(StudioPane::Settings),
+        "operations" => {
+            let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Operations);
+            app.pending_workspace_focus = Some(id);
+        }
+        "settings" => {
+            let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Settings);
+            app.pending_workspace_focus = Some(id);
+        }
         "panes" | "windows" | "viewports" => {
             seed_panes_preview(app);
         }
-        _ => app.app.switch_pane(StudioPane::Dashboard),
+        _ => {
+            let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Dashboard);
+            app.pending_workspace_focus = Some(id);
+        }
     }
 }
 
@@ -155,7 +164,8 @@ pub(crate) fn seeded_preview_app(theme: &str, scenario: &str) -> StudioEguiApp {
 }
 
 pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
-    app.app.switch_pane(StudioPane::Workflows);
+    let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Workflows);
+    app.pending_workspace_focus = Some(id);
     app.workflow_name = "Preview Release".to_string();
     app.workflow_description = "Preview workflow for Studio UI evidence".to_string();
     let path = match app
@@ -183,8 +193,11 @@ pub(crate) fn seed_workflow_preview(app: &mut StudioEguiApp) {
     );
     let _ = app.app.preview_workflow_path(&path);
     let _ = app.app.run_workflow_path(&path);
-    app.app.open_workflow_builder(path);
+    let builder = app.app.open_workflow_builder(path);
     app.app.open_execution_history_pane();
+    if app.app.focus_workspace_pane(builder) {
+        app.pending_workspace_focus = Some(builder);
+    }
     app.layout.open_bottom_panel();
     app.status = "workflow preview seeded".to_string();
 }
@@ -255,7 +268,8 @@ fn seed_panes_preview(app: &mut StudioEguiApp) {
 }
 
 fn seed_analysis_preview(app: &mut StudioEguiApp) {
-    app.app.switch_pane(StudioPane::Analysis);
+    let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Analysis);
+    app.pending_workspace_focus = Some(id);
     let project_dir = app.app.core.config.data_dir.join("preview-project");
     let src_dir = project_dir.join("src");
     if std::fs::create_dir_all(&src_dir).is_err() {
@@ -279,7 +293,8 @@ fn seed_analysis_preview(app: &mut StudioEguiApp) {
 }
 
 fn seed_plugin_preview(app: &mut StudioEguiApp) {
-    app.app.switch_pane(StudioPane::Plugins);
+    let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Plugins);
+    app.pending_workspace_focus = Some(id);
     app.app.open_plugin_manager_pane();
     let plugin_dir = app.app.core.config.plugins_dir().join("preview-plugin");
     if std::fs::create_dir_all(&plugin_dir).is_err() {
@@ -308,7 +323,8 @@ fn seed_plugin_preview(app: &mut StudioEguiApp) {
 }
 
 fn seed_plugin_permission_preview(app: &mut StudioEguiApp) {
-    app.app.switch_pane(StudioPane::Plugins);
+    let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Plugins);
+    app.pending_workspace_focus = Some(id);
     app.app.open_plugin_manager_pane();
     let plugin_dir = app
         .app

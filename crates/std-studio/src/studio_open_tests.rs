@@ -1,5 +1,4 @@
 use crate::studio_open::*;
-use std_studio::StudioPane;
 
 #[test]
 fn parses_supported_open_requests() {
@@ -22,7 +21,7 @@ fn applies_open_requests_to_internal_workspace_panes() {
     for request in all_open_requests() {
         let app = app_for_open_request(request);
 
-        assert_eq!(app.app.open_workspace_panes().count(), 1);
+        assert_eq!(app.app.open_workspace_panes().count(), 2);
         assert!(app.app.focused_pane.is_some());
         assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
         assert!(app.status.contains(request.target()));
@@ -64,7 +63,7 @@ fn open_request_emits_internal_intent_without_launching_host_window() {
     assert!(summary.contains("host_policy=single-borderless-egui-viewport"));
     assert!(summary.contains("pane_system=internal-egui-workspace-panes"));
     assert!(summary.contains("docs=docs/22 + docs/24"));
-    assert!(summary.contains("workspace_panes=1"));
+    assert!(summary.contains("workspace_panes=2"));
     assert!(summary.contains("native_child_windows=false"));
     assert!(summary.contains("detached_panels=false"));
 }
@@ -74,7 +73,6 @@ fn settings_request_uses_internal_workspace_pane() {
     let app = app_for_open_request(StudioOpenRequest::Settings);
     let spec = crate::workspace_panes::focused_workspace_spec(&app.app).unwrap();
 
-    assert_eq!(app.app.active_pane, StudioPane::Settings);
     assert_eq!(spec.content_key, "settings");
     assert_eq!(spec.heading, std_egui::i18n::t("studio.settings.title"));
     assert_eq!(app.pending_workspace_focus, app.app.focused_pane);
@@ -90,7 +88,7 @@ fn blocked_summary_keeps_test_mode_from_opening_native_window() {
 
     assert!(summary.contains("studio_open SKIP"));
     assert!(summary.contains("target=settings"));
-    assert!(summary.contains("workspace_panes=1"));
+    assert!(summary.contains("workspace_panes=2"));
     assert!(summary.contains("STD_TEST_MODE blocked native app startup"));
 }
 

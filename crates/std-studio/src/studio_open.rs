@@ -1,5 +1,5 @@
 use crate::StudioEguiApp;
-use std_studio::{PaneSystemPolicy, StudioPane, StudioWorkspacePolicy};
+use std_studio::{PaneSystemPolicy, StudioWorkspacePolicy};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum StudioOpenRequest {
@@ -83,9 +83,6 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
                 .open_workflow_builder(app.app.core.config.workflows_dir());
             app.pending_workspace_focus = Some(id);
         }
-    }
-    if let Some(pane) = main_pane_for_request(request) {
-        app.app.switch_pane(pane);
     }
     app.status = format!("opened studio {}", request.target());
 }
@@ -208,18 +205,6 @@ pub(crate) fn studio_open_intent_summary(request: StudioOpenRequest) -> String {
         app.app.workspace_policy.allows_native_child_windows(),
         app.app.workspace_policy.allows_detached_panels()
     )
-}
-
-fn main_pane_for_request(request: StudioOpenRequest) -> Option<StudioPane> {
-    match request {
-        StudioOpenRequest::Analysis => Some(StudioPane::Analysis),
-        StudioOpenRequest::Apps => Some(StudioPane::Apps),
-        StudioOpenRequest::Memory => Some(StudioPane::Memory),
-        StudioOpenRequest::Plugins => Some(StudioPane::Plugins),
-        StudioOpenRequest::Settings => Some(StudioPane::Settings),
-        StudioOpenRequest::Workflows => Some(StudioPane::Workflows),
-        StudioOpenRequest::History => None,
-    }
 }
 
 pub(crate) fn open_intent_policy_passes(policy: StudioWorkspacePolicy) -> bool {

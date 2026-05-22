@@ -1,6 +1,6 @@
 use crate::{
-    preview::*, preview_smoke::StudioPreviewSmokeReport, smoke::smoke_from_args, StudioEguiApp,
-    StudioPane,
+    preview::*, preview_smoke::StudioPreviewSmokeReport, smoke::smoke_from_args,
+    workspace_panes::focused_workspace_spec, StudioEguiApp,
 };
 use std_core::{StdConfig, StdCore};
 
@@ -66,11 +66,20 @@ fn workflow_preview_seeds_builder_runtime_state() {
 
     seed_workflow_preview(&mut app);
 
-    assert_eq!(app.app.active_pane, StudioPane::Workflows);
+    assert_eq!(
+        focused_workspace_spec(&app.app)
+            .map(|spec| spec.content_key)
+            .unwrap_or("none"),
+        "workflows"
+    );
     assert!(app.workflow_selected_path.is_some());
     assert!(app.app.workflow_debug.is_some());
     assert!(app.app.last_workflow_execution.is_some());
-    assert_eq!(app.app.open_workspace_panes().count(), 2);
+    assert_eq!(app.app.open_workspace_panes().count(), 4);
+    assert!(app
+        .app
+        .open_workspace_panes()
+        .any(|pane| pane.kind.content_key() == "history"));
     assert!(app.layout.bottom_panel_open);
     assert_eq!(
         app.bottom_panel_tab,
@@ -82,7 +91,12 @@ fn workflow_preview_seeds_builder_runtime_state() {
 fn workflow_error_preview_seeds_failed_execution_and_problems_panel() {
     let app = seeded_preview_app("light", "workflow-error");
 
-    assert_eq!(app.app.active_pane, StudioPane::Workflows);
+    assert_eq!(
+        focused_workspace_spec(&app.app)
+            .map(|spec| spec.content_key)
+            .unwrap_or("none"),
+        "workflows"
+    );
     assert_eq!(
         app.app
             .last_workflow_execution
