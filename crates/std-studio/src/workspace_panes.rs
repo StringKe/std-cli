@@ -86,28 +86,20 @@ impl StudioEguiApp {
             return false;
         };
 
-        ui::surface_frame(ui.ctx()).show(ui, |ui| {
-            ui::section_header(
-                ui,
-                i18n::t("studio.workspace_panes.title"),
-                self.app.workspace_policy.summary(),
-            );
-            let tabs = crate::workspace_tabs::workspace_tab_specs(
-                &self.app.workspace_panes,
-                self.app.focused_pane,
-            );
-            crate::workspace_tabs::render_workspace_tabs(ui, &tabs, &self.workspace_commands);
-            ui.add_space(Space::XS as f32);
-            render_workspace_shell(
-                ui,
-                &spec,
-                i18n::t("studio.workspace_panes.active"),
-                &self.workspace_commands,
-                &mut self.pending_workspace_focus,
-            );
-            ui.add_space(Space::XS as f32);
-            crate::workspace_pane_content::render_workspace_content(self, ui, &spec);
-        });
+        let tabs = crate::workspace_tabs::workspace_tab_specs(
+            &self.app.workspace_panes,
+            self.app.focused_pane,
+        );
+        crate::workspace_tabs::render_workspace_tabs(ui, &tabs, &self.workspace_commands);
+        ui.add_space(Space::XS as f32);
+        render_workspace_toolbar(
+            ui,
+            &spec,
+            &self.workspace_commands,
+            &mut self.pending_workspace_focus,
+        );
+        ui.add_space(Space::XS as f32);
+        crate::workspace_pane_content::render_workspace_content(self, ui, &spec);
         true
     }
 
@@ -198,26 +190,24 @@ impl StudioEguiApp {
     }
 }
 
-fn render_workspace_shell(
+fn render_workspace_toolbar(
     ui: &mut egui::Ui,
     spec: &StudioWorkspaceSpec,
-    class_label: &str,
     commands: &WorkspaceCommandQueue,
     pending_focus: &mut Option<WorkspacePaneId>,
 ) {
-    ui::surface_frame(ui.ctx()).show(ui, |ui| {
-        let response = ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
-        response.widget_info(|| {
-            egui::WidgetInfo::labeled(
-                egui::WidgetType::Label,
-                ui.is_enabled(),
-                workspace_pane_a11y_label(spec),
-            )
-        });
-        request_workspace_focus(ui, spec.id, pending_focus);
-        ui::section_header(ui, &spec.heading, class_label);
+    let response = ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Label,
+            ui.is_enabled(),
+            workspace_pane_a11y_label(spec),
+        )
+    });
+    request_workspace_focus(ui, spec.id, pending_focus);
+    ui.horizontal_wrapped(|ui| {
+        ui.label(egui::RichText::new(&spec.heading).color(ui::strong_text(ui.ctx())));
         render_workspace_summary(ui, spec);
-        ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
     });
 }
