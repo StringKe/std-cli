@@ -1,7 +1,9 @@
 use crate::launcher_feedback::{LauncherFeedback, LauncherFeedbackAction};
+use crate::launcher_query::{normalize_query, LauncherQueryRequest};
+use crate::launcher_results::{is_action_result, is_command_result, sort_launcher_results};
 use std::time::Instant;
 use std_core::StdCore;
-use std_types::{ActionExecution, ActionPreview, ActionType, SearchResult};
+use std_types::{ActionExecution, ActionPreview, SearchResult};
 
 const EMPTY_QUERY_LIMIT: usize = 10;
 const RESULT_DISPLAY_LIMIT: usize = 200;
@@ -35,10 +37,19 @@ pub enum LauncherPhase {
     Feedback,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum LauncherLoadingState {
+    #[default]
+    Idle,
+    UpdatingResults,
+    SlowEmptyResults,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct LauncherViewModel {
     pub query: String,
     pub phase: LauncherPhase,
+    pub loading: LauncherLoadingState,
     pub result_mode: LauncherResultMode,
     pub results: Vec<SearchResult>,
     pub nl_suggestion: Option<LauncherNlSuggestion>,
@@ -70,6 +81,7 @@ impl LauncherViewModel {
         let mut view = Self {
             query: String::new(),
             phase: LauncherPhase::Empty,
+            loading: LauncherLoadingState::Idle,
             result_mode: LauncherResultMode::SuggestedWorkflows,
             results,
             nl_suggestion: None,
@@ -98,6 +110,7 @@ impl LauncherViewModel {
         self.query = query.display_query;
         let started_at = Instant::now();
         self.feedback = None;
+        self.loading = LauncherLoadingState::Idle;
         self.selected_feedback_action = 0;
         if ask_mode {
             self.preview_nl_suggestion(query.search_query, started_at);
@@ -136,6 +149,7 @@ impl LauncherViewModel {
         self.preview = None;
         self.selected = 0;
         self.nl_suggestion = Some(LauncherNlSuggestion::from_query(query));
+        self.loading = LauncherLoadingState::Idle;
         self.result_mode = LauncherResultMode::NaturalLanguage;
         self.phase = LauncherPhase::WithResults;
         self.telemetry.last_search_ms = started_at.elapsed().as_millis();
@@ -228,21 +242,32 @@ impl LauncherViewModel {
         self.last_triggered = Some(name.clone());
         self.last_execution = Some(execution.clone());
         self.feedback = Some(LauncherFeedback::from_execution(&execution));
+        self.loading = LauncherLoadingState::Idle;
         self.phase = LauncherPhase::Feedback;
         Some(execution)
     }
 
     pub fn preview_searching(&mut self, query: impl Into<String>) {
+        self.preview_loading_state(query, LauncherLoadingState::UpdatingResults);
+    }
+
+    pub fn preview_loading(&mut self, query: impl Into<String>) {
+        self.preview_loading_state(query, LauncherLoadingState::SlowEmptyResults);
+    }
+
+    fn preview_loading_state(&mut self, query: impl Into<String>, loading: LauncherLoadingState) {
         self.query = normalize_query(query.into());
         self.results.clear();
         self.nl_suggestion = None;
         self.preview = None;
         self.selected = 0;
         self.result_mode = LauncherResultMode::Matches;
+        self.loading = loading;
         self.phase = LauncherPhase::Searching;
     }
 
     pub fn preview_executing(&mut self) {
+        self.loading = LauncherLoadingState::Idle;
         self.phase = LauncherPhase::Executing;
     }
 
@@ -293,64 +318,6 @@ impl LauncherViewModel {
     }
 }
 
-fn normalize_query(query: String) -> String {
-    query.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum LauncherQueryMode {
-    All,
-    Command,
-    Actions,
-    Ask,
-}
-
-struct LauncherQueryRequest {
-    display_query: String,
-    search_query: String,
-    mode: LauncherQueryMode,
-}
-
-impl LauncherQueryRequest {
-    fn parse(query: impl Into<String>) -> Self {
-        let display_query = normalize_query(query.into());
-        let mode = match display_query.trim_start().chars().next() {
-            Some('/') => LauncherQueryMode::Command,
-            Some('>') => LauncherQueryMode::Actions,
-            Some('?') => LauncherQueryMode::Ask,
-            _ => LauncherQueryMode::All,
-        };
-        let search_query = match mode {
-            LauncherQueryMode::All => display_query.clone(),
-            LauncherQueryMode::Command | LauncherQueryMode::Actions | LauncherQueryMode::Ask => {
-                display_query
-                    .chars()
-                    .skip(1)
-                    .collect::<String>()
-                    .trim()
-                    .to_string()
-            }
-        };
-        Self {
-            display_query,
-            search_query,
-            mode,
-        }
-    }
-
-    fn action_only(&self) -> bool {
-        self.mode == LauncherQueryMode::Actions
-    }
-
-    fn command_only(&self) -> bool {
-        self.mode == LauncherQueryMode::Command
-    }
-
-    fn ask_mode(&self) -> bool {
-        self.mode == LauncherQueryMode::Ask
-    }
-}
-
 impl LauncherNlSuggestion {
     fn from_query(query: String) -> Self {
         let query = query.trim().to_string();
@@ -389,98 +356,5 @@ fn search_limit_for_query(query: &str) -> usize {
         EMPTY_QUERY_LIMIT
     } else {
         RESULT_FETCH_LIMIT
-    }
-}
-
-fn is_action_result(result: &SearchResult) -> bool {
-    matches!(
-        result.action.action_type,
-        ActionType::Command | ActionType::Workflow
-    )
-}
-
-fn is_command_result(result: &SearchResult) -> bool {
-    result.action.action_type == ActionType::Command
-}
-
-fn sort_launcher_results(results: &mut [SearchResult]) {
-    results.sort_by(|left, right| {
-        group_rank(&left.action.action_type)
-            .cmp(&group_rank(&right.action.action_type))
-            .then_with(|| right.score.total_cmp(&left.score))
-            .then_with(|| left.action.name.cmp(&right.action.name))
-    });
-}
-
-fn group_rank(action_type: &ActionType) -> u8 {
-    match action_type {
-        ActionType::Workflow | ActionType::Command => 0,
-        ActionType::AppLaunch => 1,
-        ActionType::Custom(kind) if kind == "file" => 1,
-        ActionType::Clipboard => 2,
-        ActionType::Memory => 3,
-        ActionType::Skill => 4,
-        ActionType::Custom(_) => 5,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std_types::Action;
-
-    #[test]
-    fn launcher_results_follow_documented_group_order_before_score() {
-        let mut results = vec![
-            result("High score app", ActionType::AppLaunch, 99.0),
-            result("Lower score action", ActionType::Command, 1.0),
-            result(
-                "Highest file",
-                ActionType::Custom("file".to_string()),
-                120.0,
-            ),
-            result("Workflow", ActionType::Workflow, 0.5),
-        ];
-
-        sort_launcher_results(&mut results);
-
-        let names: Vec<&str> = results
-            .iter()
-            .map(|item| item.action.name.as_str())
-            .collect();
-        assert_eq!(
-            names,
-            vec![
-                "Lower score action",
-                "Workflow",
-                "Highest file",
-                "High score app"
-            ]
-        );
-    }
-
-    #[test]
-    fn launcher_results_sort_by_score_inside_group() {
-        let mut results = vec![
-            result("App B", ActionType::AppLaunch, 2.0),
-            result("App A", ActionType::AppLaunch, 8.0),
-            result("App C", ActionType::AppLaunch, 8.0),
-        ];
-
-        sort_launcher_results(&mut results);
-
-        let names: Vec<&str> = results
-            .iter()
-            .map(|item| item.action.name.as_str())
-            .collect();
-        assert_eq!(names, vec!["App A", "App C", "App B"]);
-    }
-
-    fn result(name: &str, action_type: ActionType, score: f32) -> SearchResult {
-        SearchResult {
-            action: Action::new(name, "description", "use", action_type),
-            score,
-            matched_fields: vec!["name".to_string()],
-        }
     }
 }

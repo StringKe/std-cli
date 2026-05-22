@@ -118,9 +118,14 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter"));
     assert!(summary.contains("feedback_action_shortcuts=Copy:Enter,Retry:Enter,OpenStudio:Enter"));
     assert!(summary.contains("action_panel_actions=Review first,Defer,Open in Studio,Copy command"));
-    assert!(summary.contains("state_behavior=search_indicator:spinner"));
-    assert!(summary.contains("loading_progress:2px-accent-indeterminate"));
-    assert!(summary.contains("empty_progress:visible"));
+    assert!(summary.contains("dark-searching=PASS:phase=Searching,results=0,feedback=none"));
+    assert!(summary.contains(
+        "state_behavior=search_indicator:search,loading_progress:2px-accent-indeterminate,empty_progress:not-rendered,input:editable"
+    ));
+    assert!(summary.contains("dark-loading=PASS:phase=Searching,results=0,feedback=none"));
+    assert!(summary.contains(
+        "state_behavior=search_indicator:spinner,loading_progress:not-rendered,empty_progress:visible,input:editable"
+    ));
     assert!(summary.contains("state_behavior=search_indicator:executing"));
     assert!(summary.contains("input:locked"));
     assert!(summary.contains("action_bar:cancel-and-background-hints"));
@@ -265,9 +270,17 @@ fn ui_preview_scenarios_seed_visible_launcher_states() {
 
     apply_preview_scenario(&mut state, "searching");
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
+    assert_eq!(
+        state.view.loading,
+        std_egui::LauncherLoadingState::UpdatingResults
+    );
 
     apply_preview_scenario(&mut state, "loading");
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Searching);
+    assert_eq!(
+        state.view.loading,
+        std_egui::LauncherLoadingState::SlowEmptyResults
+    );
 
     apply_preview_scenario(&mut state, "executing");
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Executing);

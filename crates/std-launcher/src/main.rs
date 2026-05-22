@@ -8,6 +8,7 @@ mod cli;
 mod gui_smoke;
 mod preview;
 mod preview_affordance;
+mod preview_behavior;
 mod preview_evidence;
 #[cfg(test)]
 mod preview_tests;

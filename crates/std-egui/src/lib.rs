@@ -6,6 +6,8 @@ pub mod i18n;
 pub mod input;
 mod launcher;
 mod launcher_feedback;
+mod launcher_query;
+mod launcher_results;
 mod memory;
 pub mod motion;
 mod plugin;
@@ -13,7 +15,8 @@ pub mod tokens;
 
 pub use dashboard::StudioDashboardViewModel;
 pub use launcher::{
-    LauncherNlSuggestion, LauncherPhase, LauncherResultMode, LauncherTelemetry, LauncherViewModel,
+    LauncherLoadingState, LauncherNlSuggestion, LauncherPhase, LauncherResultMode,
+    LauncherTelemetry, LauncherViewModel,
 };
 pub use launcher_feedback::{LauncherFeedback, LauncherFeedbackAction};
 pub use memory::MemoryBrowserViewModel;
@@ -124,11 +127,17 @@ mod tests {
 
         model.preview_searching("slow query");
         assert_eq!(model.phase, LauncherPhase::Searching);
+        assert_eq!(model.loading, LauncherLoadingState::UpdatingResults);
         assert_eq!(model.query, "slow query");
         assert!(model.results.is_empty());
 
+        model.preview_loading("slow query");
+        assert_eq!(model.phase, LauncherPhase::Searching);
+        assert_eq!(model.loading, LauncherLoadingState::SlowEmptyResults);
+
         model.preview_executing();
         assert_eq!(model.phase, LauncherPhase::Executing);
+        assert_eq!(model.loading, LauncherLoadingState::Idle);
     }
 
     #[test]

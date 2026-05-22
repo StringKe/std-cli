@@ -260,8 +260,11 @@ pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) 
         "none" | "no-results" => {
             state.update_query("zzzz-no-launcher-match");
         }
-        "loading" | "searching" => {
+        "searching" => {
             state.view.preview_searching("slow query");
+        }
+        "loading" => {
+            state.view.preview_loading("slow query");
         }
         "executing" => {
             state.update_query("index");

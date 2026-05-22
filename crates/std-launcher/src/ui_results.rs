@@ -51,7 +51,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
         .max_height(max_height)
         .auto_shrink([false, false])
         .show_viewport(ui, |ui, viewport| {
-            if state.view.phase == std_egui::LauncherPhase::Searching {
+            if state.view.loading == std_egui::LauncherLoadingState::UpdatingResults {
                 render_loading_progress_bar(ui, &ui.ctx().clone());
                 ui.add_space(Space::xs() as f32);
             }
@@ -61,7 +61,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
                 ui_results_virtual::visible_range(&items, viewport.min.y, viewport.max.y);
             ui.add_space(y);
             if state.view.results.is_empty() {
-                if state.view.phase == std_egui::LauncherPhase::Searching {
+                if state.view.loading == std_egui::LauncherLoadingState::SlowEmptyResults {
                     render_progress(ui, i18n::t("launcher.results.searching"));
                     return;
                 }

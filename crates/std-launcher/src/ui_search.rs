@@ -4,7 +4,7 @@ use std_egui::{
     a11y::AccessibilityContext,
     i18n, input,
     tokens::{Color, Radius, Space, Text},
-    LauncherPhase,
+    LauncherLoadingState, LauncherPhase,
 };
 use std_launcher::{LauncherFocusSection, LauncherQueryMode, LauncherState};
 
@@ -40,7 +40,11 @@ fn render_search_bar_contents(
     let mut query_text = search_bar_text(state);
     ui.set_min_height(ui_metrics::search_bar_min_height());
     ui.horizontal(|ui| {
-        render_search_indicator(ui, &ctx, search_indicator_for_phase(state.view.phase));
+        render_search_indicator(
+            ui,
+            &ctx,
+            search_indicator_for_state(state.view.phase, state.view.loading),
+        );
         let input_width = search_input_width(ui.available_width(), ime_composing);
         let response = ui.add_sized(
             [input_width, ui_metrics::search_input_height()],
@@ -169,9 +173,14 @@ enum SearchIndicator {
     Executing,
 }
 
-fn search_indicator_for_phase(phase: LauncherPhase) -> SearchIndicator {
+fn search_indicator_for_state(
+    phase: LauncherPhase,
+    loading: LauncherLoadingState,
+) -> SearchIndicator {
     match phase {
-        LauncherPhase::Searching => SearchIndicator::Loading,
+        LauncherPhase::Searching if loading == LauncherLoadingState::SlowEmptyResults => {
+            SearchIndicator::Loading
+        }
         LauncherPhase::Executing => SearchIndicator::Executing,
         _ => SearchIndicator::Search,
     }
@@ -304,15 +313,25 @@ mod tests {
     #[test]
     fn search_indicator_tracks_loading_and_executing_phases() {
         assert_eq!(
-            search_indicator_for_phase(LauncherPhase::Empty),
+            search_indicator_for_state(LauncherPhase::Empty, LauncherLoadingState::Idle),
             SearchIndicator::Search
         );
         assert_eq!(
-            search_indicator_for_phase(LauncherPhase::Searching),
+            search_indicator_for_state(
+                LauncherPhase::Searching,
+                LauncherLoadingState::UpdatingResults
+            ),
+            SearchIndicator::Search
+        );
+        assert_eq!(
+            search_indicator_for_state(
+                LauncherPhase::Searching,
+                LauncherLoadingState::SlowEmptyResults
+            ),
             SearchIndicator::Loading
         );
         assert_eq!(
-            search_indicator_for_phase(LauncherPhase::Executing),
+            search_indicator_for_state(LauncherPhase::Executing, LauncherLoadingState::Idle),
             SearchIndicator::Executing
         );
     }

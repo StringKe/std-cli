@@ -1,5 +1,6 @@
 use crate::{
-    preview::apply_preview_scenario, preview_affordance::LauncherAffordanceSummary, ui, ui_metrics,
+    preview::apply_preview_scenario, preview_affordance::LauncherAffordanceSummary,
+    preview_behavior::PreviewStateBehavior, ui, ui_metrics,
 };
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
@@ -190,15 +191,6 @@ struct PreviewNoMatchFallback {
     button_semantics: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct PreviewStateBehavior {
-    search_indicator: &'static str,
-    loading_progress: &'static str,
-    empty_progress: &'static str,
-    input: &'static str,
-    action_bar: &'static str,
-}
-
 impl PreviewNoMatchFallback {
     fn for_state(state: &LauncherState, state_name: &str) -> Self {
         let visible = state_name == "no-results"
@@ -227,48 +219,6 @@ impl PreviewNoMatchFallback {
     }
 }
 
-impl PreviewStateBehavior {
-    fn for_state(state: &LauncherState, state_name: &str) -> Self {
-        Self {
-            search_indicator: search_indicator_for_state(state),
-            loading_progress: loading_progress_for_state(state),
-            empty_progress: empty_progress_for_state(state),
-            input: input_contract_for_state(state),
-            action_bar: action_bar_contract_for_state(state_name),
-        }
-    }
-
-    fn passes(&self, state_name: &str) -> bool {
-        match state_name {
-            "loading" | "searching" => {
-                self.search_indicator == "spinner"
-                    && self.loading_progress == "2px-accent-indeterminate"
-                    && self.empty_progress == "visible"
-                    && self.input == "editable"
-            }
-            "executing" => {
-                self.search_indicator == "executing"
-                    && self.input == "locked"
-                    && self.action_bar == "cancel-and-background-hints"
-            }
-            "defer" | "error" => self.action_bar == "feedback-actions",
-            "action-panel" => self.action_bar == "action-panel-open",
-            _ => self.search_indicator == "search" && self.input == "editable",
-        }
-    }
-
-    fn summary(&self) -> String {
-        format!(
-            "state_behavior=search_indicator:{},loading_progress:{},empty_progress:{},input:{},action_bar:{}",
-            self.search_indicator,
-            self.loading_progress,
-            self.empty_progress,
-            self.input,
-            self.action_bar
-        )
-    }
-}
-
 impl PreviewCarrierSurface {
     fn for_state(state: &LauncherState) -> Self {
         Self {
@@ -291,48 +241,6 @@ impl PreviewCarrierSurface {
             "carrier_contract={},{};{};forbidden=black_or_white_carrier_background",
             self.clear_color, self.viewport_frame, self.geometry
         )
-    }
-}
-
-fn search_indicator_for_state(state: &LauncherState) -> &'static str {
-    match state.view.phase {
-        std_egui::LauncherPhase::Searching => "spinner",
-        std_egui::LauncherPhase::Executing => "executing",
-        _ => "search",
-    }
-}
-
-fn loading_progress_for_state(state: &LauncherState) -> &'static str {
-    if state.view.phase == std_egui::LauncherPhase::Searching {
-        "2px-accent-indeterminate"
-    } else {
-        "not-rendered"
-    }
-}
-
-fn empty_progress_for_state(state: &LauncherState) -> &'static str {
-    if state.view.phase == std_egui::LauncherPhase::Searching && state.view.results.is_empty() {
-        "visible"
-    } else {
-        "not-rendered"
-    }
-}
-
-fn input_contract_for_state(state: &LauncherState) -> &'static str {
-    if state.view.phase == std_egui::LauncherPhase::Executing {
-        "locked"
-    } else {
-        "editable"
-    }
-}
-
-fn action_bar_contract_for_state(state_name: &str) -> &'static str {
-    match state_name {
-        "collapsed" => "not-rendered",
-        "executing" => "cancel-and-background-hints",
-        "defer" | "error" => "feedback-actions",
-        "action-panel" => "action-panel-open",
-        _ => "primary-action-and-actions-hint",
     }
 }
 
