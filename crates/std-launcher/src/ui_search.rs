@@ -97,7 +97,9 @@ fn search_input_width(available_width: f32, ime_composing: bool) -> f32 {
 }
 
 fn search_input_owns_egui_focus(state: &LauncherState) -> bool {
-    !state.action_panel.open && state.focus_section != LauncherFocusSection::Feedback
+    !state.action_panel.open
+        && !state.controller.voice_active
+        && state.focus_section != LauncherFocusSection::Feedback
 }
 
 fn render_ime_composing_chip(ui: &mut egui::Ui, ctx: &egui::Context) {
@@ -327,6 +329,14 @@ mod tests {
 
         state.close_action_panel();
         state.focus_section = LauncherFocusSection::Feedback;
+
+        assert!(!search_input_owns_egui_focus(&state));
+    }
+
+    #[test]
+    fn search_input_releases_egui_focus_to_voice_input() {
+        let mut state = LauncherState::new();
+        state.start_voice_input();
 
         assert!(!search_input_owns_egui_focus(&state));
     }

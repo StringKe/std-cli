@@ -171,6 +171,7 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
                     egui::TextEdit::singleline(voice_transcript)
                         .hint_text(i18n::t("launcher.voice.placeholder")),
                 );
+                voice_response.request_focus();
                 voice_response.widget_info(|| {
                     egui::WidgetInfo::labeled(
                         egui::WidgetType::TextEdit,
@@ -265,5 +266,46 @@ mod tests {
                 .replace("{label}", i18n::t("launcher.voice.label"))
                 .replace("{value}", i18n::t("launcher.voice.empty_value"))
         );
+    }
+
+    #[test]
+    fn voice_input_requests_egui_focus_when_visible() {
+        let source = include_str!("ui.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let voice_branch = production_source
+            .split("let voice_response = ui.add_sized")
+            .nth(1)
+            .and_then(|body| body.split("voice_response.widget_info").next())
+            .unwrap();
+
+        assert!(voice_branch.contains("voice_response.request_focus();"));
+    }
+
+    #[test]
+    fn voice_input_textedit_owns_text_input() {
+        let ctx = egui::Context::default();
+        let mut state = LauncherState::new();
+        state.start_voice_input();
+        let mut voice_transcript = String::new();
+
+        let _ = ctx.run(egui::RawInput::default(), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                render_voice(ui, &mut state, &mut voice_transcript);
+            });
+        });
+        let _ = ctx.run(voice_text_input("open notes"), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                render_voice(ui, &mut state, &mut voice_transcript);
+            });
+        });
+
+        assert_eq!(voice_transcript, "open notes");
+    }
+
+    fn voice_text_input(text: &str) -> egui::RawInput {
+        egui::RawInput {
+            events: vec![egui::Event::Text(text.to_string())],
+            ..Default::default()
+        }
     }
 }
