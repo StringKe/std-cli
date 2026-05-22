@@ -78,12 +78,7 @@ impl StudioEguiApp {
                     &gate.detail,
                 );
                 for step in &gate.steps {
-                    operations_rows::gate_row(
-                        ui,
-                        i18n::t("studio.operations.step"),
-                        &step.command,
-                        &step.result,
-                    );
+                    operations_rows::step_row(ui, step);
                 }
                 operations_rows::gate_row(
                     ui,

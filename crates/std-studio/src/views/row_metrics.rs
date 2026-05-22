@@ -32,6 +32,7 @@ pub(crate) const SETTINGS_BINDING_SAVE_WIDTH: f32 = 64.0;
 pub(crate) const SETTINGS_SHORTCUT_BINDING_X: f32 = 128.0;
 pub(crate) const SETTINGS_SHORTCUT_RESET_WIDTH: f32 = 48.0;
 pub(crate) const OPS_GATE_ROW_HEIGHT: f32 = 58.0;
+pub(crate) const OPS_STEP_ROW_HEIGHT: f32 = 66.0;
 pub(crate) const TEXT_INSET_X: f32 = Space::SM as f32;
 pub(crate) const CLIP_INSET_X: f32 = Space::TWO_XS as f32;
 pub(crate) const WIDE_CLIP_INSET_X: f32 = Space::SM as f32;
@@ -108,6 +109,9 @@ pub(crate) const HISTORY_TIMELINE_PAYLOAD_LIMIT: usize = 92;
 pub(crate) const OPS_LABEL_Y: f32 = 15.0;
 pub(crate) const OPS_VALUE_Y: f32 = 32.0;
 pub(crate) const OPS_DETAIL_Y: f32 = 49.0;
+pub(crate) const OPS_STEP_NAME_Y: f32 = 15.0;
+pub(crate) const OPS_STEP_COMMAND_Y: f32 = 34.0;
+pub(crate) const OPS_STEP_RESULT_Y: f32 = 55.0;
 
 pub(crate) fn settings_path_row_size(width: f32) -> eframe::egui::Vec2 {
     eframe::egui::Vec2::new(width, SETTINGS_PATH_ROW_HEIGHT)

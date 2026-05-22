@@ -363,7 +363,7 @@ impl StudioSmokeReport {
                 .contains("install-run:std install run")
             && self.operations_summary.contains("operations_visual_contract=")
             && self.operations_summary.contains(
-                "gate=title|status-icon|status-text|command|steps|runbook|evidence|result|artifact|output|record-evidence",
+                "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence",
             )
             && self
                 .operations_summary

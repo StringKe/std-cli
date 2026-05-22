@@ -93,6 +93,9 @@ impl OperationsSmoke {
             && self.step_summary.contains("release-verify:")
             && self.step_summary.contains("install-run:")
             && self.step_summary.contains("install-verify:")
+            && self.visual_contract.contains("step-name")
+            && self.visual_contract.contains("step-command")
+            && self.visual_contract.contains("step-result")
             && self
                 .visual_contract
                 .contains(operations_rows::operations_gate_visual_contract())
@@ -240,6 +243,9 @@ mod tests {
             .summary()
             .contains("release-package:std release package"));
         assert!(smoke.summary().contains("install-run:std install run"));
+        assert!(smoke
+            .summary()
+            .contains("step-name|step-command|step-result"));
     }
 
     fn assert_command_summary(summary: &str) {
