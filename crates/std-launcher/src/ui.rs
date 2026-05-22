@@ -1,6 +1,6 @@
 use crate::{
-    ui_action_bar, ui_action_panel, ui_feedback, ui_metrics, ui_parts::quiet_button, ui_results,
-    ui_search,
+    ui_action_bar, ui_action_panel, ui_feedback, ui_keyboard, ui_metrics, ui_parts::quiet_button,
+    ui_results, ui_search,
 };
 use eframe::egui;
 use std_egui::{
@@ -122,7 +122,16 @@ pub(crate) fn render_launcher_panel(
                 }
                 ui_feedback::FeedbackCommand::None => {}
             }
-            ui_action_panel::render(ui.ctx(), action_bar.rect, state);
+            let action_panel = ui_action_panel::render(ui.ctx(), action_bar.rect, state);
+            match action_panel.command {
+                ui_action_panel::ActionPanelCommand::Triggered(execution) => {
+                    hide_requested |= ui_keyboard::execution_hides_launcher(&execution);
+                    if execution.action_name == "Copy Action Command" {
+                        ui.ctx().copy_text(execution.message);
+                    }
+                }
+                ui_action_panel::ActionPanelCommand::None => {}
+            }
         });
     hide_requested
 }
@@ -203,6 +212,19 @@ mod tests {
         assert!(source.contains("ui.set_min_width(panel_rect.width())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height())"));
         assert!(source.contains("ui.set_min_height(panel_rect.height() - padding * 2.0)"));
+    }
+
+    #[test]
+    fn launcher_panel_handles_action_panel_trigger_results() {
+        let source = include_str!("ui.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(
+            production_source.contains("ui_action_panel::render(ui.ctx(), action_bar.rect, state)")
+        );
+        assert!(production_source.contains("ActionPanelCommand::Triggered(execution)"));
+        assert!(production_source.contains("ui_keyboard::execution_hides_launcher(&execution)"));
+        assert!(production_source.contains("ui.ctx().copy_text(execution.message)"));
     }
 
     #[test]

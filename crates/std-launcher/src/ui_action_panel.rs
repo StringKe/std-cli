@@ -8,13 +8,21 @@ use std_egui::{
     i18n, input,
     tokens::{Color, Elevation, Radius, Space, Text},
 };
-use std_launcher::{ActionPanelItem, LauncherFocusSection, LauncherKey, LauncherState};
+use std_launcher::{
+    ActionPanelItem, LauncherFocusSection, LauncherFocusSource, LauncherKey, LauncherState,
+};
+use std_types::ActionExecution;
 
-pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut LauncherState) {
+pub(crate) fn render(
+    ctx: &egui::Context,
+    anchor_rect: egui::Rect,
+    state: &mut LauncherState,
+) -> ActionPanelRenderResult {
     if !state.action_panel.open {
-        return;
+        return ActionPanelRenderResult::default();
     }
     let rect = ui_metrics::action_panel_rect(anchor_rect, state.action_panel.items.len());
+    let mut command = ActionPanelCommand::None;
     egui::Area::new("launcher_action_panel".into())
         .order(egui::Order::Foreground)
         .fixed_pos(rect.min)
@@ -31,9 +39,22 @@ pub(crate) fn render(ctx: &egui::Context, anchor_rect: egui::Rect, state: &mut L
                     ui.add_space(Space::xs() as f32);
                     search(ui, state);
                     ui.add_space(Space::xs() as f32);
-                    actions(ui, state);
+                    command = actions(ui, state);
                 });
         });
+    ActionPanelRenderResult { command }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub(crate) struct ActionPanelRenderResult {
+    pub(crate) command: ActionPanelCommand,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub(crate) enum ActionPanelCommand {
+    #[default]
+    None,
+    Triggered(ActionExecution),
 }
 
 fn header(ui: &mut egui::Ui, state: &LauncherState) {
@@ -83,7 +104,7 @@ fn search(ui: &mut egui::Ui, state: &mut LauncherState) {
     }
 }
 
-fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
+fn actions(ui: &mut egui::Ui, state: &mut LauncherState) -> ActionPanelCommand {
     let items = state
         .action_panel
         .visible_items()
@@ -92,16 +113,25 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
         .collect::<Vec<_>>();
     if items.is_empty() {
         quiet_label(ui, i18n::t("launcher.action.no_matches"));
-        return;
+        return ActionPanelCommand::None;
     }
+    let mut command = ActionPanelCommand::None;
     for (index, item) in items.iter().enumerate() {
         if action_row(ui, item, index == state.action_panel.selected).clicked() {
             state.action_panel.selected = index;
+            state.focus_section = LauncherFocusSection::ActionPanel;
+            state.focus_source = LauncherFocusSource::Pointer;
+            if let Some(execution) = state.trigger_action_panel_selection_by_user() {
+                command = ActionPanelCommand::Triggered(execution);
+            }
         }
         ui.add_space(Space::two_xs() as f32);
     }
+    if command != ActionPanelCommand::None {
+        return command;
+    }
     if input::ime_composing(ui.ctx()) {
-        return;
+        return ActionPanelCommand::None;
     }
     for ch in typed_action_panel_chars(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::TypeActionPanelQuery(ch), false);
@@ -112,6 +142,7 @@ fn actions(ui: &mut egui::Ui, state: &mut LauncherState) {
     if input::arrow_up().pressed(ui.ctx()) {
         state.handle_keyboard_input_by_user(LauncherKey::ArrowUp, false);
     }
+    ActionPanelCommand::None
 }
 
 fn typed_action_panel_chars(ctx: &egui::Context) -> Vec<char> {
@@ -202,6 +233,22 @@ mod tests {
 
         assert_eq!(state.focus_section, LauncherFocusSection::ActionPanel);
         assert!(!state.keyboard_focus_visible(LauncherFocusSection::ActionPanel));
+    }
+
+    #[test]
+    fn action_panel_row_click_triggers_selection_through_user_route() {
+        let source = include_str!("ui_action_panel.rs");
+        let production_source = source.split("#[cfg(test)]").next().unwrap();
+        let click_branch = production_source
+            .split("action_row(ui, item, index == state.action_panel.selected).clicked()")
+            .nth(1)
+            .and_then(|body| body.split("ui.add_space").next())
+            .unwrap();
+
+        assert!(click_branch.contains("state.action_panel.selected = index"));
+        assert!(click_branch.contains("LauncherFocusSource::Pointer"));
+        assert!(click_branch.contains("state.trigger_action_panel_selection_by_user()"));
+        assert!(production_source.contains("ActionPanelCommand::Triggered(execution)"));
     }
 
     #[test]
