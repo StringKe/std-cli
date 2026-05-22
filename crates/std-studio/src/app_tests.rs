@@ -270,7 +270,7 @@ fn batch_run_opens_bottom_panel_with_report_state() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
     let panel = app.bottom_panel_snapshot();
-    assert_eq!(panel.title, "Batch Debug");
+    assert_eq!(panel.title, "批量调试");
     assert_eq!(panel.rows.len(), 2);
     assert!(panel
         .rows
@@ -383,10 +383,8 @@ fn studio_command_sources_use_real_app_state() {
     let commands = crate::commands::command_palette_items(&app.app);
     let quick_open = crate::commands::quick_open_items(&app.app);
 
-    assert!(commands.iter().any(|item| item.title == "Show Settings"));
-    assert!(commands
-        .iter()
-        .any(|item| item.title == "Refresh Workspace State"));
+    assert!(commands.iter().any(|item| item.title == "显示 Settings"));
+    assert!(commands.iter().any(|item| item.title == "刷新工作区状态"));
     assert!(quick_open.iter().any(|item| item.title == "Plugin Manager"));
     assert_eq!(app.app.focused_pane, Some(pane));
 }

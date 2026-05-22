@@ -129,8 +129,8 @@ impl StudioSmokeReport {
             && !self.bottom_panel_default_open
             && self
                 .bottom_panel_tabs
-                .contains("tabs=Batch Debug|Logs|Problems|Performance")
-            && self.bottom_panel_tabs.contains("selected=Batch Debug")
+                .contains("tabs=批量调试|日志|问题|性能")
+            && self.bottom_panel_tabs.contains("selected=批量调试")
             && self.bottom_panel_tabs.contains("role=bottom-panel-tabs")
             && self.canvas_surface.contains("surface=bg/surface-0")
             && self
@@ -457,8 +457,8 @@ fn builder_bottom_panel_contract_pass(contract: &str) -> bool {
     [
         "batch-debug=simulate:open|run:open|planned-run:open|history:open",
         "helper=open",
-        "tabs=Batch Debug|Logs|Problems|Performance",
-        "selected=Batch Debug",
+        "tabs=批量调试|日志|问题|性能",
+        "selected=批量调试",
         "role=bottom-panel-tabs",
     ]
     .into_iter()

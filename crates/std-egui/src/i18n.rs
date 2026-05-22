@@ -301,12 +301,20 @@ mod tests {
             "主视图"
         );
         assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.workspace.title"),
+            "工作区"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.filter.hint"),
+            "过滤命令"
+        );
+        assert_eq!(
             translate(Locale::EnUs, "studio.shell.close_pane"),
             "Close Pane"
         );
         assert_eq!(
             translate(Locale::ZhCn, "studio.shell.quick_open.title"),
-            "Quick Open"
+            "快速打开"
         );
         assert_eq!(
             translate(Locale::EnUs, "studio.shell.command.open_settings"),
@@ -314,7 +322,11 @@ mod tests {
         );
         assert_eq!(
             translate(Locale::ZhCn, "studio.shell.pane_inactive"),
-            "inactive"
+            "未激活"
+        );
+        assert_eq!(
+            translate(Locale::ZhCn, "studio.shell.command.open_settings"),
+            "打开设置"
         );
     }
 

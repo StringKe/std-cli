@@ -214,8 +214,8 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
         "builder_bottom_panel_contract=batch-debug=simulate:open|run:open|planned-run:open|history:open"
     ));
     assert!(summary.contains("helper=open"));
-    assert!(summary.contains("tabs=Batch Debug|Logs|Problems|Performance"));
-    assert!(summary.contains("selected=Batch Debug"));
+    assert!(summary.contains("tabs=批量调试|日志|问题|性能"));
+    assert!(summary.contains("selected=批量调试"));
     assert!(summary.contains("role=bottom-panel-tabs"));
     assert!(summary.contains("history_timeline_contract=timeline=expanded"));
     assert!(summary.contains("columns=step,status,started,finished,payload"));

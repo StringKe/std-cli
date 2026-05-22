@@ -101,14 +101,11 @@ mod tests {
     fn bottom_panel_tabs_match_docs22_default_order() {
         let model = BottomPanelTabModel::docs22_default();
 
-        assert_eq!(
-            model.labels(),
-            vec!["Batch Debug", "Logs", "Problems", "Performance"]
-        );
+        assert_eq!(model.labels(), vec!["批量调试", "日志", "问题", "性能"]);
         assert_eq!(model.selected, BottomPanelTab::BatchDebug);
         assert_eq!(
             model.contract(),
-            "tabs=Batch Debug|Logs|Problems|Performance;selected=Batch Debug;role=bottom-panel-tabs"
+            "tabs=批量调试|日志|问题|性能;selected=批量调试;role=bottom-panel-tabs"
         );
     }
 

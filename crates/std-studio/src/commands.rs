@@ -115,9 +115,9 @@ mod tests {
         let app = StudioApp::default();
         let items = command_palette_items(&app);
 
-        assert!(items.iter().any(|item| item.title == "Show Dashboard"));
-        assert!(items.iter().any(|item| item.title == "Show Operations"));
-        assert!(items.iter().any(|item| item.title == "Open Settings"));
+        assert!(items.iter().any(|item| item.title == "显示 Dashboard"));
+        assert!(items.iter().any(|item| item.title == "显示 Operations"));
+        assert!(items.iter().any(|item| item.title == "打开设置"));
     }
 
     #[test]
@@ -127,10 +127,10 @@ mod tests {
 
         assert!(items
             .iter()
-            .any(|item| item.title == "Open Workflow Builder"));
+            .any(|item| item.title == "打开 Workflow Builder"));
         assert!(items
             .iter()
-            .any(|item| item.title == "Open Analysis Workbench"));
+            .any(|item| item.title == "打开 Analysis Workbench"));
     }
 
     #[test]
@@ -179,14 +179,14 @@ mod tests {
 
         assert!(filter_items(&items, "dashboard")
             .iter()
-            .any(|item| item.title == "Show Dashboard"));
-        assert!(filter_items(&items, "workspace")
+            .any(|item| item.title == "显示 Dashboard"));
+        assert!(filter_items(&items, "studio")
             .iter()
-            .any(|item| item.title == "Show Dashboard"));
+            .any(|item| item.title == "显示 Dashboard"));
         assert!(
             filter_items(&items, &std_egui::input::studio_settings().label())
                 .iter()
-                .any(|item| item.title == "Open Settings")
+                .any(|item| item.title == "打开设置")
         );
         assert!(filter_items(&items, "missing").is_empty());
     }

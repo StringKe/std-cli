@@ -69,7 +69,7 @@ impl StudioEguiApp {
     fn batch_debug_snapshot(&self) -> BottomPanelSnapshot {
         if let Some(report) = self.app.last_batch_report.as_ref() {
             return BottomPanelSnapshot {
-                title: "Batch Debug".to_string(),
+                title: i18n::t("studio.shell.bottom.batch_debug").to_string(),
                 status: action_status_label(&report.status).to_string(),
                 rows: report
                     .steps
@@ -116,7 +116,7 @@ impl StudioEguiApp {
             };
         }
         BottomPanelSnapshot {
-            title: "Batch Debug".to_string(),
+            title: i18n::t("studio.shell.bottom.batch_debug").to_string(),
             status: if self.status.is_empty() {
                 i18n::t("studio.shell.idle").to_string()
             } else {
@@ -128,7 +128,7 @@ impl StudioEguiApp {
 
     fn logs_snapshot(&self) -> BottomPanelSnapshot {
         BottomPanelSnapshot {
-            title: "Logs".to_string(),
+            title: i18n::t("studio.shell.bottom.logs").to_string(),
             status: if self.status.is_empty() {
                 i18n::t("studio.shell.idle").to_string()
             } else {
@@ -162,7 +162,7 @@ impl StudioEguiApp {
             );
         }
         BottomPanelSnapshot {
-            title: "Problems".to_string(),
+            title: i18n::t("studio.shell.bottom.problems").to_string(),
             status: format!("{} issues", rows.len()),
             rows,
         }
@@ -170,7 +170,7 @@ impl StudioEguiApp {
 
     fn performance_snapshot(&self) -> BottomPanelSnapshot {
         BottomPanelSnapshot {
-            title: "Performance".to_string(),
+            title: i18n::t("studio.shell.bottom.performance").to_string(),
             status: "interactive".to_string(),
             rows: vec![
                 BottomPanelRow {
@@ -339,14 +339,14 @@ mod tests {
             ..Default::default()
         };
 
-        assert_eq!(app.bottom_panel_snapshot().title, "Logs");
+        assert_eq!(app.bottom_panel_snapshot().title, "日志");
 
         app.bottom_panel_tab = BottomPanelTab::Problems;
-        assert_eq!(app.bottom_panel_snapshot().title, "Problems");
+        assert_eq!(app.bottom_panel_snapshot().title, "问题");
 
         app.bottom_panel_tab = BottomPanelTab::Performance;
         let performance = app.bottom_panel_snapshot();
-        assert_eq!(performance.title, "Performance");
+        assert_eq!(performance.title, "性能");
         assert!(performance
             .rows
             .iter()
@@ -364,6 +364,6 @@ mod tests {
 
         assert!(app.layout.bottom_panel_open);
         assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
-        assert_eq!(app.bottom_panel_snapshot().title, "Batch Debug");
+        assert_eq!(app.bottom_panel_snapshot().title, "批量调试");
     }
 }
