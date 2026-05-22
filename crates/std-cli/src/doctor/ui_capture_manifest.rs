@@ -78,19 +78,18 @@ fn manifest_value<'a>(body: &'a str, key: &str) -> Result<&'a str, CliError> {
 mod tests {
     use super::*;
 
-    const HEADER: &str = "capture-ui-matrix manifest\ncreated_at=2026-05-22T00:00:00Z\nout_dir=artifacts/ui/manual-acceptance\nopt_in=STD_ALLOW_UI_PREVIEW=1\ntest_mode=STD_TEST_MODE must not be 1\ncapture_rule=pid+process-name+window-title\ncompletion_rule=current-run-png-only\n";
-
     #[test]
     fn capture_manifest_header_accepts_current_run_contract() {
-        let header = verify_capture_manifest_header(HEADER, None).unwrap();
+        let header_body = header();
+        let header = verify_capture_manifest_header(&header_body, None).unwrap();
 
         assert_eq!(header.created_at, "2026-05-22T00:00:00Z");
-        assert_eq!(header.out_dir, "artifacts/ui/manual-acceptance");
+        assert_eq!(header.out_dir, ui_capture::UI_CAPTURE_DIR);
     }
 
     #[test]
     fn capture_manifest_header_rejects_non_utc_timestamp() {
-        let body = HEADER.replace("2026-05-22T00:00:00Z", "2026-05-22 00:00:00");
+        let body = header().replace("2026-05-22T00:00:00Z", "2026-05-22 00:00:00");
 
         let error = verify_capture_manifest_header(&body, None).unwrap_err();
 
@@ -99,10 +98,17 @@ mod tests {
 
     #[test]
     fn capture_manifest_header_rejects_stale_output_dir() {
-        let body = HEADER.replace("artifacts/ui/manual-acceptance", "/tmp/old-ui-evidence");
+        let body = header().replace(ui_capture::UI_CAPTURE_DIR, "/tmp/old-ui-evidence");
 
         let error = verify_capture_manifest_header(&body, None).unwrap_err();
 
         assert!(error.to_string().contains("out_dir must be"));
+    }
+
+    fn header() -> String {
+        format!(
+            "capture-ui-matrix manifest\ncreated_at=2026-05-22T00:00:00Z\nout_dir={}\nopt_in=STD_ALLOW_UI_PREVIEW=1\ntest_mode=STD_TEST_MODE must not be 1\ncapture_rule=pid+process-name+window-title\ncompletion_rule=current-run-png-only\n",
+            ui_capture::UI_CAPTURE_DIR
+        )
     }
 }
