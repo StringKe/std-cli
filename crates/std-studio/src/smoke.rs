@@ -9,6 +9,7 @@ mod report;
 mod report_pass;
 pub(crate) mod surface_smoke;
 mod workflow_builder_smoke;
+mod workspace_pass;
 pub(crate) mod workspace_policy_smoke;
 mod workspace_smoke;
 

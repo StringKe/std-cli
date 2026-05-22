@@ -3,7 +3,7 @@ use std_egui::input;
 
 impl StudioSmokeReport {
     pub(crate) fn pass(&self) -> bool {
-        self.workspace_contract_pass()
+        super::workspace_pass::workspace_contract_pass(self)
             && self.layout_contract_pass()
             && self.workflow_contract_pass()
             && self.analysis_contract_pass()
@@ -12,94 +12,6 @@ impl StudioSmokeReport {
             && self.operations_contract_pass()
             && self.open_intent_contract_pass()
             && self.motion_budget_contract_pass()
-    }
-
-    fn workspace_contract_pass(&self) -> bool {
-        self.workspace_panes >= 7
-            && self.pane_opened
-            && self.pane_focus_switched
-            && self.pane_closed
-            && self.pane_focus_restored
-            && self.pane_deduplicated
-            && self.pane_content_keys.contains("dashboard")
-            && self.pane_content_keys.contains("settings")
-            && self.pane_focused_title == "插件管理"
-            && self.pane_restored_title == "插件管理"
-            && self.pane_settings_kind == "Settings"
-            && self.pane_closed_removed
-            && self.pane_state_preserved
-            && self
-                .pane_focus_label
-                .contains("host=single-borderless-egui-viewport")
-            && self
-                .pane_focus_label
-                .contains("sequence=open>focus>switch>close>reopen>restore")
-            && self.pane_focus_label.contains("counts=before-close:")
-            && self.pane_focus_label.contains("after-close:")
-            && self.pane_focus_label.contains("after-reopen:")
-            && self.pane_focus_label.contains("state_preserved=true")
-            && self
-                .pane_focus_label
-                .contains("forbidden=native-child-windows:false|detached-panels:false")
-            && self.pane_focus_label.contains("title=插件管理")
-            && self.pane_focus_label.contains("tabs=tabs=")
-            && self.pane_focus_label.contains("focused=插件管理")
-            && self.pane_focus_label.contains("cycle=previous|next")
-            && self.pane_focus_label.contains("close_hit=28x28")
-            && self.pane_focus_label.contains("keyboard_close=true")
-            && self.pane_focus_label.contains("工作区面板标签，Dashboard")
-            && self.pane_focus_label.contains("关闭工作区面板，插件管理")
-            && self
-                .pane_focus_label
-                .contains("closeguard=disk_roundtrip=true")
-            && self.pane_focus_label.contains("saved=true")
-            && self.pane_focus_label.contains("restored_count=3")
-            && self.pane_focus_label.contains("native_terms=false")
-            && self
-                .pane_host_policy
-                .contains("single-borderless-egui-viewport")
-            && self
-                .pane_host_policy
-                .contains("pane_system=internal-egui-workspace-panes")
-            && self.pane_host_policy.contains("native_child_windows=false")
-            && self.pane_host_policy.contains("detached_panels=false")
-            && self.pane_host_policy.contains("docs=docs/22 + docs/24")
-            && self.pane_management_sequence == "open>dedupe>focus>switch>close>reopen>restore"
-            && self.pane_focus_switch_path == "settings>plugins>plugins"
-            && self.pane_close_restore_path.starts_with("close:")
-            && settings_contract_pass(&self.pane_settings_contract)
-            && self
-                .workspace_main_path_contract
-                .contains("host=single-borderless-egui-viewport")
-            && self
-                .workspace_main_path_contract
-                .contains("panes=internal-egui-workspace-panes")
-            && self
-                .workspace_main_path_contract
-                .contains("extra_viewports=forbidden")
-            && self
-                .workspace_main_path_contract
-                .contains("show_viewport=forbidden")
-            && self
-                .workspace_main_path_contract
-                .contains("show_viewport_api=false")
-            && self
-                .workspace_main_path_contract
-                .contains("viewport_id=forbidden")
-            && self
-                .workspace_main_path_contract
-                .contains("egui_window=forbidden")
-            && self
-                .workspace_main_path_contract
-                .contains("egui_window_api=false")
-            && self
-                .workspace_main_path_contract
-                .contains("settings_overlay=forbidden")
-            && self
-                .workspace_main_path_contract
-                .contains("settings_overlay=false")
-            && !self.native_child_windows
-            && !self.detached_panels
     }
 
     fn layout_contract_pass(&self) -> bool {
@@ -459,30 +371,6 @@ impl StudioSmokeReport {
                 .motion_budget_summary
                 .contains("active_animation_limit=8")
     }
-}
-
-fn settings_contract_pass(contract: &str) -> bool {
-    [
-        "surface=internal-workspace-pane",
-        "navigation=left-category-rail",
-        "appearance|hotkeys|ai-provider|index|plugins|privacy|about",
-        "hotkey_source=default-or-user",
-        "hotkey_reset=reset-to-default",
-        "hotkey_control=token-binding-row",
-        "theme_modes=system|dark|light",
-        "theme_control=segmented-control",
-        "zoom_levels=0.85|1.00|1.25|1.50",
-        "zoom_control=segmented-control",
-        "motion_control=token-toggle-row",
-        "contrast_control=token-toggle-row",
-        "transparency_control=token-toggle-row",
-        "appearance_profile=theme-profile=requested|effective",
-        "focus-ring|ui-scale",
-        "ai_control=token-toggle-row",
-        "storage_control=token-path-row",
-    ]
-    .into_iter()
-    .all(|term| contract.contains(term))
 }
 
 fn builder_bottom_panel_contract_pass(contract: &str) -> bool {
