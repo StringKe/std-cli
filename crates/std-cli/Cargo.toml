@@ -18,6 +18,7 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 std-types = { path = "../std-types", version = "0.1.0" }
 std-core = { path = "../std-core", version = "0.1.0" }
+std-egui = { path = "../std-egui", version = "0.1.0" }
 std-orchestration = { path = "../std-orchestration", version = "0.1.0" }
 std-index = { path = "../std-index", version = "0.1.0" }
 

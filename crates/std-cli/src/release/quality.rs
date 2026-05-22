@@ -6,6 +6,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+use std_egui::ui_capture;
 
 const QUALITY_FILES: [&str; 5] = [
     "Cargo.toml",
@@ -57,18 +58,10 @@ const BACKGROUND_UI_ACCEPTANCE: [&str; 2] = [
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh",
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>",
 ];
-const MANUAL_UI_EVIDENCE: [&str; 6] = [
-    "ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
-    "ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
-    "ui_capture_rule=current-run-png-only",
+const BACKGROUND_UI_EVIDENCE: [&str; 3] = [
     "background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
     "background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
     "background_ui_rule=isolated-harness-only",
-];
-
-const UI_CAPTURE_EVIDENCE_RULES: [&str; 2] = [
-    "ui_capture_pixels=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
-    "ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
 ];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
@@ -148,13 +141,41 @@ fn quality_report() -> String {
     for command in BACKGROUND_UI_ACCEPTANCE {
         lines.push(format!("background_ui_acceptance={command}"));
     }
-    for evidence in MANUAL_UI_EVIDENCE {
+    for evidence in manual_ui_evidence() {
         lines.push(format!("manual_ui_evidence={evidence}"));
     }
-    for rule in UI_CAPTURE_EVIDENCE_RULES {
+    for rule in ui_capture_evidence_rules() {
         lines.push(format!("manual_ui_evidence_rule={rule}"));
     }
     lines.join("\n")
+}
+
+fn manual_ui_evidence() -> Vec<String> {
+    let mut evidence = vec![
+        format!(
+            "ui_capture_manifest=STD_UI_CAPTURE_MANIFEST={}",
+            ui_capture::UI_CAPTURE_MANIFEST
+        ),
+        format!("ui_capture_command={}", ui_capture::UI_CAPTURE_COMMAND),
+        "ui_capture_rule=current-run-png-only".to_string(),
+    ];
+    evidence.extend(BACKGROUND_UI_EVIDENCE.iter().map(|value| value.to_string()));
+    evidence
+}
+
+fn ui_capture_evidence_rules() -> Vec<String> {
+    vec![
+        format!(
+            "ui_capture_pixels={}",
+            ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
+        ),
+        format!(
+            "ui_capture_rejects={}",
+            ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
+                .strip_prefix("reject-")
+                .unwrap_or(ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE)
+        ),
+    ]
 }
 
 fn verify_quality_report(path: &Path) -> Result<(), CliError> {

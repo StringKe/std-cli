@@ -1,5 +1,6 @@
 use crate::{doctor::workspace::check_text, CliError};
 use std::path::Path;
+use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct CaptureManifestHeader {
@@ -50,9 +51,10 @@ fn verify_created_at(value: &str) -> Result<(), CliError> {
 }
 
 fn verify_out_dir(value: &str, root: Option<&Path>) -> Result<(), CliError> {
-    if value != "artifacts/ui/manual-acceptance" {
+    if value != ui_capture::UI_CAPTURE_DIR {
         return Err(CliError::Doctor(format!(
-            "capture manifest out_dir must be artifacts/ui/manual-acceptance: {value}"
+            "capture manifest out_dir must be {}: {value}",
+            ui_capture::UI_CAPTURE_DIR
         )));
     }
     if let Some(root) = root {
