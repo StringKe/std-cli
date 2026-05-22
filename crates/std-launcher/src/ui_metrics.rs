@@ -159,7 +159,7 @@ fn feedback_text_height_for_scale(scale: UiScale) -> f32 {
 }
 
 pub(crate) fn feedback_action_height_for_scale(scale: UiScale) -> f32 {
-    scale.f32(24.0)
+    scale.f32(30.0)
 }
 
 pub(crate) struct FeedbackIconGeometry {

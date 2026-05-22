@@ -70,14 +70,12 @@ fn feedback_detail_is_limited_to_two_lines() {
 #[test]
 fn feedback_detail_surface_wraps_two_lines_without_truncating() {
     let source = include_str!("ui_feedback.rs");
-    let metrics = include_str!("ui_metrics.rs");
 
     assert!(source.contains("clamped_feedback_detail(feedback)"));
     assert!(source.contains(".wrap()"));
     assert!(!source.contains(".truncate()"));
-    assert!(metrics.contains("feedback_text_height()"));
-    assert!(metrics.contains("scale.f32(58.0)"));
-    assert!(metrics.contains("scale().f32(36.0)"));
+    assert_eq!(ui_metrics::feedback_text_height(), 58.0);
+    assert_eq!(ui_metrics::feedback_detail_height(), 36.0);
 }
 
 #[test]
@@ -109,6 +107,14 @@ fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
     let metrics = include_str!("ui_metrics.rs");
     let source = include_str!("ui_feedback.rs");
 
+    let scale = std_egui::tokens::UiScale::default();
+    let expected = ui_metrics::feedback_text_height()
+        + scale.f32(Space::XS as f32)
+        + ui_metrics::feedback_action_height()
+        + scale.f32(Space::XS as f32);
+
+    assert_eq!(ui_metrics::feedback_action_height(), 30.0);
+    assert_eq!(ui_metrics::feedback_panel_height_for_scale(scale), expected);
     assert!(metrics.contains("feedback_panel_height_for_scale"));
     assert!(metrics.contains("feedback_text_height()"));
     assert!(metrics.contains("feedback_action_height()"));
