@@ -216,11 +216,34 @@ fn render_spec(
         ui::section_header(ui, &spec.heading, class_label);
         render_workspace_summary(ui, spec);
         ui.add_space(Space::XS as f32);
+        render_workspace_layout(ui, spec);
+        ui.add_space(Space::XS as f32);
         for line in &spec.lines {
             render_workspace_line(ui, line);
         }
         ui.add_space(Space::XS as f32);
         render_workspace_actions(ui, spec, commands);
+    });
+}
+
+fn render_workspace_layout(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
+    let layout = crate::workspace_pane_layout::layout_for_spec(spec);
+    ui.horizontal(|ui| {
+        render_layout_cell(ui, "Toolbar", layout.toolbar);
+        render_layout_cell(ui, "Primary", layout.primary);
+    });
+    ui.horizontal(|ui| {
+        render_layout_cell(ui, "Secondary", layout.secondary);
+        render_layout_cell(ui, "Inspector", layout.inspector);
+        render_layout_cell(ui, "Bottom", layout.bottom);
+    });
+}
+
+fn render_layout_cell(ui: &mut egui::Ui, label: &str, value: &str) {
+    ui::subtle_frame(ui.ctx()).show(ui, |ui| {
+        ui.set_min_width(160.0);
+        ui.label(egui::RichText::new(label).color(ui::muted_text(ui.ctx())));
+        ui.label(egui::RichText::new(value).color(ui::strong_text(ui.ctx())));
     });
 }
 

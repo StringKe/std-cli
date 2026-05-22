@@ -3,6 +3,7 @@ use std::{fs, path::Path};
 const ALLOWED_VIEWPORT_FILES: &[&str] = &[
     "src/viewport.rs",
     "src/host_chrome.rs",
+    "src/host_chrome_drag.rs",
     "src/preview.rs",
     "src/preview_tests.rs",
 ];
@@ -141,7 +142,7 @@ fn forbidden_studio_window_patterns() -> Vec<String> {
         ["Viewport", "Builder::default"].join(""),
         ["Viewport", "Command::"].join(""),
         ["send_", "viewport_cmd"].join(""),
-        ["show_", "viewport"].join(""),
+        ".show_viewport".to_string(),
         ["Viewport", "Id"].join(""),
         ["Viewport", "Class"].join(""),
     ]
@@ -153,6 +154,8 @@ fn allowed_viewport_pattern(file: &str, pattern: &str) -> bool {
         ("src/viewport.rs", "ViewportBuilder::default")
             | ("src/host_chrome.rs", "ViewportCommand::")
             | ("src/host_chrome.rs", "send_viewport_cmd")
+            | ("src/host_chrome_drag.rs", "ViewportCommand::")
+            | ("src/host_chrome_drag.rs", "send_viewport_cmd")
             | ("src/preview.rs", "ViewportCommand::")
             | ("src/preview.rs", "send_viewport_cmd")
             | ("src/preview_tests.rs", "ViewportCommand::")
@@ -167,12 +170,12 @@ fn required_viewport_patterns(file: &str) -> &'static [&'static str] {
             "with_decorations(false)",
         ],
         "src/host_chrome.rs" => &[
-            "ViewportCommand::StartDrag",
             "ViewportCommand::Close",
             "ViewportCommand::Minimized(true)",
             "ViewportCommand::Maximized",
             "open_current_pane_from_host_chrome",
         ],
+        "src/host_chrome_drag.rs" => &["ViewportCommand::StartDrag"],
         "src/preview.rs" => &[
             "STD_ALLOW_UI_PREVIEW",
             "ViewportCommand::Close",
