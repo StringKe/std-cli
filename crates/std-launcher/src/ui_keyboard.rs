@@ -76,6 +76,7 @@ pub(crate) fn execution_hides_launcher(execution: &ActionExecution) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std_core::{StdConfig, StdCore};
 
     #[test]
     fn launcher_hides_only_after_completed_execution() {
@@ -134,6 +135,49 @@ mod tests {
         assert!(!hide_requested);
     }
 
+    #[test]
+    fn ui_enter_requests_hide_only_for_completed_execution() {
+        let ctx = egui::Context::default();
+        let mut completed = LauncherState::new();
+        completed.controller.show();
+        completed.update_query("index");
+        let mut completed_hide = false;
+
+        let _ = ctx.run(enter_input(), |ctx| {
+            handle_search_shortcuts(ctx, &mut completed, &mut completed_hide);
+        });
+
+        assert_eq!(
+            completed
+                .view
+                .last_execution
+                .as_ref()
+                .map(|execution| execution.status.clone()),
+            Some(ActionExecutionStatus::Completed)
+        );
+        assert!(completed_hide);
+
+        let mut deferred = launcher_with_fixture_app();
+        deferred.controller.show();
+        deferred.update_query("UI Enter Fixture");
+        let mut deferred_hide = false;
+
+        let _ = ctx.run(enter_input(), |ctx| {
+            handle_search_shortcuts(ctx, &mut deferred, &mut deferred_hide);
+        });
+
+        assert_eq!(
+            deferred
+                .view
+                .last_execution
+                .as_ref()
+                .map(|execution| execution.status.clone()),
+            Some(ActionExecutionStatus::NeedsExternalRunner)
+        );
+        assert!(!deferred_hide);
+        assert!(deferred.controller.visible);
+    }
+
     fn mod_shift_enter_input() -> egui::RawInput {
         let modifiers = egui::Modifiers {
             command: true,
@@ -151,6 +195,41 @@ mod tests {
             modifiers,
             ..Default::default()
         }
+    }
+
+    fn enter_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: Some(egui::Key::Enter),
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::NONE,
+            }],
+            ..Default::default()
+        }
+    }
+
+    fn launcher_with_fixture_app() -> LauncherState {
+        let root = std::env::temp_dir().join(format!(
+            "std-launcher-ui-enter-fixture-{}",
+            std::process::id()
+        ));
+        let config = StdConfig {
+            data_dir: root.join("data"),
+            ..StdConfig::default()
+        };
+        let app = config.apps_dir().join("UIEnterFixture.app");
+        let contents = app.join("Contents");
+        let _ = std::fs::create_dir_all(&contents);
+        let _ = std::fs::write(
+            contents.join("Info.plist"),
+            r#"<plist><dict>
+<key>CFBundleDisplayName</key><string>UI Enter Fixture</string>
+<key>CFBundleName</key><string>UIEnterFixture</string>
+</dict></plist>"#,
+        );
+        LauncherState::with_core(StdCore::with_config(config))
     }
 
     #[test]
