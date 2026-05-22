@@ -1,4 +1,4 @@
-use crate::{host_chrome_drag, ui, StudioEguiApp};
+use crate::{host_chrome_drag, ui, workspace_panes::focused_workspace_spec, StudioEguiApp};
 use eframe::egui;
 use std_egui::{
     i18n,
@@ -35,7 +35,8 @@ impl StudioEguiApp {
                     .color(ui::strong_text(ui.ctx())),
             );
             ui.label(
-                egui::RichText::new(self.app.active_pane.label()).color(ui::muted_text(ui.ctx())),
+                egui::RichText::new(self.focused_workspace_pane_kind().label())
+                    .color(ui::muted_text(ui.ctx())),
             );
         });
     }
@@ -66,7 +67,13 @@ impl StudioEguiApp {
     fn open_current_pane_from_host_chrome(&mut self) -> WorkspacePaneId {
         debug_assert!(!self.app.workspace_policy.allows_native_child_windows());
         debug_assert!(!self.app.workspace_policy.allows_detached_panels());
-        let id = self.app.open_workspace_pane(self.app.active_pane);
+        let id = focused_workspace_spec(&self.app)
+            .map(|spec| spec.id)
+            .unwrap_or_else(|| {
+                self.app
+                    .open_workspace_pane(std_studio::StudioPane::Dashboard)
+            });
+        self.app.focus_workspace_pane(id);
         self.pending_workspace_focus = Some(id);
         id
     }
@@ -241,7 +248,7 @@ fn paint_maximize_icon(ui: &egui::Ui, rect: egui::Rect, stroke: egui::Stroke) {
 mod tests {
     use super::*;
     use std_core::{StdConfig, StdCore};
-    use std_studio::{StudioPane, WorkspacePaneKind};
+    use std_studio::WorkspacePaneKind;
 
     fn test_app() -> StudioEguiApp {
         let temp = tempfile::tempdir().unwrap();
@@ -258,13 +265,15 @@ mod tests {
     #[test]
     fn host_chrome_open_current_pane_uses_internal_workspace_pane() {
         let mut app = test_app();
-        app.app.switch_pane(StudioPane::Plugins);
+        let plugin = app.app.open_plugin_manager_pane();
+        assert!(app.app.focus_workspace_pane(plugin));
 
         let id = app.open_current_pane_from_host_chrome();
 
         assert_eq!(app.app.focused_pane, Some(id));
         assert_eq!(app.pending_workspace_focus, Some(id));
-        assert_eq!(app.app.open_workspace_panes().count(), 1);
+        assert_eq!(id, plugin);
+        assert_eq!(app.app.open_workspace_panes().count(), 2);
         assert!(!app.app.workspace_policy.allows_native_child_windows());
         assert!(!app.app.workspace_policy.allows_detached_panels());
     }
@@ -272,22 +281,23 @@ mod tests {
     #[test]
     fn host_chrome_open_current_pane_deduplicates_same_workspace() {
         let mut app = test_app();
-        app.app.switch_pane(StudioPane::Plugins);
+        let plugin = app.app.open_plugin_manager_pane();
+        assert!(app.app.focus_workspace_pane(plugin));
 
         let first = app.open_current_pane_from_host_chrome();
         let second = app.open_current_pane_from_host_chrome();
 
         assert_eq!(first, second);
-        assert_eq!(app.app.open_workspace_panes().count(), 1);
+        assert_eq!(first, plugin);
+        assert_eq!(app.app.open_workspace_panes().count(), 2);
     }
 
     #[test]
     fn host_chrome_close_persists_workspace_closeguard_before_viewport_close() {
         let mut app = test_app();
-        app.app.switch_pane(StudioPane::Plugins);
-        let plugin = app.open_current_pane_from_host_chrome();
-        app.app.switch_pane(StudioPane::Settings);
-        let settings = app.open_current_pane_from_host_chrome();
+        let plugin = app.app.open_plugin_manager_pane();
+        let settings = app.app.open_settings_pane();
+        assert!(app.app.focus_workspace_pane(settings));
         let ctx = egui::Context::default();
 
         app.close_host_window_from_chrome(&ctx);
@@ -300,10 +310,11 @@ mod tests {
         assert!(saved
             .panes
             .iter()
-            .any(|pane| pane.id == plugin
-                && pane.kind == WorkspacePaneKind::Pane(StudioPane::Plugins)));
-        assert!(saved.panes.iter().any(|pane| pane.id == settings
-            && pane.kind == WorkspacePaneKind::Pane(StudioPane::Settings)));
+            .any(|pane| pane.id == plugin && pane.kind == WorkspacePaneKind::PluginManager));
+        assert!(saved
+            .panes
+            .iter()
+            .any(|pane| pane.id == settings && pane.kind == WorkspacePaneKind::Settings));
         assert!(app.status.contains("workspace closeguard saved"));
         assert!(!app.app.workspace_policy.allows_native_child_windows());
         assert!(!app.app.workspace_policy.allows_detached_panels());

@@ -19,7 +19,6 @@ pub(crate) struct StudioNavSection {
 pub(crate) struct StudioNavItem {
     pub(crate) pane: StudioPane,
     pub(crate) title: &'static str,
-    pub(crate) opens_workspace_pane: bool,
 }
 
 pub(crate) fn studio_nav_sections() -> Vec<StudioNavSection> {
@@ -29,9 +28,9 @@ pub(crate) fn studio_nav_sections() -> Vec<StudioNavSection> {
             title_key: "studio.shell.workspace.title",
             detail_key: "studio.shell.workspace.detail",
             items: vec![
-                nav_item(StudioPane::Workflows, false),
-                nav_item(StudioPane::Apps, false),
-                nav_item(StudioPane::Memory, true),
+                nav_item(StudioPane::Workflows),
+                nav_item(StudioPane::Apps),
+                nav_item(StudioPane::Memory),
             ],
         },
         StudioNavSection {
@@ -39,10 +38,10 @@ pub(crate) fn studio_nav_sections() -> Vec<StudioNavSection> {
             title_key: "studio.shell.tools.title",
             detail_key: "studio.shell.tools.detail",
             items: vec![
-                nav_item(StudioPane::Plugins, true),
-                nav_item(StudioPane::Analysis, true),
-                nav_item(StudioPane::Settings, true),
-                nav_item(StudioPane::Operations, false),
+                nav_item(StudioPane::Plugins),
+                nav_item(StudioPane::Analysis),
+                nav_item(StudioPane::Settings),
+                nav_item(StudioPane::Operations),
             ],
         },
         StudioNavSection {
@@ -50,18 +49,17 @@ pub(crate) fn studio_nav_sections() -> Vec<StudioNavSection> {
             title_key: "studio.shell.recent.title",
             detail_key: "studio.shell.recent.detail",
             items: vec![
-                nav_item(StudioPane::Dashboard, false),
-                nav_item(StudioPane::History, true),
+                nav_item(StudioPane::Dashboard),
+                nav_item(StudioPane::History),
             ],
         },
     ]
 }
 
-fn nav_item(pane: StudioPane, opens_workspace_pane: bool) -> StudioNavItem {
+fn nav_item(pane: StudioPane) -> StudioNavItem {
     StudioNavItem {
         pane,
         title: pane.label(),
-        opens_workspace_pane,
     }
 }
 
@@ -96,14 +94,14 @@ mod tests {
     }
 
     #[test]
-    fn nav_model_marks_deep_tools_as_workspace_panes() {
+    fn nav_model_routes_every_docs22_item_through_workspace_navigation() {
         let sections = studio_nav_sections();
-        let tools = &sections[1];
+        let item_count = sections
+            .iter()
+            .map(|section| section.items.len())
+            .sum::<usize>();
 
-        assert!(tools.items[0].opens_workspace_pane);
-        assert!(tools.items[1].opens_workspace_pane);
-        assert!(tools.items[2].opens_workspace_pane);
-        assert!(!tools.items[3].opens_workspace_pane);
+        assert_eq!(item_count, 9);
     }
 
     fn section_titles(section: &StudioNavSection) -> Vec<&'static str> {

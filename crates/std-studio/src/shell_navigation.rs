@@ -29,12 +29,12 @@ impl StudioEguiApp {
 
     fn render_icon_rail(&mut self, ui: &mut egui::Ui) {
         for pane in icon_rail_panes() {
-            let selected = self.app.active_pane == pane;
+            let selected = self.focused_workspace_pane_kind() == pane;
             if nav_icon_button(ui, pane, selected)
                 .on_hover_text(pane.label())
                 .clicked()
             {
-                self.app.switch_pane(pane);
+                self.open_workspace_item(pane);
             }
         }
     }
@@ -52,13 +52,9 @@ impl StudioEguiApp {
     }
 
     fn render_nav_item(&mut self, ui: &mut egui::Ui, item: &StudioNavItem) {
-        let selected = self.app.active_pane == item.pane;
+        let selected = self.focused_workspace_pane_kind() == item.pane;
         if nav_row(ui, item.pane, item.title, selected).clicked() {
-            if item.opens_workspace_pane {
-                self.open_workspace_item(item.pane);
-            } else {
-                self.app.switch_pane(item.pane);
-            }
+            self.open_workspace_item(item.pane);
         }
     }
 
@@ -85,6 +81,12 @@ impl StudioEguiApp {
             StudioPane::Settings => self.app.open_settings_pane(),
             _ => self.app.open_workspace_pane(pane),
         }
+    }
+
+    pub(crate) fn focused_workspace_pane_kind(&self) -> StudioPane {
+        crate::workspace_panes::focused_workspace_spec(&self.app)
+            .map(|spec| spec.pane)
+            .unwrap_or(StudioPane::Dashboard)
     }
 
     pub(crate) fn render_workspace_pane_manager(&mut self, ui: &mut egui::Ui) {
