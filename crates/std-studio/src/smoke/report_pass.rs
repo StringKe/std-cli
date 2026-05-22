@@ -295,6 +295,9 @@ impl StudioSmokeReport {
                 .contains("list=name|version|status|source|enable")
             && self
                 .plugin_visual_contract
+                .contains("list_chip_tracks=metadata|match")
+            && self
+                .plugin_visual_contract
                 .contains("status_bar=manifest=1/1 PASS")
             && self
                 .plugin_visual_contract

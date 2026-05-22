@@ -144,7 +144,7 @@ fn plugin_visual_contract(input: PluginVisualContractInput<'_>) -> String {
         "missing"
     };
     format!(
-        "list=name|version|status|source|enable;status={};source={};status_bar={};inspector=description|permissions|commands|audit-log;selected_inspector={};permissions={};permission_boundary={};commands={};audit_log={};runtime=js:{}|ts:{}",
+        "list=name|version|status|source|enable;list_chip_tracks=metadata|match;status={};source={};status_bar={};inspector=description|permissions|commands|audit-log;selected_inspector={};permissions={};permission_boundary={};commands={};audit_log={};runtime=js:{}|ts:{}",
         status,
         source,
         input.status_bar_contract,

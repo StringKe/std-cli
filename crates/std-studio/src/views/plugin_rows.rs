@@ -73,8 +73,8 @@ pub(crate) fn action_row(
             row_metrics::PLUGIN_LIST_TITLE_Y,
             row_metrics::PLUGIN_LIST_DETAIL_Y,
         );
-        paint_plugin_list_chips(ui, rect, &model);
-        paint_match_chips(ui, rect, &result.matched_fields);
+        paint_plugin_list_chips(ui, rect, &model, PluginChipTrack::Metadata);
+        paint_match_chips(ui, rect, &result.matched_fields, PluginChipTrack::Match);
     }
     ui.add_space(Space::TWO_XS as f32);
     if response.clicked() {
@@ -173,7 +173,17 @@ pub(crate) fn label_value_row(ui: &mut egui::Ui, key: &str, value: &str) {
     });
 }
 
-fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginListRowModel) {
+enum PluginChipTrack {
+    Metadata,
+    Match,
+}
+
+fn paint_plugin_list_chips(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    model: &PluginListRowModel,
+    track: PluginChipTrack,
+) {
     let chips = [
         format!("v{}", model.version),
         model.status.clone(),
@@ -182,7 +192,7 @@ fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginLi
         model.enable_state.clone(),
     ];
     let mut x = rect.left() + Space::SM as f32;
-    let y = rect.bottom() - row_metrics::MATCH_CHIP_BOTTOM_INSET;
+    let y = plugin_chip_y(rect, track);
     for chip in chips {
         let width = (chip.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
             + row_metrics::MATCH_CHIP_TEXT_PAD)
@@ -199,9 +209,14 @@ fn paint_plugin_list_chips(ui: &mut egui::Ui, rect: egui::Rect, model: &PluginLi
     }
 }
 
-fn paint_match_chips(ui: &mut egui::Ui, rect: egui::Rect, fields: &[String]) {
+fn paint_match_chips(
+    ui: &mut egui::Ui,
+    rect: egui::Rect,
+    fields: &[String],
+    track: PluginChipTrack,
+) {
     let mut x = rect.left() + Space::SM as f32;
-    let y = rect.bottom() - row_metrics::MATCH_CHIP_BOTTOM_INSET;
+    let y = plugin_chip_y(rect, track);
     for field in fields.iter().take(3) {
         let width = (field.len() as f32 * row_metrics::MATCH_CHIP_CHAR_WIDTH
             + row_metrics::MATCH_CHIP_TEXT_PAD)
@@ -218,8 +233,29 @@ fn paint_match_chips(ui: &mut egui::Ui, rect: egui::Rect, fields: &[String]) {
     }
 }
 
+fn plugin_chip_y(rect: egui::Rect, track: PluginChipTrack) -> f32 {
+    let inset = match track {
+        PluginChipTrack::Metadata => row_metrics::PLUGIN_META_CHIP_BOTTOM_INSET,
+        PluginChipTrack::Match => row_metrics::PLUGIN_MATCH_CHIP_BOTTOM_INSET,
+    };
+    rect.bottom() - inset
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn plugin_list_chips_use_separate_metadata_and_match_tracks() {
+        let source = include_str!("plugin_rows.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("PluginChipTrack::Metadata"));
+        assert!(implementation.contains("PluginChipTrack::Match"));
+        assert!(implementation.contains("PLUGIN_META_CHIP_BOTTOM_INSET"));
+        assert!(implementation.contains("PLUGIN_MATCH_CHIP_BOTTOM_INSET"));
+        assert!(implementation.contains("paint_plugin_list_chips(ui, rect, &model,"));
+        assert!(implementation.contains("paint_match_chips(ui, rect, &result.matched_fields,"));
+    }
+
     #[test]
     fn plugin_rows_keep_list_preview_and_shared_status_primitives() {
         let source = include_str!("plugin_rows.rs");
