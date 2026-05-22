@@ -99,6 +99,49 @@ mod tests {
         assert!(executing_index < user_trigger_index);
     }
 
+    #[test]
+    fn ime_preedit_frame_owns_launcher_shortcuts() {
+        let ctx = egui::Context::default();
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let before_query = state.view.query.clone();
+        let before_selected = state.view.selected;
+        let mut hide_requested = false;
+
+        let _ = ctx.run(ime_preedit_enter_input(), |ctx| {
+            handle_search_shortcuts(ctx, &mut state, &mut hide_requested);
+        });
+
+        assert_eq!(state.view.query, before_query);
+        assert_eq!(state.view.selected, before_selected);
+        assert!(state.view.feedback.is_none());
+        assert!(!state.action_panel.open);
+        assert!(!hide_requested);
+    }
+
+    fn ime_preedit_enter_input() -> egui::RawInput {
+        egui::RawInput {
+            events: vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("zhong".to_string())),
+                egui::Event::Key {
+                    key: egui::Key::Enter,
+                    physical_key: Some(egui::Key::Enter),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+                egui::Event::Key {
+                    key: egui::Key::ArrowDown,
+                    physical_key: Some(egui::Key::ArrowDown),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+            ..Default::default()
+        }
+    }
+
     fn execution(status: ActionExecutionStatus) -> ActionExecution {
         ActionExecution {
             action_id: Default::default(),
