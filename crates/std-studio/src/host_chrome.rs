@@ -350,8 +350,8 @@ mod tests {
         assert!(production_source.contains("HostWindowCommand::Close"));
         assert!(production_source.contains("HostWindowCommand::Minimize"));
         assert!(production_source.contains("HostWindowCommand::Maximize"));
-        assert!(!production_source.contains("send_viewport_cmd"));
-        assert!(!production_source.contains("ViewportCommand::"));
+        assert!(!production_source.contains(&["send", "_viewport", "_cmd"].join("")));
+        assert!(!production_source.contains(&["Viewport", "Command", "::"].join("")));
         assert_eq!(
             std_studio::StudioWorkspacePolicy::studio_v1().host_window_command_boundary(),
             crate::host_window::host_window_command_boundary_contract()

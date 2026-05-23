@@ -333,4 +333,6 @@ fn index_error_from_core(error: std_core::CoreError) -> IndexError {
 }
 
 #[cfg(test)]
+mod apps_settings_tests;
+#[cfg(test)]
 mod tests;
