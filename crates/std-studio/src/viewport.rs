@@ -1,11 +1,15 @@
 use eframe::egui;
-use std_studio::StudioWorkspacePolicy;
+use std_studio::{HostWindowPolicy, StudioWorkspacePolicy};
 
 pub(crate) const STUDIO_WINDOW_SIZE: [f32; 2] = [1280.0, 800.0];
 pub(crate) const STUDIO_MIN_WINDOW_SIZE: [f32; 2] = [1080.0, 640.0];
 
 pub(crate) fn studio_native_options() -> eframe::NativeOptions {
     let policy = StudioWorkspacePolicy::studio_v1();
+    assert_eq!(
+        policy.host_window,
+        HostWindowPolicy::SingleBorderlessEguiViewport
+    );
     let contract = policy.host_viewport_contract();
     debug_assert!(contract.passes());
     eframe::NativeOptions {
@@ -13,7 +17,7 @@ pub(crate) fn studio_native_options() -> eframe::NativeOptions {
             .with_inner_size([contract.width as f32, contract.height as f32])
             .with_min_inner_size([contract.min_width as f32, contract.min_height as f32])
             .with_resizable(contract.resizable)
-            .with_decorations(contract.decorations),
+            .with_decorations(false),
         ..Default::default()
     }
 }

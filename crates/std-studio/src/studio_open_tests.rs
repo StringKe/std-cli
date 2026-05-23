@@ -38,6 +38,9 @@ fn open_smoke_reports_internal_pane_intents_without_native_windows() {
     assert!(report
         .summary()
         .contains("route=internal-egui-workspace-pane-intent"));
+    assert!(report.summary().contains(
+        "runtime_boundary=open-intent-before-native-startup;no-run-native;no-extra-viewport"
+    ));
     assert!(report
         .summary()
         .contains("host_policy=single-borderless-egui-viewport"));
@@ -59,6 +62,9 @@ fn open_request_emits_internal_intent_without_launching_host_window() {
     assert!(summary.contains("studio_open_intent PASS"));
     assert!(summary.contains("target=plugins"));
     assert!(summary.contains("route=internal-egui-workspace-pane-intent"));
+    assert!(summary.contains(
+        "runtime_boundary=open-intent-before-native-startup;no-run-native;no-extra-viewport"
+    ));
     assert!(summary.contains("host_window=existing-studio-host"));
     assert!(summary.contains("host_policy=single-borderless-egui-viewport"));
     assert!(summary.contains("pane_system=internal-egui-workspace-panes"));

@@ -91,6 +91,7 @@ pub(crate) fn apply_studio_open_request(app: &mut StudioEguiApp, request: Studio
 pub(crate) struct StudioOpenSmokeReport {
     pub targets: usize,
     pub route: &'static str,
+    pub runtime_boundary: &'static str,
     pub host_policy: &'static str,
     pub pane_system: &'static str,
     pub docs: &'static str,
@@ -121,6 +122,7 @@ impl StudioOpenSmokeReport {
         Self {
             targets: all_open_requests().len(),
             route: "internal-egui-workspace-pane-intent",
+            runtime_boundary: studio_open_runtime_boundary(),
             host_policy: policy.host_window.label(),
             pane_system: policy.pane_system.label(),
             docs: StudioWorkspacePolicy::DOC_REFERENCE,
@@ -136,6 +138,7 @@ impl StudioOpenSmokeReport {
         let policy = StudioWorkspacePolicy::studio_v1();
         self.targets == 7
             && self.route == "internal-egui-workspace-pane-intent"
+            && self.runtime_boundary == studio_open_runtime_boundary()
             && self.host_policy == policy.host_window.label()
             && self.pane_system == policy.pane_system.label()
             && open_intent_policy_passes(policy)
@@ -148,9 +151,10 @@ impl StudioOpenSmokeReport {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_open_smoke {}\nroute={}\nhost_policy={}\npane_system={}\ndocs={}\ntargets={}\ninternal_panes={}\nnative_child_windows={}\ndetached_panels={}\nfocus_restored={}\ncontent_keys={}",
+            "studio_open_smoke {}\nroute={}\nruntime_boundary={}\nhost_policy={}\npane_system={}\ndocs={}\ntargets={}\ninternal_panes={}\nnative_child_windows={}\ndetached_panels={}\nfocus_restored={}\ncontent_keys={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.route,
+            self.runtime_boundary,
             self.host_policy,
             self.pane_system,
             self.docs,
@@ -192,8 +196,9 @@ pub(crate) fn app_for_open_request(request: StudioOpenRequest) -> StudioEguiApp 
 pub(crate) fn studio_open_intent_summary(request: StudioOpenRequest) -> String {
     let app = app_for_open_request(request);
     format!(
-        "studio_open_intent PASS\ntarget={}\nroute=internal-egui-workspace-pane-intent\nhost_window=existing-studio-host\nhost_policy={}\npane_system={}\ndocs={}\nfocused_pane={}\nworkspace_panes={}\nnative_child_windows={}\ndetached_panels={}",
+        "studio_open_intent PASS\ntarget={}\nroute=internal-egui-workspace-pane-intent\nruntime_boundary={}\nhost_window=existing-studio-host\nhost_policy={}\npane_system={}\ndocs={}\nfocused_pane={}\nworkspace_panes={}\nnative_child_windows={}\ndetached_panels={}",
         request.target(),
+        studio_open_runtime_boundary(),
         app.app.workspace_policy.host_window.label(),
         app.app.workspace_policy.pane_system.label(),
         StudioWorkspacePolicy::DOC_REFERENCE,
@@ -205,6 +210,10 @@ pub(crate) fn studio_open_intent_summary(request: StudioOpenRequest) -> String {
         app.app.workspace_policy.allows_native_child_windows(),
         app.app.workspace_policy.allows_detached_panels()
     )
+}
+
+pub(crate) fn studio_open_runtime_boundary() -> &'static str {
+    "open-intent-before-native-startup;no-run-native;no-extra-viewport"
 }
 
 pub(crate) fn open_intent_policy_passes(policy: StudioWorkspacePolicy) -> bool {

@@ -438,4 +438,30 @@ mod tests {
             [0.98039216, 0.9843137, 0.99215686, 1.0]
         );
     }
+
+    #[test]
+    fn studio_main_routes_open_intent_before_native_startup() {
+        let source = include_str!("main.rs");
+        let main_start = source.find("fn main()").unwrap();
+        let tests_start = source.rfind("#[cfg(test)]").unwrap();
+        let main_body = &source[main_start..tests_start];
+        let open_dispatch = main_body
+            .find("studio_open_request_from_args(&args)")
+            .unwrap();
+        let smoke_dispatch = main_body.find("smoke_from_args(args)").unwrap();
+        let native_block = main_body
+            .rfind("native_app_blocked_by_test_mode()")
+            .unwrap();
+        let native_start = main_body.rfind("run_studio_native_app()").unwrap();
+
+        assert!(open_dispatch < smoke_dispatch);
+        assert!(open_dispatch < native_start);
+        assert!(smoke_dispatch < native_block);
+        assert!(native_block < native_start);
+        assert!(source.contains("return run_studio_open_request(request);"));
+        assert_eq!(
+            crate::studio_open::studio_open_runtime_boundary(),
+            "open-intent-before-native-startup;no-run-native;no-extra-viewport"
+        );
+    }
 }
