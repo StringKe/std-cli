@@ -51,8 +51,15 @@ fn core_registers_local_app_bundles_in_search() {
     assert_eq!(test_localized.action.id, test_display.action.id);
     assert_eq!(test_scheme.action.id, test_display.action.id);
     assert_eq!(test_localized.action.action_type, ActionType::AppLaunch);
+    assert!(test_localized
+        .action
+        .examples
+        .contains(&format!("open {}", app.display())));
     assert!(test_localized.matched_fields.contains(&"tags".to_string()));
     assert!(preview.primary_command.contains("FixtureTalk.app"));
+    assert!(preview
+        .examples
+        .contains(&format!("open {}", app.display())));
     assert!(preview.metadata["aliases"].contains(&localized_name));
 }
 

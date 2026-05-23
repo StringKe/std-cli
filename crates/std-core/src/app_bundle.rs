@@ -39,15 +39,14 @@ fn discover_apps_in_dir(dir: &Path) -> Vec<RegistryEntry> {
 fn app_registry_entry(path: PathBuf) -> Option<RegistryEntry> {
     let profile = AppProfile::read(&path)?;
     let description = app_description(&path, &profile.names);
-    let mut registry_entry = RegistryEntry::from_action(
-        Action::new(
-            format!("Open App: {}", profile.display_name),
-            description,
-            "When opening this local macOS application",
-            ActionType::AppLaunch,
-        ),
-        app_tags(&profile.names),
+    let mut action = Action::new(
+        format!("Open App: {}", profile.display_name),
+        description,
+        "When opening this local macOS application",
+        ActionType::AppLaunch,
     );
+    action.examples.push(format!("open {}", path.display()));
+    let mut registry_entry = RegistryEntry::from_action(action, app_tags(&profile.names));
     registry_entry
         .metadata
         .insert("path".to_string(), path.display().to_string());
