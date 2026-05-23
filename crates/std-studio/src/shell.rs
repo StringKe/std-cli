@@ -3,7 +3,8 @@ use crate::{
     shell_parts::{panel_frame, path_label},
     status_bar::StudioStatusBarSummary,
     ui,
-    workspace_panes::{focused_workspace_spec, StudioWorkspaceSpec},
+    workspace_context::{render_workspace_context, workspace_context_summary_for_app},
+    workspace_panes::focused_workspace_spec,
     StudioEguiApp,
 };
 use eframe::egui;
@@ -64,7 +65,8 @@ impl StudioEguiApp {
 
     fn render_context(&mut self, ui: &mut egui::Ui) {
         if let Some(spec) = focused_workspace_spec(&self.app) {
-            render_workspace_context(ui, &spec);
+            let summary = workspace_context_summary_for_app(&self.app, &spec);
+            render_workspace_context(ui, &spec, &summary);
             ui.add_space(Space::SM as f32);
         }
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
@@ -188,53 +190,6 @@ impl StudioEguiApp {
     }
 }
 
-#[cfg(test)]
-pub(crate) fn workspace_context_summary(spec: &StudioWorkspaceSpec) -> String {
-    format!(
-        "inspector_context=pane:{};kind:{};lines={};actions={}",
-        spec.title,
-        spec.content_key,
-        spec.lines.len(),
-        workspace_context_actions(spec)
-    )
-}
-
-fn render_workspace_context(ui: &mut egui::Ui, spec: &StudioWorkspaceSpec) {
-    ui::surface_frame(ui.ctx()).show(ui, |ui| {
-        ui::section_header(
-            ui,
-            i18n::t("studio.shell.context.title"),
-            i18n::t("studio.shell.context.detail"),
-        );
-        path_label(ui, "Pane", spec.title.clone());
-        path_label(ui, "Kind", spec.content_key.to_string());
-        if let Some(path) = &spec.workflow_path {
-            path_label(ui, "Workflow", path.display().to_string());
-        }
-        if let Some(path) = &spec.analysis_path {
-            path_label(ui, "Analysis", path.display().to_string());
-        }
-        for line in spec.lines.iter().take(3) {
-            path_label(ui, "Signal", line.clone());
-        }
-        path_label(ui, "Actions", workspace_context_actions(spec));
-    });
-}
-
-fn workspace_context_actions(spec: &StudioWorkspaceSpec) -> String {
-    let mut actions = vec!["show-main", "refresh", "close"];
-    if spec.workflow_path.is_some() {
-        actions.extend(["preview", "run"]);
-    }
-    if spec.analysis_path.is_some() {
-        actions.push("analyze");
-    }
-    if spec.content_key == "plugins" {
-        actions.push("reload");
-    }
-    actions.join(",")
-}
-
 fn status_text(ui: &mut egui::Ui, text: &str) {
     ui.label(
         egui::RichText::new(text)
@@ -295,9 +250,10 @@ mod tests {
         app.app.open_plugin_manager_pane();
         let spec = focused_workspace_spec(&app.app).unwrap();
 
-        let summary = workspace_context_summary(&spec);
+        let summary = workspace_context_summary_for_app(&app.app, &spec).contract();
 
         assert!(summary.contains("inspector_context=pane:插件管理;kind:plugins"));
+        assert!(summary.contains("position:2/2"));
         assert!(summary.contains("actions=show-main,refresh,close,reload"));
     }
 }

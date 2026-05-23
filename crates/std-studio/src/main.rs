@@ -53,6 +53,7 @@ mod viewport;
 mod views;
 #[cfg(test)]
 mod workflow_keyboard_tests;
+mod workspace_context;
 mod workspace_lifecycle;
 mod workspace_pane_content;
 mod workspace_panes;
