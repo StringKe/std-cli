@@ -26,9 +26,10 @@ const MANUAL_BLOCKERS: [&str; 6] = [
     "完成前必须重跑并保留当前证据",
 ];
 
-const CURRENT_EVIDENCE_RULES: [&str; 13] = [
+const CURRENT_EVIDENCE_RULES: [&str; 14] = [
     "历史 target/ui-evidence 路径不能作为完成证据",
     "历史 /tmp 截图不能作为完成证据",
+    "历史临时安装目录不能作为完成证据",
     "真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出",
     "真实截图 manifest 必须是 `artifacts/ui/manual-acceptance/manifest.txt`",
     "真实截图 manifest 必须包含中心与边缘 pixel evidence",
@@ -92,8 +93,9 @@ const STUDIO_CAPTURE_EVIDENCE_RULES: [&str; 22] = [
     "Studio capture state required: dark-panes",
 ];
 
-const STALE_EVIDENCE_PATTERNS: [&str; 4] = [
+const STALE_EVIDENCE_PATTERNS: [&str; 5] = [
     "target/ui-evidence/",
+    "/tmp/std-cli-install-current/bin/",
     "/tmp/std-studio-installed-ui.png",
     "screencapture -x /tmp/",
     "PNG image data, 3840 x 2160",
@@ -239,6 +241,18 @@ mod tests {
     fn completion_gate_rejects_stale_ui_evidence_paths() {
         let error = reject_stale_evidence_paths(
             "evidence=target/ui-evidence/launcher-light-results-refined.png",
+        )
+        .unwrap_err();
+
+        assert!(error
+            .to_string()
+            .contains("stale UI evidence path must not appear"));
+    }
+
+    #[test]
+    fn completion_gate_rejects_stale_temp_install_evidence_paths() {
+        let error = reject_stale_evidence_paths(
+            "evidence=/tmp/std-cli-install-current/bin/std-launcher --gui-hotkey-smoke",
         )
         .unwrap_err();
 

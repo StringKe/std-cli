@@ -8,6 +8,7 @@
 
 - 历史 target/ui-evidence 路径不能作为完成证据
 - 历史 /tmp 截图不能作为完成证据
+- 历史临时安装目录不能作为完成证据
 - 真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出
 - 真实截图 manifest 必须是 `artifacts/ui/manual-acceptance/manifest.txt`
 - 真实截图 manifest 必须包含中心与边缘 pixel evidence
