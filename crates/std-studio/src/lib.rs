@@ -19,6 +19,7 @@ mod trace;
 mod workflow;
 mod workspace_closeguard;
 mod workspace_pane;
+mod workspace_pane_content_model;
 mod workspace_policy;
 
 pub use analysis_workbench::{
