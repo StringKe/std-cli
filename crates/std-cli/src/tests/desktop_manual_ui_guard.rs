@@ -46,6 +46,10 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
             "capture matrix must include Studio required state: {required}"
         );
     }
+    assert_eq!(
+        studio_capture_sequence(&body),
+        studio_required_capture_states()
+    );
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher");
     assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher");
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
@@ -135,4 +139,12 @@ fn studio_required_capture_states() -> [&'static str; 18] {
         "capture_studio light panes",
         "capture_studio dark panes",
     ]
+}
+
+fn studio_capture_sequence(body: &str) -> Vec<String> {
+    body.lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("capture_studio "))
+        .map(str::to_string)
+        .collect()
 }

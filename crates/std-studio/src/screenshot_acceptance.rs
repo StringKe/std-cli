@@ -1,7 +1,9 @@
+use crate::preview_smoke::required_capture_state_order;
 use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioScreenshotAcceptanceMatrix {
+    pub(crate) required_states: Vec<String>,
     pub(crate) delivery_states: Vec<String>,
     pub(crate) workflow_states: Vec<String>,
     pub(crate) diagnostic_states: Vec<String>,
@@ -12,10 +14,12 @@ pub(crate) struct StudioScreenshotAcceptanceMatrix {
 
 impl StudioScreenshotAcceptanceMatrix {
     pub(crate) fn for_scenarios(scenarios: &[String]) -> Self {
+        let required_states = filter_labels(scenarios, &required_capture_state_order());
         Self {
-            delivery_states: filter_labels(scenarios, delivery_state_labels()),
-            workflow_states: filter_labels(scenarios, workflow_state_labels()),
-            diagnostic_states: filter_labels(scenarios, diagnostic_state_labels()),
+            delivery_states: delivery_states_from_required(&required_states),
+            workflow_states: workflow_states_from_required(&required_states),
+            diagnostic_states: diagnostic_states_from_required(&required_states),
+            required_states,
             evidence_rule:
                 "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark",
             opt_in_rule: "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless",
@@ -24,8 +28,9 @@ impl StudioScreenshotAcceptanceMatrix {
     }
 
     pub(crate) fn pass(&self) -> bool {
-        self.delivery_states == delivery_state_labels()
-            && self.workflow_states == workflow_state_labels()
+        self.required_states == state_labels(&required_capture_state_order())
+            && self.delivery_states == state_labels(delivery_state_labels())
+            && self.workflow_states == state_labels(workflow_state_labels())
             && self.diagnostic_states == diagnostic_state_labels()
             && self.evidence_rule
                 == "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark"
@@ -35,8 +40,9 @@ impl StudioScreenshotAcceptanceMatrix {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_screenshot_acceptance {}\ndelivery_capture_states={}\nworkflow_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\ncapture_source_rule={}\nacceptance_rule={}",
+            "studio_screenshot_acceptance {}\nrequired_capture_states={}\ndelivery_capture_states={}\nworkflow_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\ncapture_source_rule={}\nacceptance_rule={}",
             if self.pass() { "PASS" } else { "FAIL" },
+            self.required_states.join(","),
             self.delivery_states.join(","),
             self.workflow_states.join(","),
             self.diagnostic_states.join(","),
@@ -49,15 +55,20 @@ impl StudioScreenshotAcceptanceMatrix {
     }
 }
 
-fn filter_labels(labels: &[String], required: Vec<String>) -> Vec<String> {
+fn filter_labels(labels: &[String], required: &[&str]) -> Vec<String> {
     required
-        .into_iter()
-        .filter(|label| labels.iter().any(|actual| actual == label))
+        .iter()
+        .filter(|label| labels.iter().any(|actual| actual == *label))
+        .map(|label| (*label).to_string())
         .collect()
 }
 
-fn delivery_state_labels() -> Vec<String> {
-    [
+fn state_labels(labels: &[&str]) -> Vec<String> {
+    labels.iter().map(|label| (*label).to_string()).collect()
+}
+
+fn delivery_state_labels() -> &'static [&'static str] {
+    &[
         "light-dashboard",
         "dark-dashboard",
         "light-analysis",
@@ -69,33 +80,46 @@ fn delivery_state_labels() -> Vec<String> {
         "light-settings",
         "dark-settings",
     ]
-    .into_iter()
-    .map(str::to_string)
-    .collect()
 }
 
-fn workflow_state_labels() -> Vec<String> {
-    [
+fn workflow_state_labels() -> &'static [&'static str] {
+    &[
         "light-workflow",
         "dark-workflow",
         "light-workflow-error",
         "dark-workflow-error",
     ]
-    .into_iter()
-    .map(str::to_string)
-    .collect()
 }
 
 fn diagnostic_state_labels() -> Vec<String> {
-    [
-        "light-plugin-permission",
-        "dark-plugin-permission",
-        "light-panes",
-        "dark-panes",
-    ]
-    .into_iter()
-    .map(str::to_string)
-    .collect()
+    diagnostic_states_from_required(&state_labels(&required_capture_state_order()))
+}
+
+fn delivery_states_from_required(required: &[String]) -> Vec<String> {
+    delivery_state_labels()
+        .iter()
+        .filter(|label| required.iter().any(|state| state == **label))
+        .map(|label| (*label).to_string())
+        .collect()
+}
+
+fn workflow_states_from_required(required: &[String]) -> Vec<String> {
+    workflow_state_labels()
+        .iter()
+        .filter(|label| required.iter().any(|state| state == **label))
+        .map(|label| (*label).to_string())
+        .collect()
+}
+
+fn diagnostic_states_from_required(required: &[String]) -> Vec<String> {
+    required
+        .iter()
+        .filter(|label| {
+            !delivery_state_labels().contains(&label.as_str())
+                && !workflow_state_labels().contains(&label.as_str())
+        })
+        .cloned()
+        .collect()
 }
 
 #[cfg(test)]
@@ -110,6 +134,9 @@ mod tests {
 
         assert!(matrix.pass(), "{summary}");
         assert!(summary.contains("studio_screenshot_acceptance PASS"));
+        assert!(summary.contains(
+            "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow"
+        ));
         assert!(summary.contains("delivery_capture_states=light-dashboard,dark-dashboard"));
         assert!(summary.contains("light-analysis,dark-analysis"));
         assert!(summary.contains("light-plugins,dark-plugins"));
@@ -122,5 +149,9 @@ mod tests {
         assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1 only"));
         assert!(summary.contains(ui_capture::UI_CAPTURE_SOURCE_RULE));
         assert!(summary.contains(ui_capture::UI_CAPTURE_ACCEPTANCE_RULE));
+        assert_eq!(
+            matrix.required_states,
+            state_labels(&required_capture_state_order())
+        );
     }
 }
