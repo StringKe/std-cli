@@ -98,7 +98,8 @@ fn status_path(dry_run: Option<&WorkflowDryRun>, execution: Option<&WorkflowExec
 fn status_fill(ctx: &egui::Context, status: &ExecutionStatus) -> egui::Color32 {
     match status {
         ExecutionStatus::Completed => ui::ok_bg(ctx),
-        ExecutionStatus::Failed | ExecutionStatus::Cancelled => ui::warn_bg(ctx),
+        ExecutionStatus::Failed => ui::danger_bg(ctx),
+        ExecutionStatus::Cancelled => ui::warn_bg(ctx),
         ExecutionStatus::Running => ui::selected_bg(ctx),
         ExecutionStatus::Pending => ui::panel_alt(ctx),
     }
@@ -113,6 +114,21 @@ mod tests {
         assert_eq!(
             builder_debug_contract(None, None),
             "debug_panel=true,dry_run=false,execution=false,statuses="
+        );
+    }
+
+    #[test]
+    fn workflow_trace_failed_status_uses_danger_not_warning() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+
+        assert_eq!(
+            status_fill(&ctx, &ExecutionStatus::Failed),
+            ui::danger_bg(&ctx)
+        );
+        assert_eq!(
+            status_fill(&ctx, &ExecutionStatus::Cancelled),
+            ui::warn_bg(&ctx)
         );
     }
 }

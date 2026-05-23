@@ -259,7 +259,7 @@ impl StudioEguiApp {
 fn status_fill(ctx: &egui::Context, status: &std_orchestration::ExecutionStatus) -> egui::Color32 {
     match status {
         std_orchestration::ExecutionStatus::Completed => ui::ok_bg(ctx),
-        std_orchestration::ExecutionStatus::Failed => ui::warn_bg(ctx),
+        std_orchestration::ExecutionStatus::Failed => ui::danger_bg(ctx),
         std_orchestration::ExecutionStatus::Cancelled => ui::warn_bg(ctx),
         std_orchestration::ExecutionStatus::Running => ui::selected_bg(ctx),
         std_orchestration::ExecutionStatus::Pending => ui::panel_alt(ctx),
@@ -272,7 +272,7 @@ fn action_status_fill(
 ) -> egui::Color32 {
     match status {
         std_types::ActionExecutionStatus::Completed => ui::ok_bg(ctx),
-        std_types::ActionExecutionStatus::Failed => ui::warn_bg(ctx),
+        std_types::ActionExecutionStatus::Failed => ui::danger_bg(ctx),
         std_types::ActionExecutionStatus::NeedsExternalRunner => ui::warn_bg(ctx),
     }
 }
@@ -344,6 +344,29 @@ mod tests {
         assert_eq!(
             workflow_input_a11y_label("Batch", " "),
             "Batch, text box, value empty"
+        );
+    }
+
+    #[test]
+    fn workflow_status_fills_distinguish_failed_from_deferred_states() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+
+        assert_eq!(
+            status_fill(&ctx, &std_orchestration::ExecutionStatus::Failed),
+            ui::danger_bg(&ctx)
+        );
+        assert_eq!(
+            status_fill(&ctx, &std_orchestration::ExecutionStatus::Cancelled),
+            ui::warn_bg(&ctx)
+        );
+        assert_eq!(
+            action_status_fill(&ctx, &std_types::ActionExecutionStatus::Failed),
+            ui::danger_bg(&ctx)
+        );
+        assert_eq!(
+            action_status_fill(&ctx, &std_types::ActionExecutionStatus::NeedsExternalRunner),
+            ui::warn_bg(&ctx)
         );
     }
 }
