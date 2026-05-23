@@ -345,6 +345,7 @@ mod tests {
         assert_preview_summary_has_required_states(&report.summary());
         assert_preview_summary_has_theme_tokens(&report.summary());
         assert_preview_summary_has_state_surfaces(&report.summary());
+        assert_preview_summary_has_overlay_structure(&report.summary());
     }
 
     fn assert_preview_summary_has_required_states(summary: &str) {
@@ -413,6 +414,24 @@ mod tests {
             "status_icon=deferred",
             "status_icon=failed",
             "popover:bg/surface-1+elev/2",
+        ] {
+            assert!(summary.contains(expected), "{expected}");
+        }
+    }
+
+    fn assert_preview_summary_has_overlay_structure(summary: &str) {
+        for expected in [
+            "structure=overlay:single-overlay",
+            "search:visible",
+            "results:grouped:",
+            "results:suggestions:3",
+            "results:empty-state",
+            "results:progress",
+            "preview:action-bar-summary:selected-row",
+            "action_bar:visible",
+            "feedback:visible",
+            "action_panel:foreground-popover",
+            "ownership:egui-panel-no-native-child",
         ] {
             assert!(summary.contains(expected), "{expected}");
         }
