@@ -117,7 +117,7 @@ fn title_highlight_uses_query_only_when_name_matched() {
             direct_shortcut: input::launcher_result_keycap(0),
             primary_shortcut: None,
             action_hint: None,
-            action_label: i18n::t("launcher.action.run").to_string(),
+            action_label: i18n::t("launcher.action.review_first").to_string(),
             result_index: 0,
         }
     );
@@ -189,6 +189,34 @@ fn app_alias_result_row_keeps_multilingual_names_keyboard_visible() {
         i18n::t("launcher.action.review_first")
     );
     assert_eq!(row.action_hint, Some(expected_hint));
+}
+
+#[test]
+fn app_alias_result_row_uses_review_first_even_with_preview_command() {
+    let mut result = test_result("Open App: WeChat", ActionType::AppLaunch, 0.95);
+    result.action.description =
+        "Aliases: WeChat, Weixin, 微信 / Path: /tmp/std-fixture/WeChat.app".to_string();
+    result.matched_fields = vec!["tags".to_string()];
+    let preview = ActionPreview {
+        action_id: result.action.id,
+        title: result.action.name.clone(),
+        subtitle: result.action.description.clone(),
+        action_type: result.action.action_type.clone(),
+        primary_command: "open -a WeChat".to_string(),
+        metadata: std::collections::HashMap::new(),
+        examples: vec!["open -a WeChat".to_string()],
+    };
+
+    let row = LauncherResultRowModel::from_result(&result, Some(&preview), "weixin", 0, 1, true);
+
+    assert_eq!(row.action_label, i18n::t("launcher.action.review_first"));
+    assert_eq!(
+        row.action_hint,
+        Some(format!(
+            "{} open -a WeChat",
+            i18n::t("launcher.action.review_first")
+        ))
+    );
 }
 
 fn test_result(name: &str, action_type: ActionType, score: f32) -> SearchResult {

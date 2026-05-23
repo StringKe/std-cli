@@ -62,11 +62,9 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.empty.suggestion.studio.detail") => {
             Some("Continue in the full workspace")
         }
-        (Locale::ZhCn, "launcher.a11y.result") => {
-            Some("{title}，{subtitle}，{position} / {total}，按 Enter 运行")
-        }
+        (Locale::ZhCn, "launcher.a11y.result") => Some("{title}，{subtitle}，{position} / {total}"),
         (Locale::EnUs, "launcher.a11y.result") => {
-            Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
+            Some("{title}, {subtitle}, {position} of {total}")
         }
         (Locale::ZhCn, "launcher.a11y.result.shortcut") => Some("，快捷键 {shortcut}"),
         (Locale::EnUs, "launcher.a11y.result.shortcut") => Some(", shortcut {shortcut}"),
@@ -151,9 +149,7 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.empty.suggestion.ask.detail" => Some("Start a natural language analysis query"),
         "launcher.empty.suggestion.studio.title" => Some("Open Studio"),
         "launcher.empty.suggestion.studio.detail" => Some("Continue in the full workspace"),
-        "launcher.a11y.result" => {
-            Some("{title}, {subtitle}, {position} of {total}, press Enter to run")
-        }
+        "launcher.a11y.result" => Some("{title}, {subtitle}, {position} of {total}"),
         "launcher.a11y.result.shortcut" => Some(", shortcut {shortcut}"),
         "launcher.a11y.result.primary" => Some(", press {shortcut} to {action}"),
         "launcher.a11y.result.match_source" => Some(", matched by {source}"),

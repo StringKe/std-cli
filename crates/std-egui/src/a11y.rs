@@ -107,7 +107,7 @@ mod tests {
         assert!(a11y.launcher_search_label("").contains("Launcher"));
         assert_eq!(
             a11y.launcher_result_label("Rebuild Index", "Workflow", 1, 5),
-            "Rebuild Index，Workflow，1 / 5，按 Enter 运行"
+            "Rebuild Index，Workflow，1 / 5"
         );
         assert_eq!(
             a11y.launcher_result_group_label("操作 / Workflow"),
@@ -131,7 +131,7 @@ mod tests {
     fn launcher_a11y_strings_have_en_us_fallbacks() {
         assert_eq!(
             i18n::translate(i18n::Locale::EnUs, "launcher.a11y.result"),
-            "{title}, {subtitle}, {position} of {total}, press Enter to run"
+            "{title}, {subtitle}, {position} of {total}"
         );
         assert_eq!(
             i18n::translate(i18n::Locale::EnUs, "launcher.a11y.action_panel"),

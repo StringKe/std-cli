@@ -122,6 +122,8 @@ fn assert_result_semantics(report: &LauncherUiSemanticsReport, summary: &str) {
     let actions = std_egui::input::launcher_action_panel().label();
     assert_eq!(report.result_phase, "WithResults");
     assert_eq!(report.result_mode, "Matches");
+    assert!(report.selected_label.contains("Rebuild Index"));
+    assert!(!report.selected_label.contains("按 Enter 运行"));
     assert_eq!(report.selected_keycap, first_keycap);
     assert!(report
         .selected_action_hint

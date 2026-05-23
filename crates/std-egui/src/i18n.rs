@@ -178,7 +178,7 @@ mod tests {
     fn launcher_a11y_strings_have_zh_cn_and_en_us_values() {
         assert_eq!(
             translate(Locale::ZhCn, "launcher.a11y.result"),
-            "{title}，{subtitle}，{position} / {total}，按 Enter 运行"
+            "{title}，{subtitle}，{position} / {total}"
         );
         assert_eq!(
             translate(Locale::EnUs, "launcher.voice.input.a11y"),

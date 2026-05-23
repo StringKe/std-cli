@@ -119,6 +119,9 @@ fn selected_action_hint(
 }
 
 fn selected_action_label(preview: Option<&ActionPreview>, action_type: &ActionType) -> String {
+    if selected_action_verb(preview, action_type) == i18n::t("launcher.action.review_first") {
+        return i18n::t("launcher.action.review_first").to_string();
+    }
     preview
         .map(|preview| preview.primary_command.as_str())
         .filter(|command| !command.trim().is_empty())

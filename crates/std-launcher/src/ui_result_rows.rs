@@ -195,6 +195,40 @@ mod tests {
     }
 
     #[test]
+    fn external_result_accessibility_label_uses_review_first_not_run() {
+        let result = SearchResult {
+            action: std_types::Action::new(
+                "Open App: WeChat",
+                "Aliases: weixin, 微信",
+                "test",
+                std_types::ActionType::AppLaunch,
+            ),
+            score: 1.0,
+            matched_fields: vec!["tags".to_string()],
+        };
+        let preview = std_types::ActionPreview {
+            action_id: result.action.id,
+            title: result.action.name.clone(),
+            subtitle: result.action.description.clone(),
+            action_type: result.action.action_type.clone(),
+            primary_command: "open -a WeChat".to_string(),
+            metadata: Default::default(),
+            examples: Vec::new(),
+        };
+        let core = std_core::StdCore::default();
+        let mut view = LauncherViewModel::new(&core);
+        view.results = vec![result.clone()];
+        let row =
+            LauncherResultRowModel::from_result(&result, Some(&preview), "weixin", 0, 1, true);
+
+        let label = result_accessibility_label(&row, &view);
+        let enter = std_egui::input::enter().label();
+
+        assert!(label.contains(&format!("按 {enter} 先检查")));
+        assert!(!label.contains(&format!("按 {enter} 运行")));
+    }
+
+    #[test]
     fn result_accessibility_label_uses_localized_parts() {
         assert_eq!(
             result_label_part("launcher.a11y.result.shortcut", &[("{shortcut}", "1")]),
