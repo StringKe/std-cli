@@ -65,9 +65,9 @@ impl StudioEguiApp {
                     self.open_batch_debug_panel();
                     self.status = status;
                 }
-                Err(error) => self.status = error.to_string(),
+                Err(error) => self.show_workflow_problem(error.to_string()),
             },
-            None => self.status = "missing planned workflow".to_string(),
+            None => self.show_workflow_problem("missing planned workflow".to_string()),
         }
     }
 
@@ -92,7 +92,7 @@ impl StudioEguiApp {
                 self.open_batch_debug_panel();
                 self.status = status;
             }
-            Err(error) => self.status = error.to_string(),
+            Err(error) => self.show_workflow_problem(error.to_string()),
         }
     }
 
@@ -107,7 +107,7 @@ impl StudioEguiApp {
                 self.open_batch_debug_panel();
                 self.status = status;
             }
-            Err(error) => self.status = error.to_string(),
+            Err(error) => self.show_workflow_problem(error.to_string()),
         }
     }
 
@@ -122,8 +122,13 @@ impl StudioEguiApp {
                 self.open_batch_debug_panel();
                 self.status = status;
             }
-            Err(error) => self.status = error.to_string(),
+            Err(error) => self.show_workflow_problem(error.to_string()),
         }
+    }
+
+    fn show_workflow_problem(&mut self, message: String) {
+        self.open_problems_panel();
+        self.status = message;
     }
 }
 

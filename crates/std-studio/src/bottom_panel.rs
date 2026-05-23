@@ -25,6 +25,11 @@ impl StudioEguiApp {
         self.bottom_panel_tab = BottomPanelTab::BatchDebug;
     }
 
+    pub(crate) fn open_problems_panel(&mut self) {
+        self.layout.open_bottom_panel();
+        self.bottom_panel_tab = BottomPanelTab::Problems;
+    }
+
     pub(crate) fn render_bottom_panel(&mut self, ui: &mut egui::Ui) {
         ui::surface_frame(ui.ctx()).show(ui, |ui| {
             let tabs = BottomPanelTabModel::for_selected(self.bottom_panel_tab);

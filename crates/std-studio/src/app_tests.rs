@@ -185,6 +185,45 @@ fn saved_workflow_simulate_and_test_share_batch_debug_panel() {
     assert_eq!(run_panel.rows[0].status, "success");
 }
 
+#[test]
+fn workflow_builder_errors_open_bottom_problems_panel() {
+    let mut app = test_app();
+
+    app.bottom_panel_tab = BottomPanelTab::Logs;
+    app.preview_active_workflow();
+
+    assert!(app.layout.bottom_panel_open);
+    assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
+    assert!(app.status.contains("missing planned workflow"));
+
+    app.bottom_panel_tab = BottomPanelTab::Performance;
+    app.run_active_workflow();
+
+    assert!(app.layout.bottom_panel_open);
+    assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
+    assert!(app.status.contains("missing planned workflow"));
+}
+
+#[test]
+fn saved_workflow_errors_open_bottom_problems_panel() {
+    let mut app = test_app();
+    app.workflow_selected_path = Some(std::path::PathBuf::from("missing-workflow.json"));
+
+    app.bottom_panel_tab = BottomPanelTab::Logs;
+    app.preview_active_workflow();
+
+    assert!(app.layout.bottom_panel_open);
+    assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
+    assert!(!app.status.is_empty());
+
+    app.bottom_panel_tab = BottomPanelTab::Performance;
+    app.run_active_workflow();
+
+    assert!(app.layout.bottom_panel_open);
+    assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
+    assert!(!app.status.is_empty());
+}
+
 fn test_app() -> StudioEguiApp {
     let mut app = StudioEguiApp::default();
     let temp = tempfile::tempdir().unwrap();
