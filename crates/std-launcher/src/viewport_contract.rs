@@ -1,5 +1,73 @@
 use eframe::egui;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct LauncherViewportContract {
+    pub transparent: bool,
+    pub decorations: bool,
+    pub resizable: bool,
+    pub visible: bool,
+    pub panel_surface: &'static str,
+    pub host_background: &'static str,
+    pub host_gutter_px: u32,
+}
+
+impl LauncherViewportContract {
+    pub fn hidden() -> Self {
+        Self::new(false)
+    }
+
+    pub fn visible() -> Self {
+        Self::new(true)
+    }
+
+    pub fn native_host_window_summary(self, size: egui::Vec2) -> String {
+        format!(
+            "native_host=transparent,transparent={},decorations={},resizable={},visible={},panel_surface={},host_background={},host_gutter={}px,size={}x{}",
+            self.transparent,
+            self.decorations,
+            self.resizable,
+            self.visible,
+            self.panel_surface,
+            self.host_background,
+            self.host_gutter_px,
+            size.x as u32,
+            size.y as u32
+        )
+    }
+
+    pub fn host_carrier_summary(self) -> String {
+        format!(
+            "host_carrier=transparent:{},decorations:{},resizable:{},background:{},visible_surface:{}",
+            self.transparent,
+            self.decorations,
+            self.resizable,
+            self.host_background,
+            self.panel_surface
+        )
+    }
+
+    pub fn passes(self) -> bool {
+        self.transparent
+            && !self.decorations
+            && !self.resizable
+            && self.panel_surface == "opaque-bg-surface-0"
+            && self.host_background == "none"
+            && self.host_gutter_px == 16
+    }
+
+    fn new(visible: bool) -> Self {
+        Self {
+            transparent: true,
+            decorations: false,
+            resizable: false,
+            visible,
+            panel_surface: "opaque-bg-surface-0",
+            host_background: "none",
+            host_gutter_px: 16,
+        }
+    }
+}
+
 pub fn launcher_panel_native_options(size: egui::Vec2, visible: bool) -> eframe::NativeOptions {
     eframe::NativeOptions {
         viewport: launcher_panel_viewport(size, visible),
@@ -17,11 +85,11 @@ pub fn launcher_panel_viewport(size: egui::Vec2, visible: bool) -> egui::Viewpor
 }
 
 pub fn transparent_hidden_panel_contract(size: egui::Vec2) -> String {
-    viewport_contract(size, false)
+    LauncherViewportContract::hidden().native_host_window_summary(size)
 }
 
 pub fn transparent_visible_panel_contract(size: egui::Vec2) -> String {
-    viewport_contract(size, true)
+    LauncherViewportContract::visible().native_host_window_summary(size)
 }
 
 pub fn launcher_clear_color_contract() -> String {
@@ -36,13 +104,6 @@ pub fn launcher_host_positioning_contract() -> &'static str {
     "host_positioning=show:resize-to-transparent-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=16px"
 }
 
-fn viewport_contract(size: egui::Vec2, visible: bool) -> String {
-    format!(
-        "native_host=transparent,transparent=true,decorations=false,resizable=false,visible={visible},panel_surface=opaque,host_gutter=16px,size={}x{}",
-        size.x as u32, size.y as u32
-    )
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -51,11 +112,22 @@ mod tests {
     fn launcher_viewport_contracts_name_transparency_and_size() {
         assert_eq!(
             transparent_hidden_panel_contract(egui::vec2(752.0, 96.0)),
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gutter=16px,size=752x96"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px,size=752x96"
         );
         assert_eq!(
             transparent_visible_panel_contract(egui::vec2(752.0, 352.0)),
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gutter=16px,size=752x352"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px,size=752x352"
+        );
+    }
+
+    #[test]
+    fn launcher_viewport_contract_is_structured_single_source_of_truth() {
+        let contract = LauncherViewportContract::visible();
+
+        assert!(contract.passes());
+        assert_eq!(
+            contract.host_carrier_summary(),
+            "host_carrier=transparent:true,decorations:false,resizable:false,background:none,visible_surface:opaque-bg-surface-0"
         );
     }
 

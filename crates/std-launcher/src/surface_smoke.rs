@@ -1,6 +1,6 @@
 use crate::{
     launcher_clear_color_contract, launcher_viewport_frame_contract, LauncherSurfaceContract,
-    PANEL_WIDTH,
+    LauncherViewportContract, PANEL_WIDTH,
 };
 use std_egui::{
     motion::MotionContext,
@@ -98,9 +98,9 @@ impl LauncherSurfaceSmokeReport {
             && self.viewport_frame_contract == "viewport_frame=transparent_fill,no_stroke"
             && self.panel_radius == 16
             && self.native_host_window_contract
-                == "native_host_window=transparent_host,panel_surface=opaque,host_gutter=16px,no_host_background"
+                == "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"
             && self.capture_window_contract
-                == "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=16px,no_host_background"
+                == "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"
             && self.capture_surface_contract
                 == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=16px,no_host_background,no_shadow_clip"
             && self
@@ -232,26 +232,28 @@ fn viewport_frame_contract() -> String {
 }
 
 fn native_host_window_contract() -> String {
+    let contract = LauncherViewportContract::hidden();
     let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH + 32.0, 96.0));
     let panel_width = crate::panel_surface_width(1.0);
-    if size
-        == "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gutter=16px,size=752x96"
+    if contract.passes()
+        && size == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH + 32.0, 96.0))
         && panel_width == PANEL_WIDTH
     {
-        return "native_host_window=transparent_host,panel_surface=opaque,host_gutter=16px,no_host_background"
+        return "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"
             .to_string();
     }
     "native_host_window=FAIL".to_string()
 }
 
 fn capture_window_contract() -> String {
+    let contract = LauncherViewportContract::visible();
     let panel_width = crate::panel_surface_width(1.0);
     let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH + 32.0, 392.0));
-    if preview
-        == "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=true,panel_surface=opaque,host_gutter=16px,size=752x392"
+    if contract.passes()
+        && preview == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH + 32.0, 392.0))
         && panel_width == PANEL_WIDTH
     {
-        return "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=16px,no_host_background"
+        return "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"
             .to_string();
     }
     "capture_window=FAIL".to_string()

@@ -72,6 +72,7 @@ pub use viewport_contract::{
     launcher_clear_color_contract, launcher_host_positioning_contract,
     launcher_panel_native_options, launcher_panel_viewport, launcher_viewport_frame_contract,
     transparent_hidden_panel_contract, transparent_visible_panel_contract,
+    LauncherViewportContract,
 };
 pub use voice::clean_voice_transcript;
 

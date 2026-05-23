@@ -312,10 +312,10 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=transparent_host,panel_surface=opaque,host_gutter=16px"));
+            .contains("native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"));
         assert!(report
             .summary()
-            .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque"));
+            .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none"));
         assert!(report
             .summary()
             .contains("capture_surface=opaque_panel_surface,transparent_host"));

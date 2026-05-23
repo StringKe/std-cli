@@ -1,7 +1,7 @@
 use crate::ui_metrics;
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
-use std_launcher::LauncherState;
+use std_launcher::{LauncherState, LauncherViewportContract};
 
 pub(crate) fn preview_surface_summary(theme: ThemeMode) -> PreviewSurfaceSummary {
     let ctx = egui::Context::default();
@@ -42,8 +42,7 @@ pub(crate) struct PreviewNativeHostSurface {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct PreviewHostCarrierContract {
-    transparent_host: &'static str,
-    host_background: &'static str,
+    viewport: LauncherViewportContract,
     visible_surface: &'static str,
     layout_owner: &'static str,
 }
@@ -118,8 +117,7 @@ impl PreviewHostCarrierContract {
     pub(crate) fn for_state(state: &LauncherState) -> Self {
         let only_panel = ui_metrics::panel_is_only_visible_surface(state);
         Self {
-            transparent_host: "present",
-            host_background: "none",
+            viewport: LauncherViewportContract::visible(),
             visible_surface: if only_panel {
                 "opaque-panel-only"
             } else {
@@ -130,16 +128,17 @@ impl PreviewHostCarrierContract {
     }
 
     pub(crate) fn passes(&self) -> bool {
-        self.transparent_host == "present"
-            && self.host_background == "none"
+        self.viewport.passes()
             && self.visible_surface == "opaque-panel-only"
             && self.layout_owner == "panel-rect"
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "host_carrier=transparent_host:{},host_background:{},visible_surface:{},layout_owner:{}",
-            self.transparent_host, self.host_background, self.visible_surface, self.layout_owner
+            "{},visible_surface:{},layout_owner:{}",
+            self.viewport.host_carrier_summary(),
+            self.visible_surface,
+            self.layout_owner
         )
     }
 }
@@ -299,8 +298,9 @@ mod tests {
         let summary = host.summary();
 
         assert!(host.passes());
-        assert!(summary.contains("host_carrier=transparent_host:present"));
-        assert!(summary.contains("host_background:none"));
+        assert!(summary.contains("host_carrier=transparent:true"));
+        assert!(summary.contains("background:none"));
+        assert!(summary.contains("visible_surface:opaque-bg-surface-0"));
         assert!(summary.contains("visible_surface:opaque-panel-only"));
         assert!(summary.contains("layout_owner:panel-rect"));
         assert!(!summary.contains("visible_surface:host-carrier-visible"));

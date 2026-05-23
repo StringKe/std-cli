@@ -124,7 +124,7 @@ mod tests {
         assert!(description.contains("visible: Some(false)"));
         assert_eq!(
             contract,
-            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque,host_gutter=16px,size=752x96"
+            "native_host=transparent,transparent=true,decorations=false,resizable=false,visible=false,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px,size=752x96"
         );
         assert_eq!(
             ui::launcher_initial_window_inner_size(),
