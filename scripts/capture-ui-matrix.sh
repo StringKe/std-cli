@@ -60,11 +60,15 @@ cleanup() {
 trap cleanup EXIT
 record_manifest_header
 
+launcher_bin="target/debug/std-launcher"
+studio_bin="target/debug/std-studio"
+cargo build -p std-launcher -p std-studio
+
 capture_launcher() {
   theme="$1"
   scenario="$2"
   output="$out_dir/launcher-$theme-$scenario.png"
-  STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview "$theme" "$scenario" 7000 &
+  STD_ALLOW_UI_PREVIEW=1 "$launcher_bin" --ui-preview "$theme" "$scenario" 7000 &
   pid="$!"
   pids="$pids $pid"
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-launcher "std-cli-Launcher" "$output"
@@ -78,7 +82,7 @@ capture_studio() {
   theme="$1"
   scenario="$2"
   output="$out_dir/studio-$theme-$scenario.png"
-  STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview "$theme" "$scenario" 7000 &
+  STD_ALLOW_UI_PREVIEW=1 "$studio_bin" --ui-preview "$theme" "$scenario" 7000 &
   pid="$!"
   pids="$pids $pid"
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-studio "std-cli-Studio" "$output"

@@ -25,8 +25,13 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
 
     assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
     assert!(body.contains("STD_TEST_MODE blocks UI preview"));
-    assert!(body.contains("cargo run -p std-launcher -- --ui-preview"));
-    assert!(body.contains("cargo run -p std-studio -- --ui-preview"));
+    assert!(body.contains("cargo build -p std-launcher -p std-studio"));
+    assert!(body.contains("launcher_bin=\"target/debug/std-launcher\""));
+    assert!(body.contains("studio_bin=\"target/debug/std-studio\""));
+    assert!(body.contains("\"$launcher_bin\" --ui-preview"));
+    assert!(body.contains("\"$studio_bin\" --ui-preview"));
+    assert!(!body.contains("cargo run -p std-launcher -- --ui-preview"));
+    assert!(!body.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(body.contains("scripts/capture-window.sh"));
     assert!(body.contains("scripts/capture-window.sh \"$pid\" std-launcher"));
     assert!(body.contains("scripts/capture-window.sh \"$pid\" std-studio"));
@@ -50,8 +55,13 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
         studio_capture_sequence(&body),
         studio_required_capture_states()
     );
-    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher");
-    assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher");
+    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo build -p std-launcher");
+    assert_order(&body, "STD_TEST_MODE", "cargo build -p std-launcher");
+    assert_order(
+        &body,
+        "cargo build -p std-launcher",
+        "\"$launcher_bin\" --ui-preview",
+    );
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh");
 }
 

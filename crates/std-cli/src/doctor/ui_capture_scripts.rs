@@ -108,8 +108,11 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
     for required in [
         "STD_ALLOW_UI_PREVIEW",
         "STD_TEST_MODE blocks UI preview",
-        "cargo run -p std-launcher -- --ui-preview",
-        "cargo run -p std-studio -- --ui-preview",
+        "cargo build -p std-launcher -p std-studio",
+        "launcher_bin=\"target/debug/std-launcher\"",
+        "studio_bin=\"target/debug/std-studio\"",
+        "\"$launcher_bin\" --ui-preview",
+        "\"$studio_bin\" --ui-preview",
         "scripts/capture-window.sh",
         "scripts/capture-window.sh \"$pid\" std-launcher",
         "scripts/capture-window.sh \"$pid\" std-launcher \"std-cli-Launcher\"",
@@ -141,8 +144,13 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
     for (theme, scenario) in STUDIO_CAPTURE_STATES {
         check_text(&body, &format!("capture_studio {theme} {scenario}"))?;
     }
-    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo run -p std-launcher")?;
-    assert_order(&body, "STD_TEST_MODE", "cargo run -p std-launcher")?;
+    assert_order(&body, "STD_ALLOW_UI_PREVIEW", "cargo build -p std-launcher")?;
+    assert_order(&body, "STD_TEST_MODE", "cargo build -p std-launcher")?;
+    assert_order(
+        &body,
+        "cargo build -p std-launcher",
+        "\"$launcher_bin\" --ui-preview",
+    )?;
     assert_order(&body, "STD_ALLOW_UI_PREVIEW", "scripts/capture-window.sh")?;
     Ok(())
 }
