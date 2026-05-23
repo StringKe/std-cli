@@ -21,7 +21,7 @@ impl StudioScreenshotAcceptanceMatrix {
             diagnostic_states: diagnostic_states_from_required(&required_states),
             required_states,
             evidence_rule:
-                "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark",
+                "docs22-delivery=theme-baseline+core-workbenches+memory+history+operations+settings;theme-pairs=light|dark",
             opt_in_rule: "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless",
             acceptance_rule: ui_capture::UI_CAPTURE_ACCEPTANCE_RULE,
         }
@@ -33,7 +33,7 @@ impl StudioScreenshotAcceptanceMatrix {
             && self.workflow_states == state_labels(workflow_state_labels())
             && self.diagnostic_states == diagnostic_state_labels()
             && self.evidence_rule
-                == "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark"
+            == "docs22-delivery=theme-baseline+core-workbenches+memory+history+operations+settings;theme-pairs=light|dark"
             && self.opt_in_rule == "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"
             && self.acceptance_rule == ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
     }
@@ -77,6 +77,10 @@ fn delivery_state_labels() -> &'static [&'static str] {
         "dark-plugins",
         "light-operations",
         "dark-operations",
+        "light-memory",
+        "dark-memory",
+        "light-history",
+        "dark-history",
         "light-settings",
         "dark-settings",
     ]

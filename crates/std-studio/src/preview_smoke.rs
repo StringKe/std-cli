@@ -146,7 +146,7 @@ fn required_capture_states_pass(states: &[String]) -> bool {
     states == required_capture_state_order()
 }
 
-pub(crate) fn required_capture_state_order() -> [&'static str; 18] {
+pub(crate) fn required_capture_state_order() -> [&'static str; 22] {
     [
         "light-dashboard",
         "dark-dashboard",
@@ -162,6 +162,10 @@ pub(crate) fn required_capture_state_order() -> [&'static str; 18] {
         "dark-plugin-permission",
         "light-operations",
         "dark-operations",
+        "light-memory",
+        "dark-memory",
+        "light-history",
+        "dark-history",
         "light-settings",
         "dark-settings",
         "light-panes",

@@ -127,7 +127,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     let summary = report.summary();
 
     assert!(report.pass(), "{summary}");
-    assert_eq!(report.scenarios.len(), 18);
+    assert_eq!(report.scenarios.len(), 22);
     assert_eq!(report.sizes.len(), report.scenarios.len());
     assert!(report.sizes.iter().all(|size| size.contains("=PASS")));
     assert_preview_summary_has_scenarios(&summary);
@@ -154,6 +154,10 @@ fn assert_preview_summary_has_scenarios(summary: &str) {
     assert!(summary.contains("light-plugin-permission"));
     assert!(summary.contains("dark-operations"));
     assert!(summary.contains("light-operations"));
+    assert!(summary.contains("dark-memory"));
+    assert!(summary.contains("light-memory"));
+    assert!(summary.contains("dark-history"));
+    assert!(summary.contains("light-history"));
     assert!(summary.contains("dark-settings"));
     assert!(summary.contains("light-settings"));
     assert!(summary.contains("dark-panes"));
@@ -189,6 +193,10 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
             "dark-plugin-permission",
             "light-operations",
             "dark-operations",
+            "light-memory",
+            "dark-memory",
+            "light-history",
+            "dark-history",
             "light-settings",
             "dark-settings",
             "light-panes",
@@ -197,11 +205,18 @@ fn assert_required_capture_state_contract(report: &StudioPreviewSmokeReport) {
     );
 
     assert!(report.summary().contains(
-        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+        "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings,light-panes,dark-panes"
     ));
 }
 
 fn assert_preview_summary_has_viewport_policy(summary: &str) {
+    assert_preview_summary_has_host_policy(summary);
+    assert_preview_summary_has_studio_surfaces(summary);
+    assert_preview_summary_has_capture_runtime_policy(summary);
+    assert_preview_summary_has_workbench_contracts(summary);
+}
+
+fn assert_preview_summary_has_host_policy(summary: &str) {
     assert!(summary.contains("light-dashboard=PASS"));
     assert!(summary.contains("dark-dashboard=PASS"));
     assert!(summary.contains("host=1280x800,min=1080x640"));
@@ -210,23 +225,36 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("status=24"));
     assert!(summary.contains("fits=true"));
     assert!(summary.contains("native_child_windows=false,detached_panels=false"));
+}
+
+fn assert_preview_summary_has_studio_surfaces(summary: &str) {
     assert!(summary.contains("dark-settings=PASS"));
     assert!(summary.contains("light-settings=PASS"));
+    assert!(summary.contains("dark-memory=PASS"));
+    assert!(summary.contains("light-memory=PASS"));
+    assert!(summary.contains("dark-history=PASS"));
+    assert!(summary.contains("light-history=PASS"));
     assert!(summary.contains("settings_surface=internal-workspace-pane"));
+}
+
+fn assert_preview_summary_has_capture_runtime_policy(summary: &str) {
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
     assert!(summary.contains("target/ui-capture/debug/std-studio --ui-preview"));
     assert!(!summary.contains("cargo run -p std-studio -- --ui-preview"));
+    assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
+    assert!(summary.contains("checkout-binary-only"));
+    assert!(summary.contains("blocked-in-STD_TEST_MODE"));
+    assert!(summary.contains("no-default-window"));
+    assert!(summary.contains("normal-viewport-close"));
+}
+
+fn assert_preview_summary_has_workbench_contracts(summary: &str) {
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
     assert!(summary.contains("plugin_permission=permissions|fs|network|review-prompt"));
     assert!(summary.contains(
         "pane_management=open|focus|switch|close|reopen|restore|state-preserved|single-egui-viewport"
     ));
-    assert!(summary.contains("preview_capture_contract=explicit-opt-in-only"));
-    assert!(summary.contains("checkout-binary-only"));
-    assert!(summary.contains("blocked-in-STD_TEST_MODE"));
-    assert!(summary.contains("no-default-window"));
-    assert!(summary.contains("normal-viewport-close"));
 }
 
 fn assert_preview_summary_has_workspace_structure(summary: &str) {
@@ -239,6 +267,8 @@ fn assert_preview_summary_has_workspace_structure(summary: &str) {
         "focused:analysis",
         "focused:plugins",
         "focused:operations",
+        "focused:memory",
+        "focused:history",
         "focused:settings",
         "bottom_panel:visible",
         "native_child_windows:false",
@@ -274,7 +304,7 @@ fn assert_preview_screenshot_acceptance_contract(report: &StudioPreviewSmokeRepo
     assert!(report.screenshot_acceptance.pass());
     assert!(summary.contains("studio_screenshot_acceptance PASS"));
     assert!(summary.contains(
-        "delivery_capture_states=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings"
+        "delivery_capture_states=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings"
     ));
     assert!(summary.contains(
         "workflow_capture_states=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error"
@@ -283,7 +313,7 @@ fn assert_preview_screenshot_acceptance_contract(report: &StudioPreviewSmokeRepo
         "diagnostic_capture_states=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes"
     ));
     assert!(summary.contains(
-        "evidence_rule=docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark"
+        "evidence_rule=docs22-delivery=theme-baseline+core-workbenches+memory+history+operations+settings;theme-pairs=light|dark"
     ));
     assert!(summary.contains("opt_in_rule=STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"));
     assert!(summary.contains("capture_verify_rule=manifest-current-run-png-files-by-theme-state"));

@@ -11,7 +11,7 @@ use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
 
 pub(crate) fn required_capture_states_summary() -> &'static str {
-    "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-settings,dark-settings,light-panes,dark-panes"
+    "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings,light-panes,dark-panes"
 }
 
 pub(crate) fn preview_matrix() -> Vec<String> {
@@ -30,6 +30,10 @@ pub(crate) fn preview_matrix() -> Vec<String> {
         "dark-plugin-permission",
         "light-operations",
         "dark-operations",
+        "light-memory",
+        "dark-memory",
+        "light-history",
+        "dark-history",
         "light-settings",
         "dark-settings",
         "light-panes",
@@ -138,6 +142,8 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                 && plugin_permission_contract(app) == "permissions|fs|network|review-prompt"
         }
         "operations" => focused_content_key(app) == "operations",
+        "memory" => focused_content_key(app) == "memory" && app.memory_scope == "workspace",
+        "history" => focused_content_key(app) == "history" && app.history_filter == "workflow",
         "settings" => focused_content_key(app) == "settings",
         "panes" => {
             app.app.open_workspace_panes().count() >= 3
@@ -332,6 +338,8 @@ impl StudioPreviewStructure {
             "analysis" => self.focused == "analysis",
             "plugins" | "plugin-permission" => self.focused == "plugins",
             "operations" => self.focused == "operations",
+            "memory" => self.focused == "memory",
+            "history" => self.focused == "history",
             "settings" => self.focused == "settings",
             "panes" => matches!(self.focused, "memory" | "history" | "plugins"),
             _ => false,

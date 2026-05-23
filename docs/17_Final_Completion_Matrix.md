@@ -55,6 +55,10 @@
 - Studio capture state required: dark-plugin-permission
 - Studio capture state required: light-operations
 - Studio capture state required: dark-operations
+- Studio capture state required: light-memory
+- Studio capture state required: dark-memory
+- Studio capture state required: light-history
+- Studio capture state required: dark-history
 - Studio capture state required: light-settings
 - Studio capture state required: dark-settings
 - Studio capture state required: light-panes

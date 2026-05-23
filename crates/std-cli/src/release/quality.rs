@@ -190,7 +190,7 @@ fn ui_capture_matrices() -> [&'static str; 5] {
     [
         "launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
         "launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
-        "studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",
+        "studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings",
         "studio_workflow=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error",
         "studio_diagnostic=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes",
     ]
@@ -246,7 +246,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_ui_evidence=background_ui_rule=isolated-harness-only+frontmost-preserved+doctor-validated",
         "manual_ui_matrix=launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
         "manual_ui_matrix=launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
-        "manual_ui_matrix=studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",
+        "manual_ui_matrix=studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings",
         "manual_ui_matrix=studio_workflow=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error",
         "manual_ui_matrix=studio_diagnostic=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes",
         "manual_ui_evidence_rule=ui_capture_pixels=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels+edge_samples+edge_transparent_pixels+edge_black_pixels+edge_white_pixels",

@@ -134,6 +134,19 @@ pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &
             let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Operations);
             app.pending_workspace_focus = Some(id);
         }
+        "memory" => {
+            let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Memory);
+            app.pending_workspace_focus = Some(id);
+            app.memory_query = "preview".to_string();
+            app.memory_scope = "workspace".to_string();
+            app.status = "memory preview seeded".to_string();
+        }
+        "history" => {
+            let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::History);
+            app.pending_workspace_focus = Some(id);
+            app.history_filter = "workflow".to_string();
+            app.status = "history preview seeded".to_string();
+        }
         "settings" => {
             let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Settings);
             app.pending_workspace_focus = Some(id);

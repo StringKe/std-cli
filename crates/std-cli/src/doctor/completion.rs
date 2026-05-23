@@ -67,7 +67,7 @@ const LAUNCHER_CAPTURE_EVIDENCE_RULES: [&str; 22] = [
     "Launcher capture state required: dark-action-panel",
 ];
 
-const STUDIO_CAPTURE_EVIDENCE_RULES: [&str; 18] = [
+const STUDIO_CAPTURE_EVIDENCE_RULES: [&str; 22] = [
     "Studio capture state required: light-dashboard",
     "Studio capture state required: dark-dashboard",
     "Studio capture state required: light-workflow",
@@ -82,6 +82,10 @@ const STUDIO_CAPTURE_EVIDENCE_RULES: [&str; 18] = [
     "Studio capture state required: dark-plugin-permission",
     "Studio capture state required: light-operations",
     "Studio capture state required: dark-operations",
+    "Studio capture state required: light-memory",
+    "Studio capture state required: dark-memory",
+    "Studio capture state required: light-history",
+    "Studio capture state required: dark-history",
     "Studio capture state required: light-settings",
     "Studio capture state required: dark-settings",
     "Studio capture state required: light-panes",
