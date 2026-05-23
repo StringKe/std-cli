@@ -200,6 +200,52 @@ fn search_ime_focus_contract_uses_visible_chip_and_keeps_query_stable() {
     assert_eq!(state.view.query, "重建索引");
 }
 
+#[test]
+fn search_render_syncs_ime_events_into_launcher_state() {
+    let ctx = egui::Context::default();
+    let mut state = LauncherState::new();
+    state.update_query("index");
+    let mut hide_requested = false;
+
+    let _ = ctx.run(ime_preedit_input("zhong"), |ctx| {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            render_search_bar(ui, &mut state, false, &mut hide_requested);
+        });
+    });
+
+    assert_eq!(state.view.query, "index");
+    assert_eq!(state.ime_preedit.as_deref(), Some("zhong"));
+    assert_eq!(state.focus_section, LauncherFocusSection::Search);
+    assert!(!hide_requested);
+
+    let _ = ctx.run(ime_commit_input("重建索引"), |ctx| {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            render_search_bar(ui, &mut state, false, &mut hide_requested);
+        });
+    });
+
+    assert!(state.ime_preedit.is_none());
+    assert_eq!(state.view.query, "重建索引");
+}
+
+fn ime_preedit_input(preedit: &str) -> egui::RawInput {
+    egui::RawInput {
+        events: vec![egui::Event::Ime(egui::ImeEvent::Preedit(
+            preedit.to_string(),
+        ))],
+        ..Default::default()
+    }
+}
+
+fn ime_commit_input(committed: &str) -> egui::RawInput {
+    egui::RawInput {
+        events: vec![egui::Event::Ime(egui::ImeEvent::Commit(
+            committed.to_string(),
+        ))],
+        ..Default::default()
+    }
+}
+
 fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
     let mode = LauncherQueryMode::from_query(&state.view.query);
     (mode != LauncherQueryMode::All).then_some(mode.tag_label())

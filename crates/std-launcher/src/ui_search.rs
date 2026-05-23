@@ -14,6 +14,7 @@ pub(crate) fn render_search_bar(
     collapsed: bool,
     hide_requested: &mut bool,
 ) {
+    sync_ime_from_frame(ui.ctx(), state);
     if collapsed {
         render_search_bar_contents(ui, state, hide_requested);
         return;
@@ -27,6 +28,19 @@ pub(crate) fn render_search_bar(
         .show(ui, |ui| {
             render_search_bar_contents(ui, state, hide_requested)
         });
+}
+
+fn sync_ime_from_frame(ctx: &egui::Context, state: &mut LauncherState) {
+    match input::ime_frame_event(ctx) {
+        Some(egui::ImeEvent::Preedit(preedit)) => state.handle_ime_preedit(preedit),
+        Some(egui::ImeEvent::Commit(committed)) => {
+            state.handle_ime_commit(committed);
+        }
+        Some(egui::ImeEvent::Disabled) => {
+            state.ime_preedit = None;
+        }
+        Some(egui::ImeEvent::Enabled) | None => {}
+    }
 }
 
 fn render_search_bar_contents(
