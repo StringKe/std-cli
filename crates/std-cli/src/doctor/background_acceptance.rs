@@ -32,9 +32,15 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "--window-title \"std-cli Background UI Harness ",
         "--harness-token run-",
         "smoke_status=PASS",
+        "driver_stdout=background_driver PASS",
+        "driver_identity=target-pid-window-id-and-frontmost-pid",
+        "event_route=postToPid_target_pid_only",
         "frontmost_preservation=required",
         "frontmost_preserved=true",
+        "frontmost_before_equals_after=required",
         "frontmost_evidence_source=background_driver_stdout",
+        "target_not_frontmost=required",
+        "previous_app_policy=event_tap_only_no_input_delivery",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "harness_origin=spawned_by_scripts_background_ui_harness_only",
     ] {
@@ -42,6 +48,7 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
     }
     verify_positive_field(body, "harness_pid=")?;
     verify_positive_field(body, "window_id=")?;
+    verify_driver_identity(body)?;
     verify_matching_token(body)
 }
 
@@ -76,6 +83,44 @@ fn verify_matching_token(body: &str) -> Result<(), CliError> {
         ));
     }
     Ok(())
+}
+
+fn verify_driver_identity(body: &str) -> Result<(), CliError> {
+    let harness_pid = manifest_field(body, "harness_pid=")?;
+    let window_id = manifest_field(body, "window_id=")?;
+    let driver = manifest_field(body, "driver_stdout=")?;
+    for required in [
+        format!("target_pid={harness_pid}"),
+        format!("window_id={window_id}"),
+        "event_route=postToPid_target_pid_only".to_string(),
+        "frontmost_preserved=true".to_string(),
+    ] {
+        if !driver.contains(&required) {
+            return Err(CliError::Doctor(format!(
+                "background UI driver stdout missing identity: {required}"
+            )));
+        }
+    }
+    let before = driver_pid_field(driver, "frontmost_before=")?;
+    let after = driver_pid_field(driver, "frontmost_after=")?;
+    if before != after {
+        return Err(CliError::Doctor(
+            "background UI driver changed frontmost app".to_string(),
+        ));
+    }
+    if before == harness_pid {
+        return Err(CliError::Doctor(
+            "background UI driver targeted frontmost harness".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn driver_pid_field<'a>(driver: &'a str, key: &str) -> Result<&'a str, CliError> {
+    driver
+        .split_whitespace()
+        .find_map(|part| part.strip_prefix(key))
+        .ok_or_else(|| CliError::Doctor(format!("background UI driver field missing: {key}")))
 }
 
 fn manifest_field<'a>(body: &'a str, key: &str) -> Result<&'a str, CliError> {
@@ -123,6 +168,32 @@ mod tests {
     }
 
     #[test]
+    fn background_acceptance_manifest_rejects_driver_pid_mismatch() {
+        let manifest = sample_manifest().replace("target_pid=42", "target_pid=43");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("target_pid=42"));
+    }
+
+    #[test]
+    fn background_acceptance_manifest_rejects_frontmost_change() {
+        let manifest = sample_manifest().replace("frontmost_after=777", "frontmost_after=778");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("changed frontmost app"));
+    }
+
+    #[test]
+    fn background_acceptance_manifest_rejects_frontmost_harness_target() {
+        let manifest = sample_manifest()
+            .replace("harness_pid=42", "harness_pid=777")
+            .replace("target_pid=42", "target_pid=777");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("targeted frontmost harness"));
+    }
+
+    #[test]
     fn background_acceptance_manifest_rejects_missing_forbidden_targets() {
         let manifest = sample_manifest().replace(
             "forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,System_Settings\n",
@@ -161,9 +232,14 @@ window_title=std-cli Background UI Harness run-42\n\
 harness_token=run-42\n\
 smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid 42 --window-id 24 --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness run-42\" --harness-token run-42\n\
 smoke_status=PASS\n\
+driver_stdout=background_driver PASS target_pid=42 window_id=24 event_route=postToPid_target_pid_only frontmost_preserved=true frontmost_before=777 frontmost_after=777\n\
+driver_identity=target-pid-window-id-and-frontmost-pid\n\
 frontmost_preservation=required\n\
 frontmost_preserved=true\n\
+frontmost_before_equals_after=required\n\
 frontmost_evidence_source=background_driver_stdout\n\
+target_not_frontmost=required\n\
+previous_app_policy=event_tap_only_no_input_delivery\n\
 real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch\n\
 harness_origin=spawned_by_scripts_background_ui_harness_only\n\
 manifest=artifacts/ui/background-acceptance/manifest.txt\n"

@@ -145,14 +145,24 @@ done <<EOF
 $smoke_output
 EOF
 if printf '%s\n' "$driver_stdout" | grep -q 'background_driver PASS' &&
-  printf '%s\n' "$driver_stdout" | grep -q 'frontmost_preserved=true'; then
+  printf '%s\n' "$driver_stdout" | grep -q "target_pid=$harness_pid" &&
+  printf '%s\n' "$driver_stdout" | grep -q "window_id=$window_id" &&
+  printf '%s\n' "$driver_stdout" | grep -q 'event_route=postToPid_target_pid_only' &&
+  printf '%s\n' "$driver_stdout" | grep -q 'frontmost_preserved=true' &&
+  printf '%s\n' "$driver_stdout" | grep -q 'frontmost_before=' &&
+  printf '%s\n' "$driver_stdout" | grep -q 'frontmost_after='; then
   driver_frontmost_preserved="true"
 fi
 {
   echo "smoke_status=$smoke_status"
+  echo "driver_stdout=$driver_stdout"
+  echo "driver_identity=target-pid-window-id-and-frontmost-pid"
   echo "frontmost_preservation=required"
   echo "frontmost_preserved=$driver_frontmost_preserved"
+  echo "frontmost_before_equals_after=required"
   echo "frontmost_evidence_source=background_driver_stdout"
+  echo "target_not_frontmost=required"
+  echo "previous_app_policy=event_tap_only_no_input_delivery"
   echo "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch"
   echo "harness_origin=spawned_by_scripts_background_ui_harness_only"
   echo "manifest=$manifest"
