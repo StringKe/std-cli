@@ -34,13 +34,14 @@ impl LauncherScreenshotAcceptanceMatrix {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_screenshot_acceptance {}\ndelivery_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\nacceptance_rule={}",
+            "launcher_screenshot_acceptance {}\ndelivery_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\ncapture_source_rule={}\nacceptance_rule={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.delivery_states.join(","),
             self.diagnostic_states.join(","),
             self.evidence_rule,
             self.opt_in_rule,
             ui_capture::UI_CAPTURE_VERIFY_RULE,
+            ui_capture::UI_CAPTURE_SOURCE_RULE,
             self.acceptance_rule
         )
     }
@@ -118,6 +119,7 @@ mod tests {
         assert!(summary.contains("diagnostic_capture_states=light-collapsed,dark-collapsed"));
         assert!(summary.contains("light-ime,dark-ime"));
         assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1 only"));
+        assert!(summary.contains(ui_capture::UI_CAPTURE_SOURCE_RULE));
         assert!(summary.contains(ui_capture::UI_CAPTURE_ACCEPTANCE_RULE));
     }
 }

@@ -230,6 +230,7 @@ fn assert_preview_capture_manifest_contract(report: &StudioPreviewSmokeReport) {
     assert!(summary.contains("studio-dark-panes.png"));
     assert!(summary.contains("capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
     assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
+    assert!(summary.contains("source_rule=pid+process-name+window-title-per-capture"));
     assert!(summary.contains(
         "pixel_evidence_rule=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
     ));
@@ -256,4 +257,5 @@ fn assert_preview_screenshot_acceptance_contract(report: &StudioPreviewSmokeRepo
     ));
     assert!(summary.contains("opt_in_rule=STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"));
     assert!(summary.contains("capture_verify_rule=manifest-current-run-png-files-by-theme-state"));
+    assert!(summary.contains("capture_source_rule=pid+process-name+window-title-per-capture"));
 }

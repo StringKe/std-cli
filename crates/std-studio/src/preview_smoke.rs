@@ -79,6 +79,7 @@ pub(crate) struct StudioCaptureManifest {
     pub(crate) expected_files: Vec<String>,
     pub(crate) capture_command: &'static str,
     pub(crate) verify_rule: &'static str,
+    pub(crate) source_rule: &'static str,
     pub(crate) pixel_evidence_rule: &'static str,
     pub(crate) carrier_reject_rule: &'static str,
 }
@@ -94,6 +95,7 @@ impl StudioCaptureManifest {
                 .collect(),
             capture_command: ui_capture::UI_CAPTURE_COMMAND,
             verify_rule: ui_capture::UI_CAPTURE_VERIFY_RULE,
+            source_rule: ui_capture::UI_CAPTURE_SOURCE_RULE,
             pixel_evidence_rule: ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE,
             carrier_reject_rule: ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE,
         }
@@ -113,6 +115,7 @@ impl StudioCaptureManifest {
                 .all(|file| file.starts_with("studio-") && file.ends_with(".png"))
             && self.capture_command == ui_capture::UI_CAPTURE_COMMAND
             && self.verify_rule == ui_capture::UI_CAPTURE_VERIFY_RULE
+            && self.source_rule == ui_capture::UI_CAPTURE_SOURCE_RULE
             && self.pixel_evidence_rule == ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
             && self.carrier_reject_rule == ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
     }

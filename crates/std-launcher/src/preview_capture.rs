@@ -11,6 +11,7 @@ pub(crate) struct LauncherCaptureManifest {
     pub(crate) expected_files: Vec<String>,
     pub(crate) capture_command: &'static str,
     pub(crate) verify_rule: &'static str,
+    pub(crate) source_rule: &'static str,
     pub(crate) pixel_evidence_rule: &'static str,
     pub(crate) carrier_reject_rule: &'static str,
 }
@@ -23,6 +24,7 @@ impl LauncherCaptureManifest {
             expected_files: scenarios.iter().map(capture_file_name).collect(),
             capture_command: ui_capture::UI_CAPTURE_COMMAND,
             verify_rule: ui_capture::UI_CAPTURE_VERIFY_RULE,
+            source_rule: ui_capture::UI_CAPTURE_SOURCE_RULE,
             pixel_evidence_rule: ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE,
             carrier_reject_rule: ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE,
         }
@@ -38,6 +40,7 @@ impl LauncherCaptureManifest {
                 .all(|file| file.starts_with("launcher-") && file.ends_with(".png"))
             && self.capture_command == ui_capture::UI_CAPTURE_COMMAND
             && self.verify_rule == ui_capture::UI_CAPTURE_VERIFY_RULE
+            && self.source_rule == ui_capture::UI_CAPTURE_SOURCE_RULE
             && self.pixel_evidence_rule == ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
             && self.carrier_reject_rule == ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
     }
@@ -76,6 +79,9 @@ mod tests {
         );
         assert!(manifest.summary().contains("expected_capture_manifest="));
         assert!(manifest.summary().contains("STD_ALLOW_UI_PREVIEW=1"));
+        assert!(manifest
+            .summary()
+            .contains("source_rule=pid+process-name+window-title-per-capture"));
         assert!(manifest
             .summary()
             .contains("samples+opaque_samples+unique_colors"));

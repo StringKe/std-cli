@@ -129,8 +129,9 @@ fn assert_preview_affordance_contract(report: &LauncherPreviewSmokeReport) {
         enter = std_egui::input::enter().label()
     )));
     assert!(summary.contains(&format!(
-        "action_panel_actions={},{},{},{}",
+        "action_panel_actions={},{},{},{},{}",
         std_egui::i18n::t("launcher.action.review_first"),
+        std_egui::i18n::t("launcher.action.run"),
         std_egui::i18n::t("launcher.action.defer"),
         std_egui::i18n::t("launcher.action.open_in_studio"),
         std_egui::i18n::t("launcher.action.copy_command")
@@ -214,6 +215,7 @@ fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport)
     assert!(summary.contains("launcher-dark-action-panel.png"));
     assert!(summary.contains("capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
     assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
+    assert!(summary.contains("source_rule=pid+process-name+window-title-per-capture"));
     assert!(summary.contains(
         "pixel_evidence_rule=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
     ));
@@ -236,6 +238,7 @@ fn assert_preview_screenshot_acceptance_contract(report: &LauncherPreviewSmokeRe
     ));
     assert!(summary.contains("opt_in_rule=STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"));
     assert!(summary.contains("capture_verify_rule=manifest-current-run-png-files-by-theme-state"));
+    assert!(summary.contains("capture_source_rule=pid+process-name+window-title-per-capture"));
 }
 
 fn assert_preview_ui_completion_boundary(report: &LauncherPreviewSmokeReport) {
