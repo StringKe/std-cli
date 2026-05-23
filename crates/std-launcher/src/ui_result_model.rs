@@ -51,8 +51,10 @@ impl LauncherResultRowModel {
             position: format!("{} of {total}", index + 1),
             direct_shortcut,
             primary_shortcut: selected.then(|| input::enter().label()),
-            action_hint: selected.then(|| selected_action_hint(preview, &result.action.name)),
-            action_label: selected_action_label(preview),
+            action_hint: selected.then(|| {
+                selected_action_hint(preview, &result.action.action_type, &result.action.name)
+            }),
+            action_label: selected_action_label(preview, &result.action.action_type),
             result_index: index,
         }
     }
@@ -103,20 +105,37 @@ pub(crate) fn list_items(
     items
 }
 
-fn selected_action_hint(preview: Option<&ActionPreview>, fallback: &str) -> String {
+fn selected_action_hint(
+    preview: Option<&ActionPreview>,
+    action_type: &ActionType,
+    fallback: &str,
+) -> String {
     let command = preview
         .map(|preview| preview.primary_command.as_str())
         .filter(|command| !command.trim().is_empty())
         .unwrap_or(fallback);
-    format!("{} {command}", i18n::t("launcher.action.run"))
+    let action = selected_action_verb(preview, action_type);
+    format!("{action} {command}")
 }
 
-fn selected_action_label(preview: Option<&ActionPreview>) -> String {
+fn selected_action_label(preview: Option<&ActionPreview>, action_type: &ActionType) -> String {
     preview
         .map(|preview| preview.primary_command.as_str())
         .filter(|command| !command.trim().is_empty())
-        .unwrap_or(i18n::t("launcher.action.run"))
+        .unwrap_or_else(|| selected_action_verb(preview, action_type))
         .to_string()
+}
+
+fn selected_action_verb(preview: Option<&ActionPreview>, action_type: &ActionType) -> &'static str {
+    let needs_external_runner = preview
+        .map(|preview| &preview.action_type)
+        .unwrap_or(action_type)
+        .needs_external_runner();
+    if needs_external_runner {
+        i18n::t("launcher.action.review_first")
+    } else {
+        i18n::t("launcher.action.run")
+    }
 }
 
 fn result_subtitle(result: &SearchResult, preview: Option<&ActionPreview>) -> String {

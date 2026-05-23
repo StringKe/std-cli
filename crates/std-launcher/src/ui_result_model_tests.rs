@@ -183,7 +183,11 @@ fn app_alias_result_row_keeps_multilingual_names_keyboard_visible() {
     assert!(row.subtitle.contains("微信"));
     assert_eq!(row.direct_shortcut, input::launcher_result_keycap(0));
     assert_eq!(row.primary_shortcut, Some(input::enter().label()));
-    let expected_hint = format!("{} Open App: WeChat", i18n::t("launcher.action.run"));
+    assert_eq!(row.action_label, i18n::t("launcher.action.review_first"));
+    let expected_hint = format!(
+        "{} Open App: WeChat",
+        i18n::t("launcher.action.review_first")
+    );
     assert_eq!(row.action_hint, Some(expected_hint));
 }
 

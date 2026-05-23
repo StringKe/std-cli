@@ -234,7 +234,7 @@ mod tests {
 
         assert_eq!(direct, std_egui::input::launcher_result_keycap(2).unwrap());
         assert_eq!(primary, std_egui::input::enter().label());
-        assert_eq!(action, i18n::t("launcher.action.run"));
+        assert_eq!(action, i18n::t("launcher.action.review_first"));
     }
 
     #[test]
