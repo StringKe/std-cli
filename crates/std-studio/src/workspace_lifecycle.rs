@@ -116,7 +116,7 @@ fn lifecycle_chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) {
 
 fn policy_fill(ctx: &egui::Context, spec: &WorkspaceLifecycleSpec) -> egui::Color32 {
     if spec.native_windows_allowed || spec.detached_allowed {
-        ui::warn_bg(ctx)
+        ui::danger_bg(ctx)
     } else {
         ui::ok_bg(ctx)
     }
@@ -165,5 +165,18 @@ mod tests {
         assert!(implementation.contains("WidgetType::Label"));
         assert!(!implementation.contains("egui::Window"));
         assert!(!implementation.contains("show_viewport"));
+    }
+
+    #[test]
+    fn lifecycle_policy_violation_uses_danger_token() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+        let mut spec =
+            WorkspaceLifecycleSpec::from_panes(&[], None, StudioWorkspacePolicy::studio_v1());
+
+        assert_eq!(policy_fill(&ctx, &spec), ui::ok_bg(&ctx));
+
+        spec.detached_allowed = true;
+        assert_eq!(policy_fill(&ctx, &spec), ui::danger_bg(&ctx));
     }
 }

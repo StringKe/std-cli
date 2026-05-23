@@ -163,7 +163,7 @@ fn policy_state_fill(ctx: &egui::Context, policy: StudioWorkspacePolicy) -> egui
     if policy_state_label(policy) == "PASS" {
         ui::ok_bg(ctx)
     } else {
-        ui::warn_bg(ctx)
+        ui::danger_bg(ctx)
     }
 }
 
@@ -212,6 +212,21 @@ mod tests {
         assert_eq!(state.focused_pane, "Dashboard");
         assert_eq!(state.focused_key, "dashboard");
         assert_eq!(state.restore_policy, "closeguard=internal-pane-state-only");
+    }
+
+    #[test]
+    fn workspace_policy_fail_state_uses_danger_token() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+        let mut policy = StudioWorkspacePolicy::studio_v1();
+        policy.detached_panels = true;
+
+        assert_eq!(policy_state_label(policy), "FAIL");
+        assert_eq!(policy_state_fill(&ctx, policy), ui::danger_bg(&ctx));
+        assert_eq!(
+            policy_state_fill(&ctx, StudioWorkspacePolicy::studio_v1()),
+            ui::ok_bg(&ctx)
+        );
     }
 
     #[test]
