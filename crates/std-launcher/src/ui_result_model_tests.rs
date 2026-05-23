@@ -202,9 +202,9 @@ fn app_alias_result_row_uses_review_first_even_with_preview_command() {
         title: result.action.name.clone(),
         subtitle: result.action.description.clone(),
         action_type: result.action.action_type.clone(),
-        primary_command: "open -a WeChat".to_string(),
+        primary_command: "open /tmp/std-fixture/WeChat.app".to_string(),
         metadata: std::collections::HashMap::new(),
-        examples: vec!["open -a WeChat".to_string()],
+        examples: vec!["open /tmp/std-fixture/WeChat.app".to_string()],
     };
 
     let row = LauncherResultRowModel::from_result(&result, Some(&preview), "weixin", 0, 1, true);
@@ -213,7 +213,7 @@ fn app_alias_result_row_uses_review_first_even_with_preview_command() {
     assert_eq!(
         row.action_hint,
         Some(format!(
-            "{} open -a WeChat",
+            "{} open /tmp/std-fixture/WeChat.app",
             i18n::t("launcher.action.review_first")
         ))
     );

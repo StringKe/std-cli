@@ -195,17 +195,18 @@ fn check_launcher_panel_viewport(root: &Path) -> Result<(), CliError> {
         read_required(&root.join("crates/std-launcher/src/ui_metrics_tests.rs"))?;
     check_text(
         &launcher_metrics_tests,
-        "panel_rect_floats_inside_transparent_native_host",
+        "panel_rect_owns_entire_native_host",
     )?;
     check_text(
         &launcher_metrics_tests,
-        "native_host_keeps_transparent_gutter_around_panel_surface",
+        "native_host_is_panel_sized_without_visible_carrier",
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=transparent_host,panel_surface=opaque,host_gutter=64px,no_host_background",
-        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=64px,no_host_background",
-        "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip",
+        "native_host_window=panel_sized_transparent_host,panel_surface=opaque,host_gutter=0px,no_host_background",
+        "capture_window=panel_sized_transparent_host,opt_in_only,panel_surface=opaque,host_gutter=0px,no_host_background",
+        "capture_surface=opaque_panel_surface,panel_sized_transparent_host,host_gutter=0px,no_host_background,no_shadow_clip",
+        "host-carrier=absent",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -220,12 +221,11 @@ fn check_launcher_panel_viewport(root: &Path) -> Result<(), CliError> {
     for forbidden in [
         "const CARRIER_MARGIN",
         "carrier_margin_for_scale",
-        "host_gap=0x0",
         "panel_only=true",
     ] {
-        if launcher_metrics.contains(forbidden) {
+        if launcher_metrics.contains(forbidden) || launcher_surface.contains(forbidden) {
             return Err(CliError::Config(
-                "launcher must use explicit transparent host gutter tokens".to_string(),
+                "launcher must use panel-sized host without visible carrier gutter".to_string(),
             ));
         }
     }
@@ -241,6 +241,14 @@ fn check_launcher_panel_viewport(root: &Path) -> Result<(), CliError> {
 }
 
 fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
+    let launcher_preview = launcher_preview_evidence(root)?;
+    let studio_preview = studio_preview_evidence(root)?;
+    check_launcher_preview_matrix(&launcher_preview)?;
+    check_studio_preview_matrix(&studio_preview)?;
+    check_preview_matrix_forbidden_commands(&launcher_preview, &studio_preview)
+}
+
+fn launcher_preview_evidence(root: &Path) -> Result<String, CliError> {
     let launcher = read_required(&root.join("crates/std-launcher/src/preview.rs"))?;
     let launcher_evidence =
         read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;
@@ -253,6 +261,21 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
     let launcher_preview = format!(
         "{launcher}\n{launcher_evidence}\n{launcher_contract}\n{launcher_surface}\n{launcher_acceptance}"
     );
+    Ok(launcher_preview)
+}
+
+fn studio_preview_evidence(root: &Path) -> Result<String, CliError> {
+    let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
+    let studio_evidence = read_required(&root.join("crates/std-studio/src/preview_evidence.rs"))?;
+    let studio_smoke = read_required(&root.join("crates/std-studio/src/preview_smoke.rs"))?;
+    let studio_acceptance =
+        read_required(&root.join("crates/std-studio/src/screenshot_acceptance.rs"))?;
+    Ok(format!(
+        "{studio}\n{studio_evidence}\n{studio_smoke}\n{studio_acceptance}"
+    ))
+}
+
+fn check_launcher_preview_matrix(launcher_preview: &str) -> Result<(), CliError> {
     for required in [
         "STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-launcher --ui-preview",
         "state: \"results\"",
@@ -264,9 +287,9 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "fn preview_matrix() -> Vec<LauncherPreviewScenario>",
         "state: \"action-panel\"",
         "self.scenarios == preview_matrix()",
-        "transparent-native-host,opaque-panel-surface,opt-in-only",
+        "panel-sized-transparent-host,opaque-panel-surface,opt-in-only",
         "no-default-window",
-        "host-gutter-64px",
+        "host-gutter-0px",
         "no-shadow-clip",
         "preview_surface_summary",
         "preview_size_summary",
@@ -291,20 +314,30 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "delivery_capture_states",
         "diagnostic_capture_states",
     ] {
-        check_text(&launcher_preview, required)?;
+        check_text(launcher_preview, required)?;
     }
-    if launcher.contains("host-gap-0") {
+    if launcher_preview.contains("host-gutter-64px")
+        || launcher_preview.contains("transparent-native-host")
+        || launcher_preview.contains("host_gap=128x128")
+        || launcher_preview.contains("panel_origin=64x64")
+    {
         return Err(CliError::Doctor(
-            "launcher preview capture contract must use host-gutter-64px".to_string(),
+            "launcher preview capture contract must use panel-sized transparent host".to_string(),
         ));
     }
-    let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
-    let studio_evidence = read_required(&root.join("crates/std-studio/src/preview_evidence.rs"))?;
-    let studio_smoke = read_required(&root.join("crates/std-studio/src/preview_smoke.rs"))?;
-    let studio_acceptance =
-        read_required(&root.join("crates/std-studio/src/screenshot_acceptance.rs"))?;
-    let studio_preview =
-        format!("{studio}\n{studio_evidence}\n{studio_smoke}\n{studio_acceptance}");
+    let launcher_preview_without_tests = launcher_preview
+        .replace("host-gutter-64px", "")
+        .replace("host_gap=128x128", "")
+        .replace("panel_origin=64x64", "");
+    if launcher_preview_without_tests.contains("transparent_host,panel_surface") {
+        return Err(CliError::Doctor(
+            "launcher preview evidence must not use transparent host carrier".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn check_studio_preview_matrix(studio_preview: &str) -> Result<(), CliError> {
     for required in [
         "STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-studio --ui-preview",
         "dark-dashboard",
@@ -345,8 +378,15 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "workflow_capture_states",
         "diagnostic_capture_states",
     ] {
-        check_text(&studio_preview, required)?;
+        check_text(studio_preview, required)?;
     }
+    Ok(())
+}
+
+fn check_preview_matrix_forbidden_commands(
+    launcher_preview: &str,
+    studio_preview: &str,
+) -> Result<(), CliError> {
     for forbidden in [
         "cargo run -p std-launcher -- --ui-preview",
         "cargo run -p std-studio -- --ui-preview",

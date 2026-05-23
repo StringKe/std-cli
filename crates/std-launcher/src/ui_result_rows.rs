@@ -211,7 +211,7 @@ mod tests {
             title: result.action.name.clone(),
             subtitle: result.action.description.clone(),
             action_type: result.action.action_type.clone(),
-            primary_command: "open -a WeChat".to_string(),
+            primary_command: "open /tmp/std-fixture/WeChat.app".to_string(),
             metadata: Default::default(),
             examples: Vec::new(),
         };
