@@ -71,7 +71,7 @@ fn render_action_hints(ui: &mut egui::Ui, state: &LauncherState) -> ActionBarCom
             keycap(ui, &input::launcher_action_panel().label());
             quiet_label(ui, i18n::t("launcher.action.actions"));
             keycap(ui, &input::enter().label());
-            quiet_label(ui, i18n::t("launcher.action.run"));
+            quiet_label(ui, selected_primary_action_label(state));
             ActionBarCommand::None
         }
     }
@@ -143,6 +143,16 @@ fn action_bar_hint_mode(state: &LauncherState) -> ActionBarHintMode {
     }
 }
 
+fn selected_primary_action_label(state: &LauncherState) -> &'static str {
+    state
+        .view
+        .preview
+        .as_ref()
+        .filter(|preview| preview.action_type.needs_external_runner())
+        .map(|_| i18n::t("launcher.action.review_first"))
+        .unwrap_or(i18n::t("launcher.action.run"))
+}
+
 #[cfg(test)]
 fn action_bar_visible_hint_labels(state: &LauncherState) -> Vec<String> {
     match action_bar_hint_mode(state) {
@@ -155,7 +165,7 @@ fn action_bar_visible_hint_labels(state: &LauncherState) -> Vec<String> {
             ]
         }
         ActionBarHintMode::RunActions => vec![
-            i18n::t("launcher.action.run").to_string(),
+            selected_primary_action_label(state).to_string(),
             input::enter().label(),
             i18n::t("launcher.action.actions").to_string(),
             input::launcher_action_panel().label(),
@@ -271,6 +281,23 @@ mod tests {
         assert!(!labels.contains(&"registered".to_string()));
         assert!(!labels.contains(&"preview".to_string()));
         assert!(!labels.iter().any(|label| label.contains("menu bar")));
+    }
+
+    #[test]
+    fn action_bar_enter_hint_matches_external_runner_boundary() {
+        let mut state = LauncherState::new();
+        state.update_query("terminal");
+
+        let labels = action_bar_visible_hint_labels(&state);
+
+        assert!(labels.contains(&i18n::t("launcher.action.review_first").to_string()));
+        assert!(!labels.contains(&i18n::t("launcher.action.run").to_string()));
+
+        state.update_query("index");
+        let safe_labels = action_bar_visible_hint_labels(&state);
+
+        assert!(safe_labels.contains(&i18n::t("launcher.action.run").to_string()));
+        assert!(!safe_labels.contains(&i18n::t("launcher.action.review_first").to_string()));
     }
 
     #[test]
