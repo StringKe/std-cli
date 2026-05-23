@@ -40,6 +40,33 @@ manifest_dir=$(dirname -- "$manifest")
 mkdir -p "$manifest_dir"
 : >"$manifest"
 run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+harness_pid=""
+cleanup_recorded="false"
+
+cleanup_harness() {
+  if [ "$cleanup_recorded" = "true" ]; then
+    return
+  fi
+  cleanup_recorded="true"
+  if [ -n "$harness_pid" ]; then
+    kill "$harness_pid" 2>/dev/null || true
+    {
+      echo "cleanup_attempted=true"
+      echo "cleanup_target_pid=$harness_pid"
+      echo "cleanup_signal=TERM"
+      echo "cleanup_scope=validated_background_ui_harness_pid_only"
+    } >>"$manifest"
+  else
+    {
+      echo "cleanup_attempted=false"
+      echo "cleanup_target_pid=MISSING"
+      echo "cleanup_signal=NONE"
+      echo "cleanup_scope=no_validated_harness_pid"
+    } >>"$manifest"
+  fi
+}
+
+trap cleanup_harness EXIT
 
 record_manifest_header() {
   {
@@ -71,7 +98,6 @@ fi
 output=$(STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-harness.sh "$@")
 printf '%s\n' "$output"
 
-harness_pid=""
 window_id=""
 bundle_id=""
 window_title=""

@@ -222,6 +222,12 @@ fn assert_background_harness_contract(root: &Path) {
         "target_not_frontmost=required",
         "previous_app_policy=event_tap_only_no_input_delivery",
         "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
+        "cleanup_harness()",
+        "trap cleanup_harness EXIT",
+        "cleanup_attempted=true",
+        "cleanup_target_pid=$harness_pid",
+        "cleanup_signal=TERM",
+        "cleanup_scope=validated_background_ui_harness_pid_only",
         "frontmost preservation missing from driver stdout",
         "background_ui_acceptance PASS manifest=$manifest",
     ] {

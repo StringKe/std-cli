@@ -50,11 +50,15 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "harness_origin=spawned_by_scripts_background_ui_harness_only",
+        "cleanup_attempted=true",
+        "cleanup_signal=TERM",
+        "cleanup_scope=validated_background_ui_harness_pid_only",
     ] {
         check_text(body, required)?;
     }
     verify_positive_field(body, "harness_pid=")?;
     verify_positive_field(body, "window_id=")?;
+    verify_cleanup_target(body)?;
     verify_driver_identity(body)?;
     verify_matching_run_id(body)?;
     verify_matching_token(body)
@@ -138,6 +142,17 @@ fn verify_driver_identity(body: &str) -> Result<(), CliError> {
     Ok(())
 }
 
+fn verify_cleanup_target(body: &str) -> Result<(), CliError> {
+    let harness_pid = manifest_field(body, "harness_pid=")?;
+    let cleanup_pid = manifest_field(body, "cleanup_target_pid=")?;
+    if cleanup_pid == harness_pid {
+        return Ok(());
+    }
+    Err(CliError::Doctor(
+        "background UI acceptance cleanup target mismatch".to_string(),
+    ))
+}
+
 fn driver_pid_field<'a>(driver: &'a str, key: &str) -> Result<&'a str, CliError> {
     driver
         .split_whitespace()
@@ -191,7 +206,10 @@ mod tests {
 
     #[test]
     fn background_acceptance_manifest_rejects_driver_pid_mismatch() {
-        let manifest = sample_manifest().replace("target_pid=42", "target_pid=43");
+        let manifest = sample_manifest().replace(
+            "driver_stdout=background_driver PASS target_pid=42",
+            "driver_stdout=background_driver PASS target_pid=43",
+        );
 
         let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
         assert!(error.to_string().contains("target_pid=42"));
@@ -253,6 +271,14 @@ mod tests {
         assert!(error.to_string().contains("run_id mismatch"));
     }
 
+    #[test]
+    fn background_acceptance_manifest_rejects_cleanup_pid_mismatch() {
+        let manifest = sample_manifest().replace("cleanup_target_pid=42", "cleanup_target_pid=43");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("cleanup target mismatch"));
+    }
+
     fn sample_manifest() -> &'static str {
         "background-ui-acceptance manifest\n\
 created_at=2026-05-22T00:00:00Z\n\
@@ -286,6 +312,10 @@ previous_app_policy=event_tap_only_no_input_delivery\n\
 frontmost_user_app_policy=identify_and_preserve_current_frontmost_app\n\
 real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch\n\
 harness_origin=spawned_by_scripts_background_ui_harness_only\n\
+cleanup_attempted=true\n\
+cleanup_target_pid=42\n\
+cleanup_signal=TERM\n\
+cleanup_scope=validated_background_ui_harness_pid_only\n\
 manifest=artifacts/ui/background-acceptance/manifest.txt\n"
     }
 }
