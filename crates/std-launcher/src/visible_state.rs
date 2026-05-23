@@ -1,5 +1,5 @@
 use std_egui::{LauncherLoadingState, LauncherPhase, LauncherResultMode};
-use std_types::ActionExecutionStatus;
+use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 
 use crate::LauncherState;
 
@@ -10,6 +10,7 @@ pub struct LauncherVisibleState {
     pub elements: Vec<&'static str>,
     pub keyboard_path: &'static str,
     pub feedback_status: &'static str,
+    pub feedback_actions: Vec<&'static str>,
 }
 
 impl LauncherVisibleState {
@@ -44,17 +45,19 @@ impl LauncherVisibleState {
             elements,
             keyboard_path: keyboard_path(state),
             feedback_status: feedback_status(state),
+            feedback_actions: feedback_actions(state),
         }
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "phase={};query={};elements={};keyboard={};feedback={}",
+            "phase={};query={};elements={};keyboard={};feedback={};feedback_actions={}",
             self.phase,
             self.query,
             self.elements.join("|"),
             self.keyboard_path,
-            self.feedback_status
+            self.feedback_status,
+            self.feedback_actions.join("|")
         )
     }
 
@@ -67,6 +70,15 @@ impl LauncherVisibleState {
 
 pub fn launcher_visible_state_summary(state: &LauncherState) -> String {
     LauncherVisibleState::from_state(state).summary()
+}
+
+pub fn launcher_feedback_visible_state_summary(status: ActionExecutionStatus) -> String {
+    let mut state = LauncherState::new();
+    state.view.feedback = Some(std_egui::LauncherFeedback::from_execution(
+        &feedback_execution(status),
+    ));
+    state.view.phase = LauncherPhase::Feedback;
+    LauncherVisibleState::from_state(&state).summary()
 }
 
 fn phase_name(phase: LauncherPhase) -> &'static str {
@@ -109,6 +121,30 @@ fn feedback_status(state: &LauncherState) -> &'static str {
         .unwrap_or("none")
 }
 
+fn feedback_actions(state: &LauncherState) -> Vec<&'static str> {
+    state
+        .view
+        .feedback_actions()
+        .into_iter()
+        .map(|action| match action {
+            std_egui::LauncherFeedbackAction::Copy => "copy",
+            std_egui::LauncherFeedbackAction::Retry => "retry",
+            std_egui::LauncherFeedbackAction::OpenStudio => "open-studio",
+        })
+        .collect()
+}
+
+fn feedback_execution(status: ActionExecutionStatus) -> ActionExecution {
+    ActionExecution {
+        action_id: ActionId::default(),
+        action_name: "Fixture Feedback".to_string(),
+        status,
+        message: "fixture feedback".to_string(),
+        output: None,
+        created_at: chrono::Utc::now(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,5 +175,19 @@ mod tests {
         state.handle_ime_preedit("zhong");
         let ime = launcher_visible_state_summary(&state);
         assert!(ime.contains("ime-chip"));
+    }
+
+    #[test]
+    fn visible_state_reports_defer_and_error_feedback_actions() {
+        let defer =
+            launcher_feedback_visible_state_summary(ActionExecutionStatus::NeedsExternalRunner);
+        let error = launcher_feedback_visible_state_summary(ActionExecutionStatus::Failed);
+
+        assert!(defer.contains("phase=feedback"));
+        assert!(defer.contains("inline-feedback"));
+        assert!(defer.contains("feedback=deferred"));
+        assert!(defer.contains("feedback_actions=copy|retry"));
+        assert!(error.contains("feedback=failed"));
+        assert!(error.contains("feedback_actions=copy|retry|open-studio"));
     }
 }

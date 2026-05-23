@@ -82,6 +82,10 @@ impl LauncherSurfaceContract {
             && self.visible_state.contains("results=phase=with-results")
             && self.visible_state.contains("no_results=phase=no-results")
             && self.visible_state.contains("ime-chip")
+            && self.visible_state.contains("defer=phase=feedback")
+            && self.visible_state.contains("feedback=deferred")
+            && self.visible_state.contains("error=phase=feedback")
+            && self.visible_state.contains("feedback=failed")
             && self.nl_suggestion.contains("mode=NaturalLanguage")
             && self.nl_suggestion.contains("actions=Ask AI|Search Actions")
             && self.nl_suggestion.contains("selected=Ask AI")
@@ -200,10 +204,12 @@ fn visible_state_contract() -> String {
     ime.update_query("index");
     ime.handle_ime_preedit("zhong");
     format!(
-        "results={};no_results={};ime={}",
+        "results={};no_results={};ime={};defer={};error={}",
         crate::launcher_visible_state_summary(&results),
         crate::launcher_visible_state_summary(&no_results),
-        crate::launcher_visible_state_summary(&ime)
+        crate::launcher_visible_state_summary(&ime),
+        crate::launcher_feedback_visible_state_summary(ActionExecutionStatus::NeedsExternalRunner),
+        crate::launcher_feedback_visible_state_summary(ActionExecutionStatus::Failed)
     )
 }
 

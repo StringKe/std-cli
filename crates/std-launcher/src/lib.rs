@@ -82,7 +82,9 @@ pub use viewport_contract::{
     transparent_hidden_panel_contract, transparent_visible_panel_contract,
     LauncherViewportContract,
 };
-pub use visible_state::{launcher_visible_state_summary, LauncherVisibleState};
+pub use visible_state::{
+    launcher_feedback_visible_state_summary, launcher_visible_state_summary, LauncherVisibleState,
+};
 pub use voice::clean_voice_transcript;
 
 pub struct LauncherState {
