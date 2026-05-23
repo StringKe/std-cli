@@ -12,6 +12,8 @@
 - 真实截图 manifest 必须是 `artifacts/ui/manual-acceptance/manifest.txt`
 - 真实截图 manifest 必须包含 `samples`、`opaque_samples`、`unique_colors`、`black_pixels`、`white_pixels`、`transparent_pixels`
 - 真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white-carrier`
+- Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states
+- Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states
 - 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
 - 默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app
 

@@ -151,6 +151,10 @@ fn assert_doctor_ui_output(output: &str) {
     assert!(
         output.contains("completion_evidence_rules=历史 target/ui-evidence 路径不能作为完成证据")
     );
+    assert!(output.contains("Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states"));
+    assert!(
+        output.contains("Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states")
+    );
     assert!(output.contains("默认测试不得触碰 Terminal、iTerm2、1Password"));
     assert!(output.contains("final_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
@@ -280,6 +284,20 @@ fn assert_doctor_json_completion(report: &serde_json::Value) {
         .unwrap()
         .iter()
         .any(|rule| rule.as_str() == Some("历史 /tmp 截图不能作为完成证据")));
+    assert!(report["completion_evidence_rules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|rule| rule
+            .as_str()
+            .is_some_and(|rule| rule.contains("Launcher 截图矩阵"))));
+    assert!(report["completion_evidence_rules"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|rule| rule
+            .as_str()
+            .is_some_and(|rule| rule.contains("Studio 截图矩阵"))));
     assert!(report["completion_evidence_rules"]
         .as_array()
         .unwrap()

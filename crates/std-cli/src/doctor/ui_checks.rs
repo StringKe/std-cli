@@ -242,6 +242,15 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
     let launcher = read_required(&root.join("crates/std-launcher/src/preview.rs"))?;
     let launcher_evidence =
         read_required(&root.join("crates/std-launcher/src/preview_evidence.rs"))?;
+    let launcher_contract =
+        read_required(&root.join("crates/std-launcher/src/preview_contract.rs"))?;
+    let launcher_surface =
+        read_required(&root.join("crates/std-launcher/src/preview_surface_evidence.rs"))?;
+    let launcher_acceptance =
+        read_required(&root.join("crates/std-launcher/src/screenshot_acceptance.rs"))?;
+    let launcher_preview = format!(
+        "{launcher}\n{launcher_evidence}\n{launcher_contract}\n{launcher_surface}\n{launcher_acceptance}"
+    );
     for required in [
         "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview",
         "state: \"results\"",
@@ -276,13 +285,11 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "dark-error",
         "light-ime",
         "dark-ime",
+        "launcher_screenshot_acceptance",
+        "delivery_capture_states",
+        "diagnostic_capture_states",
     ] {
-        if launcher.contains(required) || launcher_evidence.contains(required) {
-            continue;
-        }
-        return Err(CliError::Doctor(format!(
-            "required text missing: {required}"
-        )));
+        check_text(&launcher_preview, required)?;
     }
     if launcher.contains("host-gap-0") {
         return Err(CliError::Doctor(
@@ -291,7 +298,11 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
     }
     let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;
     let studio_evidence = read_required(&root.join("crates/std-studio/src/preview_evidence.rs"))?;
-    let studio_preview = format!("{studio}\n{studio_evidence}");
+    let studio_smoke = read_required(&root.join("crates/std-studio/src/preview_smoke.rs"))?;
+    let studio_acceptance =
+        read_required(&root.join("crates/std-studio/src/screenshot_acceptance.rs"))?;
+    let studio_preview =
+        format!("{studio}\n{studio_evidence}\n{studio_smoke}\n{studio_acceptance}");
     for required in [
         "dark-dashboard",
         "light-dashboard",
@@ -326,6 +337,10 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "dark-settings",
         "light-panes",
         "dark-panes",
+        "studio_screenshot_acceptance",
+        "delivery_capture_states",
+        "workflow_capture_states",
+        "diagnostic_capture_states",
     ] {
         check_text(&studio_preview, required)?;
     }
