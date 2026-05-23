@@ -96,7 +96,7 @@ impl StudioEguiApp {
                 }
                 Ok(workflows) => self.render_saved_workflow_rows(ui, workflows),
                 Err(error) => {
-                    ui.colored_label(ui::warn_bg(ui.ctx()), error.to_string());
+                    ui.colored_label(ui::danger_bg(ui.ctx()), error.to_string());
                 }
             }
         });
@@ -368,5 +368,14 @@ mod tests {
             action_status_fill(&ctx, &std_types::ActionExecutionStatus::NeedsExternalRunner),
             ui::warn_bg(&ctx)
         );
+    }
+
+    #[test]
+    fn saved_workflow_error_text_uses_danger_token() {
+        let source = include_str!("workflows.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("colored_label(ui::danger_bg"));
+        assert!(!implementation.contains("colored_label(ui::warn_bg"));
     }
 }
