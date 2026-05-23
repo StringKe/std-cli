@@ -10,6 +10,11 @@ use crate::{
 use eframe::egui;
 use std_egui::tokens::{apply_theme, Color, ThemeMode};
 
+const ANALYSIS_PREVIEW_CONTRACT: &str =
+    "analysis_preview=coverage=overview:PASS|components:PASS|relations:PASS|history:PASS|complete:PASS";
+const PLUGIN_RUNTIME_PREVIEW_CONTRACT: &str =
+    "plugin_runtime=runtime=js:Completed:deno_core|ts:Completed:deno_core";
+
 pub(crate) fn required_capture_states_summary() -> &'static str {
     "required_capture_states=light-dashboard,dark-dashboard,light-workflow,dark-workflow,light-workflow-error,dark-workflow-error,light-analysis,dark-analysis,light-plugins,dark-plugins,light-plugin-permission,dark-plugin-permission,light-operations,dark-operations,light-memory,dark-memory,light-history,dark-history,light-settings,dark-settings,light-panes,dark-panes"
 }
@@ -56,7 +61,7 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         && preview_surface_passes(&surface, theme)
         && structure.passes(name);
     format!(
-        "{scenario}={}:pane={},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{},{}",
+        "{scenario}={}:pane={},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},analysis_preview={},plugin_runtime={},plugin_permission={},{},{}",
         if valid { "PASS" } else { "FAIL" },
         focused_content_key(&app),
         app.app.open_workspace_panes().count(),
@@ -64,6 +69,8 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         workflow_e2e_contract(&app, name),
         workflow_error_contract(&app, name),
         pane_management_contract(&app, name),
+        prefixed_analysis_preview_contract(&app),
+        prefixed_plugin_runtime_preview_contract(&app),
         plugin_permission_contract(&app),
         structure.summary(),
         surface.summary()
@@ -132,10 +139,13 @@ fn preview_state_passes(app: &StudioEguiApp, scenario: &str) -> bool {
                     .unwrap_or(false)
         }
         "analysis" => {
-            focused_content_key(app) == "analysis" && !app.analysis.coverage_output.is_empty()
+            focused_content_key(app) == "analysis"
+                && prefixed_analysis_preview_contract(app) == ANALYSIS_PREVIEW_CONTRACT
         }
         "plugins" => {
-            focused_content_key(app) == "plugins" && app.app.open_workspace_panes().count() >= 1
+            focused_content_key(app) == "plugins"
+                && app.app.open_workspace_panes().count() >= 1
+                && prefixed_plugin_runtime_preview_contract(app) == PLUGIN_RUNTIME_PREVIEW_CONTRACT
         }
         "plugin-permission" => {
             focused_content_key(app) == "plugins"
@@ -243,6 +253,26 @@ fn plugin_permission_contract(app: &StudioEguiApp) -> &'static str {
     } else {
         "not-plugin-permission"
     }
+}
+
+fn analysis_preview_contract(app: &StudioEguiApp) -> &str {
+    app.analysis.coverage_output.as_str()
+}
+
+fn prefixed_analysis_preview_contract(app: &StudioEguiApp) -> String {
+    format!("analysis_preview={}", analysis_preview_contract(app))
+}
+
+fn plugin_runtime_preview_contract(app: &StudioEguiApp) -> String {
+    app.status
+        .split_whitespace()
+        .find(|part| part.starts_with("runtime=js:"))
+        .unwrap_or("runtime=js:Missing:Missing|ts:Missing:Missing")
+        .to_string()
+}
+
+fn prefixed_plugin_runtime_preview_contract(app: &StudioEguiApp) -> String {
+    format!("plugin_runtime={}", plugin_runtime_preview_contract(app))
 }
 
 fn preview_surface_summary(theme: &str) -> PreviewSurfaceSummary {

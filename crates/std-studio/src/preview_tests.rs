@@ -251,6 +251,12 @@ fn assert_preview_summary_has_capture_runtime_policy(summary: &str) {
 fn assert_preview_summary_has_workbench_contracts(summary: &str) {
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
+    assert!(summary.contains(
+        "analysis_preview=coverage=overview:PASS|components:PASS|relations:PASS|history:PASS|complete:PASS"
+    ));
+    assert!(
+        summary.contains("plugin_runtime=runtime=js:Completed:deno_core|ts:Completed:deno_core")
+    );
     assert!(summary.contains("plugin_permission=permissions|fs|network|review-prompt"));
     assert!(summary.contains(
         "pane_management=open|focus|switch|close|reopen|restore|state-preserved|single-egui-viewport"

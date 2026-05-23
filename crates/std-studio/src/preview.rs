@@ -4,6 +4,7 @@ use std::env;
 use std_core::{StdConfig, StdCore};
 use std_egui::tokens::ThemeMode;
 use std_orchestration::{ExecutionStatus, StepResult, WorkflowExecution};
+use std_types::ActionExecution;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct StudioPreviewConfig {
@@ -298,10 +299,30 @@ fn seed_analysis_preview(app: &mut StudioEguiApp) {
         app.analysis.coverage_output = app
             .app
             .analysis_coverage_report()
-            .map(|report| format!("coverage complete={}", report.complete))
-            .unwrap_or_else(|error| error.to_string());
+            .ok()
+            .and_then(|report| {
+                report.items.first().map(|item| {
+                    format!(
+                        "coverage=overview:{}|components:{}|relations:{}|history:{}|complete:{}",
+                        layer_status(item.coverage.entity_overview),
+                        layer_status(item.coverage.component_digest),
+                        layer_status(item.coverage.symbol_relation_index),
+                        layer_status(item.coverage.historical_context),
+                        layer_status(item.coverage.complete())
+                    )
+                })
+            })
+            .unwrap_or_else(|| "coverage=missing".to_string());
         app.app.open_analysis_workbench(project_dir);
         app.status = "analysis preview seeded".to_string();
+    }
+}
+
+fn layer_status(pass: bool) -> &'static str {
+    if pass {
+        "PASS"
+    } else {
+        "FAIL"
     }
 }
 
@@ -315,24 +336,79 @@ fn seed_plugin_preview(app: &mut StudioEguiApp) {
     }
     let _ = std::fs::write(plugin_dir.join("main.js"), r#"std.emit({ ok: true });"#);
     let _ = std::fs::write(
+        plugin_dir.join("main.ts"),
+        r#"type PreviewOutput = { ok: boolean };
+const output: PreviewOutput = { ok: true };
+std.emit(output);"#,
+    );
+    let _ = std::fs::write(
         plugin_dir.join("plugin.json"),
         serde_json::json!({
             "name": "preview-plugin",
             "description": "Studio preview plugin",
             "permissions": ["code"],
-            "actions": [{
-                "name": "Preview Plugin Action",
-                "description": "Preview plugin action",
-                "when_to_use": "When previewing Studio plugin UI",
-                "kind": "javascript",
-                "script": "main.js",
-                "tags": ["preview-plugin"]
-            }]
+            "actions": [
+                {
+                    "name": "Preview Plugin JS Action",
+                    "description": "Preview JavaScript plugin runtime",
+                    "when_to_use": "When previewing Studio plugin UI",
+                    "kind": "javascript",
+                    "script": "main.js",
+                    "tags": ["preview-plugin", "preview-plugin-js"]
+                },
+                {
+                    "name": "Preview Plugin TS Action",
+                    "description": "Preview TypeScript plugin runtime",
+                    "when_to_use": "When previewing Studio plugin UI",
+                    "kind": "typescript",
+                    "script": "main.ts",
+                    "tags": ["preview-plugin", "preview-plugin-ts"]
+                }
+            ]
         })
         .to_string(),
     );
     let _ = app.app.reload_plugins();
-    app.status = "plugin preview seeded".to_string();
+    let js = run_preview_plugin(app, "preview-plugin-js");
+    let ts = run_preview_plugin(app, "preview-plugin-ts");
+    app.status = format!(
+        "plugin preview seeded {}",
+        plugin_runtime_preview_status(js.as_ref(), ts.as_ref())
+    );
+    if let Some(ts) = ts {
+        app.app.plugin_manager.last_execution = Some(ts);
+    } else if let Some(js) = js {
+        app.app.plugin_manager.last_execution = Some(js);
+    }
+}
+
+fn run_preview_plugin(app: &mut StudioEguiApp, query: &str) -> Option<ActionExecution> {
+    app.app.search_plugins(query);
+    app.app.run_selected_plugin()
+}
+
+fn plugin_runtime_preview_status(
+    js: Option<&ActionExecution>,
+    ts: Option<&ActionExecution>,
+) -> String {
+    format!(
+        "runtime=js:{}|ts:{}",
+        plugin_runtime_part(js),
+        plugin_runtime_part(ts)
+    )
+}
+
+fn plugin_runtime_part(execution: Option<&ActionExecution>) -> String {
+    let Some(execution) = execution else {
+        return "Missing:Missing".to_string();
+    };
+    let runtime = execution
+        .output
+        .as_ref()
+        .and_then(|output| output.get("runtime"))
+        .and_then(|runtime| runtime.as_str())
+        .unwrap_or("Missing");
+    format!("{:?}:{runtime}", execution.status)
 }
 
 fn seed_plugin_permission_preview(app: &mut StudioEguiApp) {

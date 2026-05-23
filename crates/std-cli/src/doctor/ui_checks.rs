@@ -354,6 +354,8 @@ fn check_studio_preview_matrix(studio_preview: &str) -> Result<(), CliError> {
         "canvas_token=bg/surface-0",
         "panel_token=bg/surface-1",
         "selected_token=accent/weak",
+        "analysis_preview=coverage=overview:PASS|components:PASS|relations:PASS|history:PASS|complete:PASS",
+        "plugin_runtime=runtime=js:Completed:deno_core|ts:Completed:deno_core",
         "host={},min={},workspace={}",
         "native_child_windows={},detached_panels={}",
         "required_capture_states",

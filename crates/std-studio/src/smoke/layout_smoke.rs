@@ -89,8 +89,8 @@ fn canvas_content_route_evidence() -> String {
 fn inspector_context_route_evidence() -> String {
     let source = include_str!("../shell.rs");
     if source.contains("focused_workspace_spec(&self.app)")
-        && source.contains("render_workspace_context(ui, &spec)")
-        && source.contains("workspace_context_summary")
+        && source.contains("render_workspace_context(ui, &spec, &summary)")
+        && source.contains("workspace_context_summary_for_app")
     {
         "focused-workspace-pane-context,global-fallback".to_string()
     } else {
