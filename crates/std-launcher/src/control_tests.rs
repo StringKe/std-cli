@@ -153,7 +153,7 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
     assert!(summary.contains("native_host=transparent"));
     assert!(summary.contains("panel_surface=opaque-bg-surface-0"));
     assert!(summary.contains("host_background=none"));
-    assert!(summary.contains("host_gutter=0px"));
+    assert!(summary.contains("host_gutter=64px"));
 }
 
 #[test]

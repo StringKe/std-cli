@@ -97,10 +97,10 @@ mod tests {
     }
 
     #[test]
-    fn launcher_window_host_contract_forbids_visible_host_gap_positioning() {
+    fn launcher_window_host_contract_uses_transparent_host_gutter() {
         assert_eq!(
             std_launcher::launcher_host_positioning_contract(),
-            "host_positioning=show:resize-to-panel-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=0px"
+            "host_positioning=show:resize-to-panel-host>outer-position-0.28-monitor-anchor>visible>focus;hide:resize-to-1x1>hidden;native_host=transparent;panel_surface=opaque-bg-surface-0;host_background=none;host_gutter=64px"
         );
     }
 

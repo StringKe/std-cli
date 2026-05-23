@@ -352,7 +352,8 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
 fn check_launcher_keyboard_ime_evidence(root: &Path) -> Result<(), CliError> {
     let keyboard = read_required(&root.join("crates/std-launcher/src/keyboard.rs"))?;
     let smoke = read_required(&root.join("crates/std-launcher/src/keyboard_smoke.rs"))?;
-    let evidence = format!("{keyboard}\n{smoke}");
+    let user_enter = read_required(&root.join("crates/std-launcher/src/user_enter_smoke.rs"))?;
+    let evidence = format!("{keyboard}\n{smoke}\n{user_enter}");
     for required in [
         "if ime_composing",
         "ime_composition_path",
@@ -360,14 +361,16 @@ fn check_launcher_keyboard_ime_evidence(root: &Path) -> Result<(), CliError> {
         "ime_commit_trigger_status",
         "user_enter_status",
         "user_enter_route",
-        "Enter>handle_keyboard_input_by_user>LauncherUser",
+        "Enter>handle_keyboard_input_by_user>ReviewFirst",
         "user_enter_deferred",
         "user_enter_open_contract",
         "ui_enter=handle_keyboard_input_by_user",
-        "mode=LauncherUser",
-        "production_gate=user_desktop_open_allowed_for_test_mode(false)=true",
-        "runner=open <app-path>",
-        "test_gate=STD_TEST_MODE blocks before runner",
+        "mode=ReviewFirst",
+        "default=review-command",
+        "run=ActionPanel>Run",
+        "desktop_open=default_review_first",
+        "explicit_run_status=NeedsExternalRunner",
+        "explicit_run_reason=STD_TEST_MODE blocked desktop open",
         "hide_policy=Completed->hide,NeedsExternalRunner->keep-open",
     ] {
         check_text(&evidence, required)?;

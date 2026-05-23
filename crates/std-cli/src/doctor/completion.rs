@@ -26,7 +26,7 @@ const MANUAL_BLOCKERS: [&str; 6] = [
     "完成前必须重跑并保留当前证据",
 ];
 
-const CURRENT_EVIDENCE_RULES: [&str; 11] = [
+const CURRENT_EVIDENCE_RULES: [&str; 9] = [
     "历史 target/ui-evidence 路径不能作为完成证据",
     "历史 /tmp 截图不能作为完成证据",
     "真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出",
@@ -34,10 +34,54 @@ const CURRENT_EVIDENCE_RULES: [&str; 11] = [
     "真实截图 manifest 必须包含中心与边缘 pixel evidence",
     "真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white`、`edge-black`、`edge-white-carrier`",
     "真实截图 acceptance rule 必须是 `explicit-opt-in+current-run-manifest+pid-process-title+png-files+center-edge-pixel-evidence+carrier-reject`",
-    "Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states",
-    "Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states",
     "安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出",
     "默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app",
+];
+
+const LAUNCHER_CAPTURE_EVIDENCE_RULES: [&str; 22] = [
+    "Launcher capture state required: light-collapsed",
+    "Launcher capture state required: dark-collapsed",
+    "Launcher capture state required: light-empty",
+    "Launcher capture state required: dark-empty",
+    "Launcher capture state required: light-results",
+    "Launcher capture state required: dark-results",
+    "Launcher capture state required: light-no-results",
+    "Launcher capture state required: dark-no-results",
+    "Launcher capture state required: light-searching",
+    "Launcher capture state required: dark-searching",
+    "Launcher capture state required: light-loading",
+    "Launcher capture state required: dark-loading",
+    "Launcher capture state required: light-executing",
+    "Launcher capture state required: dark-executing",
+    "Launcher capture state required: light-defer",
+    "Launcher capture state required: dark-defer",
+    "Launcher capture state required: light-error",
+    "Launcher capture state required: dark-error",
+    "Launcher capture state required: light-ime",
+    "Launcher capture state required: dark-ime",
+    "Launcher capture state required: light-action-panel",
+    "Launcher capture state required: dark-action-panel",
+];
+
+const STUDIO_CAPTURE_EVIDENCE_RULES: [&str; 18] = [
+    "Studio capture state required: light-dashboard",
+    "Studio capture state required: dark-dashboard",
+    "Studio capture state required: light-workflow",
+    "Studio capture state required: dark-workflow",
+    "Studio capture state required: light-workflow-error",
+    "Studio capture state required: dark-workflow-error",
+    "Studio capture state required: light-analysis",
+    "Studio capture state required: dark-analysis",
+    "Studio capture state required: light-plugins",
+    "Studio capture state required: dark-plugins",
+    "Studio capture state required: light-plugin-permission",
+    "Studio capture state required: dark-plugin-permission",
+    "Studio capture state required: light-operations",
+    "Studio capture state required: dark-operations",
+    "Studio capture state required: light-settings",
+    "Studio capture state required: dark-settings",
+    "Studio capture state required: light-panes",
+    "Studio capture state required: dark-panes",
 ];
 
 const STALE_EVIDENCE_PATTERNS: [&str; 4] = [
@@ -69,9 +113,17 @@ pub(crate) fn check_completion_gate() -> Result<CompletionDoctor, CliError> {
         matrix: "PASS",
         areas: REQUIRED_AREAS.to_vec(),
         blockers: MANUAL_BLOCKERS.to_vec(),
-        evidence_rules: CURRENT_EVIDENCE_RULES.to_vec(),
+        evidence_rules: completion_evidence_rules(),
         final_completion: "INCOMPLETE_REAL_GUI_REQUIRED",
     })
+}
+
+fn completion_evidence_rules() -> Vec<&'static str> {
+    CURRENT_EVIDENCE_RULES
+        .into_iter()
+        .chain(LAUNCHER_CAPTURE_EVIDENCE_RULES)
+        .chain(STUDIO_CAPTURE_EVIDENCE_RULES)
+        .collect()
 }
 
 fn check_audit_doc(audit: &str) -> Result<(), CliError> {
@@ -91,6 +143,12 @@ fn check_audit_doc(audit: &str) -> Result<(), CliError> {
         check_text(audit, required)?;
     }
     for required in CURRENT_EVIDENCE_RULES {
+        check_text(audit, required)?;
+    }
+    for required in LAUNCHER_CAPTURE_EVIDENCE_RULES {
+        check_text(audit, required)?;
+    }
+    for required in STUDIO_CAPTURE_EVIDENCE_RULES {
         check_text(audit, required)?;
     }
     reject_stale_evidence_paths(audit)?;
@@ -124,6 +182,12 @@ fn check_matrix_doc(matrix: &str) -> Result<(), CliError> {
     for required in CURRENT_EVIDENCE_RULES {
         check_text(matrix, required)?;
     }
+    for required in LAUNCHER_CAPTURE_EVIDENCE_RULES {
+        check_text(matrix, required)?;
+    }
+    for required in STUDIO_CAPTURE_EVIDENCE_RULES {
+        check_text(matrix, required)?;
+    }
     reject_stale_evidence_paths(matrix)?;
     Ok(())
 }
@@ -151,7 +215,13 @@ mod tests {
         assert_eq!(report.matrix, "PASS");
         assert_eq!(report.final_completion, "INCOMPLETE_REAL_GUI_REQUIRED");
         assert_eq!(report.areas, REQUIRED_AREAS);
-        assert_eq!(report.evidence_rules, CURRENT_EVIDENCE_RULES);
+        assert_eq!(report.evidence_rules, completion_evidence_rules());
+        assert!(report
+            .evidence_rules
+            .contains(&"Launcher capture state required: light-results"));
+        assert!(report
+            .evidence_rules
+            .contains(&"Studio capture state required: dark-panes"));
         assert!(report
             .blockers
             .contains(&"Studio UI 仍需按 docs/18-24 重新验收"));

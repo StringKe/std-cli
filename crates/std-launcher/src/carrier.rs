@@ -31,9 +31,9 @@ impl LauncherCarrierEvidence {
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
             && self.host_window.contains("transparent_host")
             && self.host_window.contains("host_background=none")
-            && self.host_window.contains("host_gutter=0px")
-            && self.geometry.contains("panel_origin=0x0")
-            && self.geometry.contains("host_gap=0x0")
+            && self.host_window.contains("host_gutter=64px")
+            && self.geometry.contains("panel_origin=64x64")
+            && self.geometry.contains("host_gap=128x128")
             && self.geometry.contains("panel_only_surface=true")
             && self.pixel_policy.contains("host-carrier-zero")
             && self.pixel_policy.contains("edge-black-white-zero")
@@ -129,10 +129,10 @@ mod tests {
     fn visible_host_geometry_lists_launcher_state_scenarios() {
         let summary = launcher_visible_host_geometry_contract();
 
-        assert!(summary.contains("results:native_host=720x360"));
-        assert!(summary.contains("defer:native_host=720x360"));
-        assert!(summary.contains("error:native_host=720x360"));
-        assert!(summary.contains("panel_origin=0x0"));
-        assert!(summary.contains("host_gap=0x0"));
+        assert!(summary.contains("results:native_host=848x488"));
+        assert!(summary.contains("defer:native_host=848x488"));
+        assert!(summary.contains("error:native_host=848x488"));
+        assert!(summary.contains("panel_origin=64x64"));
+        assert!(summary.contains("host_gap=128x128"));
     }
 }

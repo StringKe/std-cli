@@ -151,10 +151,8 @@ fn assert_doctor_ui_output(output: &str) {
     assert!(
         output.contains("completion_evidence_rules=历史 target/ui-evidence 路径不能作为完成证据")
     );
-    assert!(output.contains("Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states"));
-    assert!(
-        output.contains("Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states")
-    );
+    assert!(output.contains("Launcher capture state required: light-results"));
+    assert!(output.contains("Studio capture state required: dark-panes"));
     assert!(output.contains("默认测试不得触碰 Terminal、iTerm2、1Password"));
     assert!(output.contains("final_completion=INCOMPLETE_REAL_GUI_REQUIRED"));
 }
@@ -300,14 +298,14 @@ fn assert_doctor_json_completion(report: &serde_json::Value) {
         .iter()
         .any(|rule| rule
             .as_str()
-            .is_some_and(|rule| rule.contains("Launcher 截图矩阵"))));
+            .is_some_and(|rule| rule == "Launcher capture state required: light-results")));
     assert!(report["completion_evidence_rules"]
         .as_array()
         .unwrap()
         .iter()
         .any(|rule| rule
             .as_str()
-            .is_some_and(|rule| rule.contains("Studio 截图矩阵"))));
+            .is_some_and(|rule| rule == "Studio capture state required: dark-panes")));
     assert!(report["completion_evidence_rules"]
         .as_array()
         .unwrap()

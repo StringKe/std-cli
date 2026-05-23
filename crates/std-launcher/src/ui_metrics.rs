@@ -285,10 +285,12 @@ struct PanelSurfaceGeometry {
 
 impl PanelSurfaceGeometry {
     fn passes(&self) -> bool {
+        let gutter = host_gutter();
         self.frame_clear
-            && self.panel.min == egui::Pos2::ZERO
-            && (self.panel.width() - self.window.x).abs() < 0.5
-            && (self.panel.height() - self.window.y).abs() < 0.5
+            && (self.panel.min.x - gutter).abs() < 0.5
+            && (self.panel.min.y - gutter).abs() < 0.5
+            && (self.window.x - self.panel.width() - gutter * 2.0).abs() < 0.5
+            && (self.window.y - self.panel.height() - gutter * 2.0).abs() < 0.5
     }
 
     fn summary(&self) -> String {

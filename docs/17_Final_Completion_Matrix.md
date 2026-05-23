@@ -10,13 +10,51 @@
 - 历史 /tmp 截图不能作为完成证据
 - 真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出
 - 真实截图 manifest 必须是 `artifacts/ui/manual-acceptance/manifest.txt`
-- 真实截图 manifest 必须包含 `samples`、`opaque_samples`、`unique_colors`、`black_pixels`、`white_pixels`、`transparent_pixels`
-- 真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white-carrier`
-- 真实截图 acceptance rule 必须是 `explicit-opt-in+current-run-manifest+png-files+pixel-evidence+carrier-reject`
-- Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states
-- Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states
+- 真实截图 manifest 必须包含中心与边缘 pixel evidence
+- 真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white`、`edge-black`、`edge-white-carrier`
+- 真实截图 acceptance rule 必须是 `explicit-opt-in+current-run-manifest+pid-process-title+png-files+center-edge-pixel-evidence+carrier-reject`
 - 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
 - 默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app
+- Launcher capture state required: light-collapsed
+- Launcher capture state required: dark-collapsed
+- Launcher capture state required: light-empty
+- Launcher capture state required: dark-empty
+- Launcher capture state required: light-results
+- Launcher capture state required: dark-results
+- Launcher capture state required: light-no-results
+- Launcher capture state required: dark-no-results
+- Launcher capture state required: light-searching
+- Launcher capture state required: dark-searching
+- Launcher capture state required: light-loading
+- Launcher capture state required: dark-loading
+- Launcher capture state required: light-executing
+- Launcher capture state required: dark-executing
+- Launcher capture state required: light-defer
+- Launcher capture state required: dark-defer
+- Launcher capture state required: light-error
+- Launcher capture state required: dark-error
+- Launcher capture state required: light-ime
+- Launcher capture state required: dark-ime
+- Launcher capture state required: light-action-panel
+- Launcher capture state required: dark-action-panel
+- Studio capture state required: light-dashboard
+- Studio capture state required: dark-dashboard
+- Studio capture state required: light-workflow
+- Studio capture state required: dark-workflow
+- Studio capture state required: light-workflow-error
+- Studio capture state required: dark-workflow-error
+- Studio capture state required: light-analysis
+- Studio capture state required: dark-analysis
+- Studio capture state required: light-plugins
+- Studio capture state required: dark-plugins
+- Studio capture state required: light-plugin-permission
+- Studio capture state required: dark-plugin-permission
+- Studio capture state required: light-operations
+- Studio capture state required: dark-operations
+- Studio capture state required: light-settings
+- Studio capture state required: dark-settings
+- Studio capture state required: light-panes
+- Studio capture state required: dark-panes
 
 ## Core
 
