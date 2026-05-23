@@ -46,11 +46,13 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
     };
     let app = seeded_preview_app(theme, name);
     let surface = preview_surface_summary(theme);
+    let structure = StudioPreviewStructure::for_app(&app);
     let valid = matches!(theme, "dark" | "light")
         && preview_state_passes(&app, name)
-        && preview_surface_passes(&surface, theme);
+        && preview_surface_passes(&surface, theme)
+        && structure.passes(name);
     format!(
-        "{scenario}={}:pane={},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{}",
+        "{scenario}={}:pane={},workspace={},status={},workflow_e2e={},workflow_error={},pane_management={},plugin_permission={},{},{}",
         if valid { "PASS" } else { "FAIL" },
         focused_content_key(&app),
         app.app.open_workspace_panes().count(),
@@ -59,6 +61,7 @@ pub(crate) fn preview_state_summary(scenario: &str) -> String {
         workflow_error_contract(&app, name),
         pane_management_contract(&app, name),
         plugin_permission_contract(&app),
+        structure.summary(),
         surface.summary()
     )
 }
@@ -279,6 +282,81 @@ fn preview_surface_passes(surface: &PreviewSurfaceSummary, theme: &str) -> bool 
                 && surface.selected == "#0A6BFF@31"
         }
         _ => false,
+    }
+}
+
+struct StudioPreviewStructure {
+    host: &'static str,
+    panes: &'static str,
+    shell: &'static str,
+    focused: &'static str,
+    bottom: &'static str,
+    open: usize,
+    native: bool,
+    detached: bool,
+}
+
+impl StudioPreviewStructure {
+    fn for_app(app: &StudioEguiApp) -> Self {
+        Self {
+            host: "single-borderless-egui-viewport",
+            panes: "internal-workspace-panes",
+            shell: "host-chrome|sidebar|canvas|status-bar",
+            focused: focused_content_key(app),
+            bottom: if app.layout.bottom_panel_open {
+                "visible"
+            } else {
+                "hidden"
+            },
+            open: app.app.open_workspace_panes().count(),
+            native: app.app.workspace_policy.allows_native_child_windows(),
+            detached: app.app.workspace_policy.allows_detached_panels(),
+        }
+    }
+
+    fn passes(&self, scenario: &str) -> bool {
+        self.host == "single-borderless-egui-viewport"
+            && self.panes == "internal-workspace-panes"
+            && self.shell == "host-chrome|sidebar|canvas|status-bar"
+            && !self.native
+            && !self.detached
+            && self.open > 0
+            && self.focused_pass(scenario)
+            && self.bottom_pass(scenario)
+    }
+
+    fn focused_pass(&self, scenario: &str) -> bool {
+        match scenario {
+            "dashboard" => self.focused == "dashboard",
+            "workflow" | "workflow-error" => self.focused == "workflows",
+            "analysis" => self.focused == "analysis",
+            "plugins" | "plugin-permission" => self.focused == "plugins",
+            "operations" => self.focused == "operations",
+            "settings" => self.focused == "settings",
+            "panes" => matches!(self.focused, "memory" | "history" | "plugins"),
+            _ => false,
+        }
+    }
+
+    fn bottom_pass(&self, scenario: &str) -> bool {
+        match scenario {
+            "workflow" | "workflow-error" => self.bottom == "visible",
+            _ => true,
+        }
+    }
+
+    fn summary(&self) -> String {
+        format!(
+            "structure=host:{},panes:{},shell:{},focused:{},bottom_panel:{},open:{},native_child_windows:{},detached_panels:{}",
+            self.host,
+            self.panes,
+            self.shell,
+            self.focused,
+            self.bottom,
+            self.open,
+            self.native,
+            self.detached
+        )
     }
 }
 

@@ -127,6 +127,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     assert_preview_screenshot_acceptance_contract(&report);
     assert_preview_summary_has_surfaces(&summary);
     assert_preview_summary_has_viewport_policy(&summary);
+    assert_preview_summary_has_workspace_structure(&summary);
 }
 
 fn assert_preview_summary_has_scenarios(summary: &str) {
@@ -216,6 +217,25 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
     assert!(summary.contains("normal-viewport-close"));
+}
+
+fn assert_preview_summary_has_workspace_structure(summary: &str) {
+    for expected in [
+        "structure=host:single-borderless-egui-viewport",
+        "panes:internal-workspace-panes",
+        "shell:host-chrome|sidebar|canvas|status-bar",
+        "focused:dashboard",
+        "focused:workflows",
+        "focused:analysis",
+        "focused:plugins",
+        "focused:operations",
+        "focused:settings",
+        "bottom_panel:visible",
+        "native_child_windows:false",
+        "detached_panels:false",
+    ] {
+        assert!(summary.contains(expected), "{expected}");
+    }
 }
 
 fn assert_preview_capture_manifest_contract(report: &StudioPreviewSmokeReport) {
