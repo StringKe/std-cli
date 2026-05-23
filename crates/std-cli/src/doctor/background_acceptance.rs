@@ -27,6 +27,7 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click",
         "fallback=never_frontmost_desktop_click",
         "frontmost_policy=previous_app_never_targeted",
+        "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
         "bundle_id=dev.std-cli.background-ui-harness",
         "window_title=std-cli Background UI Harness ",
         "harness_token=run-",
@@ -46,6 +47,7 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "frontmost_evidence_source=background_driver_stdout",
         "target_not_frontmost=required",
         "previous_app_policy=event_tap_only_no_input_delivery",
+        "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "harness_origin=spawned_by_scripts_background_ui_harness_only",
     ] {
@@ -263,6 +265,7 @@ forbidden_targets=frontmost_app,Terminal,1Password,WeChat,weixin,wechat,微信,S
 forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click\n\
 fallback=never_frontmost_desktop_click\n\
 frontmost_policy=previous_app_never_targeted\n\
+frontmost_user_app_policy=identify_and_preserve_current_frontmost_app\n\
 harness_pid=42\n\
 window_id=24\n\
 bundle_id=dev.std-cli.background-ui-harness\n\
@@ -280,6 +283,7 @@ frontmost_before_equals_after=required\n\
 frontmost_evidence_source=background_driver_stdout\n\
 target_not_frontmost=required\n\
 previous_app_policy=event_tap_only_no_input_delivery\n\
+frontmost_user_app_policy=identify_and_preserve_current_frontmost_app\n\
 real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch\n\
 harness_origin=spawned_by_scripts_background_ui_harness_only\n\
 manifest=artifacts/ui/background-acceptance/manifest.txt\n"

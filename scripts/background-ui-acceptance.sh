@@ -54,6 +54,7 @@ record_manifest_header() {
     echo "forbidden_route=global_HID,System_Events,frontmost_click,screen_coordinate_click"
     echo "fallback=never_frontmost_desktop_click"
     echo "frontmost_policy=previous_app_never_targeted"
+    echo "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app"
   } >>"$manifest"
 }
 
@@ -167,6 +168,7 @@ fi
   echo "frontmost_evidence_source=background_driver_stdout"
   echo "target_not_frontmost=required"
   echo "previous_app_policy=event_tap_only_no_input_delivery"
+  echo "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app"
   echo "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch"
   echo "harness_origin=spawned_by_scripts_background_ui_harness_only"
   echo "manifest=$manifest"

@@ -221,6 +221,7 @@ fn assert_background_harness_contract(root: &Path) {
         "frontmost_evidence_source=background_driver_stdout",
         "target_not_frontmost=required",
         "previous_app_policy=event_tap_only_no_input_delivery",
+        "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
         "frontmost preservation missing from driver stdout",
         "background_ui_acceptance PASS manifest=$manifest",
     ] {
@@ -264,6 +265,7 @@ fn background_cli_contract_terms() -> &'static [&'static str] {
         "event_route=postToPid_target_pid_only",
         "key_smoke=Enter_to_isolated_echo_result",
         "frontmost_policy=previous_app_never_targeted",
+        "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app",
         "frontmost_sensitive_app_policy=fail_before_event_tap",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "focus_guard=drop_previous_app_deactivation",

@@ -89,6 +89,7 @@ fn background_smoke_report(status: &str, reason: &str, config: &BackgroundSmokeC
         "event_route=postToPid_target_pid_only".to_string(),
         "key_smoke=Enter_to_isolated_echo_result".to_string(),
         "frontmost_policy=previous_app_never_targeted".to_string(),
+        "frontmost_user_app_policy=identify_and_preserve_current_frontmost_app".to_string(),
         "frontmost_preservation=frontmost_before_equals_frontmost_after_required".to_string(),
         "frontmost_sensitive_app_policy=fail_before_event_tap".to_string(),
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch".to_string(),
@@ -273,6 +274,8 @@ mod tests {
             "test",
             &harness_config(HARNESS_BUNDLE_ID, &harness_window_title("run-42")),
         );
+        assert!(report
+            .contains("frontmost_user_app_policy=identify_and_preserve_current_frontmost_app"));
         for name in [
             "WeChat",
             "weixin",
