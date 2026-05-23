@@ -151,10 +151,10 @@ fn launcher_sizes_export_transparent_host_geometry() {
     assert_eq!(LauncherSize::PANEL_WIDTH, 720.0);
     assert_eq!(LauncherSize::WINDOW_VERTICAL_ANCHOR, 0.28);
     assert_eq!(LauncherSize::panel_surface_width(scale), 720.0);
-    assert_eq!(LauncherSize::host_gutter(scale), 16.0);
+    assert_eq!(LauncherSize::host_gutter(scale), 64.0);
     assert_eq!(
         LauncherSize::host_size(egui::vec2(720.0, 64.0), scale),
-        egui::vec2(752.0, 96.0)
+        egui::vec2(848.0, 192.0)
     );
     assert_eq!(LauncherSize::hidden_host_size(), egui::vec2(1.0, 1.0));
     assert_eq!(

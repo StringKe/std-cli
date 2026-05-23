@@ -203,9 +203,9 @@ fn check_launcher_panel_viewport(root: &Path) -> Result<(), CliError> {
     )?;
     let launcher_surface = read_required(&root.join("crates/std-launcher/src/surface_smoke.rs"))?;
     for required in [
-        "native_host_window=transparent_host,panel_surface=opaque,host_gutter=16px,no_host_background",
-        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=16px,no_host_background",
-        "capture_surface=opaque_panel_surface,transparent_host,host_gutter=16px,no_host_background,no_shadow_clip",
+        "native_host_window=transparent_host,panel_surface=opaque,host_gutter=64px,no_host_background",
+        "capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=64px,no_host_background",
+        "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip",
     ] {
         check_text(&launcher_surface, required)?;
     }
@@ -266,7 +266,7 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "self.scenarios == preview_matrix()",
         "transparent-native-host,opaque-panel-surface,opt-in-only",
         "no-default-window",
-        "host-gutter-16px",
+        "host-gutter-64px",
         "no-shadow-clip",
         "preview_surface_summary",
         "preview_size_summary",
@@ -295,7 +295,7 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
     }
     if launcher.contains("host-gap-0") {
         return Err(CliError::Doctor(
-            "launcher preview capture contract must use host-gutter-16px".to_string(),
+            "launcher preview capture contract must use host-gutter-64px".to_string(),
         ));
     }
     let studio = read_required(&root.join("crates/std-studio/src/preview.rs"))?;

@@ -258,7 +258,7 @@ fn visible_structure_contract() -> String {
         "preview=action-bar-summary|result-row-action-hint",
         "feedback=status-icon|title|message|copy|retry|open-studio",
         "states=empty|no-results|loading|executing|defer|error",
-        "host=transparent-native-host|opaque-panel-surface|host-gutter-16px|no-host-background",
+        "host=transparent-native-host|opaque-panel-surface|host-gutter-64px|no-host-background",
     ]
     .join(";")
 }

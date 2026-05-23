@@ -312,7 +312,7 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=16px"));
+            .contains("native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"));
         assert!(report
             .summary()
             .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none"));
@@ -403,8 +403,8 @@ mod tests {
             "host_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_host=",
             "host_background=none",
             "panel_surface=opaque",
-            "panel_origin=16x16",
-            "host_gap=32x32",
+            "panel_origin=64x64",
+            "host_gap=128x128",
             "panel_floats=true",
             "forbidden=black_or_white_host_background",
             "body:loading-progress-token-surface",

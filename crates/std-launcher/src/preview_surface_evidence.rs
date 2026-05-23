@@ -96,8 +96,8 @@ impl PreviewNativeHostSurface {
     pub(crate) fn passes(&self) -> bool {
         self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.geometry.contains("host_gap=32x32")
-            && self.geometry.contains("panel_origin=16x16")
+            && self.geometry.contains("host_gap=128x128")
+            && self.geometry.contains("panel_origin=64x64")
             && self.geometry.contains("panel_floats=true")
             && self.carrier.passes()
     }

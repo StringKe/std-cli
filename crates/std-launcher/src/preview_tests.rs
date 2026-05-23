@@ -197,7 +197,7 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
-    assert!(summary.contains("host-gutter-16px"));
+    assert!(summary.contains("host-gutter-64px"));
     assert!(summary.contains("no-host-background"));
     assert!(summary.contains("no-shadow-clip"));
     assert!(!summary.contains("host-gap-0"));
@@ -263,7 +263,7 @@ fn preview_smoke_sizes_prove_capture_window_has_transparent_host() {
     assert!(report
         .summary()
         .contains("panel_frame=transparent_host_with_opaque_panel_surface"));
-    assert!(report.summary().contains("bottom_clearance=16"));
+    assert!(report.summary().contains("bottom_clearance=64"));
     assert!(report.summary().contains("budget_source=panel"));
     assert!(!report.summary().contains("bottom_clearance=0"));
     assert!(report
@@ -282,7 +282,7 @@ fn preview_size_budget_uses_panel_height_not_native_host_height() {
     };
     let summary = crate::preview_evidence::preview_size_summary(&scenario);
 
-    assert!(summary.contains("bottom_clearance=16"), "{summary}");
+    assert!(summary.contains("bottom_clearance=64"), "{summary}");
     assert!(summary.contains("budget_source=panel"), "{summary}");
     assert!(summary.contains("panel_floats=true"), "{summary}");
     assert!(!summary.contains("bottom_clearance=0"), "{summary}");
@@ -346,7 +346,7 @@ fn preview_evidence_names_transparent_host_not_extra_host_container() {
     assert!(!surface.contains(&format!("{forbidden_host_container}=")));
     assert!(preview_contract.contains("transparent-native-host"));
     assert!(preview_contract.contains("opaque-panel-surface"));
-    assert!(preview_contract.contains("host-gutter-16px"));
+    assert!(preview_contract.contains("host-gutter-64px"));
     assert!(preview_contract.contains("no-host-background"));
     assert!(!preview.contains("host-gap-0"));
     assert!(!preview.contains(forbidden_host_container));
