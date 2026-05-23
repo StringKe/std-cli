@@ -30,6 +30,7 @@ mod preview_evidence;
 mod preview_smoke;
 #[cfg(test)]
 mod preview_tests;
+mod screenshot_acceptance;
 #[cfg(test)]
 mod settings_tests;
 mod shell;

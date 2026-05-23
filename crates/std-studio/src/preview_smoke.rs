@@ -1,6 +1,7 @@
 use crate::preview_evidence::{
     preview_matrix, preview_size_summary, preview_state_summary, required_capture_states_summary,
 };
+use crate::screenshot_acceptance::StudioScreenshotAcceptanceMatrix;
 use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -12,12 +13,14 @@ pub(crate) struct StudioPreviewSmokeReport {
     pub(crate) required_capture_states: Vec<String>,
     pub(crate) capture_contract: &'static str,
     pub(crate) capture_manifest: StudioCaptureManifest,
+    pub(crate) screenshot_acceptance: StudioScreenshotAcceptanceMatrix,
 }
 
 impl StudioPreviewSmokeReport {
     pub(crate) fn new() -> Self {
         let scenarios = preview_matrix();
         let capture_manifest = StudioCaptureManifest::for_scenarios(&scenarios);
+        let screenshot_acceptance = StudioScreenshotAcceptanceMatrix::for_scenarios(&scenarios);
         Self {
             commands: scenarios
                 .iter()
@@ -35,6 +38,7 @@ impl StudioPreviewSmokeReport {
             scenarios,
             capture_contract: preview_capture_contract(),
             capture_manifest,
+            screenshot_acceptance,
         }
     }
 
@@ -47,11 +51,12 @@ impl StudioPreviewSmokeReport {
             && required_capture_states_pass(&self.required_capture_states)
             && self.capture_contract == preview_capture_contract()
             && self.capture_manifest.pass(&self.scenarios)
+            && self.screenshot_acceptance.pass()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}\n{}",
+            "studio_preview_smoke {}\npreview_scenarios={}\npreview_commands={}\npreview_states={}\npreview_sizes={}\nrequired_capture_states={}\npreview_capture_contract={}\n{}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.scenarios.join(","),
             self.commands.join(";"),
@@ -61,7 +66,8 @@ impl StudioPreviewSmokeReport {
                 .strip_prefix("required_capture_states=")
                 .unwrap_or(""),
             self.capture_contract,
-            self.capture_manifest.summary()
+            self.capture_manifest.summary(),
+            self.screenshot_acceptance.summary()
         )
     }
 }

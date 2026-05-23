@@ -124,6 +124,7 @@ fn preview_smoke_reports_required_studio_screenshot_matrix() {
     assert_preview_summary_has_scenarios(&summary);
     assert_required_capture_state_contract(&report);
     assert_preview_capture_manifest_contract(&report);
+    assert_preview_screenshot_acceptance_contract(&report);
     assert_preview_summary_has_surfaces(&summary);
     assert_preview_summary_has_viewport_policy(&summary);
 }
@@ -234,4 +235,25 @@ fn assert_preview_capture_manifest_contract(report: &StudioPreviewSmokeReport) {
     ));
     assert!(summary
         .contains("carrier_reject_rule=reject-single-color+dominant-black+dominant-white-carrier"));
+}
+
+fn assert_preview_screenshot_acceptance_contract(report: &StudioPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(report.screenshot_acceptance.pass());
+    assert!(summary.contains("studio_screenshot_acceptance PASS"));
+    assert!(summary.contains(
+        "delivery_capture_states=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings"
+    ));
+    assert!(summary.contains(
+        "workflow_capture_states=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error"
+    ));
+    assert!(summary.contains(
+        "diagnostic_capture_states=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes"
+    ));
+    assert!(summary.contains(
+        "evidence_rule=docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark"
+    ));
+    assert!(summary.contains("opt_in_rule=STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"));
+    assert!(summary.contains("capture_verify_rule=manifest-current-run-png-files-by-theme-state"));
 }
