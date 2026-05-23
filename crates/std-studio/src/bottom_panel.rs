@@ -314,12 +314,7 @@ fn render_bottom_panel_row(ui: &mut egui::Ui, row: &BottomPanelRow) {
 }
 
 fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
-    let fill = match status {
-        "success" => ui::ok_bg(ui.ctx()),
-        "error" | "skipped" => ui::warn_bg(ui.ctx()),
-        "running" => ui::selected_bg(ui.ctx()),
-        _ => ui::panel_alt(ui.ctx()),
-    };
+    let fill = status_chip_fill(ui.ctx(), status);
     ui.painter().rect_filled(
         rect,
         egui::CornerRadius::same(std_egui::tokens::Radius::SM),
@@ -332,6 +327,16 @@ fn paint_status_chip(ui: &mut egui::Ui, rect: egui::Rect, status: &str) {
         std_egui::tokens::Text::caption(),
         ui::strong_text(ui.ctx()),
     );
+}
+
+fn status_chip_fill(ctx: &egui::Context, status: &str) -> egui::Color32 {
+    match status {
+        "success" => ui::ok_bg(ctx),
+        "error" => ui::danger_bg(ctx),
+        "skipped" => ui::warn_bg(ctx),
+        "running" => ui::selected_bg(ctx),
+        _ => ui::panel_alt(ctx),
+    }
 }
 
 #[cfg(test)]
@@ -377,5 +382,18 @@ mod tests {
         assert!(app.layout.bottom_panel_open);
         assert_eq!(app.bottom_panel_tab, BottomPanelTab::BatchDebug);
         assert_eq!(app.bottom_panel_snapshot().title, "批量调试");
+    }
+
+    #[test]
+    fn bottom_panel_status_chip_uses_danger_for_error_and_warning_for_skipped() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+
+        assert_eq!(status_chip_fill(&ctx, "error"), ui::danger_bg(&ctx));
+        assert_eq!(status_chip_fill(&ctx, "skipped"), ui::warn_bg(&ctx));
+        assert_ne!(
+            status_chip_fill(&ctx, "error"),
+            status_chip_fill(&ctx, "skipped")
+        );
     }
 }

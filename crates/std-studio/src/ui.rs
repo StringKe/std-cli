@@ -39,6 +39,10 @@ pub(crate) fn warn_bg(ctx: &egui::Context) -> egui::Color32 {
     Color::status_warning(ctx)
 }
 
+pub(crate) fn danger_bg(ctx: &egui::Context) -> egui::Color32 {
+    Color::status_danger(ctx)
+}
+
 pub(crate) fn ok_bg(ctx: &egui::Context) -> egui::Color32 {
     Color::status_success(ctx)
 }
