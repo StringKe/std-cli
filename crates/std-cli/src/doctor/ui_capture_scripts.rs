@@ -108,6 +108,8 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
     for required in [
         "STD_ALLOW_UI_PREVIEW",
         "STD_TEST_MODE blocks UI preview",
+        "out_dir=\"${1:-artifacts/ui/manual-acceptance}\"",
+        "out_dir must be artifacts/ui/manual-acceptance",
         "capture_target_dir=\"target/ui-capture\"",
         "launcher_bin=\"$capture_target_dir/debug/std-launcher\"",
         "studio_bin=\"$capture_target_dir/debug/std-studio\"",

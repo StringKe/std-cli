@@ -16,7 +16,11 @@ if [ "$(uname -s)" != "Darwin" ]; then
   exit 2
 fi
 
-out_dir="${1:-artifacts/ui/$(date +%Y%m%d-%H%M%S)}"
+out_dir="${1:-artifacts/ui/manual-acceptance}"
+if [ "$out_dir" != "artifacts/ui/manual-acceptance" ]; then
+  echo "capture-ui-matrix FAIL reason=out_dir must be artifacts/ui/manual-acceptance" >&2
+  exit 2
+fi
 mkdir -p "$out_dir"
 manifest="$out_dir/manifest.txt"
 : >"$manifest"

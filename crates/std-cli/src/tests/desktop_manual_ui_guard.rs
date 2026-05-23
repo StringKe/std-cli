@@ -25,6 +25,8 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
 
     assert!(body.contains("STD_ALLOW_UI_PREVIEW"));
     assert!(body.contains("STD_TEST_MODE blocks UI preview"));
+    assert!(body.contains("out_dir=\"${1:-artifacts/ui/manual-acceptance}\""));
+    assert!(body.contains("out_dir must be artifacts/ui/manual-acceptance"));
     assert!(body.contains("capture_target_dir=\"target/ui-capture\""));
     assert!(body.contains("launcher_bin=\"$capture_target_dir/debug/std-launcher\""));
     assert!(body.contains("studio_bin=\"$capture_target_dir/debug/std-studio\""));
@@ -73,7 +75,7 @@ fn mise_ui_capture_matrix_is_manual_preview_only() {
 
     assert!(task.contains("STD_ALLOW_UI_PREVIEW = \"1\""));
     assert!(task.contains("STD_TEST_MODE = \"0\""));
-    assert!(task.contains("scripts/capture-ui-matrix.sh"));
+    assert!(task.contains("scripts/capture-ui-matrix.sh artifacts/ui/manual-acceptance"));
     assert!(!quality.contains("ui-capture-matrix"));
 }
 
