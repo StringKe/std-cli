@@ -32,6 +32,7 @@ mod surface_contract;
 mod surface_smoke;
 mod user_enter_smoke;
 mod viewport_contract;
+mod visible_state;
 mod voice;
 
 pub use action_bar_preview::ActionBarPreviewSummary;
@@ -81,6 +82,7 @@ pub use viewport_contract::{
     transparent_hidden_panel_contract, transparent_visible_panel_contract,
     LauncherViewportContract,
 };
+pub use visible_state::{launcher_visible_state_summary, LauncherVisibleState};
 pub use voice::clean_voice_transcript;
 
 pub struct LauncherState {

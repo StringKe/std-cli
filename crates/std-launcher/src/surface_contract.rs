@@ -10,6 +10,7 @@ pub struct LauncherSurfaceContract {
     pub empty_state: String,
     pub no_match_state: String,
     pub query_prefixes: String,
+    pub visible_state: String,
     pub nl_suggestion: String,
     pub executing_state: String,
     pub defer_state: String,
@@ -40,6 +41,7 @@ impl LauncherSurfaceContract {
             empty_state: empty_state_contract(),
             no_match_state: no_match_state_contract(),
             query_prefixes: query_prefix_contract(),
+            visible_state: visible_state_contract(),
             nl_suggestion: nl_suggestion_contract(),
             executing_state: executing_state_contract(),
             defer_state: defer_state_contract(),
@@ -77,6 +79,9 @@ impl LauncherSurfaceContract {
             && self.query_prefixes.contains("command_search=rebuild")
             && self.query_prefixes.contains("command_only=true")
             && self.query_prefixes.contains("actions_only=true")
+            && self.visible_state.contains("results=phase=with-results")
+            && self.visible_state.contains("no_results=phase=no-results")
+            && self.visible_state.contains("ime-chip")
             && self.nl_suggestion.contains("mode=NaturalLanguage")
             && self.nl_suggestion.contains("actions=Ask AI|Search Actions")
             && self.nl_suggestion.contains("selected=Ask AI")
@@ -101,7 +106,7 @@ impl LauncherSurfaceContract {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}\nvisible_structure_contract={}",
+            "launcher_surface_contract {}\nsearch_bar_contract={}\nresult_list_contract={}\naction_bar_contract={}\nempty_state_contract={}\nno_match_state_contract={}\nquery_prefix_contract={}\nvisible_state_contract={}\nnl_suggestion_contract={}\nexecuting_state_contract={}\ndefer_state_contract={}\nerror_state_contract={}\nvisible_structure_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_bar,
             self.result_list,
@@ -109,6 +114,7 @@ impl LauncherSurfaceContract {
             self.empty_state,
             self.no_match_state,
             self.query_prefixes,
+            self.visible_state,
             self.nl_suggestion,
             self.executing_state,
             self.defer_state,
@@ -182,6 +188,22 @@ fn query_prefix_contract() -> String {
         actions.search_query,
         actions.action_only(),
         ask.search_query
+    )
+}
+
+fn visible_state_contract() -> String {
+    let mut results = LauncherState::new();
+    results.update_query("index");
+    let mut no_results = LauncherState::new();
+    no_results.update_query("zzzz-no-launcher-match");
+    let mut ime = LauncherState::new();
+    ime.update_query("index");
+    ime.handle_ime_preedit("zhong");
+    format!(
+        "results={};no_results={};ime={}",
+        crate::launcher_visible_state_summary(&results),
+        crate::launcher_visible_state_summary(&no_results),
+        crate::launcher_visible_state_summary(&ime)
     )
 }
 
