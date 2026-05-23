@@ -3,6 +3,37 @@ use std::time::Duration;
 pub const MOTION_FRAME_BUDGET_MS: u128 = 8;
 pub const MOTION_ACTIVE_ANIMATION_LIMIT: usize = 8;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum MotionCurve {
+    Linear,
+    OutStandard,
+    InStandard,
+    InOut,
+    Snappy,
+}
+
+impl MotionCurve {
+    pub fn token(self) -> &'static str {
+        match self {
+            Self::Linear => "ease/linear",
+            Self::OutStandard => "ease/out-standard",
+            Self::InStandard => "ease/in-standard",
+            Self::InOut => "ease/in-out",
+            Self::Snappy => "ease/snappy",
+        }
+    }
+
+    pub fn cubic_bezier(self) -> Option<[f32; 4]> {
+        match self {
+            Self::Linear => None,
+            Self::OutStandard => Some([0.2, 0.0, 0.0, 1.0]),
+            Self::InStandard => Some([0.4, 0.0, 1.0, 1.0]),
+            Self::InOut => Some([0.4, 0.0, 0.2, 1.0]),
+            Self::Snappy => Some([0.18, 1.0, 0.22, 1.0]),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Durations {
     pub instant_ms: u64,
@@ -22,6 +53,42 @@ impl Durations {
         medium_ms: 320,
         long_ms: 480,
     };
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MotionScene {
+    Hover,
+    Pressed,
+    SelectedRow,
+    FocusRing,
+    TooltipEnter,
+    TooltipExit,
+    PopoverEnter,
+    PopoverExit,
+    SidebarToggle,
+    LauncherEnter,
+    LauncherExit,
+    ModalEnter,
+    ModalExit,
+    ToastEnter,
+    ToastExit,
+    CollapsingHeader,
+    TabSwitch,
+    ListReplace,
+    ProgressIndeterminate,
+    ProgressDeterminate,
+    DragSnap,
+    ErrorShake,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct MotionSpec {
+    pub scene: MotionScene,
+    pub duration: Duration,
+    pub duration_token: &'static str,
+    pub curve: MotionCurve,
+    pub animated_properties: &'static str,
+    pub reduced_behavior: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -107,23 +174,56 @@ impl MotionContext {
     }
 
     pub fn launcher_enter(self) -> Duration {
-        self.duration(self.durations.medium_ms)
+        self.duration_for_scene(MotionScene::LauncherEnter)
     }
 
     pub fn launcher_exit(self) -> Duration {
-        self.duration(self.durations.short_ms)
+        self.duration_for_scene(MotionScene::LauncherExit)
     }
 
     pub fn focus_ring(self) -> Duration {
-        self.duration(self.durations.short_ms)
+        self.duration_for_scene(MotionScene::FocusRing)
     }
 
     pub fn toast_enter(self) -> Duration {
-        self.duration(self.durations.base_ms)
+        self.duration_for_scene(MotionScene::ToastEnter)
     }
 
     pub fn modal_enter(self) -> Duration {
-        self.duration(self.durations.base_ms)
+        self.duration_for_scene(MotionScene::ModalEnter)
+    }
+
+    pub fn spec(self, scene: MotionScene) -> MotionSpec {
+        let template = scene.template();
+        MotionSpec {
+            scene,
+            duration: self.duration(template.duration_ms),
+            duration_token: template.duration_token,
+            curve: template.curve,
+            animated_properties: template.animated_properties,
+            reduced_behavior: template.reduced_behavior,
+        }
+    }
+
+    pub fn scene_contract(self) -> String {
+        MotionScene::ALL
+            .iter()
+            .map(|scene| {
+                let spec = self.spec(*scene);
+                format!(
+                    "{}:{}:{}:{}",
+                    scene.token(),
+                    spec.duration.as_millis(),
+                    spec.curve.token(),
+                    spec.reduced_behavior
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("|")
+    }
+
+    fn duration_for_scene(self, scene: MotionScene) -> Duration {
+        self.spec(scene).duration
     }
 
     fn duration(self, ms: u64) -> Duration {
@@ -132,6 +232,137 @@ impl MotionContext {
         } else {
             Duration::from_millis(ms)
         }
+    }
+}
+
+impl MotionScene {
+    pub const ALL: [Self; 22] = [
+        Self::Hover,
+        Self::Pressed,
+        Self::SelectedRow,
+        Self::FocusRing,
+        Self::TooltipEnter,
+        Self::TooltipExit,
+        Self::PopoverEnter,
+        Self::PopoverExit,
+        Self::SidebarToggle,
+        Self::LauncherEnter,
+        Self::LauncherExit,
+        Self::ModalEnter,
+        Self::ModalExit,
+        Self::ToastEnter,
+        Self::ToastExit,
+        Self::CollapsingHeader,
+        Self::TabSwitch,
+        Self::ListReplace,
+        Self::ProgressIndeterminate,
+        Self::ProgressDeterminate,
+        Self::DragSnap,
+        Self::ErrorShake,
+    ];
+
+    pub fn token(self) -> &'static str {
+        match self {
+            Self::Hover => "hover",
+            Self::Pressed => "pressed",
+            Self::SelectedRow => "selected-row",
+            Self::FocusRing => "focus-ring",
+            Self::TooltipEnter => "tooltip-enter",
+            Self::TooltipExit => "tooltip-exit",
+            Self::PopoverEnter => "popover-enter",
+            Self::PopoverExit => "popover-exit",
+            Self::SidebarToggle => "sidebar-toggle",
+            Self::LauncherEnter => "launcher-enter",
+            Self::LauncherExit => "launcher-exit",
+            Self::ModalEnter => "modal-enter",
+            Self::ModalExit => "modal-exit",
+            Self::ToastEnter => "toast-enter",
+            Self::ToastExit => "toast-exit",
+            Self::CollapsingHeader => "collapsing-header",
+            Self::TabSwitch => "tab-switch",
+            Self::ListReplace => "list-replace",
+            Self::ProgressIndeterminate => "progress-indeterminate",
+            Self::ProgressDeterminate => "progress-determinate",
+            Self::DragSnap => "drag-snap",
+            Self::ErrorShake => "error-shake",
+        }
+    }
+
+    fn template(self) -> MotionSpecTemplate {
+        use MotionCurve::{InOut, InStandard, Linear, OutStandard, Snappy};
+        match self {
+            Self::Hover => template(80, "dur/micro", OutStandard, "bg color", "color-instant"),
+            Self::Pressed => template(80, "dur/micro", Snappy, "bg color + scale", "color-only"),
+            Self::SelectedRow => template(140, "dur/short", OutStandard, "bg + text", "instant"),
+            Self::FocusRing => template(140, "dur/short", OutStandard, "border alpha", "show"),
+            Self::TooltipEnter => template(220, "dur/base", OutStandard, "opacity + y", "opacity"),
+            Self::TooltipExit => template(80, "dur/micro", InStandard, "opacity", "instant"),
+            Self::PopoverEnter => {
+                template(220, "dur/base", OutStandard, "opacity + scale", "opacity")
+            }
+            Self::PopoverExit => {
+                template(140, "dur/short", InStandard, "opacity + scale", "instant")
+            }
+            Self::SidebarToggle => template(220, "dur/base", InOut, "width", "instant"),
+            Self::LauncherEnter => {
+                template(320, "dur/medium", OutStandard, "opacity + y", "opacity")
+            }
+            Self::LauncherExit => {
+                template(140, "dur/short", InStandard, "opacity + scale", "instant")
+            }
+            Self::ModalEnter => template(
+                220,
+                "dur/base",
+                OutStandard,
+                "overlay + scale + opacity",
+                "direct",
+            ),
+            Self::ModalExit => template(
+                140,
+                "dur/short",
+                InStandard,
+                "overlay + scale + opacity",
+                "instant",
+            ),
+            Self::ToastEnter => template(220, "dur/base", Snappy, "y + opacity", "opacity"),
+            Self::ToastExit => template(80, "dur/micro", InStandard, "opacity", "instant"),
+            Self::CollapsingHeader => template(220, "dur/base", InOut, "height + arrow", "instant"),
+            Self::TabSwitch => template(140, "dur/short", OutStandard, "underline x", "instant"),
+            Self::ListReplace => template(140, "dur/short", OutStandard, "opacity", "instant"),
+            Self::ProgressIndeterminate => {
+                template(1200, "dur/progress", Linear, "rotation", "static")
+            }
+            Self::ProgressDeterminate => {
+                template(0, "dur/progress", Linear, "real percent", "preserve")
+            }
+            Self::DragSnap => template(140, "dur/short", OutStandard, "position", "instant"),
+            Self::ErrorShake => template(240, "dur/custom", InOut, "x shake", "flash"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct MotionSpecTemplate {
+    duration_ms: u64,
+    duration_token: &'static str,
+    curve: MotionCurve,
+    animated_properties: &'static str,
+    reduced_behavior: &'static str,
+}
+
+fn template(
+    duration_ms: u64,
+    duration_token: &'static str,
+    curve: MotionCurve,
+    animated_properties: &'static str,
+    reduced_behavior: &'static str,
+) -> MotionSpecTemplate {
+    MotionSpecTemplate {
+        duration_ms,
+        duration_token,
+        curve,
+        animated_properties,
+        reduced_behavior,
     }
 }
 
@@ -150,44 +381,4 @@ fn percentile_95(values: &[u128]) -> u128 {
     sorted.sort_unstable();
     let index = ((sorted.len() - 1) * 95).div_ceil(100);
     sorted[index]
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn standard_motion_uses_documented_launcher_duration() {
-        let motion = MotionContext::standard();
-
-        assert_eq!(motion.launcher_enter(), Duration::from_millis(320));
-        assert_eq!(motion.launcher_exit(), Duration::from_millis(140));
-    }
-
-    #[test]
-    fn reduced_motion_collapses_nonessential_durations() {
-        let motion = MotionContext::reduced();
-
-        assert_eq!(motion.launcher_enter(), Duration::ZERO);
-        assert_eq!(motion.focus_ring(), Duration::ZERO);
-        assert_eq!(motion.modal_enter(), Duration::ZERO);
-    }
-
-    #[test]
-    fn motion_budget_reports_p95_frame_time_and_animation_limit() {
-        let report = MotionBudgetReport::from_frame_samples("launcher", &[2, 3, 4, 8, 12], 8);
-
-        assert_eq!(report.frame_p95_ms, 12);
-        assert!(!report.pass());
-        assert!(report.summary().contains("launcher_motion_budget FAIL"));
-    }
-
-    #[test]
-    fn motion_budget_passes_when_samples_stay_inside_docs19_limits() {
-        let report = MotionBudgetReport::from_frame_samples("studio", &[2, 3, 4, 7, 8], 6);
-
-        assert!(report.pass());
-        assert!(report.summary().contains("studio_motion_budget PASS"));
-        assert!(report.summary().contains("active_animation_limit=8"));
-    }
 }

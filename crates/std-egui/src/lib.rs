@@ -15,6 +15,9 @@ mod plugin;
 pub mod tokens;
 pub mod ui_capture;
 
+#[cfg(test)]
+mod motion_tests;
+
 pub use dashboard::StudioDashboardViewModel;
 pub use launcher::{
     LauncherLoadingState, LauncherNlSuggestion, LauncherPhase, LauncherResultMode,

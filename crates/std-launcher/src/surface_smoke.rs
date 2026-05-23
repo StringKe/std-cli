@@ -42,6 +42,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub reduced_focus_ring_ms: u128,
     pub env_reduced_launcher_enter_ms: u128,
     pub reduce_motion_contract: String,
+    pub motion_scene_contract: String,
     pub ui_contract: LauncherSurfaceContract,
 }
 
@@ -86,6 +87,7 @@ impl LauncherSurfaceSmokeReport {
             env_reduced_launcher_enter_ms: env_reduced_motion.launcher_enter().as_millis(),
             reduce_motion_contract:
                 "STD_REDUCE_MOTION=1 collapses env launcher enter, exit, focus ring".to_string(),
+            motion_scene_contract: standard_motion.scene_contract(),
             ui_contract: LauncherSurfaceContract::new(),
         }
     }
@@ -156,12 +158,21 @@ impl LauncherSurfaceSmokeReport {
             && self.reduced_focus_ring_ms == 0
             && self.env_reduced_launcher_enter_ms == 0
             && self.reduce_motion_contract.contains("STD_REDUCE_MOTION=1")
+            && self
+                .motion_scene_contract
+                .contains("launcher-enter:320:ease/out-standard:opacity")
+            && self
+                .motion_scene_contract
+                .contains("popover-enter:220:ease/out-standard:opacity")
+            && self
+                .motion_scene_contract
+                .contains("progress-indeterminate:1200:ease/linear:static")
             && self.ui_contract.pass()
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\nmotion_scene_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -194,6 +205,7 @@ impl LauncherSurfaceSmokeReport {
             self.reduced_focus_ring_ms,
             self.env_reduced_launcher_enter_ms,
             self.reduce_motion_contract,
+            self.motion_scene_contract,
             self.ui_contract.summary()
         )
     }
