@@ -2,7 +2,7 @@ use crate::StudioEguiApp;
 use std::path::Path;
 
 pub(crate) fn flow_contract() -> &'static str {
-    "flow=goal-input|plan|save|simulate|test|trace"
+    "flow=goal-input|plan|save|simulate|run|trace"
 }
 
 impl StudioEguiApp {
@@ -140,7 +140,7 @@ mod tests {
     fn flow_contract_covers_docs22_toolbar_sequence() {
         assert_eq!(
             flow_contract(),
-            "flow=goal-input|plan|save|simulate|test|trace"
+            "flow=goal-input|plan|save|simulate|run|trace"
         );
     }
 }

@@ -200,10 +200,10 @@ fn assert_workflow_builder_lifecycle_summary(summary: &str) {
 }
 
 fn assert_workflow_builder_controls_summary(summary: &str) {
-    assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom"));
+    assert!(summary.contains("builder_toolbar_contract=toolbar=goal-input>plan>save>simulate>run>cancel-when-running>trace>ai>zoom"));
     assert!(summary.contains("control=token-toolbar-buttons"));
-    assert!(summary.contains("primary=plan|test"));
-    assert!(summary.contains("shortcuts=save|simulate|test|history"));
+    assert!(summary.contains("primary=plan|run"));
+    assert!(summary.contains("shortcuts=save|simulate|run|trace"));
     assert!(summary.contains("a11y=textbox-goal-value,button-label-shortcut-purpose"));
     assert!(summary.contains("focus-default=steps-list"));
     assert!(summary.contains("builder_properties_contract=properties=token-field-rows"));
@@ -255,7 +255,7 @@ fn assert_workflow_builder_debug_summary(summary: &str) {
 fn assert_workflow_builder_visual_summary(summary: &str) {
     assert!(summary.contains("builder_visual_contract=builder_interaction=single-workbench-flow"));
     assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
-    assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
+    assert!(summary.contains("flow=goal-input|plan|save|simulate|run|trace"));
     assert_workflow_builder_step_visual_summary(summary);
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("ai_assist=collapsed-input|suggestions|apply|insert|replace"));

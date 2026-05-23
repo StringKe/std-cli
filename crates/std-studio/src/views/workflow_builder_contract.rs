@@ -37,7 +37,7 @@ impl WorkflowBuilderInteractionContract {
 
     pub(crate) fn pass(&self) -> bool {
         self.shell == "shell=toolbar>status>steps+properties>trace>ai-assist"
-            && self.flow == "flow=goal-input|plan|save|simulate|test|trace"
+            && self.flow == "flow=goal-input|plan|save|simulate|run|trace"
             && self.toolbar.contains("toolbar=goal-input>plan>save")
             && self.steps.contains("row=48")
             && self.steps.contains("focus-default=steps-list")
@@ -86,7 +86,7 @@ mod tests {
         assert!(contract.pass(), "{summary}");
         assert!(summary.contains("builder_interaction=single-workbench-flow"));
         assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
-        assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
+        assert!(summary.contains("flow=goal-input|plan|save|simulate|run|trace"));
         assert!(summary.contains("focus-default=steps-list"));
         assert!(summary.contains("keyboard-select"));
         assert!(summary.contains("a11y=row-index-name-type-selected"));

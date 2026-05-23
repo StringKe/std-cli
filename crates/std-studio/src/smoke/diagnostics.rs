@@ -169,7 +169,7 @@ impl StudioSmokeReport {
 
     fn visual_flow_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("flow=goal-input|plan|save|simulate|test|trace")
+            .contains("flow=goal-input|plan|save|simulate|run|trace")
     }
 
     fn visual_steps_pass(&self) -> bool {

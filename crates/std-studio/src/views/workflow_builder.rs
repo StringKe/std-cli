@@ -28,13 +28,13 @@ impl StudioEguiApp {
                 workflow_builder_toolbar::WorkflowToolbarAction::Simulate => {
                     self.preview_active_workflow();
                 }
-                workflow_builder_toolbar::WorkflowToolbarAction::Test => {
+                workflow_builder_toolbar::WorkflowToolbarAction::Run => {
                     self.run_active_workflow();
                 }
                 workflow_builder_toolbar::WorkflowToolbarAction::Cancel => {
                     self.cancel_active_workflow();
                 }
-                workflow_builder_toolbar::WorkflowToolbarAction::History => {
+                workflow_builder_toolbar::WorkflowToolbarAction::Trace => {
                     self.open_workflow_history();
                 }
             }

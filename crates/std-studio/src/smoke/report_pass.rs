@@ -81,10 +81,10 @@ impl StudioSmokeReport {
             && self
                 .builder_toolbar_contract
                 .contains("control=token-toolbar-buttons")
-            && self.builder_toolbar_contract.contains("primary=plan|test")
+            && self.builder_toolbar_contract.contains("primary=plan|run")
             && self
                 .builder_toolbar_contract
-                .contains("shortcuts=save|simulate|test|history")
+                .contains("shortcuts=save|simulate|run|trace")
             && self
                 .builder_toolbar_contract
                 .contains("button-label-shortcut-purpose")
@@ -126,7 +126,7 @@ impl StudioSmokeReport {
                 .contains("shell=toolbar>status>steps+properties>trace>ai-assist")
             && self
                 .builder_visual_contract
-                .contains("flow=goal-input|plan|save|simulate|test|trace")
+                .contains("flow=goal-input|plan|save|simulate|run|trace")
             && self.builder_visual_contract.contains("steps=list|row=48")
             && self.builder_visual_contract.contains("selected-row")
             && self.builder_visual_contract.contains("keyboard-reorder")

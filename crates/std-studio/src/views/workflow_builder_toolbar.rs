@@ -9,9 +9,9 @@ pub(crate) enum WorkflowToolbarAction {
     Plan,
     Save,
     Simulate,
-    Test,
+    Run,
     Cancel,
-    History,
+    Trace,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,13 +83,13 @@ fn render_primary_actions(
     }
     if toolbar_button_with_shortcut(
         ui,
-        i18n::t("studio.workflow_builder.toolbar.test"),
+        i18n::t("studio.workflow_builder.flow.run"),
         &input::studio_workflow_test().label(),
         true,
     )
     .clicked()
     {
-        response.actions.push(WorkflowToolbarAction::Test);
+        response.actions.push(WorkflowToolbarAction::Run);
     }
     if can_cancel
         && toolbar_button(ui, i18n::t("studio.workflow_builder.toolbar.cancel"), false).clicked()
@@ -104,7 +104,7 @@ fn render_primary_actions(
     )
     .clicked()
     {
-        response.actions.push(WorkflowToolbarAction::History);
+        response.actions.push(WorkflowToolbarAction::Trace);
     }
 }
 
@@ -196,7 +196,7 @@ fn toolbar_badge(ui: &mut egui::Ui, label: &str) {
 }
 
 pub(crate) fn toolbar_contract() -> &'static str {
-    "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+    "toolbar=goal-input>plan>save>simulate>run>cancel-when-running>trace>ai>zoom;control=token-toolbar-buttons;primary=plan|run;shortcuts=save|simulate|run|trace;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;run-opens-bottom-panel;simulate=dry-run;cancel=running-only;trace-opens-execution-history"
 }
 
 fn workflow_goal_a11y_label(goal: &str) -> String {
@@ -225,7 +225,7 @@ mod tests {
     fn workflow_builder_toolbar_contract_matches_docs_22_order() {
         assert_eq!(
             toolbar_contract(),
-            "toolbar=goal-input>plan>save>simulate>test>cancel-when-running>history-action>ai>zoom;control=token-toolbar-buttons;primary=plan|test;shortcuts=save|simulate|test|history;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;test-opens-bottom-panel;simulate=dry-run;cancel=running-only;history-opens-execution-history"
+            "toolbar=goal-input>plan>save>simulate>run>cancel-when-running>trace>ai>zoom;control=token-toolbar-buttons;primary=plan|run;shortcuts=save|simulate|run|trace;a11y=textbox-goal-value,button-label-shortcut-purpose;focus-default=steps-list;run-opens-bottom-panel;simulate=dry-run;cancel=running-only;trace-opens-execution-history"
         );
     }
 
