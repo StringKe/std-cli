@@ -223,40 +223,38 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
     assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
     assert!(manual.contains("UI Docs 18-24"));
     assert!(manual.contains("Launcher"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("launcher-background-harness-enter"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("launcher-search-open-app-enter"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("launcher-close-hides-and-hotkey-restores"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("launcher-external-runner-default-defer"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("studio-keyboard-a11y-focus"));
-    assert!(
-        operations_completion::completion_manual_gates(&rows).contains("studio-installed-smoke")
-    );
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("studio-workflow-create-edit-simulate-run-trace"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("studio-plugin-manager-manifest-runtime-permissions-audit"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("studio-analysis-overview-components-symbols-relations-qa-coverage"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("studio-qa-doctor-release-install-command-results"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
-    assert!(operations_completion::completion_manual_gates(&rows)
-        .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
-    assert!(
-        operations_completion::completion_manual_gates(&rows).contains(&format!(
-            "ui-capture-acceptance={}",
-            ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
-        ))
-    );
+    assert_completion_manual_gate_groups(&rows);
     assert!(!manual.contains("Plugin"));
     assert!(!manual.contains("Index"));
     assert_eq!(rows.len(), 11);
+}
+
+fn assert_completion_manual_gate_groups(rows: &[operations_completion::CompletionAuditRow]) {
+    let gates = operations_completion::completion_manual_gates(rows);
+    for required in [
+        "launcher-background-harness-enter",
+        "launcher-capture-state=light-results",
+        "launcher-capture-state=dark-error",
+        "launcher-search-open-app-enter",
+        "launcher-close-hides-and-hotkey-restores",
+        "launcher-external-runner-default-defer",
+        "studio-keyboard-a11y-focus",
+        "studio-installed-smoke",
+        "studio-workflow-create-edit-simulate-run-trace",
+        "studio-plugin-manager-manifest-runtime-permissions-audit",
+        "studio-analysis-overview-components-symbols-relations-qa-coverage",
+        "studio-capture-state=light-dashboard",
+        "studio-capture-state=dark-panes",
+        "studio-qa-doctor-release-install-command-results",
+        "ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt",
+        "ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+    ] {
+        assert!(gates.contains(required), "missing manual gate {required}");
+    }
+    assert!(gates.contains(&format!(
+        "ui-capture-acceptance={}",
+        ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
+    )));
 }
 
 fn assert_runbook_contains(runbook: &str, commands: &[&str]) {

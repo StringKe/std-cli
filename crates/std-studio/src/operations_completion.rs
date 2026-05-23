@@ -70,6 +70,7 @@ fn launcher_manual_gates() -> Vec<String> {
     .into_iter()
     .map(str::to_string)
     .collect::<Vec<_>>();
+    gates.extend(launcher_capture_state_gates());
     gates.extend(ui_capture_manual_gates());
     gates
 }
@@ -89,8 +90,57 @@ fn studio_manual_gates() -> Vec<String> {
     .into_iter()
     .map(str::to_string)
     .collect::<Vec<_>>();
+    gates.extend(studio_capture_state_gates());
     gates.extend(ui_capture_manual_gates());
     gates
+}
+
+fn launcher_capture_state_gates() -> Vec<String> {
+    [
+        "launcher-capture-state=light-empty",
+        "launcher-capture-state=dark-empty",
+        "launcher-capture-state=light-results",
+        "launcher-capture-state=dark-results",
+        "launcher-capture-state=light-no-results",
+        "launcher-capture-state=dark-no-results",
+        "launcher-capture-state=light-defer",
+        "launcher-capture-state=dark-defer",
+        "launcher-capture-state=light-error",
+        "launcher-capture-state=dark-error",
+        "launcher-capture-state=light-ime",
+        "launcher-capture-state=dark-ime",
+        "launcher-capture-state=light-action-panel",
+        "launcher-capture-state=dark-action-panel",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect()
+}
+
+fn studio_capture_state_gates() -> Vec<String> {
+    [
+        "studio-capture-state=light-dashboard",
+        "studio-capture-state=dark-dashboard",
+        "studio-capture-state=light-workflow",
+        "studio-capture-state=dark-workflow",
+        "studio-capture-state=light-workflow-error",
+        "studio-capture-state=dark-workflow-error",
+        "studio-capture-state=light-analysis",
+        "studio-capture-state=dark-analysis",
+        "studio-capture-state=light-plugins",
+        "studio-capture-state=dark-plugins",
+        "studio-capture-state=light-plugin-permission",
+        "studio-capture-state=dark-plugin-permission",
+        "studio-capture-state=light-operations",
+        "studio-capture-state=dark-operations",
+        "studio-capture-state=light-settings",
+        "studio-capture-state=dark-settings",
+        "studio-capture-state=light-panes",
+        "studio-capture-state=dark-panes",
+    ]
+    .into_iter()
+    .map(str::to_string)
+    .collect()
 }
 
 fn ui_capture_manual_gates() -> Vec<String> {
@@ -173,25 +223,35 @@ mod tests {
         assert!(summary.contains("Index:PASS") || summary.contains("Index:MANUAL"));
         assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
         assert!(completion_manual_areas(&rows).contains("UI Docs 18-24"));
-        assert!(completion_manual_gates(&rows).contains("launcher-background-harness-enter"));
-        assert!(completion_manual_gates(&rows).contains("launcher-search-open-app-enter"));
-        assert!(completion_manual_gates(&rows).contains("launcher-close-hides-and-hotkey-restores"));
-        assert!(completion_manual_gates(&rows).contains("launcher-external-runner-default-defer"));
-        assert!(completion_manual_gates(&rows).contains("studio-keyboard-a11y-focus"));
-        assert!(completion_manual_gates(&rows).contains("studio-installed-smoke"));
-        assert!(completion_manual_gates(&rows)
-            .contains("studio-workflow-create-edit-simulate-run-trace"));
-        assert!(completion_manual_gates(&rows)
-            .contains("studio-plugin-manager-manifest-runtime-permissions-audit"));
-        assert!(completion_manual_gates(&rows)
-            .contains("studio-analysis-overview-components-symbols-relations-qa-coverage"));
-        assert!(completion_manual_gates(&rows).contains("ui-capture-manifest="));
-        assert!(completion_manual_gates(&rows).contains("ui-capture-command="));
-        assert!(completion_manual_gates(&rows).contains("ui-capture-pixels="));
-        assert!(completion_manual_gates(&rows).contains("ui-capture-rejects="));
-        assert!(completion_manual_gates(&rows).contains("ui-capture-acceptance="));
+        assert_manual_gate_groups(&rows);
         assert!(!completion_manual_areas(&rows).contains("Plugin"));
         assert!(!completion_manual_areas(&rows).contains("Index"));
         assert_eq!(rows.len(), 11);
+    }
+
+    fn assert_manual_gate_groups(rows: &[CompletionAuditRow]) {
+        let gates = completion_manual_gates(rows);
+        for required in [
+            "launcher-background-harness-enter",
+            "launcher-capture-state=light-results",
+            "launcher-capture-state=dark-error",
+            "launcher-search-open-app-enter",
+            "launcher-close-hides-and-hotkey-restores",
+            "launcher-external-runner-default-defer",
+            "studio-keyboard-a11y-focus",
+            "studio-installed-smoke",
+            "studio-workflow-create-edit-simulate-run-trace",
+            "studio-plugin-manager-manifest-runtime-permissions-audit",
+            "studio-analysis-overview-components-symbols-relations-qa-coverage",
+            "studio-capture-state=light-dashboard",
+            "studio-capture-state=dark-panes",
+            "ui-capture-manifest=",
+            "ui-capture-command=",
+            "ui-capture-pixels=",
+            "ui-capture-rejects=",
+            "ui-capture-acceptance=",
+        ] {
+            assert!(gates.contains(required), "missing manual gate {required}");
+        }
     }
 }
