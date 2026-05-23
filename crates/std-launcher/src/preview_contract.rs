@@ -22,7 +22,7 @@ pub(crate) fn preview_window_title() -> &'static str {
 }
 
 pub(crate) fn preview_capture_contract() -> &'static str {
-    "transparent-native-host,opaque-panel-surface,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,host-gutter-64px,no-host-background,no-shadow-clip"
+    "panel-sized-transparent-host,opaque-panel-surface,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,host-gutter-0px,no-host-background,no-shadow-clip"
 }
 
 pub(crate) fn preview_matrix() -> Vec<LauncherPreviewScenario> {

@@ -29,13 +29,13 @@ impl LauncherCarrierEvidence {
     pub fn pass(&self) -> bool {
         self.native_clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.host_window.contains("transparent_host")
+            && self.host_window.contains("panel_sized_transparent_host")
             && self.host_window.contains("host_background=none")
-            && self.host_window.contains("host_gutter=64px")
-            && self.geometry.contains("panel_origin=64x64")
-            && self.geometry.contains("host_gap=128x128")
+            && self.host_window.contains("host_gutter=0px")
+            && self.geometry.contains("panel_origin=0x0")
+            && self.geometry.contains("host_gap=0x0")
             && self.geometry.contains("panel_only_surface=true")
-            && self.pixel_policy.contains("host-carrier-zero")
+            && self.pixel_policy.contains("host-carrier=absent")
             && self.pixel_policy.contains("edge-black-white-zero")
     }
 
@@ -72,7 +72,7 @@ fn host_window_contract(panel_height: f32) -> String {
     let size = egui::vec2(PANEL_WIDTH, panel_height);
     if contract.passes() {
         return format!(
-            "native_host_window=transparent_host,{}",
+            "native_host_window=panel_sized_transparent_host,{}",
             contract.native_host_window_summary(size)
         );
     }
@@ -100,10 +100,10 @@ fn geometry_contract(panel_height: f32) -> String {
 fn pixel_policy_contract() -> String {
     [
         "capture_pixels=center-panel-opaque-non-carrier",
-        "host-carrier-zero",
+        "host-carrier=absent",
         "edge-black-white-zero",
         "min-opaque-samples=5",
-        "min-edge-transparent=0",
+        "min-edge-transparent=rounded-corners-only",
     ]
     .join(",")
 }
@@ -121,7 +121,7 @@ mod tests {
         assert!(summary.contains("native_clear_color=transparent_rgba_0_0_0_0"));
         assert!(summary.contains("viewport_frame=transparent_fill,no_stroke"));
         assert!(summary.contains("visible_carrier=none"));
-        assert!(summary.contains("host-carrier-zero"));
+        assert!(summary.contains("host-carrier=absent"));
         assert!(summary.contains("edge-black-white-zero"));
     }
 
@@ -129,10 +129,10 @@ mod tests {
     fn visible_host_geometry_lists_launcher_state_scenarios() {
         let summary = launcher_visible_host_geometry_contract();
 
-        assert!(summary.contains("results:native_host=848x488"));
-        assert!(summary.contains("defer:native_host=848x488"));
-        assert!(summary.contains("error:native_host=848x488"));
-        assert!(summary.contains("panel_origin=64x64"));
-        assert!(summary.contains("host_gap=128x128"));
+        assert!(summary.contains("results:native_host=720x360"));
+        assert!(summary.contains("defer:native_host=720x360"));
+        assert!(summary.contains("error:native_host=720x360"));
+        assert!(summary.contains("panel_origin=0x0"));
+        assert!(summary.contains("host_gap=0x0"));
     }
 }

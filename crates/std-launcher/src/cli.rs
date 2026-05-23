@@ -312,18 +312,18 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=transparent_host,panel_surface=opaque,host_gutter=64px,no_host_background"));
+            .contains("native_host_window=panel_sized_transparent_host,panel_surface=opaque,host_gutter=0px,no_host_background"));
         assert!(report
             .summary()
-            .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque,host_gutter=64px,no_host_background"));
+            .contains("capture_window=panel_sized_transparent_host,opt_in_only,panel_surface=opaque,host_gutter=0px,no_host_background"));
         assert!(report
             .summary()
-            .contains("capture_surface=opaque_panel_surface,transparent_host"));
+            .contains("capture_surface=opaque_panel_surface,panel_sized_transparent_host"));
         assert!(report
             .summary()
             .contains("capture_pixel_contract=capture_pixels="));
         assert!(report.summary().contains("center-panel-opaque-non-carrier"));
-        assert!(report.summary().contains("host-carrier-zero"));
+        assert!(report.summary().contains("host-carrier=absent"));
         assert!(report.summary().contains("edge-black-white-zero"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
@@ -412,8 +412,8 @@ mod tests {
             "host_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_host=",
             "host_background=none",
             "panel_surface=opaque",
-            "panel_origin=64x64",
-            "host_gap=128x128",
+            "panel_origin=0x0",
+            "host_gap=0x0",
             "panel_only_surface=true",
             "forbidden=black_or_white_host_background",
             "body:loading-progress-token-surface",

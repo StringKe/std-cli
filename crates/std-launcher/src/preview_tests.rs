@@ -192,15 +192,15 @@ fn assert_preview_capture_contract(report: &LauncherPreviewSmokeReport) {
     let summary = report.summary();
 
     assert!(summary.contains(
-        "preview_capture_contract=transparent-native-host,opaque-panel-surface,opt-in-only"
+        "preview_capture_contract=panel-sized-transparent-host,opaque-panel-surface,opt-in-only"
     ));
     assert!(summary.contains("checkout-binary-only"));
     assert!(summary.contains("blocked-in-STD_TEST_MODE"));
     assert!(summary.contains("no-default-window"));
-    assert!(summary.contains("host-gutter-64px"));
+    assert!(summary.contains("host-gutter-0px"));
     assert!(summary.contains("no-host-background"));
     assert!(summary.contains("no-shadow-clip"));
-    assert!(!summary.contains("host-gap-0"));
+    assert!(!summary.contains("host-gutter-64px"));
 }
 
 fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport) {
@@ -338,15 +338,15 @@ fn preview_evidence_names_transparent_host_not_extra_host_container() {
     let forbidden_host_container = concat!("preview", "_viewport");
     let forbidden_host_container_contract = format!("{forbidden_host_container}_contract");
 
-    assert!(surface.contains("capture_window=transparent_host,opt_in_only"));
+    assert!(surface.contains("capture_window=panel_sized_transparent_host,opt_in_only"));
     assert!(surface.contains("capture_surface=opaque_panel_surface"));
     assert!(surface.contains("panel_surface=opaque"));
     assert!(!surface.contains(&format!("{forbidden_host_container}=")));
-    assert!(preview_contract.contains("transparent-native-host"));
+    assert!(preview_contract.contains("panel-sized-transparent-host"));
     assert!(preview_contract.contains("opaque-panel-surface"));
-    assert!(preview_contract.contains("host-gutter-64px"));
+    assert!(preview_contract.contains("host-gutter-0px"));
     assert!(preview_contract.contains("no-host-background"));
-    assert!(!preview.contains("host-gap-0"));
+    assert!(!preview_contract.contains("host-gutter-64px"));
     assert!(!preview.contains(forbidden_host_container));
     assert!(!preview.contains(&forbidden_host_container_contract));
     assert!(!preview_contract.contains(forbidden_host_container));
