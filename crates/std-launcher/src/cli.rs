@@ -319,6 +319,12 @@ mod tests {
         assert!(report
             .summary()
             .contains("capture_surface=opaque_panel_surface,transparent_host"));
+        assert!(report
+            .summary()
+            .contains("capture_pixel_contract=capture_pixels="));
+        assert!(report.summary().contains("center-panel-opaque-non-carrier"));
+        assert!(report.summary().contains("edge-gutter-transparent"));
+        assert!(report.summary().contains("edge-black-white-zero"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
         assert!(report.summary().contains("reduced_launcher_exit_ms=0"));

@@ -20,6 +20,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub native_host_window_contract: String,
     pub capture_window_contract: String,
     pub capture_surface_contract: String,
+    pub capture_pixel_contract: String,
     pub visible_host_geometry_contract: String,
     pub panel_inner_padding: i8,
     pub dark_search_surface_layer: String,
@@ -64,6 +65,7 @@ impl LauncherSurfaceSmokeReport {
             native_host_window_contract: native_host_window_contract(),
             capture_window_contract: capture_window_contract(),
             capture_surface_contract: capture_surface_contract(),
+            capture_pixel_contract: capture_pixel_contract(),
             visible_host_geometry_contract: visible_host_geometry_contract(),
             panel_inner_padding: Space::md(),
             dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
@@ -105,6 +107,7 @@ impl LauncherSurfaceSmokeReport {
                 == "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"
             && self.capture_surface_contract
                 == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip"
+            && self.capture_pixel_contract == "capture_pixels=center-panel-opaque-non-carrier,edge-gutter-transparent,edge-black-white-zero,min-opaque-samples=5,min-edge-transparent=6"
             && self
                 .visible_host_geometry_contract
                 .contains("results:native_host=")
@@ -172,7 +175,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\nmotion_scene_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\ncapture_pixel_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\nmotion_scene_contract={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -183,6 +186,7 @@ impl LauncherSurfaceSmokeReport {
             self.native_host_window_contract,
             self.capture_window_contract,
             self.capture_surface_contract,
+            self.capture_pixel_contract,
             self.visible_host_geometry_contract,
             self.panel_inner_padding,
             self.dark_search_surface_layer,
@@ -274,6 +278,17 @@ fn capture_window_contract() -> String {
 fn capture_surface_contract() -> String {
     "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip"
         .to_string()
+}
+
+fn capture_pixel_contract() -> String {
+    [
+        "capture_pixels=center-panel-opaque-non-carrier",
+        "edge-gutter-transparent",
+        "edge-black-white-zero",
+        "min-opaque-samples=5",
+        "min-edge-transparent=6",
+    ]
+    .join(",")
 }
 
 fn visible_host_geometry_contract() -> String {
@@ -395,6 +410,10 @@ mod tests {
         assert!(summary.contains("reduce_motion_contract=STD_REDUCE_MOTION=1"));
         assert!(summary.contains("feedback_text_contract=layout=inline-toast"));
         assert!(summary.contains("detail=max-2-lines"));
+        assert!(summary.contains("capture_pixel_contract=capture_pixels="));
+        assert!(summary.contains("center-panel-opaque-non-carrier"));
+        assert!(summary.contains("edge-gutter-transparent"));
+        assert!(summary.contains("edge-black-white-zero"));
         assert!(summary.contains("visible_host_geometry_contract=results:"));
         assert!(summary.contains("panel_origin=64x64"));
         assert!(summary.contains("host_gap=128x128"));
