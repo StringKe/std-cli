@@ -13,8 +13,8 @@ pub(crate) struct WorkspaceLifecycleSpec {
     pub focused_key: String,
     pub restored_count: usize,
     pub policy_summary: &'static str,
-    pub native_windows_allowed: bool,
-    pub detached_allowed: bool,
+    pub native_child_window_violation: bool,
+    pub detached_panel_violation: bool,
 }
 
 impl WorkspaceLifecycleSpec {
@@ -35,8 +35,8 @@ impl WorkspaceLifecycleSpec {
                 .unwrap_or_else(|| "none".to_string()),
             restored_count: panes.iter().filter(|pane| !pane.open).count(),
             policy_summary: policy.summary(),
-            native_windows_allowed: policy.allows_native_child_windows(),
-            detached_allowed: policy.allows_detached_panels(),
+            native_child_window_violation: policy.allows_native_child_windows(),
+            detached_panel_violation: policy.allows_detached_panels(),
         }
     }
 }
@@ -95,8 +95,8 @@ pub(crate) fn workspace_lifecycle_contract(spec: &WorkspaceLifecycleSpec) -> Str
         spec.focused_key,
         spec.restored_count,
         spec.policy_summary,
-        spec.native_windows_allowed,
-        spec.detached_allowed
+        spec.native_child_window_violation,
+        spec.detached_panel_violation
     )
 }
 
@@ -114,7 +114,7 @@ fn lifecycle_chip(ui: &mut egui::Ui, text: &str, fill: egui::Color32) {
 }
 
 fn policy_fill(ctx: &egui::Context, spec: &WorkspaceLifecycleSpec) -> egui::Color32 {
-    if spec.native_windows_allowed || spec.detached_allowed {
+    if spec.native_child_window_violation || spec.detached_panel_violation {
         ui::danger_bg(ctx)
     } else {
         ui::ok_bg(ctx)
@@ -145,8 +145,8 @@ mod tests {
         assert_eq!(spec.open_count, 1);
         assert_eq!(spec.focused_key, "settings");
         assert_eq!(spec.restored_count, 1);
-        assert!(!spec.native_windows_allowed);
-        assert!(!spec.detached_allowed);
+        assert!(!spec.native_child_window_violation);
+        assert!(!spec.detached_panel_violation);
         let contract = workspace_lifecycle_contract(&spec);
         assert!(contract.contains("open:1"));
         assert!(contract.contains("closed_restore:1"));
@@ -175,7 +175,7 @@ mod tests {
 
         assert_eq!(policy_fill(&ctx, &spec), ui::ok_bg(&ctx));
 
-        spec.detached_allowed = true;
+        spec.detached_panel_violation = true;
         assert_eq!(policy_fill(&ctx, &spec), ui::danger_bg(&ctx));
     }
 }

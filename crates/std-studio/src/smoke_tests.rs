@@ -1,4 +1,4 @@
-use crate::smoke::run_studio_smoke;
+use crate::smoke::{failed_studio_smoke_report, run_studio_smoke};
 use std_egui::input;
 
 #[test]
@@ -19,6 +19,18 @@ fn studio_smoke_reports_internal_workspace_pane_management() {
     assert_analysis_workbench_summary(&summary);
     assert_keyboard_summary(&summary);
     assert_operations_summary(&summary);
+}
+
+#[test]
+fn failed_studio_smoke_keeps_forbidden_window_policy_false() {
+    let report = failed_studio_smoke_report("fixture failure");
+    let summary = report.summary();
+
+    assert!(!report.pass());
+    assert!(summary.contains("studio_smoke FAIL"));
+    assert!(summary.contains("native_child_windows=false"));
+    assert!(summary.contains("detached_panels=false"));
+    assert!(summary.contains("workflow_status=FAIL fixture failure"));
 }
 
 fn assert_workspace_policy_summary(summary: &str) {
