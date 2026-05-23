@@ -182,6 +182,16 @@ fn background_ui_smoke_is_skipped_in_test_mode() {
 }
 
 #[test]
+fn test_cli_ignores_project_config_without_explicit_path() {
+    std::env::remove_var("STDCLI_CONFIG");
+
+    let output = run_cli(["std", "config", "get", "data_dir"]).unwrap();
+
+    assert!(output.contains("std-cli-run-cli-test-data"));
+    assert!(!output.contains("/Users/chen/.std-cli"));
+}
+
+#[test]
 fn doctor_command_can_print_machine_readable_json() {
     let temp = tempfile::tempdir().unwrap();
     let config_path = temp.path().join("std-cli.json");

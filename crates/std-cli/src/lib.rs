@@ -226,11 +226,34 @@ where
     std_core::sanitize_desktop_opt_ins_for_test_mode();
 
     let cli = Cli::parse_from(args);
-    let config = StdConfig::try_load().map_err(|error| CliError::Config(error.to_string()))?;
+    let config = load_cli_config()?;
     let core = StdCore::with_config(config);
     core.seed_builtin_actions()?;
 
     dispatch_command(&core, cli.command)
+}
+
+fn load_cli_config() -> Result<StdConfig, CliError> {
+    #[cfg(test)]
+    if std::env::var_os("STDCLI_CONFIG").is_none() {
+        return Ok(isolated_test_cli_config());
+    }
+    StdConfig::try_load().map_err(|error| CliError::Config(error.to_string()))
+}
+
+#[cfg(test)]
+fn isolated_test_cli_config() -> StdConfig {
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    static NEXT_ID: AtomicU64 = AtomicU64::new(1);
+    let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+    StdConfig {
+        data_dir: std::env::temp_dir()
+            .join("std-cli-run-cli-test-data")
+            .join(std::process::id().to_string())
+            .join(id.to_string()),
+        ..StdConfig::default()
+    }
 }
 
 fn dispatch_command(core: &StdCore, command: Commands) -> Result<String, CliError> {
