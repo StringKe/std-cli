@@ -29,6 +29,7 @@ pub(crate) struct OperationsSmoke {
     pub(crate) step_summary: String,
     pub(crate) visual_contract: String,
     pub(crate) a11y_contract: String,
+    pub(crate) visibility_contract: String,
 }
 
 impl OperationsSmoke {
@@ -46,6 +47,8 @@ impl OperationsSmoke {
         .join("|");
         let visual_contract = operations_visual_contract(&evidence);
         let a11y_contract = operations_a11y_contract(&evidence);
+        let visibility_contract =
+            crate::operations_visibility::OperationsVisibility::from_evidence(&evidence).summary();
         let completion_rows = operations_completion::completion_audit_rows(&evidence);
         Self {
             qa_command: evidence.qa.command,
@@ -79,6 +82,7 @@ impl OperationsSmoke {
             step_summary,
             visual_contract,
             a11y_contract,
+            visibility_contract,
         }
     }
 
@@ -169,11 +173,17 @@ impl OperationsSmoke {
             && self
                 .a11y_contract
                 .contains("rows=command|step|runbook|evidence|result|artifact|output")
+            && self
+                .visibility_contract
+                .contains("operations_visibility PASS")
+            && self.visibility_contract.contains("plugin=status:")
+            && self.visibility_contract.contains("index=status:")
+            && self.visibility_contract.contains("runtime=status:MANUAL")
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_plugin_command={}\noperations_plugin_result={}\noperations_plugin_output={}\noperations_index_command={}\noperations_index_result={}\noperations_index_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_completion_manual_gates={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}",
+            "operations_smoke={}\noperations_qa_command={}\noperations_qa_result={}\noperations_qa_output={}\noperations_doctor_command={}\noperations_doctor_result={}\noperations_doctor_output={}\noperations_release_command={}\noperations_release_result={}\noperations_release_output={}\noperations_install_command={}\noperations_install_result={}\noperations_install_output={}\noperations_plugin_command={}\noperations_plugin_result={}\noperations_plugin_output={}\noperations_index_command={}\noperations_index_result={}\noperations_index_output={}\noperations_runtime_command={}\noperations_runtime_result={}\noperations_runtime_output={}\noperations_completion_summary={}\noperations_completion_manual={}\noperations_completion_manual_gates={}\noperations_step_summary={}\noperations_visual_contract={}\noperations_a11y_contract={}\noperations_visibility_contract={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.qa_command,
             self.qa_result,
@@ -202,6 +212,7 @@ impl OperationsSmoke {
             self.step_summary,
             self.visual_contract,
             self.a11y_contract,
+            self.visibility_contract,
         )
     }
 }
@@ -295,6 +306,10 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("summary_rail=gates:QA|Doctor|Release|Install|Plugin|Index|Runtime"));
+        assert!(smoke
+            .summary()
+            .contains("operations_visibility_contract=operations_visibility PASS"));
+        assert!(smoke.summary().contains("runtime=status:MANUAL"));
     }
 
     fn assert_completion_summary(summary: &str) {

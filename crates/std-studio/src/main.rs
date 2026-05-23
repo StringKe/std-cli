@@ -25,6 +25,7 @@ mod layout;
 mod native_app;
 mod operations;
 mod operations_rows;
+mod operations_visibility;
 mod preview;
 mod preview_evidence;
 mod preview_smoke;
