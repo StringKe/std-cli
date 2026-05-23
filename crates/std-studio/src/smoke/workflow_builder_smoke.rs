@@ -139,7 +139,7 @@ fn open_closed(open: bool) -> &'static str {
 fn builder_visual_contract() -> String {
     [
         "builder_visual=single-pane-workbench",
-        "flow=goal-input|plan|save|simulate|test|trace",
+        views::workflow_builder_flow::flow_contract(),
         views::workflow_builder_step_visual_contract(),
         "properties=step-name|parameters-json|index|add|update|move|remove",
         "debug=dry-run|execution|trace",
