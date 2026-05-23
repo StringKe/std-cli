@@ -15,6 +15,7 @@ pub(crate) fn workspace_contract_pass(report: &StudioSmokeReport) -> bool {
         && report.pane_closed_removed
         && report.pane_state_preserved
         && focus_label_pass(report)
+        && lifecycle_contract_pass(report)
         && host_policy_pass(report)
         && report.pane_management_sequence == "open>dedupe>focus>switch>close>reopen>restore"
         && report.pane_focus_switch_path == "settings>plugins>plugins"
@@ -23,6 +24,20 @@ pub(crate) fn workspace_contract_pass(report: &StudioSmokeReport) -> bool {
         && workspace_main_path_pass(report)
         && !report.native_child_windows
         && !report.detached_panels
+}
+
+fn lifecycle_contract_pass(report: &StudioSmokeReport) -> bool {
+    [
+        "workspace_lifecycle=open:",
+        "focused:插件管理",
+        "key:plugins",
+        "closed_restore:",
+        "policy:single egui host viewport, internal workspace panes",
+        "native_child_windows:false",
+        "detached_panels:false",
+    ]
+    .into_iter()
+    .all(|term| report.pane_lifecycle_contract.contains(term))
 }
 
 fn focus_label_pass(report: &StudioSmokeReport) -> bool {

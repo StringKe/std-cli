@@ -87,7 +87,6 @@ pub(crate) fn render_workspace_lifecycle(ui: &mut egui::Ui, spec: &WorkspaceLife
         });
 }
 
-#[cfg(test)]
 pub(crate) fn workspace_lifecycle_contract(spec: &WorkspaceLifecycleSpec) -> String {
     format!(
         "workspace_lifecycle=open:{};focused:{};key:{};closed_restore:{};policy:{};native_child_windows:{};detached_panels:{}",

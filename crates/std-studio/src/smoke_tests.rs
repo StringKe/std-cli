@@ -89,6 +89,13 @@ fn assert_workspace_pane_lifecycle_summary(summary: &str) {
     );
     assert!(summary.contains("pane_focus_switch_path=settings>plugins>plugins"));
     assert!(summary.contains("pane_close_restore_path=close:"));
+    assert!(summary.contains("pane_lifecycle_contract=workspace_lifecycle=open:"));
+    assert!(summary.contains("focused:插件管理"));
+    assert!(summary.contains("key:plugins"));
+    assert!(summary.contains("closed_restore:"));
+    assert!(summary.contains("policy:single egui host viewport, internal workspace panes"));
+    assert!(summary.contains("native_child_windows:false"));
+    assert!(summary.contains("detached_panels:false"));
     assert!(summary.contains("hotkey_source=default-or-user"));
     assert!(summary.contains("hotkey_reset=reset-to-default"));
     assert!(summary.contains("hotkey_control=token-binding-row"));

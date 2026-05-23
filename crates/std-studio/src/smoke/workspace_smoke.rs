@@ -13,6 +13,7 @@ pub(crate) struct WorkspacePaneSmoke {
     pub(crate) closed_removed: bool,
     pub(crate) state_preserved_after_focus: bool,
     pub(crate) focus_label: String,
+    pub(crate) lifecycle_contract: String,
     pub(crate) host_policy: String,
     pub(crate) management_sequence: String,
     pub(crate) focus_switch_path: String,
@@ -100,6 +101,13 @@ pub(crate) fn run_workspace_pane_smoke(
     let main_path_contract = workspace_main_path_contract();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
     let closeguard_roundtrip = closeguard_roundtrip_evidence(studio);
+    let lifecycle_spec = crate::workspace_lifecycle::WorkspaceLifecycleSpec::from_panes(
+        &studio.workspace_panes,
+        studio.focused_pane,
+        studio.workspace_policy,
+    );
+    let lifecycle_contract =
+        crate::workspace_lifecycle::workspace_lifecycle_contract(&lifecycle_spec);
     let focus_label = workspace_management_evidence(WorkspaceManagementEvidence {
         plugin,
         reopened,
@@ -127,6 +135,7 @@ pub(crate) fn run_workspace_pane_smoke(
         closed_removed,
         state_preserved_after_focus,
         focus_label,
+        lifecycle_contract,
         host_policy,
         management_sequence,
         focus_switch_path,
