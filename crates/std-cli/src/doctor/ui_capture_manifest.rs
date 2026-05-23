@@ -1,10 +1,13 @@
-use crate::{doctor::workspace::check_text, CliError};
+use crate::{
+    doctor::ui_capture_run::verify_capture_run_id, doctor::workspace::check_text, CliError,
+};
 use std::path::Path;
 use std_egui::ui_capture;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct CaptureManifestHeader {
     pub(crate) created_at: String,
+    pub(crate) run_id: String,
     pub(crate) out_dir: String,
 }
 
@@ -20,11 +23,14 @@ pub(crate) fn verify_capture_manifest_header(
 
     let created_at = manifest_value(body, "created_at=")?;
     verify_created_at(created_at)?;
+    let run_id = manifest_value(body, "run_id=")?;
+    verify_capture_run_id(run_id)?;
     let out_dir = manifest_value(body, "out_dir=")?;
     verify_out_dir(out_dir, root)?;
 
     Ok(CaptureManifestHeader {
         created_at: created_at.to_string(),
+        run_id: run_id.to_string(),
         out_dir: out_dir.to_string(),
     })
 }
@@ -84,6 +90,7 @@ mod tests {
         let header = verify_capture_manifest_header(&header_body, None).unwrap();
 
         assert_eq!(header.created_at, "2026-05-22T00:00:00Z");
+        assert_eq!(header.run_id, "20260522T000000Z-4242");
         assert_eq!(header.out_dir, ui_capture::UI_CAPTURE_DIR);
     }
 
@@ -105,9 +112,18 @@ mod tests {
         assert!(error.to_string().contains("out_dir must be"));
     }
 
+    #[test]
+    fn capture_manifest_header_rejects_missing_run_id() {
+        let body = header().replace("run_id=20260522T000000Z-4242\n", "");
+
+        let error = verify_capture_manifest_header(&body, None).unwrap_err();
+
+        assert!(error.to_string().contains("run_id="));
+    }
+
     fn header() -> String {
         format!(
-            "capture-ui-matrix manifest\ncreated_at=2026-05-22T00:00:00Z\nout_dir={}\nopt_in=STD_ALLOW_UI_PREVIEW=1\ntest_mode=STD_TEST_MODE must not be 1\ncapture_rule=pid+process-name+window-title\ncompletion_rule=current-run-png-only\n",
+            "capture-ui-matrix manifest\ncreated_at=2026-05-22T00:00:00Z\nrun_id=20260522T000000Z-4242\nout_dir={}\nopt_in=STD_ALLOW_UI_PREVIEW=1\ntest_mode=STD_TEST_MODE must not be 1\ncapture_rule=pid+process-name+window-title\ncompletion_rule=current-run-png-only\n",
             ui_capture::UI_CAPTURE_DIR
         )
     }

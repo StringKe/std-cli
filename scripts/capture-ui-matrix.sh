@@ -20,11 +20,13 @@ out_dir="${1:-artifacts/ui/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$out_dir"
 manifest="$out_dir/manifest.txt"
 : >"$manifest"
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 
 record_manifest_header() {
   {
     echo "capture-ui-matrix manifest"
     echo "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "run_id=$run_id"
     echo "out_dir=$out_dir"
     echo "opt_in=STD_ALLOW_UI_PREVIEW=1"
     echo "test_mode=STD_TEST_MODE must not be 1"
@@ -46,7 +48,7 @@ record_capture() {
   height=$(/usr/bin/sips -g pixelHeight "$output" 2>/dev/null | /usr/bin/awk '/pixelHeight/ {print $2}')
   pixel_evidence=$(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift \
     scripts/cg-sample-pixels.swift "$output")
-  echo "$surface theme=$theme scenario=$scenario path=$output pid=$pid process=$process window_title=$title bytes=$bytes width=$width height=$height $pixel_evidence" >>"$manifest"
+  echo "$surface theme=$theme scenario=$scenario run_id=$run_id path=$output pid=$pid process=$process window_title=$title bytes=$bytes width=$width height=$height $pixel_evidence" >>"$manifest"
 }
 
 pids=""

@@ -7,6 +7,7 @@ mod ui_capture;
 mod ui_capture_manifest;
 mod ui_capture_pixels;
 mod ui_capture_png;
+mod ui_capture_run;
 mod ui_capture_scripts;
 #[cfg(test)]
 mod ui_capture_tests;

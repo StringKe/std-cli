@@ -14,6 +14,7 @@ pub(crate) fn sample_manifest() -> String {
     let mut lines = vec![
         "capture-ui-matrix manifest".to_string(),
         "created_at=2026-05-22T00:00:00Z".to_string(),
+        "run_id=20260522T000000Z-4242".to_string(),
         format!("out_dir={}", ui_capture::UI_CAPTURE_DIR),
         "opt_in=STD_ALLOW_UI_PREVIEW=1".to_string(),
         "test_mode=STD_TEST_MODE must not be 1".to_string(),
@@ -22,13 +23,13 @@ pub(crate) fn sample_manifest() -> String {
     ];
     for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
         lines.push(format!(
-            "launcher theme={theme} scenario={scenario} path={}/launcher-{theme}-{scenario}.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes={launcher_bytes} width=720 height=64 {SAMPLE_EVIDENCE}",
+            "launcher theme={theme} scenario={scenario} run_id=20260522T000000Z-4242 path={}/launcher-{theme}-{scenario}.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes={launcher_bytes} width=720 height=64 {SAMPLE_EVIDENCE}",
             ui_capture::UI_CAPTURE_DIR
         ));
     }
     for (theme, scenario) in STUDIO_CAPTURE_STATES {
         lines.push(format!(
-            "studio theme={theme} scenario={scenario} path={}/studio-{theme}-{scenario}.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={studio_bytes} width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}",
+            "studio theme={theme} scenario={scenario} run_id=20260522T000000Z-4242 path={}/studio-{theme}-{scenario}.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={studio_bytes} width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}",
             ui_capture::UI_CAPTURE_DIR
         ));
     }
