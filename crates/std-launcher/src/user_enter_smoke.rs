@@ -15,6 +15,8 @@ pub struct LauncherUserEnterSmokeReport {
     pub app_scope: &'static str,
     pub real_execution_gate: &'static str,
     pub localized_app_enter_contract: String,
+    pub explicit_run_status: ActionExecutionStatus,
+    pub explicit_run_reason: String,
 }
 
 impl LauncherUserEnterSmokeReport {
@@ -44,6 +46,7 @@ impl LauncherUserEnterSmokeReport {
             .unwrap_or("none")
             .to_string();
         let status = execution.status.clone();
+        let explicit_run = explicit_run_status(&state.core);
         let report = Self {
             status: status.clone(),
             route: "Enter>handle_keyboard_input_by_user",
@@ -61,6 +64,8 @@ impl LauncherUserEnterSmokeReport {
             app_scope: "local_fixture_app_only",
             real_execution_gate: "installed-hotkey-or-background-ui-acceptance",
             localized_app_enter_contract: localized_app_enter_contract(&state.core),
+            explicit_run_status: explicit_run.0,
+            explicit_run_reason: explicit_run.1,
         };
         let _ = std::fs::remove_dir_all(root);
         report
@@ -86,11 +91,13 @@ impl LauncherUserEnterSmokeReport {
             && self
                 .localized_app_enter_contract
                 .contains("desktop_open=default_review_first")
+            && self.explicit_run_status == ActionExecutionStatus::NeedsExternalRunner
+            && self.explicit_run_reason == "STD_TEST_MODE blocked desktop open"
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_user_enter_smoke {}\nstatus={:?}\nroute={}\nmode={}\ndeferred={}\nreason={}\nfeedback_visible={}\nfeedback_title={}\nwindow_policy={}\napp_scope={}\nreal_execution_gate={}\nlocalized_app_enter_contract={}",
+            "launcher_user_enter_smoke {}\nstatus={:?}\nroute={}\nmode={}\ndeferred={}\nreason={}\nfeedback_visible={}\nfeedback_title={}\nwindow_policy={}\napp_scope={}\nreal_execution_gate={}\nlocalized_app_enter_contract={}\nexplicit_run_status={:?}\nexplicit_run_reason={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.status,
             self.route,
@@ -102,7 +109,9 @@ impl LauncherUserEnterSmokeReport {
             self.window_policy,
             self.app_scope,
             self.real_execution_gate,
-            self.localized_app_enter_contract
+            self.localized_app_enter_contract,
+            self.explicit_run_status,
+            self.explicit_run_reason
         )
     }
 }
@@ -167,6 +176,28 @@ fn localized_app_enter_contract(core: &StdCore) -> String {
     )
 }
 
+fn explicit_run_status(core: &StdCore) -> (ActionExecutionStatus, String) {
+    let mut state = LauncherState::with_core(core.clone());
+    state.controller.show();
+    state.update_query("Launcher User Enter App");
+    state.handle_keyboard_input_by_user(LauncherKey::ActionPanel, false);
+    state.handle_keyboard_input_by_user(LauncherKey::ArrowDown, false);
+    let Some(execution) = state.handle_keyboard_input_by_user(LauncherKey::Enter, false) else {
+        return (
+            ActionExecutionStatus::Failed,
+            "missing execution".to_string(),
+        );
+    };
+    let reason = execution
+        .output
+        .as_ref()
+        .and_then(|output| output.get("reason"))
+        .and_then(|value| value.as_str())
+        .unwrap_or("none")
+        .to_string();
+    (execution.status, reason)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -181,6 +212,12 @@ mod tests {
             .contains("route=Enter>handle_keyboard_input_by_user"));
         assert!(report.summary().contains("mode=ReviewFirst"));
         assert!(report.summary().contains("status=NeedsExternalRunner"));
+        assert!(report
+            .summary()
+            .contains("explicit_run_status=NeedsExternalRunner"));
+        assert!(report
+            .summary()
+            .contains("explicit_run_reason=STD_TEST_MODE blocked desktop open"));
         assert!(report.summary().contains("local_fixture_app_only"));
         assert!(report
             .summary()
