@@ -57,6 +57,10 @@ fn workspace_policy_never_claims_headless_smoke_completes_ui() {
     let report = policy.strict_report();
 
     assert!(report.contains("ui_completion_boundary=headless-smoke-is-not-ui-completion"));
+    assert!(report.contains("source_guard_contract=source_guard=full-src-scan"));
+    assert!(report.contains("allowed_viewport_api=host-boundary-only"));
+    assert!(report.contains("forbidden_workbench_api=egui-window|show-viewport|extra-viewport"));
+    assert!(report.contains("open=internal-pane-intent"));
     assert!(report.contains("extra_viewports=false"));
     assert!(report.contains("show_viewport_api=false"));
     assert!(report.contains("egui_window_api=false"));
@@ -80,6 +84,20 @@ fn studio_product_ui_uses_theme_tokens_not_hardcoded_colors() {
         "Studio product UI must use std-egui theme tokens instead of hardcoded colors: {}",
         violations.join(", ")
     );
+}
+
+#[test]
+fn workspace_source_guard_contract_names_host_boundary_only() {
+    let contract = StudioWorkspacePolicy::SOURCE_GUARD_CONTRACT;
+
+    assert_eq!(
+        contract,
+        "source_guard=full-src-scan;allowed_viewport_api=host-boundary-only;forbidden_workbench_api=egui-window|show-viewport|extra-viewport;settings=workspace-pane;open=internal-pane-intent"
+    );
+    assert!(contract.contains("allowed_viewport_api=host-boundary-only"));
+    assert!(contract.contains("settings=workspace-pane"));
+    assert!(!contract.contains("native-child-window"));
+    assert!(!contract.contains("detached-panel"));
 }
 
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {

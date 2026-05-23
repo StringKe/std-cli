@@ -43,6 +43,7 @@ impl StudioWorkspacePolicy {
         "ViewportClass",
     ];
     pub const UI_COMPLETION_BOUNDARY: &'static str = "headless-smoke-is-not-ui-completion";
+    pub const SOURCE_GUARD_CONTRACT: &'static str = "source_guard=full-src-scan;allowed_viewport_api=host-boundary-only;forbidden_workbench_api=egui-window|show-viewport|extra-viewport;settings=workspace-pane;open=internal-pane-intent";
     pub const MANUAL_UI_EVIDENCE_GATES: &'static [&'static str] = &[
         "light-dark-screenshots",
         "workspace-pane-open-focus-close-restore",
@@ -98,7 +99,7 @@ impl StudioWorkspacePolicy {
 
     pub fn strict_report(self) -> String {
         format!(
-            "host={};pane_system={};native_child_windows={};detached_panels={};extra_viewports={};show_viewport_api={};egui_window_api={};settings_overlay={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={};ui_completion_boundary={};manual_ui_evidence_gates={}",
+            "host={};pane_system={};native_child_windows={};detached_panels={};extra_viewports={};show_viewport_api={};egui_window_api={};settings_overlay={};docs={};viewport_touchpoints={};native_entrypoints={};forbidden_apis={};ui_completion_boundary={};source_guard_contract={};manual_ui_evidence_gates={}",
             self.host_window.label(),
             self.pane_system.label(),
             self.native_child_windows,
@@ -112,6 +113,7 @@ impl StudioWorkspacePolicy {
             Self::NATIVE_ENTRYPOINTS.join("|"),
             Self::FORBIDDEN_WORKBENCH_APIS.join("|"),
             Self::UI_COMPLETION_BOUNDARY,
+            Self::SOURCE_GUARD_CONTRACT,
             Self::MANUAL_UI_EVIDENCE_GATES.join("|")
         )
     }
