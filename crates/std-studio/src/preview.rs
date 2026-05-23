@@ -120,7 +120,7 @@ pub(crate) fn run_studio_preview(config: StudioPreviewConfig) -> eframe::Result<
 }
 
 pub(crate) fn studio_preview_window_title() -> &'static str {
-    "std-cli Studio"
+    "std-cli-Studio"
 }
 
 pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &str) {

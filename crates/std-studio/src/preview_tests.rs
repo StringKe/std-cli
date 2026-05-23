@@ -23,7 +23,7 @@ fn ui_preview_args_are_explicit_opt_in() {
 
 #[test]
 fn ui_preview_uses_product_window_title() {
-    assert_eq!(studio_preview_window_title(), "std-cli Studio");
+    assert_eq!(studio_preview_window_title(), "std-cli-Studio");
 }
 
 #[test]

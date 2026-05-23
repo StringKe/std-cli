@@ -296,7 +296,7 @@ fn ui_preview_uses_transparent_host_with_opaque_panel() {
     let options = preview_native_options_for_config(&config);
     let description = format!("{:?}", options.viewport);
 
-    assert_eq!(preview_window_title(), "std-cli Launcher");
+    assert_eq!(preview_window_title(), "std-cli-Launcher");
     assert!(description.contains("transparent: Some(true)"));
     assert!(description.contains("decorations: Some(false)"));
     assert!(description.contains("resizable: Some(false)"));

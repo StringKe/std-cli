@@ -18,7 +18,7 @@ impl LauncherPreviewScenario {
 }
 
 pub(crate) fn preview_window_title() -> &'static str {
-    "std-cli Launcher"
+    "std-cli-Launcher"
 }
 
 pub(crate) fn preview_capture_contract() -> &'static str {
