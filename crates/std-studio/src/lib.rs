@@ -4,6 +4,7 @@
 //! Shared Studio application state.
 
 mod analysis_model;
+mod analysis_visibility;
 mod analysis_workbench;
 mod apps;
 pub mod operations_completion;
@@ -24,6 +25,9 @@ mod workspace_pane;
 mod workspace_pane_content_model;
 mod workspace_policy;
 
+pub use analysis_visibility::{
+    AnalysisVisibilityState, AnalysisVisibleCoverageLayer, AnalysisVisibleTab,
+};
 pub use analysis_workbench::{
     AnalysisAnswerSource, AnalysisCoverageLayer, AnalysisInspectionSummary, AnalysisOverviewCard,
     AnalysisSearchHit, AnalysisTab, AnalysisWorkbenchTab, AnalysisWorkbenchViewModel,

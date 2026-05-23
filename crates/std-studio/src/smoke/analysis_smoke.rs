@@ -1,4 +1,4 @@
-use std_studio::StudioApp;
+use std_studio::{AnalysisVisibilityState, AnalysisWorkbenchViewModel, StudioApp};
 
 pub(crate) struct AnalysisWorkbenchSmoke {
     pub(crate) coverage_layers: String,
@@ -30,7 +30,7 @@ pub(crate) fn run_analysis_workbench_smoke(
             )
         })
         .unwrap_or_else(|| "missing".to_string());
-    let search_hits = studio.search_analyses(query, 8)?.len();
+    let search = studio.search_analyses(query, 8)?;
     let answer = studio.ask_analyses(query, 5)?;
     let inspection = studio.inspect_analysis(inspect_target, 8)?.ok_or_else(|| {
         std::io::Error::new(std::io::ErrorKind::NotFound, "analysis inspection missing")
@@ -39,34 +39,25 @@ pub(crate) fn run_analysis_workbench_smoke(
         .sources
         .iter()
         .any(|source| !source.evidence.is_empty());
+    let model = AnalysisWorkbenchViewModel::build(
+        studio.active_analysis.as_ref(),
+        Some(&coverage),
+        Some(&answer),
+        &search,
+        Some(&inspection),
+    );
+    let visibility = AnalysisVisibilityState::from_workbench(&model);
 
     Ok(AnalysisWorkbenchSmoke {
         coverage_layers,
-        search_hits,
+        search_hits: search.len(),
         answer_sources: answer.sources.len(),
-        visual_contract: analysis_visual_contract(
-            search_hits,
-            answer.sources.len(),
-            inspection.component_count,
-            inspection.relation_count,
-        ),
+        visual_contract: visibility.visual_contract(),
         inspect_components: inspection.component_count,
         inspect_relations: inspection.relation_count,
         inspect_history: inspection.history_count,
         answer_has_evidence,
     })
-}
-
-fn analysis_visual_contract(
-    search_hits: usize,
-    answer_sources: usize,
-    components: usize,
-    relations: usize,
-) -> String {
-    format!(
-        "toolbar=target-path|re-index|qa-input;tabs=Overview|Components|Symbols|Relations|Q&A;overview=target|index|activity;coverage=overview:PASS|components:PASS|relations:PASS|history:PASS;symbols=search-hits:{};qa=sources:{};components={};relations={}",
-        search_hits, answer_sources, components, relations
-    )
 }
 
 fn coverage_status(pass: bool) -> &'static str {

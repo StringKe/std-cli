@@ -96,6 +96,16 @@ fn analysis_workbench_model_exposes_docs_22_tabs_and_evidence() {
         model.inspection_summary.as_ref().unwrap().entity,
         "workbench-project"
     );
+    let visibility = AnalysisVisibilityState::from_workbench(&model);
+    assert!(visibility.docs_22_core_tabs_visible());
+    assert!(visibility.four_layer_coverage_visible());
+    assert!(visibility.status_text_is_explicit());
+    assert!(visibility.visual_contract().contains(
+        "toolbar=target-path|re-index|qa-input;tabs=Overview|Components|Symbols|Relations|Q&A"
+    ));
+    assert!(visibility
+        .visual_contract()
+        .contains("coverage=overview:PASS|components:PASS|relations:PASS|history:PASS"));
 }
 
 #[test]
