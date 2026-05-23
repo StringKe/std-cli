@@ -3,7 +3,10 @@ use std::{fs, path::Path};
 use std_egui::ui_capture;
 
 pub(crate) const SAMPLE_EVIDENCE: &str =
-    "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=0 transparent_pixels=0";
+    "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=0 transparent_pixels=0 edge_samples=8 edge_transparent_pixels=8 edge_black_pixels=0 edge_white_pixels=0";
+
+pub(crate) const STUDIO_SAMPLE_EVIDENCE: &str =
+    "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=0 transparent_pixels=0 edge_samples=8 edge_transparent_pixels=0 edge_black_pixels=0 edge_white_pixels=0";
 
 pub(crate) fn sample_manifest() -> String {
     let launcher_bytes = sample_png_bytes(720, 64).len();
@@ -25,7 +28,7 @@ pub(crate) fn sample_manifest() -> String {
     }
     for (theme, scenario) in STUDIO_CAPTURE_STATES {
         lines.push(format!(
-            "studio theme={theme} scenario={scenario} path={}/studio-{theme}-{scenario}.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={studio_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}",
+            "studio theme={theme} scenario={scenario} path={}/studio-{theme}-{scenario}.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={studio_bytes} width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}",
             ui_capture::UI_CAPTURE_DIR
         ));
     }

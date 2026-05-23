@@ -68,6 +68,16 @@ fn verify_capture_line(
         black_pixels: capture_count(line, "black_pixels=", surface, theme, scenario)?,
         white_pixels: capture_count(line, "white_pixels=", surface, theme, scenario)?,
         transparent_pixels: capture_count(line, "transparent_pixels=", surface, theme, scenario)?,
+        edge_samples: capture_dimension(line, "edge_samples=", surface, theme, scenario)?,
+        edge_transparent_pixels: capture_count(
+            line,
+            "edge_transparent_pixels=",
+            surface,
+            theme,
+            scenario,
+        )?,
+        edge_black_pixels: capture_count(line, "edge_black_pixels=", surface, theme, scenario)?,
+        edge_white_pixels: capture_count(line, "edge_white_pixels=", surface, theme, scenario)?,
     };
     verify_pixel_evidence(surface, theme, scenario, &evidence)?;
     let expected_name = format!("{surface}-{theme}-{scenario}.png");
@@ -184,6 +194,7 @@ mod tests {
     use super::*;
     use crate::doctor::ui_capture_tests::{
         capture_root, sample_manifest, sample_png_bytes, write_sample_pngs, SAMPLE_EVIDENCE,
+        STUDIO_SAMPLE_EVIDENCE,
     };
     use crate::doctor::workspace::find_workspace_root;
 
@@ -223,9 +234,9 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}"
             ),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=0 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=0 width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
@@ -290,9 +301,9 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}"
             ),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=7 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=7 width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
@@ -307,8 +318,8 @@ mod tests {
         let root = capture_root(&temp);
         write_sample_pngs(&root);
         let manifest = sample_manifest().replace(
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1080 height=640 {SAMPLE_EVIDENCE}"),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1081 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1080 height=640 {STUDIO_SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1081 height=640 {STUDIO_SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
@@ -339,11 +350,11 @@ mod tests {
     fn ui_capture_manifest_rejects_dominant_black_or_white_carrier_evidence() {
         let black = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=7 white_pixels=0 transparent_pixels=0",
+            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=7 white_pixels=0 transparent_pixels=0 edge_samples=8 edge_transparent_pixels=8 edge_black_pixels=0 edge_white_pixels=0",
         );
         let white = sample_manifest().replace(
             SAMPLE_EVIDENCE,
-            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=7 transparent_pixels=0",
+            "samples=9 opaque_samples=9 unique_colors=3 black_pixels=0 white_pixels=7 transparent_pixels=0 edge_samples=8 edge_transparent_pixels=8 edge_black_pixels=0 edge_white_pixels=0",
         );
 
         assert!(verify_ui_capture_manifest_with_root(&black, None)

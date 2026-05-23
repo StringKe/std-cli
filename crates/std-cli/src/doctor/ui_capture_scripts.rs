@@ -93,6 +93,10 @@ fn check_window_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "black_pixels",
         "white_pixels",
         "transparent_pixels",
+        "edge_samples",
+        "edge_transparent_pixels",
+        "edge_black_pixels",
+        "edge_white_pixels",
     ] {
         check_text(&sampler, required)?;
     }

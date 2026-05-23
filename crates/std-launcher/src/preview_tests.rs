@@ -217,10 +217,10 @@ fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport)
     assert!(summary.contains("verify_rule=manifest-current-run-png-files-by-theme-state"));
     assert!(summary.contains("source_rule=pid+process-name+window-title-per-capture"));
     assert!(summary.contains(
-        "pixel_evidence_rule=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels"
+        "pixel_evidence_rule=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels+edge_samples+edge_transparent_pixels+edge_black_pixels+edge_white_pixels"
     ));
     assert!(summary
-        .contains("carrier_reject_rule=reject-single-color+dominant-black+dominant-white-carrier"));
+        .contains("carrier_reject_rule=reject-single-color+dominant-black+dominant-white+edge-black+edge-white-carrier"));
 }
 
 fn assert_preview_screenshot_acceptance_contract(report: &LauncherPreviewSmokeReport) {

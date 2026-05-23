@@ -4,11 +4,11 @@ pub const UI_CAPTURE_COMMAND: &str = "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture
 pub const UI_CAPTURE_VERIFY_RULE: &str = "manifest-current-run-png-files-by-theme-state";
 pub const UI_CAPTURE_SOURCE_RULE: &str = "pid+process-name+window-title-per-capture";
 pub const UI_CAPTURE_PIXEL_EVIDENCE_RULE: &str =
-    "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels";
+    "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels+edge_samples+edge_transparent_pixels+edge_black_pixels+edge_white_pixels";
 pub const UI_CAPTURE_CARRIER_REJECT_RULE: &str =
-    "reject-single-color+dominant-black+dominant-white-carrier";
+    "reject-single-color+dominant-black+dominant-white+edge-black+edge-white-carrier";
 pub const UI_CAPTURE_ACCEPTANCE_RULE: &str =
-    "explicit-opt-in+current-run-manifest+pid-process-title+png-files+pixel-evidence+carrier-reject";
+    "explicit-opt-in+current-run-manifest+pid-process-title+png-files+center-edge-pixel-evidence+carrier-reject";
 
 pub fn capture_manifest_summary(expected_files: &[String]) -> String {
     format!(
