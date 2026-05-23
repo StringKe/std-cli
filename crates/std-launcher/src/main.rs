@@ -12,6 +12,7 @@ mod preview_behavior;
 mod preview_capture;
 mod preview_contract;
 mod preview_evidence;
+mod preview_surface_evidence;
 #[cfg(test)]
 mod preview_tests;
 mod resident;
