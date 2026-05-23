@@ -154,6 +154,7 @@
 - 每项包含 icon + 标题 + 自身 shortcut
 - 顶部自带独立搜索框，支持继续过滤
 - 默认 selected 第一项
+- 外部执行类 action 的顺序固定为 `Review First`、`Run`、`Defer`、`Open in Studio`、`Copy`。默认 Enter 只走 `Review First`，不会打开 app / 文件 / 外部 runner；`Run` 必须由用户在 Action Panel 中显式选中后触发
 
 **键盘**：
 

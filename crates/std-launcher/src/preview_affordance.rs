@@ -45,6 +45,7 @@ impl LauncherAffordanceSummary {
                 self.action_panel_actions
                     == [
                         i18n::t("launcher.action.review_first"),
+                        i18n::t("launcher.action.run"),
                         i18n::t("launcher.action.defer"),
                         i18n::t("launcher.action.open_in_studio"),
                         i18n::t("launcher.action.copy_command"),
@@ -159,6 +160,7 @@ mod tests {
             action_panel.action_panel_actions,
             [
                 i18n::t("launcher.action.review_first"),
+                i18n::t("launcher.action.run"),
                 i18n::t("launcher.action.defer"),
                 i18n::t("launcher.action.open_in_studio"),
                 i18n::t("launcher.action.copy_command"),
