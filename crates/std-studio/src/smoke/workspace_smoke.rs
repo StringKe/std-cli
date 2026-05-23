@@ -137,20 +137,7 @@ pub(crate) fn run_workspace_pane_smoke(
 }
 
 fn workspace_main_path_contract() -> String {
-    [
-        "host=single-borderless-egui-viewport",
-        "panes=internal-egui-workspace-panes",
-        "extra_viewports=forbidden",
-        "show_viewport=forbidden",
-        "show_viewport_api=false",
-        "viewport_id=forbidden",
-        "egui_window=forbidden",
-        "egui_window_api=false",
-        "settings_overlay=forbidden",
-        "settings_overlay=false",
-        "allowed_viewport_files=viewport|host_chrome|preview",
-    ]
-    .join(",")
+    std_studio::StudioWorkspacePolicy::studio_v1().workspace_main_path_contract()
 }
 
 struct WorkspaceManagementEvidence<'a> {

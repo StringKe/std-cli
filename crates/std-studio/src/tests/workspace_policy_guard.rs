@@ -100,6 +100,26 @@ fn workspace_source_guard_contract_names_host_boundary_only() {
     assert!(!contract.contains("detached-panel"));
 }
 
+#[test]
+fn workspace_main_path_contract_comes_from_policy_fields() {
+    let policy = StudioWorkspacePolicy::studio_v1();
+    let contract = policy.workspace_main_path_contract();
+
+    assert!(contract.contains("host=single-borderless-egui-viewport"));
+    assert!(contract.contains("panes=internal-egui-workspace-panes"));
+    assert!(contract.contains("extra_viewports=forbidden"));
+    assert!(contract.contains("show_viewport=forbidden"));
+    assert!(contract.contains("show_viewport_api=false"));
+    assert!(contract.contains("viewport_id=forbidden"));
+    assert!(contract.contains("egui_window=forbidden"));
+    assert!(contract.contains("egui_window_api=false"));
+    assert!(contract.contains("settings_overlay=forbidden"));
+    assert!(contract.contains("settings_overlay=false"));
+    assert!(contract.contains("allowed_viewport_files=src/viewport.rs"));
+    assert!(contract.contains("src/host_chrome.rs"));
+    assert!(contract.contains("src/preview.rs"));
+}
+
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;

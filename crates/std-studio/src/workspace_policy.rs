@@ -118,12 +118,33 @@ impl StudioWorkspacePolicy {
         )
     }
 
+    pub fn workspace_main_path_contract(self) -> String {
+        format!(
+            "host={};panes={};extra_viewports={};show_viewport=forbidden;show_viewport_api={};viewport_id=forbidden;egui_window=forbidden;egui_window_api={};settings_overlay=forbidden;settings_overlay={};allowed_viewport_files={}",
+            self.host_window.label(),
+            self.pane_system.label(),
+            forbidden_label(self.allows_extra_viewports()),
+            self.allows_show_viewport_api(),
+            self.allows_egui_window_api(),
+            self.allows_settings_overlay(),
+            Self::VIEWPORT_TOUCHPOINTS.join("|")
+        )
+    }
+
     pub const fn host_window_command_boundary(self) -> &'static str {
         match self.host_window {
             HostWindowPolicy::SingleBorderlessEguiViewport => {
                 "host_window_commands=single-system-host-only;workspace_panes=internal-egui-only;commands=close|minimize|maximize"
             }
         }
+    }
+}
+
+const fn forbidden_label(allowed: bool) -> &'static str {
+    if allowed {
+        "allowed"
+    } else {
+        "forbidden"
     }
 }
 
