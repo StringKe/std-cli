@@ -101,6 +101,7 @@ pub(crate) fn run_workspace_pane_smoke(
     let main_path_contract = workspace_main_path_contract();
     let management_sequence = "open>dedupe>focus>switch>close>reopen>restore".to_string();
     let closeguard_roundtrip = closeguard_roundtrip_evidence(studio);
+    let event_trace = workspace_event_trace_evidence(studio);
     let lifecycle_spec = crate::workspace_lifecycle::WorkspaceLifecycleSpec::from_panes(
         &studio.workspace_panes,
         studio.focused_pane,
@@ -119,6 +120,7 @@ pub(crate) fn run_workspace_pane_smoke(
         state_preserved_after_focus,
         tabs_contract: &tabs_contract,
         closeguard_roundtrip: &closeguard_roundtrip,
+        event_trace: &event_trace,
     });
     WorkspacePaneSmoke {
         opened,
@@ -160,11 +162,12 @@ struct WorkspaceManagementEvidence<'a> {
     state_preserved_after_focus: bool,
     tabs_contract: &'a str,
     closeguard_roundtrip: &'a str,
+    event_trace: &'a str,
 }
 
 fn workspace_management_evidence(evidence: WorkspaceManagementEvidence<'_>) -> String {
     format!(
-        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,counts=before-close:{}|after-close:{}|after-reopen:{},state_preserved={},forbidden=native-child-windows:false|detached-panels:false,focused={},title={},reopened_memory={},reopened_restored={},tabs={},closeguard={}",
+        "strategy=internal-egui-workspace-panes,host=single-borderless-egui-viewport,sequence=open>focus>switch>close>reopen>restore,counts=before-close:{}|after-close:{}|after-reopen:{},state_preserved={},forbidden=native-child-windows:false|detached-panels:false,focused={},title={},reopened_memory={},reopened_restored={},tabs={},closeguard={},{}",
         evidence.open_count_before_close,
         evidence.open_count_after_close,
         evidence.open_count_after_reopen,
@@ -174,7 +177,8 @@ fn workspace_management_evidence(evidence: WorkspaceManagementEvidence<'_>) -> S
         evidence.reopened.value(),
         evidence.reopened_restored,
         evidence.tabs_contract,
-        evidence.closeguard_roundtrip
+        evidence.closeguard_roundtrip,
+        evidence.event_trace
     )
 }
 
@@ -183,6 +187,19 @@ fn closeguard_roundtrip_evidence(studio: &StudioApp) -> String {
         Ok(evidence) => evidence,
         Err(error) => format!("disk_roundtrip=FAIL,error={error}"),
     }
+}
+
+fn workspace_event_trace_evidence(studio: &StudioApp) -> String {
+    let mut isolated = StudioApp::with_core(studio.core.clone());
+    let dashboard = isolated.open_workspace_pane(StudioPane::Dashboard);
+    let workflow = isolated.open_workflow_builder(std::path::PathBuf::from(
+        "workspace-smoke/event-trace-workflow.json",
+    ));
+    isolated.focus_workspace_pane(dashboard);
+    isolated.close_workspace_pane(workflow);
+    let closeguard = isolated.close_workspace_instance();
+    isolated.restore_workspace_closeguard(&closeguard);
+    isolated.workspace_event_trace().summary()
 }
 
 fn closeguard_roundtrip_evidence_result(studio: &StudioApp) -> Result<String, std::io::Error> {

@@ -1,4 +1,4 @@
-use crate::{StudioApp, StudioPane};
+use crate::{StudioApp, StudioPane, WorkspacePaneOperation};
 use serde::{Deserialize, Serialize};
 use std_egui::i18n;
 
@@ -208,6 +208,8 @@ impl StudioApp {
         pane.open = true;
         pane.focus(serial);
         self.focused_pane = Some(id);
+        let identity_key = self.workspace_panes[index].kind.identity_key();
+        self.record_workspace_event(WorkspacePaneOperation::Focus, Some(id), identity_key);
         true
     }
 
@@ -224,11 +226,14 @@ impl StudioApp {
             return false;
         };
         if !self.workspace_panes[index].kind.closable() {
+            self.record_workspace_event(WorkspacePaneOperation::CloseBlocked, Some(id), "base");
             return false;
         }
         if !self.workspace_panes[index].open {
+            self.record_workspace_event(WorkspacePaneOperation::CloseBlocked, Some(id), "closed");
             return false;
         }
+        let identity_key = self.workspace_panes[index].kind.identity_key();
         self.workspace_panes[index].open = false;
         if self.focused_pane == Some(id) {
             self.focused_pane = self
@@ -238,6 +243,7 @@ impl StudioApp {
                 .max_by_key(|pane| pane.focus_serial)
                 .map(|pane| pane.id);
         }
+        self.record_workspace_event(WorkspacePaneOperation::Close, Some(id), identity_key);
         true
     }
 
@@ -268,6 +274,7 @@ impl StudioApp {
             pane.open = false;
         }
         self.focused_pane = None;
+        self.record_workspace_event(WorkspacePaneOperation::CloseInstance, None, "host");
         closeguard
     }
 
@@ -302,6 +309,7 @@ impl StudioApp {
                 .iter()
                 .any(|pane| pane.id == *focused && pane.open)
         });
+        self.record_workspace_event(WorkspacePaneOperation::Restore, self.focused_pane, "host");
     }
 
     fn focus_workspace_pane_by_offset(&mut self, offset: isize) -> Option<WorkspacePaneId> {
@@ -336,7 +344,14 @@ impl StudioApp {
             existing.open = true;
             existing.focus(serial);
             self.focused_pane = Some(existing.id);
-            return existing.id;
+            let id = existing.id;
+            let _ = existing;
+            self.record_workspace_event(
+                WorkspacePaneOperation::OpenExisting,
+                Some(id),
+                identity_key,
+            );
+            return id;
         }
 
         let id = WorkspacePaneId::new(self.next_pane_serial);
@@ -345,6 +360,7 @@ impl StudioApp {
         let pane = WorkspacePane::new(id, kind, focus_serial);
         self.focused_pane = Some(id);
         self.workspace_panes.push(pane);
+        self.record_workspace_event(WorkspacePaneOperation::OpenNew, Some(id), identity_key);
         id
     }
 

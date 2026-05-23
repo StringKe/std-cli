@@ -19,6 +19,7 @@ pub mod plugin_status;
 mod trace;
 mod workflow;
 mod workspace_closeguard;
+mod workspace_events;
 mod workspace_pane;
 mod workspace_pane_content_model;
 mod workspace_policy;
@@ -40,6 +41,7 @@ use std_orchestration::{
 pub use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecution, SearchResult};
 pub use workflow::built_in_studio_preview_workflow;
+pub use workspace_events::{WorkspacePaneEvent, WorkspacePaneEventTrace, WorkspacePaneOperation};
 pub use workspace_pane::{
     WorkspacePane, WorkspacePaneCloseGuard, WorkspacePaneCloseSnapshot, WorkspacePaneContent,
     WorkspacePaneId, WorkspacePaneKind,
@@ -118,9 +120,11 @@ pub struct StudioApp {
     pub planned_workflow: Option<Workflow>,
     pub workspace_panes: Vec<WorkspacePane>,
     pub focused_pane: Option<WorkspacePaneId>,
+    pub workspace_events: Vec<WorkspacePaneEvent>,
     pub workspace_policy: StudioWorkspacePolicy,
     next_pane_serial: u64,
     next_focus_serial: u64,
+    pub(crate) next_workspace_event_serial: u64,
 }
 
 fn initial_workspace_panes() -> Vec<WorkspacePane> {
@@ -151,9 +155,11 @@ impl Default for StudioApp {
             planned_workflow: None,
             workspace_panes: initial_workspace_panes(),
             focused_pane: Some(WorkspacePaneId::new(1)),
+            workspace_events: Vec::new(),
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 2,
             next_focus_serial: 2,
+            next_workspace_event_serial: 1,
         }
     }
 }
@@ -181,9 +187,11 @@ impl StudioApp {
             planned_workflow: None,
             workspace_panes: initial_workspace_panes(),
             focused_pane: Some(WorkspacePaneId::new(1)),
+            workspace_events: Vec::new(),
             workspace_policy: StudioWorkspacePolicy::studio_v1(),
             next_pane_serial: 2,
             next_focus_serial: 2,
+            next_workspace_event_serial: 1,
         }
     }
 
