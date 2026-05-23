@@ -248,6 +248,7 @@ fn assert_completion_manual_gate_groups(rows: &[operations_completion::Completio
         "studio-qa-doctor-release-install-command-results",
         "ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt",
         "ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+        "ui-capture-doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor",
     ] {
         assert!(gates.contains(required), "missing manual gate {required}");
     }

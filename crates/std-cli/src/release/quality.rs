@@ -160,6 +160,10 @@ fn manual_ui_evidence() -> Vec<String> {
             ui_capture::UI_CAPTURE_MANIFEST
         ),
         format!("ui_capture_command={}", ui_capture::UI_CAPTURE_COMMAND),
+        format!(
+            "ui_capture_doctor=STD_UI_CAPTURE_MANIFEST={} std doctor",
+            ui_capture::UI_CAPTURE_MANIFEST
+        ),
         "ui_capture_rule=current-run-png-only".to_string(),
     ];
     evidence.extend(BACKGROUND_UI_EVIDENCE.iter().map(|value| value.to_string()));
@@ -233,6 +237,7 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "background_ui_acceptance=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>",
         "manual_ui_evidence=ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
         "manual_ui_evidence=ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+        "manual_ui_evidence=ui_capture_doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor",
         "manual_ui_evidence=ui_capture_rule=current-run-png-only",
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",

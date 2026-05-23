@@ -49,6 +49,7 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
     for required in [
         "manual_ui_evidence=ui_capture_manifest=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt",
         "manual_ui_evidence=ui_capture_command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix",
+        "manual_ui_evidence=ui_capture_doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor",
         "manual_ui_evidence=ui_capture_rule=current-run-png-only",
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",

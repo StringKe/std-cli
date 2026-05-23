@@ -394,6 +394,9 @@ fn assert_operations_completion_summary(summary: &str) {
     assert!(
         summary.contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix")
     );
+    assert!(summary.contains(
+        "ui-capture-doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor"
+    ));
 }
 
 fn assert_operations_contract_summary(summary: &str) {

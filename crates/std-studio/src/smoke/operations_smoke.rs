@@ -333,6 +333,9 @@ mod tests {
         assert!(summary.contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
         assert!(summary
             .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
+        assert!(summary.contains(
+            "ui-capture-doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor"
+        ));
     }
 
     fn assert_a11y_contract(summary: &str) {

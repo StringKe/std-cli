@@ -148,6 +148,10 @@ fn ui_capture_manual_gates() -> Vec<String> {
         format!("ui-capture-manifest={}", ui_capture::UI_CAPTURE_MANIFEST),
         format!("ui-capture-command={}", ui_capture::UI_CAPTURE_COMMAND),
         format!(
+            "ui-capture-doctor=STD_UI_CAPTURE_MANIFEST={} std doctor",
+            ui_capture::UI_CAPTURE_MANIFEST
+        ),
+        format!(
             "ui-capture-pixels={}",
             ui_capture::UI_CAPTURE_PIXEL_EVIDENCE_RULE
         ),
@@ -247,6 +251,7 @@ mod tests {
             "studio-capture-state=dark-panes",
             "ui-capture-manifest=",
             "ui-capture-command=",
+            "ui-capture-doctor=",
             "ui-capture-pixels=",
             "ui-capture-rejects=",
             "ui-capture-acceptance=",
