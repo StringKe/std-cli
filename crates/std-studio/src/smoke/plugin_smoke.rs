@@ -1,3 +1,4 @@
+use super::plugin_contracts::{PluginContractInput, PluginUiContracts};
 use std_studio::StudioApp;
 
 pub(crate) struct PluginManagerSmoke {
@@ -46,17 +47,11 @@ std.emit(output);"#,
     studio.search_plugins("studio-ts-smoke");
     let ts_status = run_selected_status(studio);
     let ts_runtime = selected_runtime(studio);
-    let selected_inspector = selected_inspector_contract(studio);
-    let status_bar_contract = plugin_status_bar_contract(studio);
-    let permission_visual_contract = permission_visual_contract(studio);
-    let visual_contract = plugin_visual_contract(PluginVisualContractInput {
+    let contracts = PluginUiContracts::from_input(PluginContractInput {
         studio,
         js_runtime: &js_runtime,
         ts_runtime: &ts_runtime,
         command_count: all_action_count,
-        selected_inspector: &selected_inspector,
-        status_bar_contract: &status_bar_contract,
-        permission_visual_contract: &permission_visual_contract,
     });
     let permissions = studio
         .plugin_manager
@@ -82,10 +77,10 @@ std.emit(output);"#,
         preview_kind: js_preview_kind,
         js_runtime,
         ts_runtime,
-        status_bar_contract,
-        permission_visual_contract,
-        inspector_contract: selected_inspector,
-        visual_contract,
+        status_bar_contract: contracts.status_bar,
+        permission_visual_contract: contracts.permission_visual,
+        inspector_contract: contracts.inspector,
+        visual_contract: contracts.visual,
     })
 }
 
@@ -106,114 +101,6 @@ fn selected_runtime(studio: &StudioApp) -> String {
         .and_then(|runtime| runtime.as_str())
         .unwrap_or("Missing")
         .to_string()
-}
-
-struct PluginVisualContractInput<'a> {
-    studio: &'a StudioApp,
-    js_runtime: &'a str,
-    ts_runtime: &'a str,
-    command_count: usize,
-    selected_inspector: &'a str,
-    status_bar_contract: &'a str,
-    permission_visual_contract: &'a str,
-}
-
-fn plugin_visual_contract(input: PluginVisualContractInput<'_>) -> String {
-    let manager = &input.studio.plugin_manager;
-    let status = manager
-        .check_reports
-        .iter()
-        .map(|report| report.status.to_string())
-        .collect::<std::collections::BTreeSet<String>>()
-        .into_iter()
-        .collect::<Vec<_>>()
-        .join("|");
-    let permission_count = manager
-        .check_reports
-        .iter()
-        .flat_map(|report| report.permissions.iter())
-        .count();
-    let source = if manager.manifest_paths.iter().any(|path| path.exists()) {
-        "local-path"
-    } else {
-        "missing"
-    };
-    let audit_log = if manager.last_execution.is_some() {
-        "visible"
-    } else {
-        "missing"
-    };
-    format!(
-        "list=name|version|status|source|enable;list_chip_tracks=metadata|match;status={};source={};status_bar={};inspector=description|permissions|commands|audit-log;selected_inspector={};permissions={};permission_boundary={};commands={};audit_log={};runtime=js:{}|ts:{}",
-        status,
-        source,
-        input.status_bar_contract,
-        input.selected_inspector,
-        permission_count,
-        input.permission_visual_contract,
-        input.command_count,
-        audit_log,
-        input.js_runtime,
-        input.ts_runtime
-    )
-}
-
-fn selected_inspector_contract(studio: &StudioApp) -> String {
-    let manager = &studio.plugin_manager;
-    crate::views::plugin_inspector_model::PluginInspectorModel::from_selection(
-        manager.plugin_actions.get(manager.selected),
-        &manager.check_reports,
-        manager.last_execution.as_ref(),
-    )
-    .contract()
-}
-
-fn plugin_status_bar_contract(studio: &StudioApp) -> String {
-    let manager = &studio.plugin_manager;
-    let summary = std_studio::plugin_status::summarize_plugin_status(
-        &manager.check_reports,
-        &manager.plugin_actions,
-        manager.preview.as_ref(),
-        manager.last_execution.as_ref(),
-    );
-    format!(
-        "manifest={};actions={};preview={};runtime={};permissions={};boundary={}",
-        summary.manifest_status,
-        summary.action_status,
-        summary.preview_status,
-        summary.runtime_status,
-        summary.permission_status,
-        summary.boundary_status
-    )
-}
-
-fn permission_visual_contract(studio: &StudioApp) -> String {
-    let manager = &studio.plugin_manager;
-    let permissions = manager
-        .check_reports
-        .iter()
-        .flat_map(|report| report.permissions.iter())
-        .map(|permission| format!("{permission:?}"))
-        .collect::<std::collections::BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>();
-    let permission_label = if permissions.is_empty() {
-        "ReadOnly".to_string()
-    } else {
-        permissions.join("|")
-    };
-    let checks = manager
-        .check_reports
-        .iter()
-        .map(|report| report.status.to_string())
-        .collect::<std::collections::BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>()
-        .join("|");
-    format!(
-        "manifest_checks={};permissions={};boundary_panel=permissions|fs|network|actions;runtime_panel=status|runtime|exit|duration|boundary",
-        checks, permission_label
-    )
 }
 
 fn smoke_plugin_manifest() -> String {

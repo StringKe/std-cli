@@ -4,6 +4,7 @@ mod diagnostics;
 mod keyboard_smoke;
 mod layout_smoke;
 mod operations_smoke;
+mod plugin_contracts;
 mod plugin_smoke;
 mod report;
 mod report_pass;
