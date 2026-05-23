@@ -38,12 +38,15 @@ record_capture() {
   theme="$2"
   scenario="$3"
   output="$4"
+  pid="$5"
+  process="$6"
+  title="$7"
   bytes=$(wc -c <"$output" | tr -d ' ')
   width=$(/usr/bin/sips -g pixelWidth "$output" 2>/dev/null | /usr/bin/awk '/pixelWidth/ {print $2}')
   height=$(/usr/bin/sips -g pixelHeight "$output" 2>/dev/null | /usr/bin/awk '/pixelHeight/ {print $2}')
   pixel_evidence=$(/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift \
     scripts/cg-sample-pixels.swift "$output")
-  echo "$surface theme=$theme scenario=$scenario path=$output bytes=$bytes width=$width height=$height $pixel_evidence" >>"$manifest"
+  echo "$surface theme=$theme scenario=$scenario path=$output pid=$pid process=$process window_title=$title bytes=$bytes width=$width height=$height $pixel_evidence" >>"$manifest"
 }
 
 pids=""
@@ -65,7 +68,7 @@ capture_launcher() {
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-launcher "std-cli Launcher" "$output"
   wait "$pid" || true
   test -s "$output"
-  record_capture launcher "$theme" "$scenario" "$output"
+  record_capture launcher "$theme" "$scenario" "$output" "$pid" std-launcher std-cli-Launcher
   echo "$output"
 }
 
@@ -79,7 +82,7 @@ capture_studio() {
   STD_ALLOW_UI_PREVIEW=1 scripts/capture-window.sh "$pid" std-studio "std-cli Studio" "$output"
   wait "$pid" || true
   test -s "$output"
-  record_capture studio "$theme" "$scenario" "$output"
+  record_capture studio "$theme" "$scenario" "$output" "$pid" std-studio std-cli-Studio
   echo "$output"
 }
 

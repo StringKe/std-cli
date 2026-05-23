@@ -57,6 +57,7 @@ fn verify_capture_line(
         .find(|line| line.starts_with(&prefix))
         .ok_or_else(|| CliError::Doctor(format!("capture manifest missing {prefix}")))?;
     let path = capture_field(line, "path=")?;
+    verify_capture_source(line, surface, theme, scenario)?;
     let bytes = capture_field(line, "bytes=")?;
     let width = capture_dimension(line, "width=", surface, theme, scenario)?;
     let height = capture_dimension(line, "height=", surface, theme, scenario)?;
@@ -97,6 +98,47 @@ fn verify_capture_line(
         verify_capture_png(root, &entry)?;
     }
     Ok(())
+}
+
+fn verify_capture_source(
+    line: &str,
+    surface: &str,
+    theme: &str,
+    scenario: &str,
+) -> Result<(), CliError> {
+    let pid = capture_field(line, "pid=")?;
+    pid.parse::<u32>()
+        .ok()
+        .filter(|value| *value > 0)
+        .ok_or_else(|| {
+            CliError::Doctor(format!(
+                "capture manifest pid must be positive for {surface} {theme} {scenario}"
+            ))
+        })?;
+    let process = capture_field(line, "process=")?;
+    let title = capture_field(line, "window_title=")?;
+    let (expected_process, expected_title) = expected_capture_source(surface)?;
+    if process != expected_process {
+        return Err(CliError::Doctor(format!(
+            "capture manifest process mismatch for {surface} {theme} {scenario}: expected={expected_process} actual={process}"
+        )));
+    }
+    if title != expected_title {
+        return Err(CliError::Doctor(format!(
+            "capture manifest window title mismatch for {surface} {theme} {scenario}: expected={expected_title} actual={title}"
+        )));
+    }
+    Ok(())
+}
+
+fn expected_capture_source(surface: &str) -> Result<(&'static str, &'static str), CliError> {
+    match surface {
+        "launcher" => Ok(("std-launcher", "std-cli-Launcher")),
+        "studio" => Ok(("std-studio", "std-cli-Studio")),
+        _ => Err(CliError::Doctor(format!(
+            "unknown capture surface: {surface}"
+        ))),
+    }
 }
 
 fn capture_field<'a>(line: &'a str, key: &str) -> Result<&'a str, CliError> {
@@ -165,7 +207,7 @@ mod tests {
         let png_bytes = sample_png_bytes(720, 64).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png bytes={png_bytes} width=720 height=64 {SAMPLE_EVIDENCE}\n"
+                "launcher theme=dark scenario=error path=artifacts/ui/manual-acceptance/launcher-dark-error.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes={png_bytes} width=720 height=64 {SAMPLE_EVIDENCE}\n"
             ),
             "",
         );
@@ -181,13 +223,35 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
             ),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=0 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=0 width=1080 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
         assert!(error.to_string().contains("bytes must be positive"));
+    }
+
+    #[test]
+    fn ui_capture_manifest_rejects_wrong_process_source() {
+        let manifest = sample_manifest().replace(
+            "launcher theme=dark scenario=results path=artifacts/ui/manual-acceptance/launcher-dark-results.png pid=4201 process=std-launcher window_title=std-cli-Launcher",
+            "launcher theme=dark scenario=results path=artifacts/ui/manual-acceptance/launcher-dark-results.png pid=4201 process=Terminal window_title=std-cli-Launcher",
+        );
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
+        assert!(error.to_string().contains("process mismatch"));
+    }
+
+    #[test]
+    fn ui_capture_manifest_rejects_wrong_window_title_source() {
+        let manifest = sample_manifest().replace(
+            "studio theme=dark scenario=dashboard path=artifacts/ui/manual-acceptance/studio-dark-dashboard.png pid=4301 process=std-studio window_title=std-cli-Studio",
+            "studio theme=dark scenario=dashboard path=artifacts/ui/manual-acceptance/studio-dark-dashboard.png pid=4301 process=std-studio window_title=System-Settings",
+        );
+
+        let error = verify_ui_capture_manifest_with_root(&manifest, None).unwrap_err();
+        assert!(error.to_string().contains("window title mismatch"));
     }
 
     #[test]
@@ -226,9 +290,9 @@ mod tests {
         let png_bytes = sample_png_bytes(1080, 640).len();
         let manifest = sample_manifest().replace(
             &format!(
-                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
+                "studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={png_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}"
             ),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=7 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=7 width=1080 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
@@ -243,8 +307,8 @@ mod tests {
         let root = capture_root(&temp);
         write_sample_pngs(&root);
         let manifest = sample_manifest().replace(
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1080 height=640 {SAMPLE_EVIDENCE}"),
-            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png bytes=24 width=1081 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1080 height=640 {SAMPLE_EVIDENCE}"),
+            &format!("studio theme=light scenario=panes path=artifacts/ui/manual-acceptance/studio-light-panes.png pid=4301 process=std-studio window_title=std-cli-Studio bytes=24 width=1081 height=640 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();
@@ -261,8 +325,8 @@ mod tests {
         let bytes = sample_png_bytes(500, 64);
         fs::write(root.join("launcher-light-collapsed.png"), bytes).unwrap();
         let manifest = sample_manifest().replace(
-            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=720 height=64 {SAMPLE_EVIDENCE}"),
-            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png bytes=24 width=500 height=64 {SAMPLE_EVIDENCE}"),
+            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes=24 width=720 height=64 {SAMPLE_EVIDENCE}"),
+            &format!("launcher theme=light scenario=collapsed path=artifacts/ui/manual-acceptance/launcher-light-collapsed.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes=24 width=500 height=64 {SAMPLE_EVIDENCE}"),
         );
 
         let error = verify_ui_capture_manifest_with_root(&manifest, Some(&root)).unwrap_err();

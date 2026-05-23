@@ -2,21 +2,23 @@ pub const UI_CAPTURE_DIR: &str = "artifacts/ui/manual-acceptance";
 pub const UI_CAPTURE_MANIFEST: &str = "artifacts/ui/manual-acceptance/manifest.txt";
 pub const UI_CAPTURE_COMMAND: &str = "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix";
 pub const UI_CAPTURE_VERIFY_RULE: &str = "manifest-current-run-png-files-by-theme-state";
+pub const UI_CAPTURE_SOURCE_RULE: &str = "pid+process-name+window-title-per-capture";
 pub const UI_CAPTURE_PIXEL_EVIDENCE_RULE: &str =
     "samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels";
 pub const UI_CAPTURE_CARRIER_REJECT_RULE: &str =
     "reject-single-color+dominant-black+dominant-white-carrier";
 pub const UI_CAPTURE_ACCEPTANCE_RULE: &str =
-    "explicit-opt-in+current-run-manifest+png-files+pixel-evidence+carrier-reject";
+    "explicit-opt-in+current-run-manifest+pid-process-title+png-files+pixel-evidence+carrier-reject";
 
 pub fn capture_manifest_summary(expected_files: &[String]) -> String {
     format!(
-        "expected_capture_manifest={},capture_out_dir={},expected_capture_files={},capture_command={},verify_rule={},pixel_evidence_rule={},carrier_reject_rule={},acceptance_rule={}",
+        "expected_capture_manifest={},capture_out_dir={},expected_capture_files={},capture_command={},verify_rule={},source_rule={},pixel_evidence_rule={},carrier_reject_rule={},acceptance_rule={}",
         UI_CAPTURE_MANIFEST,
         UI_CAPTURE_DIR,
         expected_files.join(","),
         UI_CAPTURE_COMMAND,
         UI_CAPTURE_VERIFY_RULE,
+        UI_CAPTURE_SOURCE_RULE,
         UI_CAPTURE_PIXEL_EVIDENCE_RULE,
         UI_CAPTURE_CARRIER_REJECT_RULE,
         UI_CAPTURE_ACCEPTANCE_RULE
@@ -45,6 +47,7 @@ mod tests {
             "STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"
         );
         assert!(summary.contains("expected_capture_files=launcher-light-results.png"));
+        assert!(summary.contains(UI_CAPTURE_SOURCE_RULE));
         assert!(summary.contains(UI_CAPTURE_PIXEL_EVIDENCE_RULE));
         assert!(summary.contains(UI_CAPTURE_CARRIER_REJECT_RULE));
         assert!(summary.contains(UI_CAPTURE_ACCEPTANCE_RULE));

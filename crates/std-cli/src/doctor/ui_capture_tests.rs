@@ -19,13 +19,13 @@ pub(crate) fn sample_manifest() -> String {
     ];
     for (theme, scenario) in LAUNCHER_CAPTURE_STATES {
         lines.push(format!(
-            "launcher theme={theme} scenario={scenario} path={}/launcher-{theme}-{scenario}.png bytes={launcher_bytes} width=720 height=64 {SAMPLE_EVIDENCE}",
+            "launcher theme={theme} scenario={scenario} path={}/launcher-{theme}-{scenario}.png pid=4201 process=std-launcher window_title=std-cli-Launcher bytes={launcher_bytes} width=720 height=64 {SAMPLE_EVIDENCE}",
             ui_capture::UI_CAPTURE_DIR
         ));
     }
     for (theme, scenario) in STUDIO_CAPTURE_STATES {
         lines.push(format!(
-            "studio theme={theme} scenario={scenario} path={}/studio-{theme}-{scenario}.png bytes={studio_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}",
+            "studio theme={theme} scenario={scenario} path={}/studio-{theme}-{scenario}.png pid=4301 process=std-studio window_title=std-cli-Studio bytes={studio_bytes} width=1080 height=640 {SAMPLE_EVIDENCE}",
             ui_capture::UI_CAPTURE_DIR
         ));
     }

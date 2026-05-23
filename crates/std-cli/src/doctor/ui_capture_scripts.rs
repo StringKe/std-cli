@@ -114,6 +114,7 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)",
         "capture_rule=pid+process-name+window-title",
         "completion_rule=current-run-png-only",
+        "pid=$pid process=$process window_title=$title",
         "/usr/bin/sips -g pixelWidth",
         "/usr/bin/sips -g pixelHeight",
         "scripts/cg-sample-pixels.swift",
@@ -121,7 +122,9 @@ fn check_matrix_capture_script(root: &std::path::Path) -> Result<(), CliError> {
         "pixel_evidence=$(",
         "$pixel_evidence",
         "record_capture launcher",
+        "record_capture launcher \"$theme\" \"$scenario\" \"$output\" \"$pid\" std-launcher std-cli-Launcher",
         "record_capture studio",
+        "record_capture studio \"$theme\" \"$scenario\" \"$output\" \"$pid\" std-studio std-cli-Studio",
         "manifest=$manifest",
     ] {
         check_text(&body, required)?;
