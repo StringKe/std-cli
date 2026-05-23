@@ -439,6 +439,8 @@ mod action_panel_tests;
 #[cfg(test)]
 mod app_tests;
 #[cfg(test)]
+mod control_tests;
+#[cfg(test)]
 mod desktop_guard_tests;
 #[cfg(test)]
 mod keyboard_tests;
