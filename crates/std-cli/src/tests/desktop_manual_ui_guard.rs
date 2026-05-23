@@ -36,6 +36,10 @@ fn screenshot_matrix_script_requires_ui_preview_opt_in() {
             "capture matrix must include Launcher required state: {required}"
         );
     }
+    assert_eq!(
+        launcher_capture_sequence(&body),
+        launcher_required_capture_states()
+    );
     for required in studio_required_capture_states() {
         assert!(
             body.contains(required),
@@ -100,6 +104,14 @@ fn launcher_required_capture_states() -> [&'static str; 22] {
         "capture_launcher light action-panel",
         "capture_launcher dark action-panel",
     ]
+}
+
+fn launcher_capture_sequence(body: &str) -> Vec<String> {
+    body.lines()
+        .map(str::trim)
+        .filter(|line| line.starts_with("capture_launcher "))
+        .map(str::to_string)
+        .collect()
 }
 
 fn studio_required_capture_states() -> [&'static str; 18] {

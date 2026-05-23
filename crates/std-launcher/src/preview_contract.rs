@@ -147,7 +147,7 @@ pub(crate) fn required_capture_states_summary() -> String {
     )
 }
 
-fn required_capture_state_labels() -> &'static [&'static str] {
+pub(crate) fn required_capture_state_labels() -> &'static [&'static str] {
     &[
         "light-collapsed",
         "dark-collapsed",
