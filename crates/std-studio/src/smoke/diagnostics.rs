@@ -173,8 +173,16 @@ impl StudioSmokeReport {
     }
 
     fn visual_steps_pass(&self) -> bool {
-        self.builder_visual_contract
-            .contains("steps=list|row=48|selected-row|keyboard-reorder")
+        self.builder_visual_contract.contains("steps=list|row=48")
+            && self
+                .builder_visual_contract
+                .contains("focus-default=steps-list")
+            && self.builder_visual_contract.contains("keyboard-select")
+            && self.builder_visual_contract.contains("keyboard-reorder")
+            && self
+                .builder_visual_contract
+                .contains("a11y=row-index-name-type-selected")
+            && self.builder_visual_contract.contains("selected-row")
             && self
                 .builder_visual_contract
                 .contains("selected=surface-3+accent-left")

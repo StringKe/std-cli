@@ -141,7 +141,7 @@ fn assert_shell_layout_summary(summary: &str) {
     assert!(summary.contains("host_window_size=1280x800"));
     assert!(summary.contains("min_window_size=1080x640"));
     assert!(summary.contains(
-        "host_viewport_contract=host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
+        "host_viewport_contract=host_viewport=single-borderless-egui-viewport,panes=internal-egui-workspace-panes,size=1280x800,min=1080x640,decorations=false,resizable=true,native_child_windows=false,detached_panels=false,extra_viewports=false"
     ));
     assert!(summary
         .contains("host_chrome_contract=host_chrome=egui-owned,borderless,native-controls=false"));
@@ -213,6 +213,13 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
     assert!(summary.contains("builder_trace_status=Completed"));
     assert!(summary.contains("builder_side_effect_model=simulate=dry-run,run=audit-log"));
     assert!(summary.contains("builder_next_action=complete"));
+    assert_workflow_builder_bottom_panel_summary(summary);
+    assert_workflow_builder_history_summary(summary);
+    assert_workflow_builder_debug_summary(summary);
+    assert_workflow_builder_visual_summary(summary);
+}
+
+fn assert_workflow_builder_bottom_panel_summary(summary: &str) {
     assert!(summary.contains(
         "builder_bottom_panel_contract=batch-debug=simulate:open|run:open|planned-run:open|history:open"
     ));
@@ -220,26 +227,46 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
     assert!(summary.contains("tabs=批量调试|日志|问题|性能"));
     assert!(summary.contains("selected=批量调试"));
     assert!(summary.contains("role=bottom-panel-tabs"));
+}
+
+fn assert_workflow_builder_history_summary(summary: &str) {
     assert!(summary.contains("history_timeline_contract=timeline=expanded"));
     assert!(summary.contains("columns=step,status,started,finished,payload"));
     assert!(summary.contains("history_trace_steps=1"));
     assert!(summary.contains("history_payload_visible=true"));
+    assert!(summary.contains("history=execution-history-pane|timeline|payload"));
+}
+
+fn assert_workflow_builder_debug_summary(summary: &str) {
     assert!(summary.contains(
         "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
     ));
     assert!(summary.contains("success>success>success>success"));
+    assert!(summary.contains("debug_panel=true,dry_run=true,execution=true"));
+}
+
+fn assert_workflow_builder_visual_summary(summary: &str) {
     assert!(summary.contains("builder_visual_contract=builder_interaction=single-workbench-flow"));
     assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
     assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
-    assert!(summary.contains(
-        "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
-    ));
+    assert_workflow_builder_step_visual_summary(summary);
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("ai_assist=collapsed-input|suggestions|apply|insert|replace"));
-    assert!(summary.contains("debug_panel=true,dry_run=true,execution=true"));
     assert!(summary.contains("batch-debug=simulate:open|run:open|planned-run:open|history:open"));
     assert!(summary.contains("role=bottom-panel-tabs"));
-    assert!(summary.contains("history=execution-history-pane|timeline|payload"));
+}
+
+fn assert_workflow_builder_step_visual_summary(summary: &str) {
+    assert!(summary.contains("steps=list|row=48"));
+    assert!(summary.contains("focus-default=steps-list"));
+    assert!(summary.contains("keyboard-select"));
+    assert!(summary.contains("keyboard-reorder"));
+    assert!(summary.contains("a11y=row-index-name-type-selected"));
+    assert!(summary.contains("selected-row"));
+    assert!(summary.contains("grabber-6px"));
+    assert!(summary.contains("selected=surface-3+accent-left"));
+    assert!(summary.contains("selected-accent-rail-4px"));
+    assert!(summary.contains("type-chip"));
 }
 
 fn assert_plugin_manager_summary(summary: &str) {

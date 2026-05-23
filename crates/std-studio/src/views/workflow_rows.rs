@@ -182,8 +182,13 @@ pub(crate) fn builder_step_row(
         egui::vec2(ui.available_width(), row_metrics::BUILDER_STEP_ROW_HEIGHT),
         egui::Sense::click(),
     );
-    response
-        .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, ui.is_enabled(), name));
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(
+            egui::WidgetType::Button,
+            ui.is_enabled(),
+            builder_step_a11y_label(index, name, detail, selected),
+        )
+    });
     if ui.is_rect_visible(rect) {
         row_paint::paint_row_frame(ui, rect, response.hovered(), selected, RowSurface::Raised);
         paint_builder_grabber(ui, rect);
@@ -236,7 +241,15 @@ pub(crate) fn builder_step_row(
 }
 
 pub(crate) fn builder_step_visual_contract() -> &'static str {
-    "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
+    "steps=list|row=48|focus-default=steps-list|keyboard-select|keyboard-reorder|a11y=row-index-name-type-selected|selected-row|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
+}
+
+fn builder_step_a11y_label(index: usize, name: &str, detail: &str, selected: bool) -> String {
+    format!(
+        "step {} {name} type {detail} selected {}",
+        index + 1,
+        selected
+    )
 }
 
 fn workflow_label(path: &Path) -> String {
@@ -381,7 +394,19 @@ mod tests {
     fn builder_step_visual_contract_matches_docs22_step_list() {
         assert_eq!(
             builder_step_visual_contract(),
-            "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
+            "steps=list|row=48|focus-default=steps-list|keyboard-select|keyboard-reorder|a11y=row-index-name-type-selected|selected-row|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
+        );
+    }
+
+    #[test]
+    fn builder_step_a11y_label_exposes_position_type_and_selection() {
+        assert_eq!(
+            builder_step_a11y_label(1, "Collect context", "Action", true),
+            "step 2 Collect context type Action selected true"
+        );
+        assert_eq!(
+            builder_step_a11y_label(0, "Validate", "Command", false),
+            "step 1 Validate type Command selected false"
         );
     }
 

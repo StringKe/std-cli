@@ -23,7 +23,7 @@ impl StudioSmokeReport {
             && self.host_viewport_contract.contains("decorations=false")
             && self
                 .host_viewport_contract
-                .contains("native-child-windows=false")
+                .contains("native_child_windows=false")
             && self.host_chrome_contract.contains("egui-owned")
             && self.host_chrome_contract.contains("native-controls=false")
             && self.host_chrome_input_contract.contains("background-only")
@@ -127,9 +127,16 @@ impl StudioSmokeReport {
             && self
                 .builder_visual_contract
                 .contains("flow=goal-input|plan|save|simulate|test|trace")
+            && self.builder_visual_contract.contains("steps=list|row=48")
+            && self.builder_visual_contract.contains("selected-row")
+            && self.builder_visual_contract.contains("keyboard-reorder")
             && self
                 .builder_visual_contract
-                .contains("steps=list|row=48|selected-row|keyboard-reorder")
+                .contains("focus-default=steps-list")
+            && self.builder_visual_contract.contains("keyboard-select")
+            && self
+                .builder_visual_contract
+                .contains("a11y=row-index-name-type-selected")
             && self
                 .builder_visual_contract
                 .contains("selected=surface-3+accent-left")

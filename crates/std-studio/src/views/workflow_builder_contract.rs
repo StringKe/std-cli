@@ -40,6 +40,9 @@ impl WorkflowBuilderInteractionContract {
             && self.flow == "flow=goal-input|plan|save|simulate|test|trace"
             && self.toolbar.contains("toolbar=goal-input>plan>save")
             && self.steps.contains("row=48")
+            && self.steps.contains("focus-default=steps-list")
+            && self.steps.contains("keyboard-select")
+            && self.steps.contains("a11y=row-index-name-type-selected")
             && self.steps.contains("selected=surface-3+accent-left")
             && self
                 .properties
@@ -84,6 +87,9 @@ mod tests {
         assert!(summary.contains("builder_interaction=single-workbench-flow"));
         assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
         assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
+        assert!(summary.contains("focus-default=steps-list"));
+        assert!(summary.contains("keyboard-select"));
+        assert!(summary.contains("a11y=row-index-name-type-selected"));
         assert!(summary.contains("ai_assist=collapsed-input|suggestions|apply|insert|replace"));
         assert!(summary.contains("history=execution-history-pane|timeline|payload"));
     }
