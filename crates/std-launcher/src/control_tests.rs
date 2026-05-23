@@ -147,13 +147,13 @@ fn launcher_window_smoke_validates_hotkey_window_commands() {
     assert!(summary.contains("hidden_commands=ResizeToHiddenHost,Visible(false)"));
     assert!(summary.contains("shown_commands=ResizeToPanel,PositionForPanel,Visible(true),Focus"));
     assert!(summary.contains(
-        "host_positioning=show:resize-to-transparent-host>outer-position-0.28-monitor-anchor>visible>focus"
+        "host_positioning=show:resize-to-panel-host>outer-position-0.28-monitor-anchor>visible>focus"
     ));
     assert!(summary.contains("hide:resize-to-1x1>hidden"));
     assert!(summary.contains("native_host=transparent"));
     assert!(summary.contains("panel_surface=opaque-bg-surface-0"));
     assert!(summary.contains("host_background=none"));
-    assert!(summary.contains("host_gutter=64px"));
+    assert!(summary.contains("host_gutter=0px"));
 }
 
 #[test]

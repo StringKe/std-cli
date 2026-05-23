@@ -25,7 +25,10 @@ fn launcher_state_defers_external_runner_actions() {
         std_egui::i18n::t("launcher.feedback.deferred")
     );
     assert!(feedback.deferred);
-    assert!(feedback.detail.contains("explicit user trigger"));
+    assert_eq!(
+        feedback.detail,
+        std_egui::i18n::t("launcher.feedback.deferred.detail")
+    );
     assert_eq!(
         execution
             .output

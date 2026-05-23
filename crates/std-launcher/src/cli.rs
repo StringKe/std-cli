@@ -312,7 +312,7 @@ mod tests {
             .contains("feedback_icon_contract=status_icons=completed|deferred|failed"));
         assert!(report
             .summary()
-            .contains("native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"));
+            .contains("native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=0px"));
         assert!(report
             .summary()
             .contains("capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none"));
@@ -323,7 +323,7 @@ mod tests {
             .summary()
             .contains("capture_pixel_contract=capture_pixels="));
         assert!(report.summary().contains("center-panel-opaque-non-carrier"));
-        assert!(report.summary().contains("edge-gutter-transparent"));
+        assert!(report.summary().contains("host-carrier-zero"));
         assert!(report.summary().contains("edge-black-white-zero"));
         assert!(report.summary().contains("standard_launcher_enter_ms=320"));
         assert!(report.summary().contains("reduced_launcher_enter_ms=0"));
@@ -406,13 +406,13 @@ mod tests {
 
     fn assert_preview_summary_has_state_surfaces(summary: &str) {
         for expected in [
-            "state_surface=panel_floats:true,search:panel-as-search-surface",
+            "state_surface=panel_only_surface:true,search:panel-as-search-surface",
             "host_contract=native_clear_color=transparent_rgba_0_0_0_0,viewport_frame=transparent_fill,no_stroke;native_host=",
             "host_background=none",
             "panel_surface=opaque",
-            "panel_origin=64x64",
-            "host_gap=128x128",
-            "panel_floats=true",
+            "panel_origin=0x0",
+            "host_gap=0x0",
+            "panel_only_surface=true",
             "forbidden=black_or_white_host_background",
             "body:loading-progress-token-surface",
             "feedback:status-warning-weak",

@@ -256,7 +256,7 @@ fn search_render_enter_executes_selected_app_through_user_route() {
             .as_ref()
             .and_then(|output| output.get("reason"))
             .and_then(|value| value.as_str()),
-        Some("STD_TEST_MODE blocked desktop open")
+        Some("review command before running external action")
     );
     assert!(state.view.feedback.is_some());
     assert!(!hide_requested);

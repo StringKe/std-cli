@@ -263,9 +263,8 @@ fn preview_smoke_sizes_prove_capture_window_has_transparent_host() {
     assert!(report
         .summary()
         .contains("panel_frame=transparent_host_with_opaque_panel_surface"));
-    assert!(report.summary().contains("bottom_clearance=64"));
+    assert!(report.summary().contains("bottom_clearance=0"));
     assert!(report.summary().contains("budget_source=panel"));
-    assert!(!report.summary().contains("bottom_clearance=0"));
     assert!(report
         .summary()
         .contains("search_surface=panel_as_search_surface"));
@@ -282,10 +281,9 @@ fn preview_size_budget_uses_panel_height_not_native_host_height() {
     };
     let summary = crate::preview_evidence::preview_size_summary(&scenario);
 
-    assert!(summary.contains("bottom_clearance=64"), "{summary}");
+    assert!(summary.contains("bottom_clearance=0"), "{summary}");
     assert!(summary.contains("budget_source=panel"), "{summary}");
-    assert!(summary.contains("panel_floats=true"), "{summary}");
-    assert!(!summary.contains("bottom_clearance=0"), "{summary}");
+    assert!(summary.contains("panel_only_surface=true"), "{summary}");
 }
 
 #[test]

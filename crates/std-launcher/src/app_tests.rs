@@ -75,7 +75,10 @@ fn launcher_searches_one_app_by_multilingual_aliases_without_launching() {
 
     assert!(action_ids.windows(2).all(|pair| pair[0] == pair[1]));
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.action_name, "Open App: Fixture Talk");
+    assert_eq!(
+        execution.action_name,
+        "Review Command: Open App: Fixture Talk"
+    );
 }
 
 #[test]
@@ -107,7 +110,7 @@ fn launcher_searches_wechat_by_macos_multilingual_names_without_launching() {
 
     assert!(action_ids.windows(2).all(|pair| pair[0] == pair[1]));
     assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
-    assert_eq!(execution.action_name, "Open App: WeChat");
+    assert_eq!(execution.action_name, "Review Command: Open App: WeChat");
 }
 
 #[test]
@@ -140,7 +143,10 @@ fn launcher_gui_enter_reports_test_mode_desktop_open_block_in_tests() {
         gui_execution.status,
         ActionExecutionStatus::NeedsExternalRunner
     );
-    assert_eq!(gui_execution.action_name, "Open App: Fixture Talk");
+    assert_eq!(
+        gui_execution.action_name,
+        "Review Command: Open App: Fixture Talk"
+    );
     assert_eq!(
         gui_execution
             .output
@@ -157,7 +163,7 @@ fn launcher_gui_enter_reports_test_mode_desktop_open_block_in_tests() {
             .unwrap()
             .get("reason")
             .and_then(|value| value.as_str()),
-        Some("STD_TEST_MODE blocked desktop open")
+        Some("review command before running external action")
     );
 }
 

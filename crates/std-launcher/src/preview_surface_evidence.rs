@@ -24,7 +24,7 @@ pub(crate) struct PreviewSurfaceSummary {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct PreviewStateSurface {
-    panel_floats: bool,
+    panel_only_surface: bool,
     search_bar: &'static str,
     body: &'static str,
     action_bar: &'static str,
@@ -96,9 +96,9 @@ impl PreviewNativeHostSurface {
     pub(crate) fn passes(&self) -> bool {
         self.clear_color == "native_clear_color=transparent_rgba_0_0_0_0"
             && self.viewport_frame == "viewport_frame=transparent_fill,no_stroke"
-            && self.geometry.contains("host_gap=128x128")
-            && self.geometry.contains("panel_origin=64x64")
-            && self.geometry.contains("panel_floats=true")
+            && self.geometry.contains("host_gap=0x0")
+            && self.geometry.contains("panel_origin=0x0")
+            && self.geometry.contains("panel_only_surface=true")
             && self.carrier.passes()
     }
 
@@ -146,7 +146,7 @@ impl PreviewHostCarrierContract {
 impl PreviewStateSurface {
     pub(crate) fn for_state(state: &LauncherState, state_name: &str) -> Self {
         Self {
-            panel_floats: ui_metrics::panel_is_only_visible_surface(state),
+            panel_only_surface: ui_metrics::panel_is_only_visible_surface(state),
             search_bar: search_surface_for_state(state_name),
             body: body_surface_for_state(state_name),
             action_bar: action_bar_surface_for_state(state_name),
@@ -156,7 +156,7 @@ impl PreviewStateSurface {
     }
 
     pub(crate) fn passes(&self, state_name: &str) -> bool {
-        self.panel_floats
+        self.panel_only_surface
             && self.search_bar != "carrier"
             && self.body != "carrier"
             && self.action_bar != "carrier"
@@ -167,8 +167,8 @@ impl PreviewStateSurface {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "state_surface=panel_floats:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
-            self.panel_floats,
+            "state_surface=panel_only_surface:{},search:{},body:{},action_bar:{},feedback:{},popover:{}",
+            self.panel_only_surface,
             self.search_bar,
             self.body,
             self.action_bar,

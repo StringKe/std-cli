@@ -5,7 +5,7 @@ use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 #[test]
 fn mod_arrow_keys_jump_to_result_edges() {
     let mut state = LauncherState::new();
-    state.update_query("index");
+    state.update_query("t");
     assert!(state.view.results.len() > 1);
 
     state.handle_keyboard_input(LauncherKey::JumpToLast, false);

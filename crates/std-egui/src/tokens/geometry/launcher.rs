@@ -7,7 +7,7 @@ impl LauncherSize {
     pub const PANEL_WIDTH: f32 = 720.0;
     pub const WINDOW_VERTICAL_ANCHOR: f32 = 0.28;
     pub const HIDDEN_HOST_SIZE: f32 = 1.0;
-    pub const HOST_GUTTER: f32 = 64.0;
+    pub const HOST_GUTTER: f32 = 0.0;
     pub const SEARCH_BAR_MIN_HEIGHT: f32 = 40.0;
     pub const SEARCH_INPUT_WIDTH_RESERVE: f32 = 72.0;
     pub const SEARCH_IME_CHIP_WIDTH: f32 = 112.0;

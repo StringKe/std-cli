@@ -286,15 +286,14 @@ struct PanelSurfaceGeometry {
 impl PanelSurfaceGeometry {
     fn passes(&self) -> bool {
         self.frame_clear
-            && self.panel.min.x > 0.0
-            && self.panel.min.y > 0.0
-            && self.panel.max.x < self.window.x
-            && self.panel.max.y < self.window.y
+            && self.panel.min == egui::Pos2::ZERO
+            && (self.panel.width() - self.window.x).abs() < 0.5
+            && (self.panel.height() - self.window.y).abs() < 0.5
     }
 
     fn summary(&self) -> String {
         format!(
-            "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear={};panel_floats={}",
+            "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear={};panel_only_surface={}",
             self.window.x.round() as u32,
             self.window.y.round() as u32,
             self.panel.min.x.round() as i32,

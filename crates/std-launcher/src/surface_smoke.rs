@@ -102,12 +102,12 @@ impl LauncherSurfaceSmokeReport {
             && self.viewport_frame_contract == "viewport_frame=transparent_fill,no_stroke"
             && self.panel_radius == 16
             && self.native_host_window_contract
-                == "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"
+                == "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=0px"
             && self.capture_window_contract
-                == "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"
+                == "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=0px"
             && self.capture_surface_contract
-                == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip"
-            && self.capture_pixel_contract == "capture_pixels=center-panel-opaque-non-carrier,edge-gutter-transparent,edge-black-white-zero,min-opaque-samples=5,min-edge-transparent=6"
+                == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=0px,no_host_background,no_shadow_clip"
+            && self.capture_pixel_contract == "capture_pixels=center-panel-opaque-non-carrier,host-carrier-zero,edge-black-white-zero,min-opaque-samples=5,min-edge-transparent=0"
             && self
                 .visible_host_geometry_contract
                 .contains("results:native_host=")
@@ -119,13 +119,13 @@ impl LauncherSurfaceSmokeReport {
                 .contains("error:native_host=")
             && self
                 .visible_host_geometry_contract
-                .contains("panel_origin=64x64")
+                .contains("panel_origin=0x0")
             && self
                 .visible_host_geometry_contract
                 .contains("frame_clear=true")
             && self
                 .visible_host_geometry_contract
-                .contains("panel_floats=true")
+                .contains("panel_only_surface=true")
             && self.panel_inner_padding == 16
             && self.dark_search_surface_layer == "dark_search=bg/surface-1:#24272C"
             && self.light_search_surface_layer == "light_search=bg/surface-1:#F2F5F8"
@@ -249,13 +249,13 @@ fn viewport_frame_contract() -> String {
 
 fn native_host_window_contract() -> String {
     let contract = LauncherViewportContract::hidden();
-    let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH + 128.0, 96.0));
+    let size = crate::transparent_hidden_panel_contract(egui::vec2(PANEL_WIDTH, 96.0));
     let panel_width = crate::panel_surface_width(1.0);
     if contract.passes()
-        && size == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH + 128.0, 96.0))
+        && size == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH, 96.0))
         && panel_width == PANEL_WIDTH
     {
-        return "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"
+        return "native_host_window=transparent_host,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=0px"
             .to_string();
     }
     "native_host_window=FAIL".to_string()
@@ -264,29 +264,29 @@ fn native_host_window_contract() -> String {
 fn capture_window_contract() -> String {
     let contract = LauncherViewportContract::visible();
     let panel_width = crate::panel_surface_width(1.0);
-    let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH + 128.0, 392.0));
+    let preview = crate::transparent_visible_panel_contract(egui::vec2(PANEL_WIDTH, 392.0));
     if contract.passes()
-        && preview == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH + 128.0, 392.0))
+        && preview == contract.native_host_window_summary(egui::vec2(PANEL_WIDTH, 392.0))
         && panel_width == PANEL_WIDTH
     {
-        return "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=64px"
+        return "capture_window=transparent_host,opt_in_only,panel_surface=opaque-bg-surface-0,host_background=none,host_gutter=0px"
             .to_string();
     }
     "capture_window=FAIL".to_string()
 }
 
 fn capture_surface_contract() -> String {
-    "capture_surface=opaque_panel_surface,transparent_host,host_gutter=64px,no_host_background,no_shadow_clip"
+    "capture_surface=opaque_panel_surface,transparent_host,host_gutter=0px,no_host_background,no_shadow_clip"
         .to_string()
 }
 
 fn capture_pixel_contract() -> String {
     [
         "capture_pixels=center-panel-opaque-non-carrier",
-        "edge-gutter-transparent",
+        "host-carrier-zero",
         "edge-black-white-zero",
         "min-opaque-samples=5",
-        "min-edge-transparent=6",
+        "min-edge-transparent=0",
     ]
     .join(",")
 }
@@ -305,7 +305,7 @@ fn visible_host_geometry_for_height(panel_height: f32) -> String {
     let host = LauncherSize::host_size(panel, scale);
     let gutter = LauncherSize::host_gutter(scale);
     format!(
-        "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear=true;panel_floats=true",
+        "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear=true;panel_only_surface=true",
         host.x.round() as u32,
         host.y.round() as u32,
         gutter.round() as i32,
@@ -412,11 +412,11 @@ mod tests {
         assert!(summary.contains("detail=max-2-lines"));
         assert!(summary.contains("capture_pixel_contract=capture_pixels="));
         assert!(summary.contains("center-panel-opaque-non-carrier"));
-        assert!(summary.contains("edge-gutter-transparent"));
+        assert!(summary.contains("host-carrier-zero"));
         assert!(summary.contains("edge-black-white-zero"));
         assert!(summary.contains("visible_host_geometry_contract=results:"));
-        assert!(summary.contains("panel_origin=64x64"));
-        assert!(summary.contains("host_gap=128x128"));
-        assert!(summary.contains("panel_floats=true"));
+        assert!(summary.contains("panel_origin=0x0"));
+        assert!(summary.contains("host_gap=0x0"));
+        assert!(summary.contains("panel_only_surface=true"));
     }
 }
