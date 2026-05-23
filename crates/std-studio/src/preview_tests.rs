@@ -27,6 +27,15 @@ fn ui_preview_uses_product_window_title() {
 }
 
 #[test]
+fn ui_preview_scenarios_do_not_alias_panes_as_windows_or_viewports() {
+    let source = include_str!("preview.rs");
+
+    assert!(source.contains("\"panes\" =>"));
+    assert!(!source.contains("\"windows\""));
+    assert!(!source.contains("\"viewports\""));
+}
+
+#[test]
 fn ui_preview_closes_with_viewport_command_not_process_exit() {
     let source = include_str!("preview.rs");
 

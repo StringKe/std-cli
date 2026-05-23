@@ -138,7 +138,7 @@ pub(crate) fn apply_studio_preview_scenario(app: &mut StudioEguiApp, scenario: &
             let id = app.open_workspace_pane_for_nav(std_studio::StudioPane::Settings);
             app.pending_workspace_focus = Some(id);
         }
-        "panes" | "windows" | "viewports" => {
+        "panes" => {
             seed_panes_preview(app);
         }
         _ => {
