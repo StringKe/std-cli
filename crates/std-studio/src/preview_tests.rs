@@ -214,7 +214,8 @@ fn assert_preview_summary_has_viewport_policy(summary: &str) {
     assert!(summary.contains("light-settings=PASS"));
     assert!(summary.contains("settings_surface=internal-workspace-pane"));
     assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1"));
-    assert!(summary.contains("cargo run -p std-studio -- --ui-preview"));
+    assert!(summary.contains("target/ui-capture/debug/std-studio --ui-preview"));
+    assert!(!summary.contains("cargo run -p std-studio -- --ui-preview"));
     assert!(summary.contains("workflow_e2e=builder|dry-run|execution|trace|history-pane"));
     assert!(summary.contains("workflow_error=failed-execution|problems-panel|error-row"));
     assert!(summary.contains("plugin_permission=permissions|fs|network|review-prompt"));

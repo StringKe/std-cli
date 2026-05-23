@@ -127,7 +127,7 @@ impl StudioCaptureManifest {
 
 fn preview_command(scenario: &str) -> String {
     let (theme, name) = scenario.split_once('-').unwrap_or(("dark", "dashboard"));
-    format!("STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview {theme} {name} 8000")
+    format!("STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-studio --ui-preview {theme} {name} 8000")
 }
 
 fn preview_capture_contract() -> &'static str {

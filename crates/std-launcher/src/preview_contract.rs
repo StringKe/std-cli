@@ -11,7 +11,7 @@ impl LauncherPreviewScenario {
 
     pub(crate) fn command(&self) -> String {
         format!(
-            "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview {} {} 8000",
+            "STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-launcher --ui-preview {} {} 8000",
             self.theme, self.state
         )
     }

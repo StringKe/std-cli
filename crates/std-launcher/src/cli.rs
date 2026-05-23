@@ -371,9 +371,11 @@ mod tests {
             "light-ime",
             "dark-action-panel",
             "STD_ALLOW_UI_PREVIEW=1",
+            "target/ui-capture/debug/std-launcher --ui-preview",
         ] {
             assert!(summary.contains(expected), "{expected}");
         }
+        assert!(!summary.contains("cargo run -p std-launcher -- --ui-preview"));
         for expected in [
             "required_capture_states=",
             "light-results",

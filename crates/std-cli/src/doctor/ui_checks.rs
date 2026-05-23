@@ -254,7 +254,7 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "{launcher}\n{launcher_evidence}\n{launcher_contract}\n{launcher_surface}\n{launcher_acceptance}"
     );
     for required in [
-        "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview",
+        "STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-launcher --ui-preview",
         "state: \"results\"",
         "state: \"no-results\"",
         "state: \"defer\"",

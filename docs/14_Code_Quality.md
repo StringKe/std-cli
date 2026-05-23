@@ -72,8 +72,8 @@ STD_ALLOW_DESKTOP_AUTOMATION=1 std-launcher --gui-hotkey-smoke Alt+Space 5000
 Launcher 和 Studio 截图预览同样属于人工 UI 验收。`std-launcher --preview-smoke` 与 `std-studio --preview-smoke` 只输出状态矩阵和待执行命令，不创建窗口。真正打开可见预览窗口必须显式设置：
 
 ```bash
-STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview light defer 8000
-STD_ALLOW_UI_PREVIEW=1 cargo run -p std-studio -- --ui-preview light panes 8000
+STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-launcher --ui-preview light defer 8000
+STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-studio --ui-preview light panes 8000
 ```
 
 未设置 `STD_ALLOW_UI_PREVIEW=1` 时，`--ui-preview` 返回 `SKIP`，不创建可见窗口。
