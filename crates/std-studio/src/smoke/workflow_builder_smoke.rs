@@ -1,6 +1,9 @@
 use crate::{
     bottom_panel_model::BottomPanelTabModel,
-    views::{self, workflow_builder_fields, workflow_builder_toolbar, workflow_builder_trace},
+    views::{
+        workflow_builder_contract::WorkflowBuilderInteractionContract, workflow_builder_fields,
+        workflow_builder_toolbar, workflow_builder_trace,
+    },
 };
 use std_egui::input;
 use std_studio::StudioApp;
@@ -70,7 +73,14 @@ pub(crate) fn run_workflow_builder_smoke(
         studio.workflow_debug.as_ref(),
         studio.last_workflow_execution.as_ref(),
     );
-    let visual_contract = builder_visual_contract();
+    let bottom_panel_contract = builder_bottom_panel_contract();
+    let interaction_contract = WorkflowBuilderInteractionContract::new(
+        studio.workflow_debug.as_ref(),
+        studio.last_workflow_execution.as_ref(),
+        bottom_panel_contract.clone(),
+    );
+    let interaction_contract_pass = interaction_contract.pass();
+    let visual_contract = interaction_contract.summary();
 
     Ok(WorkflowBuilderSmoke {
         created,
@@ -92,15 +102,20 @@ pub(crate) fn run_workflow_builder_smoke(
         selected_step_title: moved.name,
         trace_status,
         side_effect_model: "simulate=dry-run,run=audit-log".to_string(),
-        next_action: "complete".to_string(),
-        bottom_panel_contract: builder_bottom_panel_contract(),
+        next_action: if interaction_contract_pass {
+            "complete"
+        } else {
+            "repair-contract"
+        }
+        .to_string(),
+        bottom_panel_contract,
         debug_panel_contract,
         visual_contract,
     })
 }
 
 fn builder_bottom_panel_contract() -> String {
-    let builder_source = include_str!("../views/workflow_builder.rs");
+    let builder_source = include_str!("../views/workflow_builder_flow.rs");
     let bottom_panel_source = include_str!("../bottom_panel.rs");
     let simulate = action_opens_batch_debug(builder_source, "preview_workflow_path");
     let run = action_opens_batch_debug(builder_source, "run_workflow_path");
@@ -134,19 +149,6 @@ fn open_closed(open: bool) -> &'static str {
     } else {
         "closed"
     }
-}
-
-fn builder_visual_contract() -> String {
-    [
-        "builder_visual=single-pane-workbench",
-        views::workflow_builder_flow::flow_contract(),
-        views::workflow_builder_step_visual_contract(),
-        "properties=step-name|parameters-json|index|add|update|move|remove",
-        "debug=dry-run|execution|trace",
-        "bottom-panel=batch-debug|logs|problems|performance",
-        "history=execution-history-pane|timeline",
-    ]
-    .join(";")
 }
 
 fn workflow_step_keyboard_path() -> String {

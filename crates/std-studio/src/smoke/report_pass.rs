@@ -120,22 +120,37 @@ impl StudioSmokeReport {
                 .contains("success>success>success>success")
             && self
                 .builder_visual_contract
-                .contains("builder_visual=single-pane-workbench")
+                .contains("builder_interaction=single-workbench-flow")
+            && self
+                .builder_visual_contract
+                .contains("shell=toolbar>status>steps+properties>trace>ai-assist")
             && self
                 .builder_visual_contract
                 .contains("flow=goal-input|plan|save|simulate|test|trace")
             && self
                 .builder_visual_contract
-                .contains("steps=list|selected-row|keyboard-reorder")
+                .contains("steps=list|row=48|selected-row|keyboard-reorder")
             && self
                 .builder_visual_contract
-                .contains("properties=step-name|parameters-json|index|add|update|move|remove")
+                .contains("selected=surface-3+accent-left")
             && self
                 .builder_visual_contract
-                .contains("debug=dry-run|execution|trace")
+                .contains("inputs=step-name|parameters-json|index")
             && self
                 .builder_visual_contract
-                .contains("bottom-panel=batch-debug|logs|problems|performance")
+                .contains("ai_assist=collapsed-input|suggestions|apply|insert|replace")
+            && self
+                .builder_visual_contract
+                .contains("debug_panel=true,dry_run=true,execution=true")
+            && self
+                .builder_visual_contract
+                .contains("batch-debug=simulate:open|run:open|planned-run:open|history:open")
+            && self
+                .builder_visual_contract
+                .contains("role=bottom-panel-tabs")
+            && self
+                .builder_visual_contract
+                .contains("history=execution-history-pane|timeline|payload")
             && self.batch_status == "NeedsExternalRunner"
             && self.memory_count >= 1
             && self.history_count >= 1

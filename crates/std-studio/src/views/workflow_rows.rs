@@ -236,7 +236,7 @@ pub(crate) fn builder_step_row(
 }
 
 pub(crate) fn builder_step_visual_contract() -> &'static str {
-    "steps=list|selected-row|keyboard-reorder|grabber-6px|selected-accent-rail-4px|type-chip"
+    "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
 }
 
 fn workflow_label(path: &Path) -> String {
@@ -381,7 +381,7 @@ mod tests {
     fn builder_step_visual_contract_matches_docs22_step_list() {
         assert_eq!(
             builder_step_visual_contract(),
-            "steps=list|selected-row|keyboard-reorder|grabber-6px|selected-accent-rail-4px|type-chip"
+            "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
         );
     }
 

@@ -228,15 +228,18 @@ fn assert_workflow_builder_trace_summary(summary: &str) {
         "builder_debug_panel_contract=debug_panel=true,dry_run=true,execution=true,statuses="
     ));
     assert!(summary.contains("success>success>success>success"));
-    assert!(summary.contains("builder_visual_contract=builder_visual=single-pane-workbench"));
+    assert!(summary.contains("builder_visual_contract=builder_interaction=single-workbench-flow"));
+    assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
     assert!(summary.contains("flow=goal-input|plan|save|simulate|test|trace"));
     assert!(summary.contains(
-        "steps=list|selected-row|keyboard-reorder|grabber-6px|selected-accent-rail-4px|type-chip"
+        "steps=list|row=48|selected-row|keyboard-reorder|grabber-6px|selected=surface-3+accent-left|selected-accent-rail-4px|type-chip"
     ));
-    assert!(summary.contains("properties=step-name|parameters-json|index|add|update|move|remove"));
-    assert!(summary.contains("debug=dry-run|execution|trace"));
-    assert!(summary.contains("bottom-panel=batch-debug|logs|problems|performance"));
-    assert!(summary.contains("history=execution-history-pane|timeline"));
+    assert!(summary.contains("inputs=step-name|parameters-json|index"));
+    assert!(summary.contains("ai_assist=collapsed-input|suggestions|apply|insert|replace"));
+    assert!(summary.contains("debug_panel=true,dry_run=true,execution=true"));
+    assert!(summary.contains("batch-debug=simulate:open|run:open|planned-run:open|history:open"));
+    assert!(summary.contains("role=bottom-panel-tabs"));
+    assert!(summary.contains("history=execution-history-pane|timeline|payload"));
 }
 
 fn assert_plugin_manager_summary(summary: &str) {

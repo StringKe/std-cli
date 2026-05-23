@@ -161,7 +161,10 @@ impl StudioSmokeReport {
 
     fn visual_workbench_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("builder_visual=single-pane-workbench")
+            .contains("builder_interaction=single-workbench-flow")
+            && self
+                .builder_visual_contract
+                .contains("shell=toolbar>status>steps+properties>trace>ai-assist")
     }
 
     fn visual_flow_pass(&self) -> bool {
@@ -171,22 +174,34 @@ impl StudioSmokeReport {
 
     fn visual_steps_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("steps=list|selected-row|keyboard-reorder")
+            .contains("steps=list|row=48|selected-row|keyboard-reorder")
+            && self
+                .builder_visual_contract
+                .contains("selected=surface-3+accent-left")
     }
 
     fn visual_properties_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("properties=step-name|parameters-json|index|add|update|move|remove")
+            .contains("inputs=step-name|parameters-json|index")
     }
 
     fn visual_debug_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("debug=dry-run|execution|trace")
+            .contains("debug_panel=true,dry_run=true,execution=true")
+            && self
+                .builder_visual_contract
+                .contains("ai_assist=collapsed-input|suggestions|apply|insert|replace")
     }
 
     fn visual_bottom_pass(&self) -> bool {
         self.builder_visual_contract
-            .contains("bottom-panel=batch-debug|logs|problems|performance")
+            .contains("batch-debug=simulate:open|run:open|planned-run:open|history:open")
+            && self
+                .builder_visual_contract
+                .contains("role=bottom-panel-tabs")
+            && self
+                .builder_visual_contract
+                .contains("history=execution-history-pane|timeline|payload")
     }
 
     fn builder_keyboard_pass(&self) -> bool {
