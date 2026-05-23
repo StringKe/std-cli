@@ -70,7 +70,7 @@ impl StudioEguiApp {
                         });
                 }
                 Err(error) => {
-                    ui.label(error.to_string());
+                    history_error_label(ui, &error.to_string());
                 }
             }
         });
@@ -96,6 +96,10 @@ impl StudioEguiApp {
                 });
         });
     }
+}
+
+fn history_error_label(ui: &mut egui::Ui, message: &str) {
+    ui.colored_label(ui::danger_bg(ui.ctx()), message);
 }
 
 #[cfg(test)]
@@ -155,5 +159,15 @@ mod tests {
 
         assert!(contract.contains("traces+timeline+events"));
         assert!(contract.contains("started,finished,payload"));
+    }
+
+    #[test]
+    fn history_trace_errors_use_danger_token() {
+        let source = include_str!("history.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("fn history_error_label"));
+        assert!(implementation.contains("colored_label(ui::danger_bg"));
+        assert!(!implementation.contains("Err(error) => {\n                    ui.label"));
     }
 }

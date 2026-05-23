@@ -8,7 +8,7 @@ use crate::{
 use eframe::egui;
 use std_egui::i18n;
 use std_egui::tokens::{Color, Space, Text};
-use std_orchestration::{WorkflowExecutionTrace, WorkflowTraceStep};
+use std_orchestration::{ExecutionStatus, WorkflowExecutionTrace, WorkflowTraceStep};
 use std_types::{ActionExecutionStatus, StdEvent};
 
 pub(crate) fn filter_bar(ui: &mut egui::Ui, filter: &mut String) {
@@ -193,6 +193,11 @@ fn step_label(step: &WorkflowTraceStep) -> String {
 }
 
 fn step_fill(ctx: &egui::Context, step: &WorkflowTraceStep) -> egui::Color32 {
+    if step.status == ExecutionStatus::Failed
+        || step.action_status == Some(ActionExecutionStatus::Failed)
+    {
+        return ui::danger_bg(ctx);
+    }
     if step.action_status == Some(ActionExecutionStatus::NeedsExternalRunner) {
         return ui::warn_bg(ctx);
     }
@@ -242,5 +247,49 @@ mod tests {
             history_filter_columns_label(),
             i18n::t("studio.history.filter.columns")
         );
+    }
+
+    #[test]
+    fn history_step_chips_distinguish_failed_and_deferred_states() {
+        let ctx = egui::Context::default();
+        std_egui::tokens::apply_theme(&ctx, std_egui::tokens::ThemeMode::Light);
+
+        assert_eq!(
+            step_fill(&ctx, &step(ExecutionStatus::Failed, None)),
+            ui::danger_bg(&ctx)
+        );
+        assert_eq!(
+            step_fill(
+                &ctx,
+                &step(
+                    ExecutionStatus::Completed,
+                    Some(ActionExecutionStatus::Failed)
+                )
+            ),
+            ui::danger_bg(&ctx)
+        );
+        assert_eq!(
+            step_fill(
+                &ctx,
+                &step(
+                    ExecutionStatus::Completed,
+                    Some(ActionExecutionStatus::NeedsExternalRunner)
+                )
+            ),
+            ui::warn_bg(&ctx)
+        );
+    }
+
+    fn step(
+        status: ExecutionStatus,
+        action_status: Option<ActionExecutionStatus>,
+    ) -> WorkflowTraceStep {
+        WorkflowTraceStep {
+            name: "Step".to_string(),
+            status,
+            action_status,
+            message: None,
+            error: None,
+        }
     }
 }
