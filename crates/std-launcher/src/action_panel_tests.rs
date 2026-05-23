@@ -78,10 +78,8 @@ fn action_panel_labels_external_primary_as_review_first() {
         titles.first().unwrap(),
         std_egui::i18n::t("launcher.action.review_first")
     );
+    assert!(titles.contains(&std_egui::i18n::t("launcher.action.run").to_string()));
     assert!(titles.contains(&std_egui::i18n::t("launcher.action.defer").to_string()));
-    assert!(!titles
-        .iter()
-        .any(|title| title == std_egui::i18n::t("launcher.action.run")));
 }
 
 #[test]
@@ -130,6 +128,7 @@ fn action_panel_keyboard_path_defers_external_runner_by_default() {
 
     state.update_query("terminal");
     state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
     state.handle_keyboard_input(LauncherKey::ArrowDown, false);
     let selected_before_trigger = state
         .action_panel
@@ -226,6 +225,44 @@ fn review_first_shows_command_without_triggering_external_action() {
     assert_eq!(state.view.phase, std_egui::LauncherPhase::Feedback);
     assert!(!state.action_panel.open);
     assert_eq!(state.focus_section, LauncherFocusSection::Feedback);
+}
+
+#[test]
+fn action_panel_run_item_is_explicit_opt_in_for_external_runner() {
+    let temp = tempfile::tempdir().unwrap();
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    });
+    core.seed_builtin_actions().unwrap();
+    let mut state = LauncherState::with_core(core);
+
+    state.update_query("terminal");
+    state.handle_keyboard_input(LauncherKey::ActionPanel, false);
+    state.handle_keyboard_input(LauncherKey::ArrowDown, false);
+    let selected_before_trigger = state
+        .action_panel
+        .selected_item()
+        .unwrap()
+        .title()
+        .to_string();
+    let execution = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert_eq!(
+        selected_before_trigger,
+        std_egui::i18n::t("launcher.action.run")
+    );
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .and_then(|output| output.get("reason"))
+            .and_then(|value| value.as_str()),
+        Some("STD_TEST_MODE blocked desktop open")
+    );
 }
 
 #[test]

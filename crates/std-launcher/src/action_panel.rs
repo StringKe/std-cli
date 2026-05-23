@@ -131,6 +131,7 @@ fn action_panel_items(action: &Action) -> Vec<ActionPanelItem> {
     };
     let mut items = vec![primary];
     if action.action_type.needs_external_runner() {
+        items.push(ActionPanelItem::Run);
         items.push(ActionPanelItem::Defer);
     }
     if studio_supported(action) {
