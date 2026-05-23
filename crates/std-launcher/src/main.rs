@@ -16,6 +16,7 @@ mod preview_surface_evidence;
 #[cfg(test)]
 mod preview_tests;
 mod resident;
+mod screenshot_acceptance;
 mod ui;
 mod ui_action_bar;
 mod ui_action_panel;

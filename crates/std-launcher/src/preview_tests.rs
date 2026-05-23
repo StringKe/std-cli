@@ -60,6 +60,7 @@ fn preview_smoke_commands_match_ui_preview_parser_contract() {
     assert_required_capture_state_contract(&report);
     assert_preview_capture_contract(&report);
     assert_preview_capture_manifest_contract(&report);
+    assert_preview_screenshot_acceptance_contract(&report);
     assert_preview_ui_completion_boundary(&report);
 }
 
@@ -218,6 +219,23 @@ fn assert_preview_capture_manifest_contract(report: &LauncherPreviewSmokeReport)
     ));
     assert!(summary
         .contains("carrier_reject_rule=reject-single-color+dominant-black+dominant-white-carrier"));
+}
+
+fn assert_preview_screenshot_acceptance_contract(report: &LauncherPreviewSmokeReport) {
+    let summary = report.summary();
+
+    assert!(report.screenshot_acceptance.pass());
+    assert!(summary.contains("launcher_screenshot_acceptance PASS"));
+    assert!(summary.contains(
+        "delivery_capture_states=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error"
+    ));
+    assert!(summary.contains("diagnostic_capture_states=light-collapsed,dark-collapsed"));
+    assert!(summary.contains("light-ime,dark-ime"));
+    assert!(summary.contains(
+        "evidence_rule=docs21-delivery=theme-baseline+results+no-results+defer+error;theme-pairs=light|dark"
+    ));
+    assert!(summary.contains("opt_in_rule=STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"));
+    assert!(summary.contains("capture_verify_rule=manifest-current-run-png-files-by-theme-state"));
 }
 
 fn assert_preview_ui_completion_boundary(report: &LauncherPreviewSmokeReport) {
