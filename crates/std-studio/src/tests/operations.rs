@@ -1,4 +1,5 @@
 use super::*;
+use std_egui::ui_capture;
 
 #[test]
 fn studio_operations_evidence_reports_current_quality_release_and_install_state() {
@@ -225,14 +226,34 @@ fn assert_completion_audit_rows(evidence: &OpsEvidence) {
     assert!(operations_completion::completion_manual_gates(&rows)
         .contains("launcher-background-harness-enter"));
     assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("launcher-search-open-app-enter"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("launcher-close-hides-and-hotkey-restores"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("launcher-external-runner-default-defer"));
+    assert!(operations_completion::completion_manual_gates(&rows)
         .contains("studio-keyboard-a11y-focus"));
+    assert!(
+        operations_completion::completion_manual_gates(&rows).contains("studio-installed-smoke")
+    );
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("studio-workflow-create-edit-simulate-run-trace"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("studio-plugin-manager-manifest-runtime-permissions-audit"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("studio-analysis-overview-components-symbols-relations-qa-coverage"));
+    assert!(operations_completion::completion_manual_gates(&rows)
+        .contains("studio-qa-doctor-release-install-command-results"));
     assert!(operations_completion::completion_manual_gates(&rows)
         .contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
     assert!(operations_completion::completion_manual_gates(&rows)
         .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
-    assert!(operations_completion::completion_manual_gates(&rows).contains(
-        "ui-capture-acceptance=explicit-opt-in+current-run-manifest+png-files+pixel-evidence+carrier-reject"
-    ));
+    assert!(
+        operations_completion::completion_manual_gates(&rows).contains(&format!(
+            "ui-capture-acceptance={}",
+            ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
+        ))
+    );
     assert!(!manual.contains("Plugin"));
     assert!(!manual.contains("Index"));
     assert_eq!(rows.len(), 11);

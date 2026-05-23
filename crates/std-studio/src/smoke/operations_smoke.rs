@@ -120,7 +120,16 @@ impl OperationsSmoke {
                 .contains("launcher-background-harness-enter")
             && self
                 .completion_manual_gates
+                .contains("launcher-search-open-app-enter")
+            && self
+                .completion_manual_gates
                 .contains("studio-workspace-pane-open-focus-close-restore")
+            && self
+                .completion_manual_gates
+                .contains("studio-workflow-create-edit-simulate-run-trace")
+            && self
+                .completion_manual_gates
+                .contains("studio-plugin-manager-manifest-runtime-permissions-audit")
             && self.step_summary.contains("release-build:")
             && self.step_summary.contains("release-package:")
             && self.step_summary.contains("release-verify:")
@@ -264,46 +273,12 @@ mod tests {
 
         assert!(smoke.pass(), "{}", smoke.summary());
         assert_command_summary(&smoke.summary());
-        assert!(smoke
-            .summary()
-            .contains("operations_completion_summary=UI Docs 18-24:MANUAL|Launcher:MANUAL"));
-        assert!(smoke.summary().contains("Studio:MANUAL"));
-        assert!(smoke.summary().contains("Quality:PASS"));
-        assert!(smoke
-            .summary()
-            .contains("operations_completion_manual=UI Docs 18-24"));
-        assert!(smoke
-            .summary()
-            .contains("operations_completion_manual_gates="));
-        assert!(smoke
-            .summary()
-            .contains("launcher-background-harness-enter"));
-        assert!(smoke
-            .summary()
-            .contains("studio-workspace-pane-open-focus-close-restore"));
-        assert!(smoke
-            .summary()
-            .contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
-        assert!(smoke
-            .summary()
-            .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
+        assert_completion_summary(&smoke.summary());
+        assert_completion_manual_gates(&smoke.summary());
         assert!(smoke.summary().contains("operations_step_summary="));
         assert!(smoke.summary().contains("operations_visual_contract="));
         assert_gate_contract(&smoke.summary());
-        assert!(smoke.summary().contains("operations_a11y_contract="));
-        assert!(smoke.summary().contains(
-            "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
-        ));
-        assert!(smoke
-            .summary()
-            .contains("completion=area|status|evidence|manual_gates"));
-        assert!(smoke
-            .summary()
-            .contains("ui_areas=manual_until_runtime_proof"));
-        assert!(smoke.summary().contains("status=icon+text+result"));
-        assert!(smoke
-            .summary()
-            .contains("panel-label=title-status-command-result"));
+        assert_a11y_contract(&smoke.summary());
         assert!(smoke
             .summary()
             .contains("release-package:std release package"));
@@ -311,6 +286,40 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("step-name|step-command|step-result"));
+    }
+
+    fn assert_completion_summary(summary: &str) {
+        assert!(
+            summary.contains("operations_completion_summary=UI Docs 18-24:MANUAL|Launcher:MANUAL")
+        );
+        assert!(summary.contains("Studio:MANUAL"));
+        assert!(summary.contains("Quality:PASS"));
+        assert!(summary.contains("operations_completion_manual=UI Docs 18-24"));
+        assert!(summary.contains("operations_completion_manual_gates="));
+    }
+
+    fn assert_completion_manual_gates(summary: &str) {
+        assert!(summary.contains("launcher-background-harness-enter"));
+        assert!(summary.contains("launcher-search-open-app-enter"));
+        assert!(summary.contains("launcher-close-hides-and-hotkey-restores"));
+        assert!(summary.contains("studio-workspace-pane-open-focus-close-restore"));
+        assert!(summary.contains("studio-installed-smoke"));
+        assert!(summary.contains("studio-workflow-create-edit-simulate-run-trace"));
+        assert!(summary.contains("studio-plugin-manager-manifest-runtime-permissions-audit"));
+        assert!(summary.contains("ui-capture-manifest=artifacts/ui/manual-acceptance/manifest.txt"));
+        assert!(summary
+            .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
+    }
+
+    fn assert_a11y_contract(summary: &str) {
+        assert!(summary.contains("operations_a11y_contract="));
+        assert!(summary.contains(
+            "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
+        ));
+        assert!(summary.contains("completion=area|status|evidence|manual_gates"));
+        assert!(summary.contains("ui_areas=manual_until_runtime_proof"));
+        assert!(summary.contains("status=icon+text+result"));
+        assert!(summary.contains("panel-label=title-status-command-result"));
     }
 
     fn assert_command_summary(summary: &str) {

@@ -19,6 +19,8 @@ pub fn completion_audit_rows(evidence: &OpsEvidence) -> Vec<CompletionAuditRow> 
                 "light-dark-token-proof",
                 "keyboard-focus-ime-proof",
                 "a11y-localization-proof",
+                "reduce-motion-proof",
+                "egui-constraints-proof",
             ]
             .into_iter()
             .map(str::to_string)
@@ -60,6 +62,10 @@ fn launcher_manual_gates() -> Vec<String> {
         "launcher-keyboard-navigation-ime",
         "launcher-installed-hotkey-toggle",
         "launcher-background-harness-enter",
+        "launcher-search-open-app-enter",
+        "launcher-close-hides-and-hotkey-restores",
+        "launcher-external-runner-default-defer",
+        "launcher-error-feedback-copy-retry-open-studio",
     ]
     .into_iter()
     .map(str::to_string)
@@ -74,6 +80,11 @@ fn studio_manual_gates() -> Vec<String> {
         "studio-workspace-pane-open-focus-close-restore",
         "studio-keyboard-a11y-focus",
         "studio-operations-runtime-evidence",
+        "studio-installed-smoke",
+        "studio-workflow-create-edit-simulate-run-trace",
+        "studio-plugin-manager-manifest-runtime-permissions-audit",
+        "studio-analysis-overview-components-symbols-relations-qa-coverage",
+        "studio-qa-doctor-release-install-command-results",
     ]
     .into_iter()
     .map(str::to_string)
@@ -125,7 +136,7 @@ pub fn completion_manual_gates(rows: &[CompletionAuditRow]) -> String {
 }
 
 pub fn completion_audit_contract() -> &'static str {
-    "completion=area|status|evidence|manual_gates;ui_areas=manual_until_runtime_proof"
+    "completion=area|status|evidence|manual_gates;ui_areas=manual_until_runtime_proof;gates=release-build-package-verify|install-run-verify|launcher-hotkey-ime|studio-pane-workflow-plugin-index|quality"
 }
 
 fn row(area: &'static str, status: OpsStatus, evidence: &str) -> CompletionAuditRow {
@@ -163,7 +174,17 @@ mod tests {
         assert!(summary.contains("Quality:PASS") || summary.contains("Quality:MISSING"));
         assert!(completion_manual_areas(&rows).contains("UI Docs 18-24"));
         assert!(completion_manual_gates(&rows).contains("launcher-background-harness-enter"));
+        assert!(completion_manual_gates(&rows).contains("launcher-search-open-app-enter"));
+        assert!(completion_manual_gates(&rows).contains("launcher-close-hides-and-hotkey-restores"));
+        assert!(completion_manual_gates(&rows).contains("launcher-external-runner-default-defer"));
         assert!(completion_manual_gates(&rows).contains("studio-keyboard-a11y-focus"));
+        assert!(completion_manual_gates(&rows).contains("studio-installed-smoke"));
+        assert!(completion_manual_gates(&rows)
+            .contains("studio-workflow-create-edit-simulate-run-trace"));
+        assert!(completion_manual_gates(&rows)
+            .contains("studio-plugin-manager-manifest-runtime-permissions-audit"));
+        assert!(completion_manual_gates(&rows)
+            .contains("studio-analysis-overview-components-symbols-relations-qa-coverage"));
         assert!(completion_manual_gates(&rows).contains("ui-capture-manifest="));
         assert!(completion_manual_gates(&rows).contains("ui-capture-command="));
         assert!(completion_manual_gates(&rows).contains("ui-capture-pixels="));
