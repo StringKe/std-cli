@@ -61,6 +61,32 @@ fn deferred_feedback_exposes_copy_and_retry_only() {
 }
 
 #[test]
+fn deferred_feedback_uses_user_readable_detail_not_internal_gate_reason() {
+    let feedback = LauncherFeedback::from_execution(&ActionExecution {
+        action_id: ActionId::default(),
+        action_name: "StdFixtureTerminal".to_string(),
+        status: ActionExecutionStatus::NeedsExternalRunner,
+        message: "std-fixture-terminal".to_string(),
+        output: Some(serde_json::json!({
+            "deferred": true,
+            "reason": "STD_TEST_MODE blocked desktop open",
+        })),
+        created_at: Utc::now(),
+    });
+
+    assert_eq!(
+        feedback.detail,
+        i18n::t("launcher.feedback.deferred.detail")
+    );
+    assert!(!feedback.detail.contains("STD_TEST_MODE"));
+    assert!(!feedback.detail.contains("blocked desktop open"));
+    assert!(feedback.summary().contains("NeedsExternalRunner"));
+    assert!(feedback
+        .summary()
+        .contains(i18n::t("launcher.feedback.deferred.detail")));
+}
+
+#[test]
 fn feedback_detail_is_limited_to_two_lines() {
     let feedback = feedback(ActionExecutionStatus::Failed, "one\ntwo\nthree");
 

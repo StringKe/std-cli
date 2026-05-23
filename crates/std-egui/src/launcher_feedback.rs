@@ -68,6 +68,9 @@ fn feedback_title(status: &ActionExecutionStatus) -> String {
 }
 
 fn feedback_detail(execution: &ActionExecution) -> String {
+    if execution.status == ActionExecutionStatus::NeedsExternalRunner {
+        return i18n::t("launcher.feedback.deferred.detail").to_string();
+    }
     execution
         .output
         .as_ref()

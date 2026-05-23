@@ -28,6 +28,12 @@ pub(super) fn translate(locale: Locale, key: &str) -> Option<&'static str> {
         (Locale::EnUs, "launcher.feedback.completed") => Some("Completed"),
         (Locale::ZhCn, "launcher.feedback.deferred") => Some("需要确认"),
         (Locale::EnUs, "launcher.feedback.deferred") => Some("Needs review"),
+        (Locale::ZhCn, "launcher.feedback.deferred.detail") => {
+            Some("这个操作需要显式确认。默认测试和预览不会打开外部应用。")
+        }
+        (Locale::EnUs, "launcher.feedback.deferred.detail") => {
+            Some("This action needs explicit confirmation. Tests and previews do not open external apps.")
+        }
         (Locale::ZhCn, "launcher.feedback.failed") => Some("无法执行"),
         (Locale::EnUs, "launcher.feedback.failed") => Some("Unable to run"),
         (Locale::ZhCn, "launcher.feedback.truncated") => Some("更多内容已复制"),
@@ -67,6 +73,9 @@ pub(super) fn fallback(key: &str) -> Option<&'static str> {
         "launcher.feedback.open_studio" => Some("Open Studio"),
         "launcher.feedback.completed" => Some("Completed"),
         "launcher.feedback.deferred" => Some("Needs review"),
+        "launcher.feedback.deferred.detail" => {
+            Some("This action needs explicit confirmation. Tests and previews do not open external apps.")
+        }
         "launcher.feedback.failed" => Some("Unable to run"),
         "launcher.feedback.truncated" => Some("more copied"),
         "launcher.feedback.icon.completed" => Some("Completed status"),

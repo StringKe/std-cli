@@ -81,7 +81,7 @@ impl LauncherUiSemanticsReport {
                 .contains(std_egui::i18n::t("launcher.feedback.failed"))
             && self
                 .completion_reader_label
-                .contains("external runner action requires explicit user trigger")
+                .contains(std_egui::i18n::t("launcher.feedback.deferred.detail"))
             && self.error_actions == "Copy,Retry,Open Studio"
             && self.feedback_keyboard_path.contains(&format!(
                 "{}:Retry>{}:OpenStudio>{}:studio-pane://history",

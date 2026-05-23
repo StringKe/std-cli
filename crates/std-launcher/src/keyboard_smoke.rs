@@ -4,11 +4,11 @@ use crate::{
 };
 use std_core::{StdConfig, StdCore};
 use std_egui::i18n;
-use std_types::ActionExecutionStatus;
+use std_types::{Action, ActionExecutionStatus, ActionType, RegistryEntry};
 
 impl LauncherState {
     pub fn keyboard_smoke(query: &str) -> LauncherKeyboardReport {
-        let mut state = Self::new();
+        let mut state = keyboard_navigation_state();
         state.controller.show();
         state.update_query(query);
         let selected_before = state.view.selected;
@@ -96,6 +96,33 @@ impl LauncherState {
                 "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION",
         }
     }
+}
+
+fn keyboard_navigation_state() -> LauncherState {
+    let temp_root = std::env::temp_dir().join(format!(
+        "std-launcher-keyboard-nav-smoke-{}",
+        std::process::id()
+    ));
+    let core = StdCore::with_config(StdConfig {
+        data_dir: temp_root.join("data"),
+        ..StdConfig::default()
+    });
+    core.register_action(nav_action("Keyboard Smoke One", "keyboard"))
+        .unwrap();
+    core.register_action(nav_action("Keyboard Smoke Two", "keyboard"))
+        .unwrap();
+    LauncherState::with_core(core)
+}
+
+fn nav_action(name: &str, tag: &str) -> RegistryEntry {
+    let mut action = Action::new(
+        name,
+        "Keyboard navigation fixture",
+        name,
+        ActionType::Command,
+    );
+    action.examples.push("std echo keyboard".to_string());
+    RegistryEntry::from_action(action, vec![tag.to_string()])
 }
 
 fn empty_suggestion_keyboard_path() -> String {
