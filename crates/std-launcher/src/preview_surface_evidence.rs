@@ -42,7 +42,7 @@ pub(crate) struct PreviewNativeHostSurface {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct PreviewHostCarrierContract {
-    preview_viewport: &'static str,
+    transparent_host: &'static str,
     host_background: &'static str,
     visible_surface: &'static str,
     layout_owner: &'static str,
@@ -118,7 +118,7 @@ impl PreviewHostCarrierContract {
     pub(crate) fn for_state(state: &LauncherState) -> Self {
         let only_panel = ui_metrics::panel_is_only_visible_surface(state);
         Self {
-            preview_viewport: "absent",
+            transparent_host: "present",
             host_background: "none",
             visible_surface: if only_panel {
                 "opaque-panel-only"
@@ -130,7 +130,7 @@ impl PreviewHostCarrierContract {
     }
 
     pub(crate) fn passes(&self) -> bool {
-        self.preview_viewport == "absent"
+        self.transparent_host == "present"
             && self.host_background == "none"
             && self.visible_surface == "opaque-panel-only"
             && self.layout_owner == "panel-rect"
@@ -138,8 +138,8 @@ impl PreviewHostCarrierContract {
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "host_carrier=preview_viewport:{},host_background:{},visible_surface:{},layout_owner:{}",
-            self.preview_viewport, self.host_background, self.visible_surface, self.layout_owner
+            "host_carrier=transparent_host:{},host_background:{},visible_surface:{},layout_owner:{}",
+            self.transparent_host, self.host_background, self.visible_surface, self.layout_owner
         )
     }
 }
@@ -299,11 +299,18 @@ mod tests {
         let summary = host.summary();
 
         assert!(host.passes());
-        assert!(summary.contains("host_carrier=preview_viewport:absent"));
+        assert!(summary.contains("host_carrier=transparent_host:present"));
         assert!(summary.contains("host_background:none"));
         assert!(summary.contains("visible_surface:opaque-panel-only"));
         assert!(summary.contains("layout_owner:panel-rect"));
-        assert!(!summary.contains("preview_viewport:visible"));
         assert!(!summary.contains("visible_surface:host-carrier-visible"));
+    }
+
+    #[test]
+    fn preview_surface_evidence_does_not_model_extra_host_container() {
+        let source = include_str!("preview_surface_evidence.rs");
+        let forbidden = concat!("preview", "_viewport");
+
+        assert!(!source.contains(forbidden));
     }
 }
