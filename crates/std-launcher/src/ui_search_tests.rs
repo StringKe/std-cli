@@ -1,4 +1,6 @@
 use super::*;
+use std_core::{StdConfig, StdCore};
+use std_types::ActionExecutionStatus;
 
 #[test]
 fn executing_search_bar_shows_running_action_text() {
@@ -228,6 +230,39 @@ fn search_render_syncs_ime_events_into_launcher_state() {
     assert_eq!(state.view.query, "重建索引");
 }
 
+#[test]
+fn search_render_enter_executes_selected_app_through_user_route() {
+    let ctx = egui::Context::default();
+    let mut state = launcher_with_fixture_app();
+    state.controller.show();
+    state.update_query("Search Render Enter App");
+    let mut hide_requested = false;
+
+    let _ = ctx.run(enter_input(), |ctx| {
+        egui::CentralPanel::default().show(ctx, |ui| {
+            render_search_bar(ui, &mut state, false, &mut hide_requested);
+        });
+    });
+
+    let execution = state
+        .view
+        .last_execution
+        .as_ref()
+        .expect("Enter in rendered search bar must execute selected fixture app");
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .and_then(|output| output.get("reason"))
+            .and_then(|value| value.as_str()),
+        Some("STD_TEST_MODE blocked desktop open")
+    );
+    assert!(state.view.feedback.is_some());
+    assert!(!hide_requested);
+    assert!(state.controller.visible);
+}
+
 fn ime_preedit_input(preedit: &str) -> egui::RawInput {
     egui::RawInput {
         events: vec![egui::Event::Ime(egui::ImeEvent::Preedit(
@@ -244,6 +279,41 @@ fn ime_commit_input(committed: &str) -> egui::RawInput {
         ))],
         ..Default::default()
     }
+}
+
+fn enter_input() -> egui::RawInput {
+    egui::RawInput {
+        events: vec![egui::Event::Key {
+            key: egui::Key::Enter,
+            physical_key: Some(egui::Key::Enter),
+            pressed: true,
+            repeat: false,
+            modifiers: egui::Modifiers::NONE,
+        }],
+        ..Default::default()
+    }
+}
+
+fn launcher_with_fixture_app() -> LauncherState {
+    let root = std::env::temp_dir().join(format!(
+        "std-launcher-search-render-enter-fixture-{}",
+        std::process::id()
+    ));
+    let config = StdConfig {
+        data_dir: root.join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("SearchRenderEnterApp.app");
+    let contents = app.join("Contents");
+    let _ = std::fs::create_dir_all(&contents);
+    let _ = std::fs::write(
+        contents.join("Info.plist"),
+        r#"<plist><dict>
+<key>CFBundleDisplayName</key><string>Search Render Enter App</string>
+<key>CFBundleName</key><string>SearchRenderEnterApp</string>
+</dict></plist>"#,
+    );
+    LauncherState::with_core(StdCore::with_config(config))
 }
 
 fn search_mode_tag_label(state: &LauncherState) -> Option<&'static str> {
