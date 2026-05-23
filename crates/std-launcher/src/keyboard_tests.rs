@@ -97,7 +97,7 @@ fn assert_trigger_statuses(report: &LauncherKeyboardReport) {
     );
     assert_eq!(
         report.user_enter_route,
-        "Enter>handle_keyboard_input_by_user>LauncherUser"
+        "Enter>handle_keyboard_input_by_user>ReviewFirst"
     );
 }
 
@@ -105,7 +105,7 @@ fn assert_deferred_enter_feedback(report: &LauncherKeyboardReport) {
     assert!(report.user_enter_deferred);
     assert_eq!(
         report.user_enter_defer_reason,
-        "STD_TEST_MODE blocked desktop open"
+        "review command before running external action"
     );
     assert!(report.user_enter_feedback_visible);
     assert_eq!(
@@ -143,9 +143,11 @@ fn assert_executing_keyboard_feedback(report: &LauncherKeyboardReport, summary: 
 fn assert_trigger_summary(summary: &str) {
     assert!(summary.contains("direct_trigger_status="));
     assert!(summary.contains("user_enter_status=NeedsExternalRunner"));
-    assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>LauncherUser"));
+    assert!(summary.contains("user_enter_route=Enter>handle_keyboard_input_by_user>ReviewFirst"));
     assert!(summary.contains("user_enter_deferred=true"));
-    assert!(summary.contains("user_enter_defer_reason=STD_TEST_MODE blocked desktop open"));
+    assert!(
+        summary.contains("user_enter_defer_reason=review command before running external action")
+    );
     assert!(summary.contains("user_enter_feedback_visible=true"));
     assert!(summary.contains(&format!(
         "user_enter_feedback_title={}",

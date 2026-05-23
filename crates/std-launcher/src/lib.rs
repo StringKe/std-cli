@@ -16,6 +16,7 @@ mod keyboard_enter_window;
 mod keyboard_report;
 mod keyboard_smoke;
 mod layout_contract;
+mod primary_action;
 mod query_completion;
 mod query_mode;
 mod reports;

@@ -26,7 +26,7 @@ pub(crate) fn app_enter_user_route_contract() -> String {
         .map(|status| format!("{status:?}"))
         .unwrap_or_else(|| "None".to_string());
     format!(
-        "route=Enter>handle_keyboard_input_by_user>LauncherUser;query=Keyboard Smoke App;status={status};hide_requested={};window_commands={}",
+        "route=Enter>handle_keyboard_input_by_user>ReviewFirst;query=Keyboard Smoke App;status={status};hide_requested={};window_commands={}",
         outcome.hide_requested, outcome.window_commands
     )
 }
@@ -91,10 +91,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn app_enter_uses_launcher_user_route_without_desktop_open_in_tests() {
+    fn app_enter_uses_review_first_route_without_desktop_open_in_tests() {
         let contract = app_enter_user_route_contract();
 
-        assert!(contract.contains("route=Enter>handle_keyboard_input_by_user>LauncherUser"));
+        assert!(contract.contains("route=Enter>handle_keyboard_input_by_user>ReviewFirst"));
         assert!(contract.contains("status=NeedsExternalRunner"));
         assert!(contract.contains("hide_requested=false"));
     }

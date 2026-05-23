@@ -120,7 +120,7 @@ fn render_results(ui: &mut egui::Ui, state: &mut LauncherState, max_height: f32)
 
 fn trigger_result_from_row(state: &mut LauncherState, index: usize) -> bool {
     state
-        .trigger_result_by_user(index)
+        .trigger_result_primary_action_by_user(index)
         .map(|execution| ui_keyboard::execution_hides_launcher(&execution))
         .unwrap_or(false)
 }

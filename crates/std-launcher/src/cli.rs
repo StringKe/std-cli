@@ -230,7 +230,7 @@ mod tests {
         assert!(report
             .summary()
             .contains("route=Enter>handle_keyboard_input_by_user"));
-        assert!(report.summary().contains("mode=LauncherUser"));
+        assert!(report.summary().contains("mode=ReviewFirst"));
         assert!(report.summary().contains("status=NeedsExternalRunner"));
         assert!(report
             .summary()

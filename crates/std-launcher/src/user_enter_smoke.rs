@@ -47,7 +47,7 @@ impl LauncherUserEnterSmokeReport {
         let report = Self {
             status: status.clone(),
             route: "Enter>handle_keyboard_input_by_user",
-            mode: "LauncherUser",
+            mode: "ReviewFirst",
             deferred: status == ActionExecutionStatus::NeedsExternalRunner,
             reason,
             feedback_visible: state.view.feedback.is_some(),
@@ -69,9 +69,9 @@ impl LauncherUserEnterSmokeReport {
     pub fn pass(&self) -> bool {
         self.status == ActionExecutionStatus::NeedsExternalRunner
             && self.route == "Enter>handle_keyboard_input_by_user"
-            && self.mode == "LauncherUser"
+            && self.mode == "ReviewFirst"
             && self.deferred
-            && self.reason == "STD_TEST_MODE blocked desktop open"
+            && self.reason == "review command before running external action"
             && self.feedback_visible
             && self.feedback_title == std_egui::i18n::t("launcher.feedback.deferred")
             && self.window_policy == "NeedsExternalRunner->keep-open"
@@ -85,7 +85,7 @@ impl LauncherUserEnterSmokeReport {
             )
             && self
                 .localized_app_enter_contract
-                .contains("desktop_open=blocked_by_STD_TEST_MODE")
+                .contains("desktop_open=default_review_first")
     }
 
     pub fn summary(&self) -> String {
@@ -162,7 +162,7 @@ fn localized_app_enter_contract(core: &StdCore) -> String {
             .first()
             .is_some_and(|first| action_ids.iter().all(|id| id == first));
     format!(
-        "same_action={same_action};queries={};desktop_open=blocked_by_STD_TEST_MODE;aliases=wechat|weixin|微信",
+        "same_action={same_action};queries={};desktop_open=default_review_first;aliases=wechat|weixin|微信",
         statuses.join("|")
     )
 }
@@ -179,7 +179,7 @@ mod tests {
         assert!(report
             .summary()
             .contains("route=Enter>handle_keyboard_input_by_user"));
-        assert!(report.summary().contains("mode=LauncherUser"));
+        assert!(report.summary().contains("mode=ReviewFirst"));
         assert!(report.summary().contains("status=NeedsExternalRunner"));
         assert!(report.summary().contains("local_fixture_app_only"));
         assert!(report

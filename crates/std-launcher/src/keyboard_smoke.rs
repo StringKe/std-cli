@@ -345,7 +345,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
         let _ = std::fs::remove_dir_all(&root);
         return UserEnterEvidence {
             status: None,
-            route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
+            route: "Enter>handle_keyboard_input_by_user>ReviewFirst".to_string(),
             deferred: false,
             defer_reason: "none".to_string(),
             open_contract: user_enter_open_contract(),
@@ -383,7 +383,7 @@ fn user_enter_defer_evidence() -> UserEnterEvidence {
     let _ = std::fs::remove_dir_all(root);
     UserEnterEvidence {
         status: Some(execution.status),
-        route: "Enter>handle_keyboard_input_by_user>LauncherUser".to_string(),
+        route: "Enter>handle_keyboard_input_by_user>ReviewFirst".to_string(),
         deferred,
         defer_reason,
         open_contract: user_enter_open_contract(),
@@ -443,10 +443,10 @@ fn executing_keyboard_evidence() -> ExecutingKeyboardEvidence {
 fn user_enter_open_contract() -> String {
     [
         "ui_enter=handle_keyboard_input_by_user",
-        "mode=LauncherUser",
-        "production_gate=user_desktop_open_allowed_for_test_mode(false)=true",
-        "runner=open <app-path>",
-        "test_gate=STD_TEST_MODE blocks before runner",
+        "mode=ReviewFirst",
+        "default=review-command",
+        "run=ActionPanel>Run",
+        "test_gate=no desktop runner on default Enter",
         "hide_policy=Completed->hide,NeedsExternalRunner->keep-open",
     ]
     .join(";")

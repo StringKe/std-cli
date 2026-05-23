@@ -12,19 +12,19 @@ impl LauncherKeyboardReport {
             && self.direct_trigger_status.is_some()
             && self.trigger_status.is_some()
             && self.user_enter_status == Some(ActionExecutionStatus::NeedsExternalRunner)
-            && self.user_enter_route == "Enter>handle_keyboard_input_by_user>LauncherUser"
+            && self.user_enter_route == "Enter>handle_keyboard_input_by_user>ReviewFirst"
             && self.user_enter_deferred
-            && self.user_enter_defer_reason == "STD_TEST_MODE blocked desktop open"
+            && self.user_enter_defer_reason == "review command before running external action"
             && self
                 .user_enter_open_contract
                 .contains("ui_enter=handle_keyboard_input_by_user")
-            && self.user_enter_open_contract.contains("mode=LauncherUser")
+            && self.user_enter_open_contract.contains("mode=ReviewFirst")
             && self
                 .user_enter_open_contract
-                .contains("runner=open <app-path>")
+                .contains("default=review-command")
             && self
                 .user_enter_open_contract
-                .contains("test_gate=STD_TEST_MODE blocks before runner")
+                .contains("run=ActionPanel>Run")
             && self
                 .user_enter_open_contract
                 .contains("hide_policy=Completed->hide,NeedsExternalRunner->keep-open")

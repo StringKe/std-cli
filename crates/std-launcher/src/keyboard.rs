@@ -186,7 +186,7 @@ impl LauncherState {
                 None
             }
             LauncherKey::TriggerResult(index) if allow_external_runner => {
-                self.trigger_result_by_user(index)
+                self.trigger_result_primary_action_by_user(index)
             }
             LauncherKey::TriggerResult(index) => self.trigger_result(index),
             LauncherKey::Escape => self.handle_escape_key(),
@@ -273,7 +273,7 @@ impl LauncherState {
             return None;
         }
         if allow_external_runner {
-            self.trigger_selected_by_user()
+            self.trigger_selected_primary_action_by_user()
         } else {
             self.trigger_selected()
         }
