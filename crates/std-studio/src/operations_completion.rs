@@ -94,6 +94,10 @@ fn ui_capture_manual_gates() -> Vec<String> {
             "ui-capture-rejects={}",
             ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE
         ),
+        format!(
+            "ui-capture-acceptance={}",
+            ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
+        ),
     ]
 }
 
@@ -164,6 +168,7 @@ mod tests {
         assert!(completion_manual_gates(&rows).contains("ui-capture-command="));
         assert!(completion_manual_gates(&rows).contains("ui-capture-pixels="));
         assert!(completion_manual_gates(&rows).contains("ui-capture-rejects="));
+        assert!(completion_manual_gates(&rows).contains("ui-capture-acceptance="));
         assert!(!completion_manual_areas(&rows).contains("Plugin"));
         assert!(!completion_manual_areas(&rows).contains("Index"));
         assert_eq!(rows.len(), 11);

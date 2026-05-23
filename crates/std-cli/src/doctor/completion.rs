@@ -26,13 +26,14 @@ const MANUAL_BLOCKERS: [&str; 6] = [
     "完成前必须重跑并保留当前证据",
 ];
 
-const CURRENT_EVIDENCE_RULES: [&str; 10] = [
+const CURRENT_EVIDENCE_RULES: [&str; 11] = [
     "历史 target/ui-evidence 路径不能作为完成证据",
     "历史 /tmp 截图不能作为完成证据",
     "真实截图必须来自本轮 `STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix` 输出",
     "真实截图 manifest 必须是 `artifacts/ui/manual-acceptance/manifest.txt`",
     "真实截图 manifest 必须包含 `samples`、`opaque_samples`、`unique_colors`、`black_pixels`、`white_pixels`、`transparent_pixels`",
     "真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white-carrier`",
+    "真实截图 acceptance rule 必须是 `explicit-opt-in+current-run-manifest+png-files+pixel-evidence+carrier-reject`",
     "Launcher 截图矩阵必须覆盖 delivery 与 diagnostic capture states",
     "Studio 截图矩阵必须覆盖 delivery、workflow 与 diagnostic capture states",
     "安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出",
