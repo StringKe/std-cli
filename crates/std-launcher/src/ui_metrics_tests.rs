@@ -239,12 +239,15 @@ fn expanded_panel_height_budget_matches_rendered_sections_without_clipping() {
         let mut state = LauncherState::new();
         crate::preview::apply_preview_scenario(&mut state, scenario);
         let viewport = window_inner_size(&state);
-        let body =
-            crate::ui_metrics_layout::body_height_for_scale(&state, viewport.y, UiScale::default());
-        let budget =
-            crate::ui_metrics_layout::layout_budget_for_scale(&state, body, UiScale::default());
         let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
         let panel = panel_rect(available, &state);
+        let body = crate::ui_metrics_layout::body_height_for_scale(
+            &state,
+            panel.height(),
+            UiScale::default(),
+        );
+        let budget =
+            crate::ui_metrics_layout::layout_budget_for_scale(&state, body, UiScale::default());
 
         assert_eq!(viewport.y, budget.total_height + 32.0, "{scenario}");
         assert_eq!(panel.height(), budget.total_height, "{scenario}");
@@ -332,10 +335,10 @@ fn empty_suggested_workflows_panel_uses_full_native_height() {
     let mut state = LauncherState::new();
     crate::preview::apply_preview_scenario(&mut state, "empty");
     let viewport = window_inner_size(&state);
-    let body =
-        crate::ui_metrics_layout::body_height_for_scale(&state, viewport.y, UiScale::default());
     let available = egui::Rect::from_min_size(egui::Pos2::ZERO, viewport);
     let panel = panel_rect(available, &state);
+    let body =
+        crate::ui_metrics_layout::body_height_for_scale(&state, panel.height(), UiScale::default());
 
     assert!(
         body <= viewport.y
