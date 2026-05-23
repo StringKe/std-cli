@@ -170,6 +170,18 @@ impl StudioSmokeReport {
     fn visual_flow_pass(&self) -> bool {
         self.builder_visual_contract
             .contains("flow=goal-input|plan|save|simulate|run|trace")
+            && self
+                .builder_visual_contract
+                .contains("flow_rail=plan>save>simulate>run>trace")
+            && self
+                .builder_visual_contract
+                .contains("states=done|done|done|done|done")
+            && self
+                .builder_visual_contract
+                .contains("surface=token-inline-rail")
+            && self
+                .builder_visual_contract
+                .contains("a11y=number-label-state")
     }
 
     fn visual_steps_pass(&self) -> bool {

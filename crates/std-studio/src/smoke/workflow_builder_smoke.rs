@@ -2,7 +2,8 @@ use crate::{
     bottom_panel_model::BottomPanelTabModel,
     views::{
         workflow_builder_contract::WorkflowBuilderInteractionContract, workflow_builder_fields,
-        workflow_builder_toolbar, workflow_builder_trace,
+        workflow_builder_status::WorkflowBuilderStatus, workflow_builder_toolbar,
+        workflow_builder_trace,
     },
 };
 use std_egui::input;
@@ -74,10 +75,18 @@ pub(crate) fn run_workflow_builder_smoke(
         studio.last_workflow_execution.as_ref(),
     );
     let bottom_panel_contract = builder_bottom_panel_contract();
+    let builder_status = WorkflowBuilderStatus {
+        planned: studio.planned_workflow.is_some(),
+        saved: true,
+        simulated: studio.workflow_debug.is_some(),
+        ran: studio.last_workflow_execution.is_some(),
+        traced: trace_status == "Completed",
+    };
     let interaction_contract = WorkflowBuilderInteractionContract::new(
         studio.workflow_debug.as_ref(),
         studio.last_workflow_execution.as_ref(),
         bottom_panel_contract.clone(),
+        builder_status,
     );
     let interaction_contract_pass = interaction_contract.pass();
     let visual_contract = interaction_contract.summary();

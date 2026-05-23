@@ -127,6 +127,18 @@ impl StudioSmokeReport {
             && self
                 .builder_visual_contract
                 .contains("flow=goal-input|plan|save|simulate|run|trace")
+            && self
+                .builder_visual_contract
+                .contains("flow_rail=plan>save>simulate>run>trace")
+            && self
+                .builder_visual_contract
+                .contains("states=done|done|done|done|done")
+            && self
+                .builder_visual_contract
+                .contains("surface=token-inline-rail")
+            && self
+                .builder_visual_contract
+                .contains("a11y=number-label-state")
             && self.builder_visual_contract.contains("steps=list|row=48")
             && self.builder_visual_contract.contains("selected-row")
             && self.builder_visual_contract.contains("keyboard-reorder")

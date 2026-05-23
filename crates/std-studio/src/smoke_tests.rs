@@ -270,6 +270,10 @@ fn assert_workflow_builder_visual_summary(summary: &str) {
     assert!(summary.contains("builder_visual_contract=builder_interaction=single-workbench-flow"));
     assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
     assert!(summary.contains("flow=goal-input|plan|save|simulate|run|trace"));
+    assert!(summary.contains("flow_rail=plan>save>simulate>run>trace"));
+    assert!(summary.contains("states=done|done|done|done|done"));
+    assert!(summary.contains("surface=token-inline-rail"));
+    assert!(summary.contains("a11y=number-label-state"));
     assert_workflow_builder_step_visual_summary(summary);
     assert!(summary.contains("inputs=step-name|parameters-json|index"));
     assert!(summary.contains("ai_assist=collapsed-input|suggestions|apply|insert|replace"));

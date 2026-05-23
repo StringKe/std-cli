@@ -62,40 +62,43 @@ impl WorkflowBuilderStatus {
             "batch-debug=simulate-or-run:pending"
         }
     }
+
+    pub(crate) fn flow_rail_contract(self) -> String {
+        let states = workflow_flow_steps()
+            .into_iter()
+            .map(|step| step.state_for(self))
+            .collect::<Vec<_>>()
+            .join("|");
+        format!(
+            "flow_rail=plan>save>simulate>run>trace;states={states};next={};surface=token-inline-rail;a11y=number-label-state",
+            self.next_action()
+        )
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct WorkflowFlowStep {
+    key: &'static str,
+    label: &'static str,
+    done: fn(WorkflowBuilderStatus) -> bool,
+}
+
+impl WorkflowFlowStep {
+    fn state_for(self, status: WorkflowBuilderStatus) -> &'static str {
+        if (self.done)(status) {
+            "done"
+        } else if status.next_action() == self.key {
+            "current"
+        } else {
+            "pending"
+        }
+    }
 }
 
 pub(crate) fn render(ui: &mut egui::Ui, app: &StudioEguiApp) {
     let status = WorkflowBuilderStatus::from_app(app);
     ui::subtle_frame(ui.ctx()).show(ui, |ui| {
-        ui.horizontal_wrapped(|ui| {
-            ui::chip(
-                ui,
-                i18n::t("studio.workflow_builder.flow.title"),
-                ui::panel_alt(ui.ctx()),
-            );
-            step_chip(ui, status_label(status), status.pass());
-            step_chip(
-                ui,
-                i18n::t("studio.workflow_builder.flow.plan"),
-                status.planned,
-            );
-            step_chip(
-                ui,
-                i18n::t("studio.workflow_builder.flow.save"),
-                status.saved,
-            );
-            step_chip(
-                ui,
-                i18n::t("studio.workflow_builder.flow.simulate"),
-                status.simulated,
-            );
-            step_chip(ui, i18n::t("studio.workflow_builder.flow.run"), status.ran);
-            step_chip(
-                ui,
-                i18n::t("studio.workflow_builder.flow.trace"),
-                status.traced,
-            );
-        });
+        render_flow_rail(ui, status);
         ui.add_space(Space::TWO_XS as f32);
         ui.label(
             egui::RichText::new(status.summary())
@@ -114,13 +117,61 @@ pub(crate) fn render(ui: &mut egui::Ui, app: &StudioEguiApp) {
     });
 }
 
-fn step_chip(ui: &mut egui::Ui, label: &str, done: bool) {
-    let fill = if done {
+fn render_flow_rail(ui: &mut egui::Ui, status: WorkflowBuilderStatus) {
+    ui.vertical(|ui| {
+        ui.horizontal_wrapped(|ui| {
+            ui::chip(
+                ui,
+                i18n::t("studio.workflow_builder.flow.title"),
+                ui::panel_alt(ui.ctx()),
+            );
+            ui::chip(ui, status_label(status), status_fill(ui, status.pass()));
+        });
+        ui.add_space(Space::TWO_XS as f32);
+        ui.horizontal_wrapped(|ui| {
+            for (index, step) in workflow_flow_steps().into_iter().enumerate() {
+                step_cell(ui, index + 1, step, status);
+            }
+        });
+    });
+}
+
+fn step_cell(
+    ui: &mut egui::Ui,
+    index: usize,
+    step: WorkflowFlowStep,
+    status: WorkflowBuilderStatus,
+) {
+    let state = step.state_for(status);
+    let fill = match state {
+        "done" => ui::ok_bg(ui.ctx()),
+        "current" => ui::selected_bg(ui.ctx()),
+        _ => ui::panel_alt(ui.ctx()),
+    };
+    let text = format!("{index} {} {state}", step.label);
+    let response = egui::Frame::new()
+        .fill(fill)
+        .corner_radius(egui::CornerRadius::same(std_egui::tokens::Radius::SM))
+        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .show(ui, |ui| {
+            ui.label(
+                egui::RichText::new(&text)
+                    .font(std_egui::tokens::Text::caption())
+                    .color(ui::strong_text(ui.ctx())),
+            );
+        })
+        .response;
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), text.clone())
+    });
+}
+
+fn status_fill(ui: &egui::Ui, done: bool) -> egui::Color32 {
+    if done {
         ui::ok_bg(ui.ctx())
     } else {
         ui::panel_alt(ui.ctx())
-    };
-    ui::chip(ui, label, fill);
+    }
 }
 
 fn status_label(status: WorkflowBuilderStatus) -> &'static str {
@@ -129,6 +180,36 @@ fn status_label(status: WorkflowBuilderStatus) -> &'static str {
     } else {
         "PENDING"
     }
+}
+
+fn workflow_flow_steps() -> [WorkflowFlowStep; 5] {
+    [
+        WorkflowFlowStep {
+            key: "plan",
+            label: "Plan",
+            done: |status| status.planned,
+        },
+        WorkflowFlowStep {
+            key: "save",
+            label: "Save",
+            done: |status| status.saved,
+        },
+        WorkflowFlowStep {
+            key: "simulate",
+            label: "Simulate",
+            done: |status| status.simulated,
+        },
+        WorkflowFlowStep {
+            key: "run",
+            label: "Run",
+            done: |status| status.ran,
+        },
+        WorkflowFlowStep {
+            key: "trace",
+            label: "Trace",
+            done: |status| status.traced,
+        },
+    ]
 }
 
 #[cfg(test)]
@@ -154,6 +235,10 @@ mod tests {
         assert_eq!(
             status.bottom_panel_contract(),
             "batch-debug=simulate-or-run:open"
+        );
+        assert_eq!(
+            status.flow_rail_contract(),
+            "flow_rail=plan>save>simulate>run>trace;states=done|done|done|done|done;next=complete;surface=token-inline-rail;a11y=number-label-state"
         );
     }
 
@@ -207,6 +292,14 @@ mod tests {
         assert_eq!(
             simulated.bottom_panel_contract(),
             "batch-debug=simulate-or-run:open"
+        );
+        assert_eq!(
+            pending.flow_rail_contract(),
+            "flow_rail=plan>save>simulate>run>trace;states=current|pending|pending|pending|pending;next=plan;surface=token-inline-rail;a11y=number-label-state"
+        );
+        assert_eq!(
+            saved.flow_rail_contract(),
+            "flow_rail=plan>save>simulate>run>trace;states=done|done|current|pending|pending;next=simulate;surface=token-inline-rail;a11y=number-label-state"
         );
     }
 }

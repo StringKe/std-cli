@@ -1,12 +1,13 @@
 use crate::views::{
-    workflow_builder_fields, workflow_builder_flow, workflow_builder_toolbar,
-    workflow_builder_trace,
+    workflow_builder_fields, workflow_builder_flow, workflow_builder_status::WorkflowBuilderStatus,
+    workflow_builder_toolbar, workflow_builder_trace,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct WorkflowBuilderInteractionContract {
     pub(crate) shell: &'static str,
     pub(crate) flow: &'static str,
+    pub(crate) flow_rail: String,
     pub(crate) toolbar: &'static str,
     pub(crate) steps: &'static str,
     pub(crate) properties: &'static str,
@@ -21,10 +22,12 @@ impl WorkflowBuilderInteractionContract {
         dry_run: Option<&std_orchestration::WorkflowDryRun>,
         execution: Option<&std_orchestration::WorkflowExecution>,
         bottom_panel: String,
+        status: WorkflowBuilderStatus,
     ) -> Self {
         Self {
             shell: "shell=toolbar>status>steps+properties>trace>ai-assist",
             flow: workflow_builder_flow::flow_contract(),
+            flow_rail: status.flow_rail_contract(),
             toolbar: workflow_builder_toolbar::toolbar_contract(),
             steps: crate::views::workflow_builder_step_visual_contract(),
             properties: workflow_builder_fields::fields_contract(),
@@ -38,6 +41,13 @@ impl WorkflowBuilderInteractionContract {
     pub(crate) fn pass(&self) -> bool {
         self.shell == "shell=toolbar>status>steps+properties>trace>ai-assist"
             && self.flow == "flow=goal-input|plan|save|simulate|run|trace"
+            && self
+                .flow_rail
+                .contains("flow_rail=plan>save>simulate>run>trace")
+            && self.flow_rail.contains("states=done|done|done|done|done")
+            && self.flow_rail.contains("next=complete")
+            && self.flow_rail.contains("surface=token-inline-rail")
+            && self.flow_rail.contains("a11y=number-label-state")
             && self.toolbar.contains("toolbar=goal-input>plan>save")
             && self.steps.contains("row=48")
             && self.steps.contains("focus-default=steps-list")
@@ -62,6 +72,7 @@ impl WorkflowBuilderInteractionContract {
             "builder_interaction=single-workbench-flow",
             self.shell,
             self.flow,
+            &self.flow_rail,
             self.toolbar,
             self.steps,
             self.properties,
@@ -80,13 +91,23 @@ mod tests {
 
     #[test]
     fn builder_interaction_contract_covers_docs22_flow() {
-        let contract = WorkflowBuilderInteractionContract::new(None, None, "batch-debug=simulate:open|run:open|planned-run:open|history:open;helper=open;tabs=批量调试|日志|问题|性能;selected=批量调试;role=bottom-panel-tabs".to_string());
+        let status = WorkflowBuilderStatus {
+            planned: true,
+            saved: true,
+            simulated: true,
+            ran: true,
+            traced: true,
+        };
+        let contract = WorkflowBuilderInteractionContract::new(None, None, "batch-debug=simulate:open|run:open|planned-run:open|history:open;helper=open;tabs=批量调试|日志|问题|性能;selected=批量调试;role=bottom-panel-tabs".to_string(), status);
         let summary = contract.summary();
 
         assert!(contract.pass(), "{summary}");
         assert!(summary.contains("builder_interaction=single-workbench-flow"));
         assert!(summary.contains("shell=toolbar>status>steps+properties>trace>ai-assist"));
         assert!(summary.contains("flow=goal-input|plan|save|simulate|run|trace"));
+        assert!(summary.contains("flow_rail=plan>save>simulate>run>trace"));
+        assert!(summary.contains("states=done|done|done|done|done"));
+        assert!(summary.contains("surface=token-inline-rail"));
         assert!(summary.contains("focus-default=steps-list"));
         assert!(summary.contains("keyboard-select"));
         assert!(summary.contains("a11y=row-index-name-type-selected"));
