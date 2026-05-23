@@ -222,7 +222,7 @@ pub(crate) fn studio_clear_color_contract() -> &'static str {
 
 impl StudioEguiApp {
     fn handle_settings_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if std_egui::input::studio_settings().pressed(ctx) {
@@ -232,7 +232,7 @@ impl StudioEguiApp {
     }
 
     fn handle_workflow_creation_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if std_egui::input::studio_new_workflow().pressed(ctx) {
@@ -242,7 +242,7 @@ impl StudioEguiApp {
     }
 
     fn handle_zoom_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         let action = if std_egui::input::studio_zoom_in().pressed(ctx) {
@@ -258,7 +258,7 @@ impl StudioEguiApp {
     }
 
     fn handle_workspace_tab_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if std_egui::input::studio_previous_workspace_pane().pressed(ctx) {
@@ -283,7 +283,7 @@ impl StudioEguiApp {
     }
 
     fn handle_bottom_panel_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if !self.layout.bottom_panel_open {
@@ -309,7 +309,7 @@ impl StudioEguiApp {
     }
 
     fn handle_workflow_builder_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if !self.focused_workspace_is_workflow_builder() {

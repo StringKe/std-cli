@@ -37,7 +37,7 @@ impl StudioEguiApp {
     }
 
     pub(crate) fn handle_overlay_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         let items = if self.layout.command_palette_open {
@@ -226,7 +226,7 @@ mod tests {
         assert!(implementation.contains("WidgetType::TextEdit"));
         assert!(implementation.contains("overlay_query_a11y_label"));
         assert!(implementation.contains("response.request_focus()"));
-        assert!(implementation.contains("std_egui::input::ime_composing(ctx)"));
+        assert!(implementation.contains("std_egui::input::ime_action_guard(ctx).blocks_actions()"));
     }
 
     #[test]

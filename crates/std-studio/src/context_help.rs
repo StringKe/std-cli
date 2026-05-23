@@ -47,7 +47,7 @@ impl StudioEguiApp {
         if !self.layout.context_help_open {
             return;
         }
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if input::escape().pressed(ctx) {

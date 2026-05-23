@@ -52,7 +52,7 @@ impl Default for StudioLayoutState {
 
 impl StudioLayoutState {
     pub(crate) fn handle_keyboard(&mut self, ctx: &egui::Context) {
-        if std_egui::input::ime_composing(ctx) {
+        if std_egui::input::ime_action_guard(ctx).blocks_actions() {
             return;
         }
         if std_egui::input::studio_sidebar_toggle().pressed(ctx) {

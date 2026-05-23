@@ -60,7 +60,10 @@ impl StudioKeyboardSmoke {
             dnd_pickup_announcement,
             dnd_drop_announcement,
             batch_progress_announcements,
-            keyboard_contract: "docs/20#studio-shortcuts,docs/23#studio-screen-reader".to_string(),
+            keyboard_contract: format!(
+                "docs/20#studio-shortcuts,{},docs/23#studio-screen-reader",
+                input::ime_action_guard_contract()
+            ),
         }
     }
 
@@ -103,6 +106,9 @@ impl StudioKeyboardSmoke {
             && self.dnd_drop_announcement == "Moved Collect context to position 3"
             && self.batch_progress_announcements == "0%,5%,10%,15%"
             && self.keyboard_contract.contains("docs/20#studio-shortcuts")
+            && self
+                .keyboard_contract
+                .contains(input::ime_action_guard_contract())
             && self
                 .keyboard_contract
                 .contains("docs/23#studio-screen-reader")
