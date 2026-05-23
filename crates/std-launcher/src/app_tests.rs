@@ -114,6 +114,51 @@ fn launcher_searches_wechat_by_macos_multilingual_names_without_launching() {
 }
 
 #[test]
+fn launcher_searches_zh_hans_wechat_and_enter_keeps_desktop_blocked() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("ZhHansWeChat.app");
+    write_zh_hans_wechat_app_bundle(&app);
+    let core = StdCore::with_config(config);
+    let mut state = LauncherState::with_core(core);
+    let mut action_ids = Vec::new();
+
+    for query in ["WeChat", "WEIXIN", wechat_chinese_name()] {
+        let preview = state.update_query(query).unwrap();
+        assert_eq!(
+            preview.title,
+            format!("Open App: {}", wechat_chinese_name())
+        );
+        assert_eq!(
+            state.view.selected_result().unwrap().action.name,
+            format!("Open App: {}", wechat_chinese_name())
+        );
+        action_ids.push(preview.action_id);
+    }
+    let execution = state
+        .handle_keyboard_input_by_user(LauncherKey::Enter, false)
+        .unwrap();
+
+    assert!(action_ids.windows(2).all(|pair| pair[0] == pair[1]));
+    assert_eq!(execution.status, ActionExecutionStatus::NeedsExternalRunner);
+    assert_eq!(
+        execution.action_name,
+        format!("Review Command: Open App: {}", wechat_chinese_name())
+    );
+    assert_eq!(
+        execution
+            .output
+            .as_ref()
+            .and_then(|output| output.get("deferred"))
+            .and_then(|value| value.as_bool()),
+        Some(true)
+    );
+}
+
+#[test]
 fn launcher_gui_enter_reports_test_mode_desktop_open_block_in_tests() {
     let temp = tempfile::tempdir().unwrap();
     let config = StdConfig {
@@ -348,6 +393,23 @@ fn write_wechat_app_bundle(app: &std::path::Path) {
             .join("Resources")
             .join("zh_CN.lproj")
             .join("InfoPlist.strings"),
+        "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
+    )
+    .unwrap();
+}
+
+fn write_zh_hans_wechat_app_bundle(app: &std::path::Path) {
+    let localized = app.join("Contents").join("Resources").join("zh-Hans.lproj");
+    std::fs::create_dir_all(&localized).unwrap();
+    std::fs::write(
+        app.join("Contents").join("Info.plist"),
+        r#"<plist><dict>
+<key>CFBundleIdentifier</key><string>com.tencent.xinWeChat</string>
+</dict></plist>"#,
+    )
+    .unwrap();
+    std::fs::write(
+        localized.join("InfoPlist.strings"),
         "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
     )
     .unwrap();

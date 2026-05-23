@@ -103,9 +103,15 @@ fn read_localized_info_plist_names(path: &Path) -> Vec<String> {
     };
     entries
         .filter_map(Result::ok)
-        .map(|entry| entry.path().join("InfoPlist.strings"))
+        .map(|entry| entry.path())
+        .filter(|path| is_localization_dir(path))
+        .map(|path| path.join("InfoPlist.strings"))
         .flat_map(|path| read_localized_names_file(&path))
         .collect()
+}
+
+fn is_localization_dir(path: &Path) -> bool {
+    path.extension().and_then(|ext| ext.to_str()) == Some("lproj")
 }
 
 fn read_localized_names_file(path: &Path) -> Vec<String> {

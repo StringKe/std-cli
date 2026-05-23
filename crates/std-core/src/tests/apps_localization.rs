@@ -127,6 +127,37 @@ fn core_searches_app_bundle_by_binary_localized_strings_plist() {
     assert!(chinese.matched_fields.contains(&"tags".to_string()));
 }
 
+#[test]
+fn core_reads_zh_hans_localized_app_names_and_ignores_non_lproj_files() {
+    let temp = tempfile::tempdir().unwrap();
+    let config = StdConfig {
+        data_dir: temp.path().join("data"),
+        ..StdConfig::default()
+    };
+    let app = config.apps_dir().join("ZhHansWeChat.app");
+    write_zh_hans_wechat_bundle(&app);
+    let core = StdCore::with_config(config);
+
+    core.register_local_content_actions().unwrap();
+    let test_path = app.display().to_string();
+    let chinese_results = core.search(wechat_chinese_name(), 10).unwrap();
+    let english_results = core.search("wechat", 10).unwrap();
+    let pinyin_results = core.search("weixin", 10).unwrap();
+    let chinese = find_app_result(&chinese_results, &test_path);
+    let english = find_app_result(&english_results, &test_path);
+    let pinyin = find_app_result(&pinyin_results, &test_path);
+    let preview = core.preview_action(chinese.action.id).unwrap();
+
+    assert_eq!(chinese.action.id, english.action.id);
+    assert_eq!(chinese.action.id, pinyin.action.id);
+    assert_eq!(
+        chinese.action.name,
+        format!("Open App: {}", wechat_chinese_name())
+    );
+    assert!(preview.metadata["aliases"].contains(wechat_chinese_name()));
+    assert!(!preview.metadata["aliases"].contains("Not A Locale"));
+}
+
 fn write_escaped_unicode_app_bundle(app: &std::path::Path) {
     fs::create_dir_all(app.join("Contents").join("Resources").join("zh_CN.lproj")).unwrap();
     fs::write(
@@ -205,6 +236,30 @@ fn write_localized_only_wechat_bundle(app: &std::path::Path) {
             .join("zh_CN.lproj")
             .join("InfoPlist.strings"),
         "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
+    )
+    .unwrap();
+}
+
+fn write_zh_hans_wechat_bundle(app: &std::path::Path) {
+    let resources = app.join("Contents").join("Resources");
+    let localized = resources.join("zh-Hans.lproj");
+    fs::create_dir_all(&localized).unwrap();
+    fs::write(
+        app.join("Contents").join("Info.plist"),
+        r#"<plist><dict>
+<key>CFBundleIdentifier</key><string>com.tencent.xinWeChat</string>
+</dict></plist>"#,
+    )
+    .unwrap();
+    fs::write(
+        localized.join("InfoPlist.strings"),
+        "\"CFBundleDisplayName\" = \"\\U5fae\\U4fe1\";",
+    )
+    .unwrap();
+    fs::create_dir_all(resources.join("NotALocale")).unwrap();
+    fs::write(
+        resources.join("NotALocale").join("InfoPlist.strings"),
+        "\"CFBundleDisplayName\" = \"Not A Locale\";",
     )
     .unwrap();
 }
