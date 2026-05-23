@@ -119,7 +119,7 @@ impl StudioEguiApp {
                     }
                 }
                 Err(error) => {
-                    ui.label(error.to_string());
+                    app_error_label(ui, &error.to_string());
                 }
             }
         });
@@ -159,8 +159,12 @@ impl StudioEguiApp {
     }
 
     fn render_app_search_results(&mut self, ui: &mut egui::Ui) {
-        let Ok(results) = self.app.search_apps(&self.app_query, 20) else {
-            return;
+        let results = match self.app.search_apps(&self.app_query, 20) {
+            Ok(results) => results,
+            Err(error) => {
+                app_error_label(ui, &error.to_string());
+                return;
+            }
         };
         if results.is_empty() {
             ui::empty_state(ui, i18n::t("studio.apps.matches.empty"));
@@ -176,6 +180,10 @@ impl StudioEguiApp {
                 }
             });
     }
+}
+
+fn app_error_label(ui: &mut egui::Ui, message: &str) {
+    ui.colored_label(ui::danger_bg(ui.ctx()), message);
 }
 
 fn render_registered_app_rows(ui: &mut egui::Ui, apps: Vec<PathBuf>) -> Option<String> {
@@ -242,5 +250,16 @@ mod tests {
             app_input_a11y_label("Search apps", " "),
             "Search apps, text box, value empty"
         );
+    }
+
+    #[test]
+    fn app_view_errors_use_danger_token_and_are_not_silent() {
+        let source = include_str!("app_view.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+
+        assert!(implementation.contains("fn app_error_label"));
+        assert!(implementation.contains("colored_label(ui::danger_bg"));
+        assert!(!implementation.contains("Err(error) => {\n                    ui.label"));
+        assert!(!implementation.contains("let Ok(results) = self.app.search_apps"));
     }
 }
