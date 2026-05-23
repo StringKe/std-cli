@@ -58,10 +58,11 @@ const BACKGROUND_UI_ACCEPTANCE: [&str; 2] = [
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 scripts/background-ui-acceptance.sh",
     "STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid <pid> --window-id <window-id> --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness <token>\" --harness-token <token>",
 ];
-const BACKGROUND_UI_EVIDENCE: [&str; 3] = [
+const BACKGROUND_UI_EVIDENCE: [&str; 4] = [
     "background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
     "background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
-    "background_ui_rule=isolated-harness-only",
+    "background_ui_doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor",
+    "background_ui_rule=isolated-harness-only+frontmost-preserved+doctor-validated",
 ];
 
 pub(crate) fn package_quality(quality_dir: &Path) -> Result<Vec<String>, CliError> {
@@ -241,7 +242,8 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_ui_evidence=ui_capture_rule=current-run-png-only",
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
-        "manual_ui_evidence=background_ui_rule=isolated-harness-only",
+        "manual_ui_evidence=background_ui_doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor",
+        "manual_ui_evidence=background_ui_rule=isolated-harness-only+frontmost-preserved+doctor-validated",
         "manual_ui_matrix=launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
         "manual_ui_matrix=launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
         "manual_ui_matrix=studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",

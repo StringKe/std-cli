@@ -144,7 +144,7 @@ fn studio_capture_state_gates() -> Vec<String> {
 }
 
 fn ui_capture_manual_gates() -> Vec<String> {
-    vec![
+    let mut gates = vec![
         format!("ui-capture-manifest={}", ui_capture::UI_CAPTURE_MANIFEST),
         format!("ui-capture-command={}", ui_capture::UI_CAPTURE_COMMAND),
         format!(
@@ -163,7 +163,21 @@ fn ui_capture_manual_gates() -> Vec<String> {
             "ui-capture-acceptance={}",
             ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
         ),
+    ];
+    gates.extend(background_ui_manual_gates());
+    gates
+}
+
+fn background_ui_manual_gates() -> Vec<String> {
+    [
+        "background-ui-manifest=artifacts/ui/background-acceptance/manifest.txt",
+        "background-ui-command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
+        "background-ui-doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor",
+        "background-ui-rule=isolated-harness-only+frontmost-preserved+doctor-validated",
     ]
+    .into_iter()
+    .map(str::to_string)
+    .collect()
 }
 
 pub fn completion_audit_summary(rows: &[CompletionAuditRow]) -> String {
@@ -255,6 +269,10 @@ mod tests {
             "ui-capture-pixels=",
             "ui-capture-rejects=",
             "ui-capture-acceptance=",
+            "background-ui-manifest=artifacts/ui/background-acceptance/manifest.txt",
+            "background-ui-command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
+            "background-ui-doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor",
+            "background-ui-rule=isolated-harness-only+frontmost-preserved+doctor-validated",
         ] {
             assert!(gates.contains(required), "missing manual gate {required}");
         }

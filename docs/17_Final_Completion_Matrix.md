@@ -14,6 +14,10 @@
 - 真实截图 doctor 必须拒绝 `single-color`、`dominant-black`、`dominant-white`、`edge-black`、`edge-white-carrier`
 - 真实截图 acceptance rule 必须是 `explicit-opt-in+current-run-manifest+pid-process-title+png-files+center-edge-pixel-evidence+carrier-reject`
 - 安装版 GUI 验证必须来自本轮显式 desktop opt-in 输出
+- 后台 UI 验收必须来自本轮 `STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance` 输出
+- 后台 UI manifest 必须是 `artifacts/ui/background-acceptance/manifest.txt`
+- 后台 UI doctor 必须使用 `STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor` 校验
+- 后台 UI acceptance rule 必须是 `isolated-harness-only+frontmost-preserved+doctor-validated`
 - 默认测试不得触碰 Terminal、iTerm2、1Password、WeChat、weixin、wechat、微信、System Settings 或用户当前 frontmost app
 - Launcher capture state required: light-collapsed
 - Launcher capture state required: dark-collapsed

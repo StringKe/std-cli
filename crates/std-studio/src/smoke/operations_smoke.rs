@@ -122,6 +122,9 @@ impl OperationsSmoke {
             && self
                 .completion_manual_gates
                 .contains("launcher-background-harness-enter")
+            && self.completion_manual_gates.contains(
+                "background-ui-doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor",
+            )
             && self
                 .completion_manual_gates
                 .contains("launcher-search-open-app-enter")
@@ -335,6 +338,12 @@ mod tests {
             .contains("ui-capture-command=STD_ALLOW_UI_PREVIEW=1 mise run ui-capture-matrix"));
         assert!(summary.contains(
             "ui-capture-doctor=STD_UI_CAPTURE_MANIFEST=artifacts/ui/manual-acceptance/manifest.txt std doctor"
+        ));
+        assert!(summary.contains(
+            "background-ui-doctor=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt std doctor"
+        ));
+        assert!(summary.contains(
+            "background-ui-rule=isolated-harness-only+frontmost-preserved+doctor-validated"
         ));
     }
 
