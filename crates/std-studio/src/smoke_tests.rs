@@ -398,6 +398,9 @@ fn assert_operations_completion_summary(summary: &str) {
 
 fn assert_operations_contract_summary(summary: &str) {
     assert!(summary.contains("operations_visual_contract="));
+    assert!(summary.contains("summary_rail=gates:QA|Doctor|Release|Install|Plugin|Index|Runtime"));
+    assert!(summary.contains("surface=token-inline-rail"));
+    assert!(summary.contains("a11y=gate-label-status"));
     assert!(summary.contains(
         "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence"
     ));

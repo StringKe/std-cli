@@ -3,8 +3,49 @@ use crate::views::{
     row_paint::{self, RowSurface, ThreeTextRows},
 };
 use eframe::egui;
-use std_egui::tokens::Space;
-use std_studio::{operations_completion::CompletionAuditRow, OpsStep};
+use std_egui::tokens::{Color, Radius, Space, Text};
+use std_studio::{
+    operations_completion::CompletionAuditRow, OpsEvidence, OpsGate, OpsStatus, OpsStep,
+};
+
+pub(crate) fn summary_rail(ui: &mut egui::Ui, evidence: &OpsEvidence) {
+    egui::Frame::new()
+        .fill(Color::bg_surface_1(ui.ctx()))
+        .stroke(egui::Stroke::new(1.0, Color::stroke_divider(ui.ctx())))
+        .corner_radius(egui::CornerRadius::same(Radius::SM))
+        .inner_margin(egui::Margin::same(Space::XS))
+        .show(ui, |ui| {
+            ui.horizontal_wrapped(|ui| {
+                for gate in operations_gates(evidence) {
+                    summary_chip(ui, gate);
+                }
+            });
+        });
+}
+
+fn summary_chip(ui: &mut egui::Ui, gate: &OpsGate) {
+    let text = format!("{} {}", gate.title, gate.status.label());
+    let fill = match gate.status {
+        OpsStatus::Pass => Color::status_success(ui.ctx()),
+        OpsStatus::Missing => Color::status_warning(ui.ctx()),
+        OpsStatus::Manual => Color::bg_surface_2(ui.ctx()),
+    };
+    let response = egui::Frame::new()
+        .fill(fill)
+        .corner_radius(egui::CornerRadius::same(Radius::SM))
+        .inner_margin(egui::Margin::symmetric(Space::XS, Space::TWO_XS))
+        .show(ui, |ui| {
+            ui.label(
+                egui::RichText::new(&text)
+                    .font(Text::caption())
+                    .color(Color::fg_primary(ui.ctx())),
+            );
+        })
+        .response;
+    response.widget_info(|| {
+        egui::WidgetInfo::labeled(egui::WidgetType::Label, ui.is_enabled(), text.clone())
+    });
+}
 
 pub(crate) fn gate_row(ui: &mut egui::Ui, label: &str, value: &str, detail: &str) {
     let (rect, response) = ui.allocate_exact_size(
@@ -75,12 +116,45 @@ pub(crate) fn operations_gate_visual_contract() -> &'static str {
     "gate=title|status-icon|status-text|command|step-name|step-command|step-result|runbook|evidence|result|artifact|output|record-evidence"
 }
 
+pub(crate) fn operations_summary_rail_contract(evidence: &OpsEvidence) -> String {
+    let gates = operations_gates(evidence);
+    format!(
+        "summary_rail=gates:{};statuses:{};next={};surface=token-inline-rail;a11y=gate-label-status",
+        gates.iter().map(|gate| gate.title).collect::<Vec<_>>().join("|"),
+        gates
+            .iter()
+            .map(|gate| gate.status.label())
+            .collect::<Vec<_>>()
+            .join("|"),
+        next_manual_gate(&gates).unwrap_or("complete")
+    )
+}
+
 pub(crate) fn completion_audit_visual_contract() -> &'static str {
     "completion=area|status|evidence|manual_gates"
 }
 
 pub(crate) fn operations_gate_a11y_contract() -> &'static str {
     "a11y=row-label-includes-label-value-detail,status-chip-includes-icon-text-result"
+}
+
+fn operations_gates(evidence: &OpsEvidence) -> [&OpsGate; 7] {
+    [
+        &evidence.qa,
+        &evidence.doctor,
+        &evidence.release,
+        &evidence.install,
+        &evidence.plugin,
+        &evidence.index,
+        &evidence.runtime,
+    ]
+}
+
+fn next_manual_gate<'a>(gates: &'a [&OpsGate; 7]) -> Option<&'a str> {
+    gates
+        .iter()
+        .find(|gate| gate.status != OpsStatus::Pass)
+        .map(|gate| gate.title)
 }
 
 #[cfg(test)]
@@ -102,5 +176,18 @@ mod tests {
         assert!(operations_gate_visual_contract().contains("step-command"));
         assert!(operations_gate_visual_contract().contains("step-result"));
         assert!(operations_gate_a11y_contract().contains("status-chip-includes-icon-text-result"));
+    }
+
+    #[test]
+    fn operations_summary_rail_contract_exposes_gate_statuses_and_next_manual_gate() {
+        let evidence = OpsEvidence::load();
+        let contract = operations_summary_rail_contract(&evidence);
+
+        assert!(
+            contract.contains("summary_rail=gates:QA|Doctor|Release|Install|Plugin|Index|Runtime")
+        );
+        assert!(contract.contains("surface=token-inline-rail"));
+        assert!(contract.contains("a11y=gate-label-status"));
+        assert!(contract.contains("next="));
     }
 }

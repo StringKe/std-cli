@@ -14,6 +14,8 @@ impl StudioEguiApp {
             i18n::t("studio.operations.title"),
             i18n::t("studio.operations.detail"),
         );
+        operations_rows::summary_rail(ui, &evidence);
+        ui.add_space(OPERATIONS_PANEL_GAP);
         self.render_operations_workspace(ui, &evidence);
     }
 

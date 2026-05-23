@@ -140,6 +140,11 @@ impl OperationsSmoke {
             && self.visual_contract.contains("step-result")
             && self
                 .visual_contract
+                .contains("summary_rail=gates:QA|Doctor|Release|Install|Plugin|Index|Runtime")
+            && self.visual_contract.contains("surface=token-inline-rail")
+            && self.visual_contract.contains("a11y=gate-label-status")
+            && self
+                .visual_contract
                 .contains(operations_rows::operations_gate_visual_contract())
             && self
                 .visual_contract
@@ -203,7 +208,8 @@ impl OperationsSmoke {
 
 fn operations_visual_contract(evidence: &OpsEvidence) -> String {
     format!(
-        "{};{};{};gates={};manual_gates={};commands={};results={};outputs={};steps={}",
+        "{};{};{};{};gates={};manual_gates={};commands={};results={};outputs={};steps={}",
+        operations_rows::operations_summary_rail_contract(evidence),
         operations_rows::operations_gate_visual_contract(),
         operations_rows::completion_audit_visual_contract(),
         operations_completion::completion_audit_contract(),
@@ -286,6 +292,9 @@ mod tests {
         assert!(smoke
             .summary()
             .contains("step-name|step-command|step-result"));
+        assert!(smoke
+            .summary()
+            .contains("summary_rail=gates:QA|Doctor|Release|Install|Plugin|Index|Runtime"));
     }
 
     fn assert_completion_summary(summary: &str) {
