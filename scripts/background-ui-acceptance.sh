@@ -39,11 +39,13 @@ done
 manifest_dir=$(dirname -- "$manifest")
 mkdir -p "$manifest_dir"
 : >"$manifest"
+run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
 
 record_manifest_header() {
   {
     echo "background-ui-acceptance manifest"
     echo "created_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    echo "run_id=$run_id"
     echo "target=isolated_background_ui_harness_only"
     echo "identity_rule=pid+window-id+bundle-id+window-title+harness-token"
     echo "completion_rule=background-ui-smoke-PASS-and-frontmost-preserved"
@@ -120,6 +122,7 @@ fi
   echo "bundle_id=$bundle_id"
   echo "window_title=$window_title"
   echo "harness_token=$harness_token"
+  echo "harness_run_id=$run_id"
   echo "smoke_command=$smoke_command"
 } >>"$manifest"
 
@@ -155,6 +158,7 @@ if printf '%s\n' "$driver_stdout" | grep -q 'background_driver PASS' &&
 fi
 {
   echo "smoke_status=$smoke_status"
+  echo "smoke_run_id=$run_id"
   echo "driver_stdout=$driver_stdout"
   echo "driver_identity=target-pid-window-id-and-frontmost-pid"
   echo "frontmost_preservation=required"

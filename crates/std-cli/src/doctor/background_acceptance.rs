@@ -1,4 +1,7 @@
-use crate::{doctor::workspace::check_text, CliError};
+use crate::{
+    doctor::{ui_capture_run::verify_capture_run_id, workspace::check_text},
+    CliError,
+};
 use std::{env, fs};
 
 pub(crate) fn check_background_acceptance_manifest() -> Result<(), CliError> {
@@ -27,11 +30,13 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "bundle_id=dev.std-cli.background-ui-harness",
         "window_title=std-cli Background UI Harness ",
         "harness_token=run-",
+        "harness_run_id=",
         "smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke",
         "--bundle-id dev.std-cli.background-ui-harness",
         "--window-title \"std-cli Background UI Harness ",
         "--harness-token run-",
         "smoke_status=PASS",
+        "smoke_run_id=",
         "driver_stdout=background_driver PASS",
         "driver_identity=target-pid-window-id-and-frontmost-pid",
         "event_route=postToPid_target_pid_only",
@@ -49,6 +54,7 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
     verify_positive_field(body, "harness_pid=")?;
     verify_positive_field(body, "window_id=")?;
     verify_driver_identity(body)?;
+    verify_matching_run_id(body)?;
     verify_matching_token(body)
 }
 
@@ -81,6 +87,20 @@ fn verify_matching_token(body: &str) -> Result<(), CliError> {
         return Err(CliError::Doctor(
             "background UI acceptance smoke command token mismatch".to_string(),
         ));
+    }
+    Ok(())
+}
+
+fn verify_matching_run_id(body: &str) -> Result<(), CliError> {
+    let run_id = manifest_field(body, "run_id=")?;
+    verify_capture_run_id(run_id)?;
+    for key in ["harness_run_id=", "smoke_run_id="] {
+        let actual = manifest_field(body, key)?;
+        if actual != run_id {
+            return Err(CliError::Doctor(format!(
+                "background UI acceptance run_id mismatch for {key}"
+            )));
+        }
     }
     Ok(())
 }
@@ -214,9 +234,27 @@ mod tests {
             .contains("fallback=never_frontmost_desktop_click"));
     }
 
+    #[test]
+    fn background_acceptance_manifest_rejects_missing_run_id() {
+        let manifest = sample_manifest().replace("run_id=20260522T000000Z-4242\n", "");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("run_id="));
+    }
+
+    #[test]
+    fn background_acceptance_manifest_rejects_mismatched_run_id() {
+        let manifest =
+            sample_manifest().replace("smoke_run_id=20260522T000000Z-4242", "smoke_run_id=old");
+
+        let error = verify_background_acceptance_manifest(&manifest).unwrap_err();
+        assert!(error.to_string().contains("run_id mismatch"));
+    }
+
     fn sample_manifest() -> &'static str {
         "background-ui-acceptance manifest\n\
 created_at=2026-05-22T00:00:00Z\n\
+run_id=20260522T000000Z-4242\n\
 target=isolated_background_ui_harness_only\n\
 identity_rule=pid+window-id+bundle-id+window-title+harness-token\n\
 completion_rule=background-ui-smoke-PASS-and-frontmost-preserved\n\
@@ -230,8 +268,10 @@ window_id=24\n\
 bundle_id=dev.std-cli.background-ui-harness\n\
 window_title=std-cli Background UI Harness run-42\n\
 harness_token=run-42\n\
+harness_run_id=20260522T000000Z-4242\n\
 smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui background-smoke --harness-pid 42 --window-id 24 --bundle-id dev.std-cli.background-ui-harness --window-title \"std-cli Background UI Harness run-42\" --harness-token run-42\n\
 smoke_status=PASS\n\
+smoke_run_id=20260522T000000Z-4242\n\
 driver_stdout=background_driver PASS target_pid=42 window_id=24 event_route=postToPid_target_pid_only frontmost_preserved=true frontmost_before=777 frontmost_after=777\n\
 driver_identity=target-pid-window-id-and-frontmost-pid\n\
 frontmost_preservation=required\n\
