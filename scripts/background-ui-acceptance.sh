@@ -135,10 +135,24 @@ smoke_status="FAIL"
 if printf '%s\n' "$smoke_output" | grep -q '^background_ui_smoke PASS$'; then
   smoke_status="PASS"
 fi
+driver_stdout=""
+driver_frontmost_preserved="false"
+while IFS= read -r line; do
+  case "$line" in
+    runner_stdout=*) driver_stdout=${line#runner_stdout=} ;;
+  esac
+done <<EOF
+$smoke_output
+EOF
+if printf '%s\n' "$driver_stdout" | grep -q 'background_driver PASS' &&
+  printf '%s\n' "$driver_stdout" | grep -q 'frontmost_preserved=true'; then
+  driver_frontmost_preserved="true"
+fi
 {
   echo "smoke_status=$smoke_status"
   echo "frontmost_preservation=required"
-  echo "frontmost_preserved=true"
+  echo "frontmost_preserved=$driver_frontmost_preserved"
+  echo "frontmost_evidence_source=background_driver_stdout"
   echo "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch"
   echo "harness_origin=spawned_by_scripts_background_ui_harness_only"
   echo "manifest=$manifest"
@@ -146,6 +160,10 @@ fi
 
 if [ "$smoke_status" != "PASS" ]; then
   echo "background_ui_acceptance FAIL reason=background smoke did not PASS manifest=$manifest" >&2
+  exit 1
+fi
+if [ "$driver_frontmost_preserved" != "true" ]; then
+  echo "background_ui_acceptance FAIL reason=frontmost preservation missing from driver stdout manifest=$manifest" >&2
   exit 1
 fi
 

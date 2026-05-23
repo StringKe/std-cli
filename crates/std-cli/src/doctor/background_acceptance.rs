@@ -34,6 +34,7 @@ fn verify_background_acceptance_manifest(body: &str) -> Result<(), CliError> {
         "smoke_status=PASS",
         "frontmost_preservation=required",
         "frontmost_preserved=true",
+        "frontmost_evidence_source=background_driver_stdout",
         "real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch",
         "harness_origin=spawned_by_scripts_background_ui_harness_only",
     ] {
@@ -162,6 +163,7 @@ smoke_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 cargo run -p std-cli -- ui ba
 smoke_status=PASS\n\
 frontmost_preservation=required\n\
 frontmost_preserved=true\n\
+frontmost_evidence_source=background_driver_stdout\n\
 real_app_policy=deny_user_apps_by_bundle_pid_window_title_mismatch\n\
 harness_origin=spawned_by_scripts_background_ui_harness_only\n\
 manifest=artifacts/ui/background-acceptance/manifest.txt\n"

@@ -210,6 +210,9 @@ fn assert_background_harness_contract(root: &Path) {
         "expected_smoke_command=",
         "--harness-token",
         "cargo run -p std-cli -- ui background-smoke",
+        "driver_frontmost_preserved=\"false\"",
+        "frontmost_evidence_source=background_driver_stdout",
+        "frontmost preservation missing from driver stdout",
         "background_ui_acceptance PASS manifest=$manifest",
     ] {
         assert!(
