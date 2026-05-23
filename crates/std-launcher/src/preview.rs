@@ -1,8 +1,10 @@
 use crate::app::LauncherApp;
 use crate::preview_capture::LauncherCaptureManifest;
-use crate::preview_evidence::{
-    preview_size_summary, preview_state_summary, required_capture_states_summary,
+use crate::preview_contract::{
+    preview_capture_contract, preview_matrix, preview_window_title, required_capture_states,
+    required_capture_states_pass, required_capture_states_summary, LauncherPreviewScenario,
 };
+use crate::preview_evidence::{preview_size_summary, preview_state_summary};
 use crate::ui;
 use crate::ui_completion_boundary::{
     launcher_ui_completion_boundary_passes, launcher_ui_completion_boundary_summary,
@@ -192,77 +194,6 @@ pub(crate) fn run_preview(config: LauncherPreviewConfig) -> eframe::Result<()> {
     )
 }
 
-fn preview_capture_contract() -> &'static str {
-    "transparent-native-host,opaque-panel-surface,opt-in-only,checkout-binary-only,blocked-in-STD_TEST_MODE,no-default-window,host-gutter-16px,no-host-background,no-shadow-clip"
-}
-
-fn required_capture_states(scenarios: &[LauncherPreviewScenario]) -> Vec<String> {
-    [
-        "light-collapsed",
-        "dark-collapsed",
-        "light-empty",
-        "dark-empty",
-        "light-results",
-        "dark-results",
-        "light-no-results",
-        "dark-no-results",
-        "light-searching",
-        "dark-searching",
-        "light-loading",
-        "dark-loading",
-        "light-executing",
-        "dark-executing",
-        "light-defer",
-        "dark-defer",
-        "light-error",
-        "dark-error",
-        "light-ime",
-        "dark-ime",
-        "light-action-panel",
-        "dark-action-panel",
-    ]
-    .into_iter()
-    .filter(|required| {
-        scenarios
-            .iter()
-            .any(|scenario| scenario.label() == *required)
-    })
-    .map(str::to_string)
-    .collect()
-}
-
-fn required_capture_states_pass(states: &[String]) -> bool {
-    states
-        == [
-            "light-collapsed",
-            "dark-collapsed",
-            "light-empty",
-            "dark-empty",
-            "light-results",
-            "dark-results",
-            "light-no-results",
-            "dark-no-results",
-            "light-searching",
-            "dark-searching",
-            "light-loading",
-            "dark-loading",
-            "light-executing",
-            "dark-executing",
-            "light-defer",
-            "dark-defer",
-            "light-error",
-            "dark-error",
-            "light-ime",
-            "dark-ime",
-            "light-action-panel",
-            "dark-action-panel",
-        ]
-}
-
-pub(crate) fn preview_window_title() -> &'static str {
-    "std-cli Launcher"
-}
-
 pub(crate) fn preview_native_options_for_config(
     config: &LauncherPreviewConfig,
 ) -> eframe::NativeOptions {
@@ -338,120 +269,6 @@ pub(crate) fn apply_preview_scenario(state: &mut LauncherState, scenario: &str) 
             state.update_query("index");
         }
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct LauncherPreviewScenario {
-    pub(crate) theme: &'static str,
-    pub(crate) state: &'static str,
-}
-
-impl LauncherPreviewScenario {
-    pub(crate) fn label(&self) -> String {
-        format!("{}-{}", self.theme, self.state)
-    }
-
-    fn command(&self) -> String {
-        format!(
-            "STD_ALLOW_UI_PREVIEW=1 cargo run -p std-launcher -- --ui-preview {} {} 8000",
-            self.theme, self.state
-        )
-    }
-}
-
-fn preview_matrix() -> Vec<LauncherPreviewScenario> {
-    [
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "collapsed",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "collapsed",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "empty",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "empty",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "results",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "results",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "no-results",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "no-results",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "searching",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "searching",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "loading",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "loading",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "executing",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "executing",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "defer",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "defer",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "error",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "error",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "ime",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "ime",
-        },
-        LauncherPreviewScenario {
-            theme: "light",
-            state: "action-panel",
-        },
-        LauncherPreviewScenario {
-            theme: "dark",
-            state: "action-panel",
-        },
-    ]
-    .into_iter()
-    .collect()
 }
 
 fn select_external_runner_result(state: &mut LauncherState) {

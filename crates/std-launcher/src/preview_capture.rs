@@ -1,4 +1,4 @@
-use crate::preview::LauncherPreviewScenario;
+use crate::preview_contract::LauncherPreviewScenario;
 use std_egui::ui_capture;
 
 pub(crate) const LAUNCHER_CAPTURE_DIR: &str = ui_capture::UI_CAPTURE_DIR;

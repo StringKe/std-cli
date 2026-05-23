@@ -10,6 +10,7 @@ mod preview;
 mod preview_affordance;
 mod preview_behavior;
 mod preview_capture;
+mod preview_contract;
 mod preview_evidence;
 #[cfg(test)]
 mod preview_tests;

@@ -7,11 +7,9 @@ use std_egui::tokens::{apply_theme, Color, ThemeMode};
 use std_launcher::LauncherState;
 use std_types::ActionExecutionStatus;
 
-pub(crate) fn required_capture_states_summary() -> &'static str {
-    "required_capture_states=light-collapsed,dark-collapsed,light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-defer,dark-defer,light-error,dark-error,light-ime,dark-ime,light-action-panel,dark-action-panel"
-}
-
-pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewScenario) -> String {
+pub(crate) fn preview_state_summary(
+    scenario: &crate::preview_contract::LauncherPreviewScenario,
+) -> String {
     let mut state = LauncherState::new();
     apply_preview_scenario(&mut state, scenario.state);
     let valid =
@@ -53,7 +51,9 @@ pub(crate) fn preview_state_summary(scenario: &crate::preview::LauncherPreviewSc
     )
 }
 
-pub(crate) fn preview_size_summary(scenario: &crate::preview::LauncherPreviewScenario) -> String {
+pub(crate) fn preview_size_summary(
+    scenario: &crate::preview_contract::LauncherPreviewScenario,
+) -> String {
     let mut state = LauncherState::new();
     apply_preview_scenario(&mut state, scenario.state);
     let viewport = ui::launcher_window_inner_size(&state);
