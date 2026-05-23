@@ -8,7 +8,7 @@ use std_egui::motion::MotionContext;
 pub(crate) struct StudioLayoutSmoke {
     pub(crate) host_window_size: String,
     pub(crate) min_window_size: String,
-    pub(crate) host_viewport_contract: &'static str,
+    pub(crate) host_viewport_contract: String,
     pub(crate) host_chrome_contract: &'static str,
     pub(crate) host_chrome_input_contract: &'static str,
     pub(crate) host_chrome_height: u32,

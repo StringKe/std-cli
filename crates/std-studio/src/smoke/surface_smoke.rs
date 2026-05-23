@@ -17,7 +17,7 @@ pub(crate) struct StudioSurfaceSmoke {
     light_selected_surface_layer: String,
     canvas_outer_frame: String,
     native_clear_color_contract: &'static str,
-    host_viewport_contract: &'static str,
+    host_viewport_contract: String,
     host_chrome_contract: &'static str,
     standard_modal_enter_ms: u128,
     reduced_modal_enter_ms: u128,
@@ -145,7 +145,7 @@ impl StudioSurfaceSmoke {
             && self.native_clear_color_contract
                 == "native_clear_color=bg/surface-0,not-transparent,not-system-black-white"
             && self.host_viewport_contract
-                == "host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
+                == "host_viewport=single-borderless-egui-viewport,panes=internal-egui-workspace-panes,size=1280x800,min=1080x640,decorations=false,resizable=true,native_child_windows=false,detached_panels=false,extra_viewports=false"
             && self.host_chrome_contract
                 == "host_chrome=egui-owned,borderless,native-controls=false,surface=bg/surface-1"
             && self.standard_modal_enter_ms == 220

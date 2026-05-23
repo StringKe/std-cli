@@ -1,27 +1,27 @@
 use eframe::egui;
-use std_studio::{HostWindowPolicy, StudioWorkspacePolicy};
+use std_studio::StudioWorkspacePolicy;
 
 pub(crate) const STUDIO_WINDOW_SIZE: [f32; 2] = [1280.0, 800.0];
 pub(crate) const STUDIO_MIN_WINDOW_SIZE: [f32; 2] = [1080.0, 640.0];
 
 pub(crate) fn studio_native_options() -> eframe::NativeOptions {
     let policy = StudioWorkspacePolicy::studio_v1();
-    debug_assert_eq!(
-        policy.host_window,
-        HostWindowPolicy::SingleBorderlessEguiViewport
-    );
+    let contract = policy.host_viewport_contract();
+    debug_assert!(contract.passes());
     eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size(STUDIO_WINDOW_SIZE)
-            .with_min_inner_size(STUDIO_MIN_WINDOW_SIZE)
-            .with_resizable(true)
-            .with_decorations(false),
+            .with_inner_size([contract.width as f32, contract.height as f32])
+            .with_min_inner_size([contract.min_width as f32, contract.min_height as f32])
+            .with_resizable(contract.resizable)
+            .with_decorations(contract.decorations),
         ..Default::default()
     }
 }
 
-pub(crate) fn studio_host_viewport_contract() -> &'static str {
-    "host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
+pub(crate) fn studio_host_viewport_contract() -> String {
+    StudioWorkspacePolicy::studio_v1()
+        .host_viewport_contract()
+        .summary()
 }
 
 #[cfg(test)]
@@ -40,7 +40,7 @@ mod tests {
         assert!(!StudioWorkspacePolicy::studio_v1().allows_native_child_windows());
         assert_eq!(
             studio_host_viewport_contract(),
-            "host_viewport=single-borderless-egui,decorations=false,resizable=true,native-child-windows=false"
+            "host_viewport=single-borderless-egui-viewport,panes=internal-egui-workspace-panes,size=1280x800,min=1080x640,decorations=false,resizable=true,native_child_windows=false,detached_panels=false,extra_viewports=false"
         );
     }
 }

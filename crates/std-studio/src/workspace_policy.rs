@@ -20,6 +20,70 @@ pub enum PaneSystemPolicy {
     InternalEguiWorkspacePanes,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StudioHostViewportContract {
+    pub host_window: HostWindowPolicy,
+    pub pane_system: PaneSystemPolicy,
+    pub width: u32,
+    pub height: u32,
+    pub min_width: u32,
+    pub min_height: u32,
+    pub decorations: bool,
+    pub resizable: bool,
+    pub native_child_windows: bool,
+    pub detached_panels: bool,
+    pub extra_viewports: bool,
+}
+
+impl StudioHostViewportContract {
+    pub fn from_policy(policy: StudioWorkspacePolicy) -> Self {
+        Self {
+            host_window: policy.host_window,
+            pane_system: policy.pane_system,
+            width: 1280,
+            height: 800,
+            min_width: 1080,
+            min_height: 640,
+            decorations: false,
+            resizable: true,
+            native_child_windows: policy.native_child_windows,
+            detached_panels: policy.detached_panels,
+            extra_viewports: policy.extra_viewports,
+        }
+    }
+
+    pub fn passes(self) -> bool {
+        self.host_window == HostWindowPolicy::SingleBorderlessEguiViewport
+            && self.pane_system == PaneSystemPolicy::InternalEguiWorkspacePanes
+            && self.width == 1280
+            && self.height == 800
+            && self.min_width == 1080
+            && self.min_height == 640
+            && !self.decorations
+            && self.resizable
+            && !self.native_child_windows
+            && !self.detached_panels
+            && !self.extra_viewports
+    }
+
+    pub fn summary(self) -> String {
+        format!(
+            "host_viewport={},panes={},size={}x{},min={}x{},decorations={},resizable={},native_child_windows={},detached_panels={},extra_viewports={}",
+            self.host_window.label(),
+            self.pane_system.label(),
+            self.width,
+            self.height,
+            self.min_width,
+            self.min_height,
+            self.decorations,
+            self.resizable,
+            self.native_child_windows,
+            self.detached_panels,
+            self.extra_viewports
+        )
+    }
+}
+
 impl StudioWorkspacePolicy {
     pub const DOC_REFERENCE: &'static str = "docs/22 + docs/24";
     pub const VIEWPORT_TOUCHPOINTS: &'static [&'static str] = &[
@@ -137,6 +201,10 @@ impl StudioWorkspacePolicy {
                 "host_window_commands=single-system-host-only;workspace_panes=internal-egui-only;commands=close|minimize|maximize"
             }
         }
+    }
+
+    pub fn host_viewport_contract(self) -> StudioHostViewportContract {
+        StudioHostViewportContract::from_policy(self)
     }
 }
 

@@ -44,7 +44,9 @@ pub use workspace_pane::{
     WorkspacePane, WorkspacePaneCloseGuard, WorkspacePaneCloseSnapshot, WorkspacePaneContent,
     WorkspacePaneId, WorkspacePaneKind,
 };
-pub use workspace_policy::{HostWindowPolicy, PaneSystemPolicy, StudioWorkspacePolicy};
+pub use workspace_policy::{
+    HostWindowPolicy, PaneSystemPolicy, StudioHostViewportContract, StudioWorkspacePolicy,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum StudioPane {

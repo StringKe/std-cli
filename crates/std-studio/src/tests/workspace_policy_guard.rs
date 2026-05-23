@@ -120,6 +120,23 @@ fn workspace_main_path_contract_comes_from_policy_fields() {
     assert!(contract.contains("src/preview.rs"));
 }
 
+#[test]
+fn studio_host_viewport_contract_comes_from_policy_fields() {
+    let contract = StudioWorkspacePolicy::studio_v1().host_viewport_contract();
+    let summary = contract.summary();
+
+    assert!(contract.passes());
+    assert!(summary.contains("host_viewport=single-borderless-egui-viewport"));
+    assert!(summary.contains("panes=internal-egui-workspace-panes"));
+    assert!(summary.contains("size=1280x800"));
+    assert!(summary.contains("min=1080x640"));
+    assert!(summary.contains("decorations=false"));
+    assert!(summary.contains("resizable=true"));
+    assert!(summary.contains("native_child_windows=false"));
+    assert!(summary.contains("detached_panels=false"));
+    assert!(summary.contains("extra_viewports=false"));
+}
+
 fn scan_rs_files(dir: &Path, violations: &mut Vec<String>) {
     let Ok(entries) = fs::read_dir(dir) else {
         return;

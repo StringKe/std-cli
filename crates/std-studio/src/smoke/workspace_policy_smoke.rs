@@ -14,6 +14,7 @@ pub(crate) struct WorkspacePolicySmoke {
     pub(crate) summary: &'static str,
     pub(crate) viewport_touchpoints: String,
     pub(crate) native_entrypoints: String,
+    pub(crate) host_viewport_contract: String,
     pub(crate) forbidden_apis: String,
     pub(crate) ui_completion_boundary: &'static str,
     pub(crate) source_guard_contract: &'static str,
@@ -40,6 +41,7 @@ impl WorkspacePolicySmoke {
             summary: policy.summary(),
             viewport_touchpoints: StudioWorkspacePolicy::VIEWPORT_TOUCHPOINTS.join("|"),
             native_entrypoints: StudioWorkspacePolicy::NATIVE_ENTRYPOINTS.join("|"),
+            host_viewport_contract: policy.host_viewport_contract().summary(),
             forbidden_apis: StudioWorkspacePolicy::FORBIDDEN_WORKBENCH_APIS.join("|"),
             ui_completion_boundary: StudioWorkspacePolicy::UI_COMPLETION_BOUNDARY,
             source_guard_contract: StudioWorkspacePolicy::SOURCE_GUARD_CONTRACT,
@@ -62,6 +64,10 @@ impl WorkspacePolicySmoke {
             && self.viewport_touchpoints
                 == "src/viewport.rs|src/host_window.rs|src/host_chrome.rs|src/host_chrome_drag.rs|src/preview.rs|src/preview_tests.rs"
             && self.native_entrypoints == "src/native_app.rs|src/preview.rs"
+            && self.host_viewport_contract.contains("size=1280x800")
+            && self.host_viewport_contract.contains("min=1080x640")
+            && self.host_viewport_contract.contains("decorations=false")
+            && self.host_viewport_contract.contains("detached_panels=false")
             && self.forbidden_apis.contains("egui::Window::new")
             && self.forbidden_apis.contains("ViewportBuilder::default")
             && self.forbidden_apis.contains("send_viewport_cmd")
@@ -92,7 +98,7 @@ impl WorkspacePolicySmoke {
 
     pub(crate) fn output(&self) -> String {
         format!(
-            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\nextra_viewports={}\nshow_viewport_api={}\negui_window_api={}\nsettings_overlay={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nforbidden_apis={}\nui_completion_boundary={}\nsource_guard_contract={}\nmanual_ui_evidence_gates={}\nsource_guard={}",
+            "studio_workspace_policy_smoke {}\nhost_window={}\npane_system={}\nnative_child_windows={}\ndetached_panels={}\nextra_viewports={}\nshow_viewport_api={}\negui_window_api={}\nsettings_overlay={}\ndoc_reference={}\nsummary={}\nviewport_touchpoints={}\nnative_entrypoints={}\nhost_viewport_contract={}\nforbidden_apis={}\nui_completion_boundary={}\nsource_guard_contract={}\nmanual_ui_evidence_gates={}\nsource_guard={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.host_window,
             self.pane_system,
@@ -106,6 +112,7 @@ impl WorkspacePolicySmoke {
             self.summary,
             self.viewport_touchpoints,
             self.native_entrypoints,
+            self.host_viewport_contract,
             self.forbidden_apis,
             self.ui_completion_boundary,
             self.source_guard_contract,
@@ -142,6 +149,11 @@ mod tests {
         assert!(report
             .output()
             .contains("native_entrypoints=src/native_app.rs"));
+        assert!(report
+            .output()
+            .contains("host_viewport_contract=host_viewport=single-borderless-egui-viewport"));
+        assert!(report.output().contains("size=1280x800"));
+        assert!(report.output().contains("detached_panels=false"));
         assert!(report.output().contains("forbidden_apis=egui::Window::new"));
         assert!(report
             .output()
