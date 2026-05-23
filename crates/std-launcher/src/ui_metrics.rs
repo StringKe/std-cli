@@ -147,7 +147,7 @@ pub(crate) fn feedback_detail_height() -> f32 {
 }
 
 pub(crate) fn feedback_panel_height_for_scale(scale: UiScale) -> f32 {
-    feedback_text_height_for_scale(scale)
+    feedback_text_height_for_scale(scale) + scale.f32(Space::XS as f32) * 2.0
 }
 
 fn feedback_text_height_for_scale(scale: UiScale) -> f32 {

@@ -267,9 +267,9 @@ fn feedback_status_height_budget_covers_rendered_panel() {
     let rendered_panel = feedback_panel_height_for_scale(scale);
     let rendered_budget = rendered_panel + scale.f32(Space::XS as f32);
 
-    assert_eq!(feedback_panel_height_for_scale(scale), 58.0);
+    assert_eq!(feedback_panel_height_for_scale(scale), 74.0);
     assert_eq!(budget, rendered_budget);
-    assert_eq!(budget, 66.0);
+    assert_eq!(budget, 82.0);
 }
 
 #[test]
