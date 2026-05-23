@@ -8,6 +8,7 @@ mod action_panel_review;
 mod action_panel_smoke;
 mod action_panel_state;
 mod app_localization_smoke;
+mod carrier;
 mod close_smoke;
 mod controller;
 mod hotkey;
@@ -37,6 +38,10 @@ pub use action_bar_preview::ActionBarPreviewSummary;
 pub use action_panel::{ActionPanel, ActionPanelItem};
 pub use action_panel_smoke::LauncherActionPanelSmokeReport;
 pub use app_localization_smoke::LauncherAppLocalizationSmokeReport;
+pub use carrier::{
+    launcher_capture_pixel_contract, launcher_visible_host_geometry_contract,
+    LauncherCarrierEvidence,
+};
 pub use close_smoke::LauncherCloseSmokeReport;
 pub use controller::{LauncherController, LauncherWindowCommand};
 pub use hotkey::{

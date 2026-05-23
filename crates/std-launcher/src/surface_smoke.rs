@@ -4,7 +4,7 @@ use crate::{
 };
 use std_egui::{
     motion::MotionContext,
-    tokens::{apply_theme, Color, LauncherSize, Radius, Space, ThemeMode, UiScale},
+    tokens::{apply_theme, Color, Radius, Space, ThemeMode},
     LauncherFeedback,
 };
 use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
@@ -45,6 +45,7 @@ pub struct LauncherSurfaceSmokeReport {
     pub reduce_motion_contract: String,
     pub motion_scene_contract: String,
     pub ui_contract: LauncherSurfaceContract,
+    pub carrier_evidence: crate::LauncherCarrierEvidence,
 }
 
 impl LauncherSurfaceSmokeReport {
@@ -65,8 +66,8 @@ impl LauncherSurfaceSmokeReport {
             native_host_window_contract: native_host_window_contract(),
             capture_window_contract: capture_window_contract(),
             capture_surface_contract: capture_surface_contract(),
-            capture_pixel_contract: capture_pixel_contract(),
-            visible_host_geometry_contract: visible_host_geometry_contract(),
+            capture_pixel_contract: crate::launcher_capture_pixel_contract(),
+            visible_host_geometry_contract: crate::launcher_visible_host_geometry_contract(),
             panel_inner_padding: Space::md(),
             dark_search_surface_layer: layer("dark_search", "bg/surface-1", &dark),
             light_search_surface_layer: layer("light_search", "bg/surface-1", &light),
@@ -91,6 +92,7 @@ impl LauncherSurfaceSmokeReport {
                 "STD_REDUCE_MOTION=1 collapses env launcher enter, exit, focus ring".to_string(),
             motion_scene_contract: standard_motion.scene_contract(),
             ui_contract: LauncherSurfaceContract::new(),
+            carrier_evidence: crate::LauncherCarrierEvidence::for_height(360.0),
         }
     }
 
@@ -108,6 +110,7 @@ impl LauncherSurfaceSmokeReport {
             && self.capture_surface_contract
                 == "capture_surface=opaque_panel_surface,transparent_host,host_gutter=0px,no_host_background,no_shadow_clip"
             && self.capture_pixel_contract == "capture_pixels=center-panel-opaque-non-carrier,host-carrier-zero,edge-black-white-zero,min-opaque-samples=5,min-edge-transparent=0"
+            && self.carrier_evidence.pass()
             && self
                 .visible_host_geometry_contract
                 .contains("results:native_host=")
@@ -175,7 +178,7 @@ impl LauncherSurfaceSmokeReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\ncapture_pixel_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\nmotion_scene_contract={}\n{}",
+            "launcher_surface_smoke {}\ndark_panel_fill={}\nlight_panel_fill={}\npanel_opaque={}\nnative_clear_color={}\nviewport_frame_contract={}\npanel_radius={}\nnative_host_window_contract={}\ncapture_window_contract={}\ncapture_surface_contract={}\ncapture_pixel_contract={}\nvisible_host_geometry_contract={}\npanel_inner_padding={}\ndark_search_surface_layer={}\nlight_search_surface_layer={}\ndark_result_surface_layer={}\nlight_result_surface_layer={}\ndark_selected_surface_layer={}\nlight_selected_surface_layer={}\nempty_state={}\nmatches_state={}\naction_bar_preview={}\nno_match_state={}\ndefer_feedback={}\nerror_feedback={}\nfeedback_text_contract={}\nfeedback_icon_contract={}\nstandard_launcher_enter_ms={}\nreduced_launcher_enter_ms={}\nreduced_launcher_exit_ms={}\nreduced_focus_ring_ms={}\nenv_reduced_launcher_enter_ms={}\nreduce_motion_contract={}\nmotion_scene_contract={}\ncarrier_evidence={}\n{}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.dark_panel_fill,
             self.light_panel_fill,
@@ -210,6 +213,7 @@ impl LauncherSurfaceSmokeReport {
             self.env_reduced_launcher_enter_ms,
             self.reduce_motion_contract,
             self.motion_scene_contract,
+            self.carrier_evidence.summary().replace('\n', "|"),
             self.ui_contract.summary()
         )
     }
@@ -278,43 +282,6 @@ fn capture_window_contract() -> String {
 fn capture_surface_contract() -> String {
     "capture_surface=opaque_panel_surface,transparent_host,host_gutter=0px,no_host_background,no_shadow_clip"
         .to_string()
-}
-
-fn capture_pixel_contract() -> String {
-    [
-        "capture_pixels=center-panel-opaque-non-carrier",
-        "host-carrier-zero",
-        "edge-black-white-zero",
-        "min-opaque-samples=5",
-        "min-edge-transparent=0",
-    ]
-    .join(",")
-}
-
-fn visible_host_geometry_contract() -> String {
-    ["results", "defer", "error"]
-        .into_iter()
-        .map(|scenario| format!("{scenario}:{}", visible_host_geometry_for_height(360.0)))
-        .collect::<Vec<_>>()
-        .join("|")
-}
-
-fn visible_host_geometry_for_height(panel_height: f32) -> String {
-    let scale = UiScale::default();
-    let panel = egui::vec2(PANEL_WIDTH, panel_height);
-    let host = LauncherSize::host_size(panel, scale);
-    let gutter = LauncherSize::host_gutter(scale);
-    format!(
-        "native_host={}x{};host_background=none;panel_surface=opaque;panel_origin={}x{};panel_size={}x{};host_gap={}x{};frame_clear=true;panel_only_surface=true",
-        host.x.round() as u32,
-        host.y.round() as u32,
-        gutter.round() as i32,
-        gutter.round() as i32,
-        panel.x.round() as u32,
-        panel.y.round() as u32,
-        (host.x - panel.x).round() as i32,
-        (host.y - panel.y).round() as i32
-    )
 }
 
 fn action_bar_preview_state() -> String {
@@ -418,5 +385,7 @@ mod tests {
         assert!(summary.contains("panel_origin=0x0"));
         assert!(summary.contains("host_gap=0x0"));
         assert!(summary.contains("panel_only_surface=true"));
+        assert!(summary.contains("carrier_evidence=launcher_carrier PASS"));
+        assert!(summary.contains("visible_carrier=none"));
     }
 }
