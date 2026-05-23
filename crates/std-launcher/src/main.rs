@@ -17,6 +17,8 @@ mod preview_surface_evidence;
 mod preview_tests;
 mod resident;
 mod screenshot_acceptance;
+#[cfg(test)]
+mod source_guard_tests;
 mod ui;
 mod ui_action_bar;
 mod ui_action_panel;
