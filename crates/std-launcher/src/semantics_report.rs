@@ -89,6 +89,10 @@ impl LauncherUiSemanticsReport {
                 input::arrow_down().label(),
                 input::enter().label()
             ))
+            && self.feedback_contract
+                == "defer=Copy>Retry,error=Copy>Retry>OpenStudio,keyboard=copy>retry>open-studio"
+            && self.feedback_a11y_contract
+                == "panel=status>target>actions,actions=action>target>status>enter"
             && self.error_open_studio_target == "ExecutionHistory"
             && self.error_open_studio_command == "studio-pane://history"
             && self.shortcut_help_summary.contains("trigger=?")
@@ -103,7 +107,7 @@ impl LauncherUiSemanticsReport {
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nsearch_reader_label={}\nresult_group_label={}\nselected_label={}\nselected_reader_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_reader_label={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nrunning_reader_label={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\ncompletion_reader_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nshortcut_help={}\ndocs23_contract={}\nlocale_contract={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
+            "launcher_ui_semantics_smoke {}\nsearch_focused={}\nresult_count={}\nresult_phase={}\nresult_mode={}\nempty_phase={}\nempty_mode={}\nempty_result_count={}\nempty_title={}\nempty_detail={}\nsearch_reader_label={}\nresult_group_label={}\nselected_label={}\nselected_reader_label={}\nselected_position={}\nselected_keycap={}\nselected_action_hint={}\naction_bar_hint={}\naction_panel_actions={}\naction_panel_reader_label={}\naction_panel_open_studio_command={}\nno_results_label={}\nno_results_detail={}\nno_results_fallback={}\nno_results_phase={}\nno_results_enter_query={}\nno_results_ime_enter_blocked={}\nloading_label={}\nloading_progress={}\nloading_spinner_after_ms={}\nexecuting_search_text={}\nrunning_reader_label={}\nexecuting_input_enabled={}\nexecuting_cancel_shortcut={}\nexecuting_background_shortcut={}\ndefer_feedback_label={}\ndefer_actions={}\nfailed_feedback_label={}\ncompletion_reader_label={}\nerror_actions={}\nfeedback_keyboard_path={}\nfeedback_contract={}\nfeedback_a11y_contract={}\nerror_open_studio_target={}\nerror_open_studio_command={}\nshortcut_help={}\ndocs23_contract={}\nlocale_contract={}\nreduce_motion={}\nlauncher_enter_ms={}\nfocus_ring_width={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.search_focused,
             self.result_count,
@@ -145,6 +149,8 @@ impl LauncherUiSemanticsReport {
             self.completion_reader_label,
             self.error_actions,
             self.feedback_keyboard_path,
+            self.feedback_contract,
+            self.feedback_a11y_contract,
             self.error_open_studio_target,
             self.error_open_studio_command,
             self.shortcut_help_summary,

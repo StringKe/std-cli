@@ -1,13 +1,12 @@
 use crate::semantics_executing::executing_semantics;
+use crate::semantics_feedback::feedback_semantics;
 use crate::{keyboard::LauncherKey, LauncherState};
 use std_egui::{
     a11y::AccessibilityContext,
     i18n::{self, Locale},
     input,
     motion::MotionContext,
-    LauncherFeedback,
 };
-use std_types::{ActionExecution, ActionExecutionStatus, ActionId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LauncherUiSemanticsReport {
@@ -51,6 +50,8 @@ pub struct LauncherUiSemanticsReport {
     pub completion_reader_label: String,
     pub error_actions: String,
     pub feedback_keyboard_path: String,
+    pub feedback_contract: String,
+    pub feedback_a11y_contract: String,
     pub error_open_studio_target: String,
     pub error_open_studio_command: String,
     pub shortcut_help_summary: String,
@@ -112,11 +113,13 @@ impl LauncherState {
             executing_cancel_shortcut: executing.cancel_shortcut,
             executing_background_shortcut: executing.background_shortcut,
             defer_feedback_label: feedback.defer_label,
-            defer_actions: "Copy,Retry".to_string(),
+            defer_actions: feedback.defer_actions,
             failed_feedback_label: feedback.failed_label,
             completion_reader_label: feedback.completion_label,
-            error_actions: "Copy,Retry,Open Studio".to_string(),
+            error_actions: feedback.error_actions,
             feedback_keyboard_path: feedback.keyboard_path,
+            feedback_contract: feedback.contract,
+            feedback_a11y_contract: feedback.a11y_contract,
             error_open_studio_target: feedback.open_studio_target,
             error_open_studio_command: feedback.open_studio_command,
             shortcut_help_summary: shortcut_help_semantics(),
@@ -162,16 +165,6 @@ struct NoResultSemantics {
 struct LoadingSemantics {
     label: String,
     progress: String,
-}
-
-struct FeedbackSemantics {
-    defer_label: String,
-    failed_label: String,
-    running_label: String,
-    completion_label: String,
-    open_studio_target: String,
-    open_studio_command: String,
-    keyboard_path: String,
 }
 
 struct ActionPanelSemantics {
@@ -289,53 +282,6 @@ fn loading_semantics() -> LoadingSemantics {
     }
 }
 
-fn feedback_semantics() -> FeedbackSemantics {
-    let defer_feedback = LauncherFeedback::from_execution(&deferred_execution());
-    let failed_feedback = LauncherFeedback::from_execution(&failed_execution());
-    let a11y = AccessibilityContext::from_env();
-    let mut failed_state = LauncherState::new();
-    failed_state.view.feedback = Some(failed_feedback.clone());
-    let studio_intent = failed_state.open_studio_execution_history_from_feedback();
-    let mut keyboard_state = LauncherState::new();
-    keyboard_state.view.feedback = Some(failed_feedback.clone());
-    keyboard_state.focus_section = crate::LauncherFocusSection::Feedback;
-    keyboard_state.handle_keyboard_input(LauncherKey::ArrowDown, false);
-    let retry = keyboard_state
-        .view
-        .selected_feedback_action()
-        .map(|action| format!("{action:?}"))
-        .unwrap_or_else(|| "none".to_string());
-    keyboard_state.handle_keyboard_input(LauncherKey::ArrowDown, false);
-    let open_studio = keyboard_state
-        .view
-        .selected_feedback_action()
-        .map(|action| format!("{action:?}"))
-        .unwrap_or_else(|| "none".to_string());
-    let _ = keyboard_state.handle_keyboard_input(LauncherKey::Enter, false);
-    FeedbackSemantics {
-        defer_label: feedback_label(&defer_feedback),
-        failed_label: feedback_label(&failed_feedback),
-        running_label: a11y.launcher_running_label(&failed_feedback.action_name),
-        completion_label: a11y.launcher_completed_label(&format!(
-            "{} {}",
-            defer_feedback.title, defer_feedback.detail
-        )),
-        open_studio_target: format!("{:?}", studio_intent.target),
-        open_studio_command: studio_intent.command,
-        keyboard_path: format!(
-            "Feedback>{}:{retry}>{}:{open_studio}>{}:{}",
-            input::arrow_down().label(),
-            input::arrow_down().label(),
-            input::enter().label(),
-            keyboard_state
-                .studio_intent
-                .as_ref()
-                .map(|intent| intent.command.as_str())
-                .unwrap_or("none")
-        ),
-    }
-}
-
 fn action_panel_semantics(query: &str) -> ActionPanelSemantics {
     let mut state = LauncherState::new();
     state.update_query(query);
@@ -367,36 +313,4 @@ fn action_panel_semantics(query: &str) -> ActionPanelSemantics {
 
 fn shortcut_help_semantics() -> String {
     crate::launcher_shortcut_help_summary()
-}
-
-fn deferred_execution() -> ActionExecution {
-    ActionExecution {
-        action_id: ActionId::default(),
-        action_name: "StdFixtureTerminal".to_string(),
-        status: ActionExecutionStatus::NeedsExternalRunner,
-        message: "std-fixture-terminal".to_string(),
-        output: Some(serde_json::json!({
-            "deferred": true,
-            "reason": "external runner action requires explicit user trigger",
-        })),
-        created_at: chrono::Utc::now(),
-    }
-}
-
-fn failed_execution() -> ActionExecution {
-    ActionExecution {
-        action_id: ActionId::default(),
-        action_name: "Plugin Crash".to_string(),
-        status: ActionExecutionStatus::Failed,
-        message: "plugin crashed while rendering launcher feedback".to_string(),
-        output: None,
-        created_at: chrono::Utc::now(),
-    }
-}
-
-fn feedback_label(feedback: &LauncherFeedback) -> String {
-    format!(
-        "{}: {} {}",
-        feedback.title, feedback.action_name, feedback.detail
-    )
 }

@@ -180,6 +180,14 @@ fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) 
         .failed_feedback_label
         .contains(std_egui::i18n::t("launcher.feedback.failed")));
     assert_eq!(report.error_actions, "Copy,Retry,Open Studio");
+    assert_eq!(
+        report.feedback_contract,
+        "defer=Copy>Retry,error=Copy>Retry>OpenStudio,keyboard=copy>retry>open-studio"
+    );
+    assert_eq!(
+        report.feedback_a11y_contract,
+        "panel=status>target>actions,actions=action>target>status>enter"
+    );
     assert_eq!(report.error_open_studio_target, "ExecutionHistory");
     assert_eq!(report.error_open_studio_command, "studio-pane://history");
     assert!(summary.contains(&format!(
@@ -187,6 +195,7 @@ fn assert_feedback_semantics(report: &LauncherUiSemanticsReport, summary: &str) 
         std_egui::i18n::t("launcher.feedback.failed")
     )));
     assert!(summary.contains("error_open_studio_target=ExecutionHistory"));
+    assert!(summary.contains("feedback_a11y_contract=panel=status>target>actions"));
 }
 
 #[test]
