@@ -60,9 +60,10 @@ cleanup() {
 trap cleanup EXIT
 record_manifest_header
 
-launcher_bin="target/debug/std-launcher"
-studio_bin="target/debug/std-studio"
-cargo build -p std-launcher -p std-studio
+capture_target_dir="target/ui-capture"
+launcher_bin="$capture_target_dir/debug/std-launcher"
+studio_bin="$capture_target_dir/debug/std-studio"
+CARGO_TARGET_DIR="$capture_target_dir" cargo build -p std-launcher -p std-studio
 
 capture_launcher() {
   theme="$1"
