@@ -1,6 +1,9 @@
 use crate::{
     doctor::background_acceptance::check_background_acceptance_manifest,
     doctor::ui_capture::check_ui_capture_scripts,
+    doctor::ui_launcher::{
+        check_launcher_app_localization_evidence, check_launcher_keyboard_ime_evidence,
+    },
     doctor::workspace::{check_text, read_required},
     CliError,
 };
@@ -398,63 +401,6 @@ fn check_preview_matrix_forbidden_commands(
                 "preview smoke must report target/ui-capture binaries, not cargo run".to_string(),
             ));
         }
-    }
-    Ok(())
-}
-
-fn check_launcher_keyboard_ime_evidence(root: &Path) -> Result<(), CliError> {
-    let keyboard = read_required(&root.join("crates/std-launcher/src/keyboard.rs"))?;
-    let smoke = read_required(&root.join("crates/std-launcher/src/keyboard_smoke.rs"))?;
-    let user_enter = read_required(&root.join("crates/std-launcher/src/user_enter_smoke.rs"))?;
-    let evidence = format!("{keyboard}\n{smoke}\n{user_enter}");
-    for required in [
-        "if ime_composing",
-        "ime_composition_path",
-        "zh-preedit({query_before_preedit})>blocked>commit({commit_query})>enter",
-        "ime_commit_trigger_status",
-        "user_enter_status",
-        "user_enter_route",
-        "Enter>handle_keyboard_input_by_user>ReviewFirst",
-        "user_enter_deferred",
-        "user_enter_open_contract",
-        "ui_enter=handle_keyboard_input_by_user",
-        "mode=ReviewFirst",
-        "default=review-command",
-        "run=ActionPanel>Run",
-        "desktop_open=default_review_first",
-        "explicit_run_status=NeedsExternalRunner",
-        "explicit_run_reason=STD_TEST_MODE blocked desktop open",
-        "hide_policy=Completed->hide,NeedsExternalRunner->keep-open",
-    ] {
-        check_text(&evidence, required)?;
-    }
-    Ok(())
-}
-
-fn check_launcher_app_localization_evidence(root: &Path) -> Result<(), CliError> {
-    let smoke = read_required(&root.join("crates/std-launcher/src/app_localization_smoke.rs"))?;
-    let cli = read_required(&root.join("crates/std-launcher/src/cli.rs"))?;
-    let core = read_required(&root.join("crates/std-core/src/app_bundle.rs"))?;
-    let core_profile = read_required(&root.join("crates/std-core/src/app_bundle_profile.rs"))?;
-    let tests = read_required(&root.join("crates/std-launcher/src/app_tests.rs"))?;
-    let evidence = format!("{smoke}\n{cli}\n{core}\n{core_profile}\n{tests}");
-    for required in [
-        "--app-localization-smoke",
-        "launcher_app_localization_smoke",
-        "queries=wechat|weixin|",
-        "fixture_scope=local_apps_dir_only",
-        "system_apps_scanned=false",
-        "CFBundleDisplayName",
-        "InfoPlist.strings",
-        "read_localized_info_plist_names",
-        "derived_aliases",
-        "wechat",
-        "weixin",
-        "\\\\U5fae\\\\U4fe1",
-        "ActionExecutionStatus::NeedsExternalRunner",
-        "launcher_searches_wechat_by_macos_multilingual_names_without_launching",
-    ] {
-        check_text(&evidence, required)?;
     }
     Ok(())
 }

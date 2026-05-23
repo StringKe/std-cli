@@ -12,6 +12,7 @@ mod ui_capture_scripts;
 #[cfg(test)]
 mod ui_capture_tests;
 mod ui_checks;
+mod ui_launcher;
 mod ui_tokens;
 mod workspace;
 
