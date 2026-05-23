@@ -11,7 +11,7 @@ pub(crate) fn handle_search_shortcuts(
     state: &mut LauncherState,
     hide_requested: &mut bool,
 ) {
-    if input::ime_composing(ctx) {
+    if input::ime_action_guard(ctx).blocks_actions() {
         return;
     }
     if input::launcher_cancel().pressed(ctx) {
@@ -94,7 +94,7 @@ mod tests {
     #[test]
     fn ui_keyboard_routes_executing_enter_and_cancel_before_normal_trigger() {
         let source = include_str!("ui_keyboard.rs");
-        let guard_index = source.find("input::ime_composing(ctx)").unwrap();
+        let guard_index = source.find("input::ime_action_guard(ctx)").unwrap();
         let cancel_index = source
             .find("input::launcher_cancel().pressed(ctx)")
             .unwrap();

@@ -90,8 +90,7 @@ impl LauncherState {
             ui_handler_contract: "ui-handler=ime-before-cancel-enter",
             ime_visible_state_contract:
                 "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime",
-            model_contract:
-                "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events",
+            model_contract: "model=keyboard-navigation,ime-action-guard=preedit-blocks-enter-escape-arrows-shortcuts;commit-restores-actions,user-enter-defer,no-desktop-events",
             real_interaction_contract:
                 "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION",
         }

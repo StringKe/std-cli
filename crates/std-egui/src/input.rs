@@ -18,6 +18,20 @@ pub enum KeyBinding {
     Named(&'static str),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImeActionGuard {
+    pub composing: bool,
+    pub frame_event: Option<String>,
+    pub action_allowed: bool,
+    pub contract: &'static str,
+}
+
+impl ImeActionGuard {
+    pub fn blocks_actions(&self) -> bool {
+        !self.action_allowed
+    }
+}
+
 impl KeyBinding {
     pub fn label(self) -> String {
         match self {
@@ -311,6 +325,21 @@ pub fn ime_frame_event(ctx: &egui::Context) -> Option<egui::ImeEvent> {
     })
 }
 
+pub fn ime_action_guard(ctx: &egui::Context) -> ImeActionGuard {
+    let frame_event = ime_frame_event(ctx).map(ime_event_label);
+    let composing = ime_composing(ctx);
+    ImeActionGuard {
+        composing,
+        frame_event,
+        action_allowed: !composing,
+        contract: ime_action_guard_contract(),
+    }
+}
+
+pub fn ime_action_guard_contract() -> &'static str {
+    "ime-action-guard=preedit-blocks-enter-escape-arrows-shortcuts;commit-restores-actions"
+}
+
 fn ime_composing_from_events(input: &egui::InputState) -> Option<bool> {
     input.events.iter().fold(None, |state, event| match event {
         egui::Event::Ime(egui::ImeEvent::Preedit(_)) => Some(true),
@@ -318,6 +347,15 @@ fn ime_composing_from_events(input: &egui::InputState) -> Option<bool> {
         | egui::Event::Ime(egui::ImeEvent::Disabled) => Some(false),
         _ => state,
     })
+}
+
+fn ime_event_label(event: egui::ImeEvent) -> String {
+    match event {
+        egui::ImeEvent::Enabled => "enabled".to_string(),
+        egui::ImeEvent::Preedit(value) => format!("preedit:{value}"),
+        egui::ImeEvent::Commit(value) => format!("commit:{value}"),
+        egui::ImeEvent::Disabled => "disabled".to_string(),
+    }
 }
 
 fn pressed_alpha(input: &egui::InputState, key: char) -> bool {

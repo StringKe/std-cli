@@ -114,6 +114,9 @@ fn ime_guard_api_is_available_to_ui_surfaces() {
     let ctx = egui::Context::default();
 
     assert!(!ime_composing(&ctx));
+    assert!(ime_action_guard(&ctx).action_allowed);
+    assert!(!ime_action_guard(&ctx).blocks_actions());
+    assert_eq!(ime_action_guard(&ctx).frame_event, None);
 }
 
 #[test]
@@ -170,6 +173,50 @@ fn ime_composing_persists_until_commit_or_disabled() {
 
     run_with_ime_event(&ctx, egui::ImeEvent::Disabled);
     assert!(!ime_composing(&ctx));
+}
+
+#[test]
+fn ime_action_guard_blocks_action_keys_until_commit() {
+    let ctx = egui::Context::default();
+
+    let _ = ctx.run(
+        egui::RawInput {
+            events: vec![
+                egui::Event::Ime(egui::ImeEvent::Preedit("zhong".to_string())),
+                egui::Event::Key {
+                    key: egui::Key::Enter,
+                    physical_key: Some(egui::Key::Enter),
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+            ..Default::default()
+        },
+        |ctx| {
+            let guard = ime_action_guard(ctx);
+            assert!(guard.composing);
+            assert!(guard.blocks_actions());
+            assert_eq!(guard.frame_event.as_deref(), Some("preedit:zhong"));
+            assert_eq!(
+                guard.contract,
+                "ime-action-guard=preedit-blocks-enter-escape-arrows-shortcuts;commit-restores-actions"
+            );
+        },
+    );
+
+    let _ = ctx.run(
+        egui::RawInput {
+            events: vec![egui::Event::Ime(egui::ImeEvent::Commit("中".to_string()))],
+            ..Default::default()
+        },
+        |ctx| {
+            let guard = ime_action_guard(ctx);
+            assert!(!guard.composing);
+            assert!(guard.action_allowed);
+            assert_eq!(guard.frame_event.as_deref(), Some("commit:中"));
+        },
+    );
 }
 
 fn run_with_ime_event(ctx: &egui::Context, event: egui::ImeEvent) {

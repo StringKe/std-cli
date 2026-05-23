@@ -22,12 +22,13 @@ fn launcher_ui_keyboard_uses_input_ime_guard_before_actions() {
     let cancel_index = source
         .find("input::launcher_cancel().pressed(ctx)")
         .unwrap();
-    let guard_index = source.find("input::ime_composing(ctx)").unwrap();
+    let guard_index = source.find("input::ime_action_guard(ctx)").unwrap();
     let enter_index = source.find("input::enter().pressed(ctx)").unwrap();
     let action_panel_index = source.find("launcher_action_panel().pressed(ctx)").unwrap();
     let direct_trigger_index = source.find("pressed_mod_number(ctx, 9)").unwrap();
 
     assert!(!source.contains("tokens::ime_composing"));
+    assert!(source.contains(".blocks_actions()"));
     assert!(guard_index < cancel_index);
     assert!(guard_index < enter_index);
     assert!(guard_index < action_panel_index);
@@ -41,7 +42,7 @@ fn launcher_ui_cancel_respects_ime_composition() {
         .find("input::launcher_cancel().pressed(ctx)")
         .unwrap();
     let cancel_route_index = source.find("LauncherKey::CancelExecuting, false").unwrap();
-    let guard_index = source.find("input::ime_composing(ctx)").unwrap();
+    let guard_index = source.find("input::ime_action_guard(ctx)").unwrap();
 
     assert!(guard_index < cancel_index);
     assert!(guard_index < cancel_route_index);
@@ -230,7 +231,7 @@ fn assert_focus_and_editing(report: &LauncherKeyboardReport, summary: &str) {
 fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
     assert_eq!(
         report.model_contract,
-        "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+        "model=keyboard-navigation,ime-action-guard=preedit-blocks-enter-escape-arrows-shortcuts;commit-restores-actions,user-enter-defer,no-desktop-events"
     );
     assert_eq!(
         report.ui_handler_contract,
@@ -249,7 +250,7 @@ fn assert_interaction_boundary(report: &LauncherKeyboardReport, summary: &str) {
         "ime_visible_state_contract=ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
     ));
     assert!(summary.contains(
-        "model_contract=model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+        "model_contract=model=keyboard-navigation,ime-action-guard=preedit-blocks-enter-escape-arrows-shortcuts;commit-restores-actions,user-enter-defer,no-desktop-events"
     ));
     assert!(summary.contains(
         "real_interaction_contract=real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"

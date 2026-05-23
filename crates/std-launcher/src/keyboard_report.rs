@@ -86,7 +86,10 @@ impl LauncherKeyboardReport {
             && self.ime_visible_state_contract
                 == "ime-visible-state=search-preedit-visible,preedit-not-query,commit-clears-preedit,enter-owned-by-ime"
             && self.model_contract
-                == "model=keyboard-navigation,ime-guard,user-enter-defer,no-desktop-events"
+                == format!(
+                    "model=keyboard-navigation,{},user-enter-defer,no-desktop-events",
+                    std_egui::input::ime_action_guard_contract()
+                )
             && self.real_interaction_contract
                 == "real-focus-enter-toggle=requires-STD_ALLOW_BACKGROUND_UI_AUTOMATION"
     }
