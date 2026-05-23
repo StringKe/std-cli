@@ -330,24 +330,26 @@ fn launcher_entrypoints_share_panel_native_options() {
 }
 
 #[test]
-fn preview_evidence_names_transparent_host_not_preview_viewport() {
+fn preview_evidence_names_transparent_host_not_extra_host_container() {
     let surface = include_str!("surface_smoke.rs");
     let preview = include_str!("preview.rs");
     let preview_contract = include_str!("preview_contract.rs");
+    let forbidden_host_container = concat!("preview", "_viewport");
+    let forbidden_host_container_contract = format!("{forbidden_host_container}_contract");
 
     assert!(surface.contains("capture_window=transparent_host,opt_in_only"));
     assert!(surface.contains("capture_surface=opaque_panel_surface"));
     assert!(surface.contains("panel_surface=opaque"));
-    assert!(!surface.contains("preview_viewport="));
+    assert!(!surface.contains(&format!("{forbidden_host_container}=")));
     assert!(preview_contract.contains("transparent-native-host"));
     assert!(preview_contract.contains("opaque-panel-surface"));
     assert!(preview_contract.contains("host-gutter-16px"));
     assert!(preview_contract.contains("no-host-background"));
     assert!(!preview.contains("host-gap-0"));
-    assert!(!preview.contains("preview_viewport"));
-    assert!(!preview.contains("preview_viewport_contract"));
-    assert!(!preview_contract.contains("preview_viewport"));
-    assert!(!preview_contract.contains("preview_viewport_contract"));
+    assert!(!preview.contains(forbidden_host_container));
+    assert!(!preview.contains(&forbidden_host_container_contract));
+    assert!(!preview_contract.contains(forbidden_host_container));
+    assert!(!preview_contract.contains(&forbidden_host_container_contract));
 }
 
 #[test]

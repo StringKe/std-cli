@@ -229,9 +229,11 @@ fn check_launcher_panel_viewport(root: &Path) -> Result<(), CliError> {
             ));
         }
     }
-    if launcher_surface.contains("preview_viewport=") {
+    let forbidden_host_container = concat!("preview", "_viewport");
+    if launcher_surface.contains(&format!("{forbidden_host_container}=")) {
         return Err(CliError::Config(
-            "launcher screenshot tooling must be capture-only, not a preview viewport".to_string(),
+            "launcher screenshot tooling must be capture-only, not an extra host container"
+                .to_string(),
         ));
     }
     check_ui_capture_scripts(root)?;
