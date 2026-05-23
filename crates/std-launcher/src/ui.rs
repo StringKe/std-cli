@@ -186,7 +186,7 @@ fn render_voice(ui: &mut egui::Ui, state: &mut LauncherState, voice_transcript: 
 }
 
 fn voice_apply_pressed(ctx: &egui::Context) -> bool {
-    !input::ime_composing(ctx) && input::enter().pressed(ctx)
+    !input::ime_action_guard(ctx).blocks_actions() && input::enter().pressed(ctx)
 }
 
 fn voice_input_a11y_label(transcript: &str) -> String {
@@ -340,7 +340,7 @@ mod tests {
             .nth(1)
             .unwrap();
 
-        assert!(voice_apply_branch.contains("!input::ime_composing(ctx)"));
+        assert!(voice_apply_branch.contains("!input::ime_action_guard(ctx).blocks_actions()"));
         assert!(voice_apply_branch.contains("input::enter().pressed(ctx)"));
     }
 

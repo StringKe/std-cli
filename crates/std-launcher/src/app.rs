@@ -66,7 +66,7 @@ impl eframe::App for LauncherApp {
             }
         }
 
-        if !input::ime_composing(ctx) && input::escape().pressed(ctx) {
+        if !input::ime_action_guard(ctx).blocks_actions() && input::escape().pressed(ctx) {
             let commands = self.state.handle_escape_hide();
             self.apply_window_commands_for_current_state(ctx, &commands);
         }
@@ -268,7 +268,9 @@ mod tests {
     fn launcher_app_global_escape_respects_ime_composition() {
         let source = include_str!("app.rs");
 
-        assert!(source.contains("!input::ime_composing(ctx) && input::escape().pressed(ctx)"));
+        assert!(source.contains(
+            "!input::ime_action_guard(ctx).blocks_actions() && input::escape().pressed(ctx)"
+        ));
     }
 
     #[test]

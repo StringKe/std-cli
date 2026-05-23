@@ -156,9 +156,10 @@ fn feedback_height_budget_matches_rendered_text_actions_and_margins() {
     let source = include_str!("ui_feedback.rs");
 
     let scale = std_egui::tokens::UiScale::default();
-    let expected = ui_metrics::feedback_text_height();
+    let expected = ui_metrics::feedback_text_height() + std_egui::tokens::Space::XS as f32 * 2.0;
 
     assert_eq!(ui_metrics::feedback_panel_height_for_scale(scale), expected);
+    assert_eq!(expected, 74.0);
     assert!(metrics.contains("feedback_panel_height_for_scale"));
     assert!(metrics.contains("feedback_text_height()"));
     assert!(layout.contains("feedback_panel_height_for_scale(scale)"));
