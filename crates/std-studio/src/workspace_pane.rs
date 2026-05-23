@@ -273,14 +273,19 @@ impl StudioApp {
 
     pub fn restore_workspace_closeguard(&mut self, closeguard: &WorkspacePaneCloseGuard) {
         for snapshot in &closeguard.panes {
-            if let Some(pane) = self
+            self.next_pane_serial = self.next_pane_serial.max(snapshot.id.value() + 1);
+            if let Some(index) = self
                 .workspace_panes
-                .iter_mut()
-                .find(|pane| pane.id == snapshot.id)
+                .iter()
+                .position(|pane| pane.id == snapshot.id)
             {
+                let focus_serial = self.next_focus_serial();
+                let pane = &mut self.workspace_panes[index];
+                pane.kind = snapshot.kind.clone();
+                pane.title = snapshot.title.clone();
                 pane.open = true;
+                pane.focus(focus_serial);
             } else {
-                self.next_pane_serial = self.next_pane_serial.max(snapshot.id.value() + 1);
                 let focus_serial = self.next_focus_serial();
                 self.workspace_panes.push(WorkspacePane {
                     id: snapshot.id,

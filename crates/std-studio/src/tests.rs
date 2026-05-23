@@ -68,6 +68,7 @@ mod operations_layout;
 mod plugins;
 mod trace;
 mod workflow_cancel;
+mod workspace_closeguard;
 mod workspace_panes;
 mod workspace_policy_guard;
 
