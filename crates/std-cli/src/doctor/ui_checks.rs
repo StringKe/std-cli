@@ -306,6 +306,7 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
     let studio_preview =
         format!("{studio}\n{studio_evidence}\n{studio_smoke}\n{studio_acceptance}");
     for required in [
+        "STD_ALLOW_UI_PREVIEW=1 target/ui-capture/debug/std-studio --ui-preview",
         "dark-dashboard",
         "light-dashboard",
         "dark-workflow",
@@ -345,6 +346,16 @@ fn check_preview_matrices(root: &Path) -> Result<(), CliError> {
         "diagnostic_capture_states",
     ] {
         check_text(&studio_preview, required)?;
+    }
+    for forbidden in [
+        "cargo run -p std-launcher -- --ui-preview",
+        "cargo run -p std-studio -- --ui-preview",
+    ] {
+        if studio_preview.contains(forbidden) || launcher_preview.contains(forbidden) {
+            return Err(CliError::Doctor(
+                "preview smoke must report target/ui-capture binaries, not cargo run".to_string(),
+            ));
+        }
     }
     Ok(())
 }
