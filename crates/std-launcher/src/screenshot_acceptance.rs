@@ -7,6 +7,7 @@ pub(crate) struct LauncherScreenshotAcceptanceMatrix {
     pub(crate) diagnostic_states: Vec<String>,
     pub(crate) evidence_rule: &'static str,
     pub(crate) opt_in_rule: &'static str,
+    pub(crate) acceptance_rule: &'static str,
 }
 
 impl LauncherScreenshotAcceptanceMatrix {
@@ -18,6 +19,7 @@ impl LauncherScreenshotAcceptanceMatrix {
             evidence_rule:
                 "docs21-delivery=theme-baseline+results+no-results+defer+error;theme-pairs=light|dark",
             opt_in_rule: "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless",
+            acceptance_rule: ui_capture::UI_CAPTURE_ACCEPTANCE_RULE,
         }
     }
 
@@ -27,17 +29,19 @@ impl LauncherScreenshotAcceptanceMatrix {
             && self.evidence_rule
                 == "docs21-delivery=theme-baseline+results+no-results+defer+error;theme-pairs=light|dark"
             && self.opt_in_rule == "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"
+            && self.acceptance_rule == ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "launcher_screenshot_acceptance {}\ndelivery_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}",
+            "launcher_screenshot_acceptance {}\ndelivery_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\nacceptance_rule={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.delivery_states.join(","),
             self.diagnostic_states.join(","),
             self.evidence_rule,
             self.opt_in_rule,
-            ui_capture::UI_CAPTURE_VERIFY_RULE
+            ui_capture::UI_CAPTURE_VERIFY_RULE,
+            self.acceptance_rule
         )
     }
 }
@@ -114,5 +118,6 @@ mod tests {
         assert!(summary.contains("diagnostic_capture_states=light-collapsed,dark-collapsed"));
         assert!(summary.contains("light-ime,dark-ime"));
         assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1 only"));
+        assert!(summary.contains(ui_capture::UI_CAPTURE_ACCEPTANCE_RULE));
     }
 }

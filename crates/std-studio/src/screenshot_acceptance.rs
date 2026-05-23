@@ -7,6 +7,7 @@ pub(crate) struct StudioScreenshotAcceptanceMatrix {
     pub(crate) diagnostic_states: Vec<String>,
     pub(crate) evidence_rule: &'static str,
     pub(crate) opt_in_rule: &'static str,
+    pub(crate) acceptance_rule: &'static str,
 }
 
 impl StudioScreenshotAcceptanceMatrix {
@@ -18,6 +19,7 @@ impl StudioScreenshotAcceptanceMatrix {
             evidence_rule:
                 "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark",
             opt_in_rule: "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless",
+            acceptance_rule: ui_capture::UI_CAPTURE_ACCEPTANCE_RULE,
         }
     }
 
@@ -28,18 +30,20 @@ impl StudioScreenshotAcceptanceMatrix {
             && self.evidence_rule
                 == "docs22-delivery=theme-baseline+core-workbenches+operations+settings;theme-pairs=light|dark"
             && self.opt_in_rule == "STD_ALLOW_UI_PREVIEW=1 only;default-smoke=headless"
+            && self.acceptance_rule == ui_capture::UI_CAPTURE_ACCEPTANCE_RULE
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "studio_screenshot_acceptance {}\ndelivery_capture_states={}\nworkflow_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}",
+            "studio_screenshot_acceptance {}\ndelivery_capture_states={}\nworkflow_capture_states={}\ndiagnostic_capture_states={}\nevidence_rule={}\nopt_in_rule={}\ncapture_verify_rule={}\nacceptance_rule={}",
             if self.pass() { "PASS" } else { "FAIL" },
             self.delivery_states.join(","),
             self.workflow_states.join(","),
             self.diagnostic_states.join(","),
             self.evidence_rule,
             self.opt_in_rule,
-            ui_capture::UI_CAPTURE_VERIFY_RULE
+            ui_capture::UI_CAPTURE_VERIFY_RULE,
+            self.acceptance_rule
         )
     }
 }
@@ -115,5 +119,6 @@ mod tests {
         assert!(summary.contains("diagnostic_capture_states=light-plugin-permission"));
         assert!(summary.contains("light-panes,dark-panes"));
         assert!(summary.contains("STD_ALLOW_UI_PREVIEW=1 only"));
+        assert!(summary.contains(ui_capture::UI_CAPTURE_ACCEPTANCE_RULE));
     }
 }
