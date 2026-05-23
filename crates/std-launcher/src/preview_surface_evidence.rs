@@ -37,6 +37,15 @@ pub(crate) struct PreviewNativeHostSurface {
     clear_color: String,
     viewport_frame: String,
     geometry: String,
+    carrier: PreviewHostCarrierContract,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct PreviewHostCarrierContract {
+    preview_viewport: &'static str,
+    host_background: &'static str,
+    visible_surface: &'static str,
+    layout_owner: &'static str,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -81,6 +90,7 @@ impl PreviewNativeHostSurface {
             clear_color: std_launcher::launcher_clear_color_contract(),
             viewport_frame: std_launcher::launcher_viewport_frame_contract(),
             geometry: ui_metrics::panel_surface_geometry_summary(state),
+            carrier: PreviewHostCarrierContract::for_state(state),
         }
     }
 
@@ -90,12 +100,46 @@ impl PreviewNativeHostSurface {
             && self.geometry.contains("host_gap=32x32")
             && self.geometry.contains("panel_origin=16x16")
             && self.geometry.contains("panel_floats=true")
+            && self.carrier.passes()
     }
 
     pub(crate) fn summary(&self) -> String {
         format!(
-            "host_contract={},{};{};forbidden=black_or_white_host_background",
-            self.clear_color, self.viewport_frame, self.geometry
+            "host_contract={},{};{};{};forbidden=black_or_white_host_background",
+            self.clear_color,
+            self.viewport_frame,
+            self.geometry,
+            self.carrier.summary()
+        )
+    }
+}
+
+impl PreviewHostCarrierContract {
+    pub(crate) fn for_state(state: &LauncherState) -> Self {
+        let only_panel = ui_metrics::panel_is_only_visible_surface(state);
+        Self {
+            preview_viewport: "absent",
+            host_background: "none",
+            visible_surface: if only_panel {
+                "opaque-panel-only"
+            } else {
+                "host-carrier-visible"
+            },
+            layout_owner: "panel-rect",
+        }
+    }
+
+    pub(crate) fn passes(&self) -> bool {
+        self.preview_viewport == "absent"
+            && self.host_background == "none"
+            && self.visible_surface == "opaque-panel-only"
+            && self.layout_owner == "panel-rect"
+    }
+
+    pub(crate) fn summary(&self) -> String {
+        format!(
+            "host_carrier=preview_viewport:{},host_background:{},visible_surface:{},layout_owner:{}",
+            self.preview_viewport, self.host_background, self.visible_surface, self.layout_owner
         )
     }
 }
@@ -245,5 +289,21 @@ mod tests {
         assert!(preview_surface_passes(&dark, "dark"));
         assert!(light.summary().contains("panel_token=bg/surface-0:#FAFBFD"));
         assert!(dark.summary().contains("panel_token=bg/surface-0:#1C1E22"));
+    }
+
+    #[test]
+    fn host_carrier_is_absent_and_panel_owns_layout() {
+        let mut state = LauncherState::new();
+        state.update_query("index");
+        let host = PreviewNativeHostSurface::for_state(&state);
+        let summary = host.summary();
+
+        assert!(host.passes());
+        assert!(summary.contains("host_carrier=preview_viewport:absent"));
+        assert!(summary.contains("host_background:none"));
+        assert!(summary.contains("visible_surface:opaque-panel-only"));
+        assert!(summary.contains("layout_owner:panel-rect"));
+        assert!(!summary.contains("preview_viewport:visible"));
+        assert!(!summary.contains("visible_surface:host-carrier-visible"));
     }
 }
