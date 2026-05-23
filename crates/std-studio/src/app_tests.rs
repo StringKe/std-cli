@@ -195,6 +195,13 @@ fn workflow_builder_errors_open_bottom_problems_panel() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
     assert!(app.status.contains("missing planned workflow"));
+    let preview_panel = app.bottom_panel_snapshot();
+    assert_eq!(preview_panel.status, "1 issues");
+    assert_eq!(preview_panel.rows[0].name, "Workflow Builder");
+    assert_eq!(preview_panel.rows[0].status, "error");
+    assert!(preview_panel.rows[0]
+        .detail
+        .contains("missing planned workflow"));
 
     app.bottom_panel_tab = BottomPanelTab::Performance;
     app.run_active_workflow();
@@ -202,6 +209,9 @@ fn workflow_builder_errors_open_bottom_problems_panel() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
     assert!(app.status.contains("missing planned workflow"));
+    let run_panel = app.bottom_panel_snapshot();
+    assert_eq!(run_panel.status, "1 issues");
+    assert_eq!(run_panel.rows[0].status, "error");
 }
 
 #[test]
@@ -215,6 +225,11 @@ fn saved_workflow_errors_open_bottom_problems_panel() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
     assert!(!app.status.is_empty());
+    let preview_panel = app.bottom_panel_snapshot();
+    assert_eq!(preview_panel.status, "1 issues");
+    assert_eq!(preview_panel.rows[0].name, "Workflow Builder");
+    assert_eq!(preview_panel.rows[0].status, "error");
+    assert_eq!(preview_panel.rows[0].detail, app.status);
 
     app.bottom_panel_tab = BottomPanelTab::Performance;
     app.run_active_workflow();
@@ -222,6 +237,9 @@ fn saved_workflow_errors_open_bottom_problems_panel() {
     assert!(app.layout.bottom_panel_open);
     assert_eq!(app.bottom_panel_tab, BottomPanelTab::Problems);
     assert!(!app.status.is_empty());
+    let run_panel = app.bottom_panel_snapshot();
+    assert_eq!(run_panel.status, "1 issues");
+    assert_eq!(run_panel.rows[0].status, "error");
 }
 
 fn test_app() -> StudioEguiApp {

@@ -166,6 +166,13 @@ impl StudioEguiApp {
                     }),
             );
         }
+        if rows.is_empty() && !self.status.trim().is_empty() {
+            rows.push(BottomPanelRow {
+                name: "Workflow Builder".to_string(),
+                status: "error".to_string(),
+                detail: self.status.clone(),
+            });
+        }
         BottomPanelSnapshot {
             title: i18n::t("studio.shell.bottom.problems").to_string(),
             status: format!("{} issues", rows.len()),
