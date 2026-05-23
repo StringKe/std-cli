@@ -144,6 +144,9 @@ fn quality_report() -> String {
     for evidence in manual_ui_evidence() {
         lines.push(format!("manual_ui_evidence={evidence}"));
     }
+    for matrix in ui_capture_matrices() {
+        lines.push(format!("manual_ui_matrix={matrix}"));
+    }
     for rule in ui_capture_evidence_rules() {
         lines.push(format!("manual_ui_evidence_rule={rule}"));
     }
@@ -175,6 +178,16 @@ fn ui_capture_evidence_rules() -> Vec<String> {
                 .strip_prefix("reject-")
                 .unwrap_or(ui_capture::UI_CAPTURE_CARRIER_REJECT_RULE)
         ),
+    ]
+}
+
+fn ui_capture_matrices() -> [&'static str; 5] {
+    [
+        "launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
+        "launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
+        "studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",
+        "studio_workflow=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error",
+        "studio_diagnostic=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes",
     ]
 }
 
@@ -224,6 +237,11 @@ fn verify_quality_report(path: &Path) -> Result<(), CliError> {
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
         "manual_ui_evidence=background_ui_rule=isolated-harness-only",
+        "manual_ui_matrix=launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
+        "manual_ui_matrix=launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
+        "manual_ui_matrix=studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",
+        "manual_ui_matrix=studio_workflow=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error",
+        "manual_ui_matrix=studio_diagnostic=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes",
         "manual_ui_evidence_rule=ui_capture_pixels=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
         "manual_ui_evidence_rule=ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
     ] {

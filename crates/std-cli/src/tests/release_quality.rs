@@ -53,6 +53,11 @@ fn release_quality_report_keeps_desktop_automation_manual_only() {
         "manual_ui_evidence=background_ui_manifest=STD_BACKGROUND_UI_ACCEPTANCE_MANIFEST=artifacts/ui/background-acceptance/manifest.txt",
         "manual_ui_evidence=background_ui_command=STD_ALLOW_BACKGROUND_UI_AUTOMATION=1 mise run ui-background-acceptance",
         "manual_ui_evidence=background_ui_rule=isolated-harness-only",
+        "manual_ui_matrix=launcher_delivery=light-empty,dark-empty,light-results,dark-results,light-no-results,dark-no-results,light-defer,dark-defer,light-error,dark-error",
+        "manual_ui_matrix=launcher_diagnostic=light-collapsed,dark-collapsed,light-searching,dark-searching,light-loading,dark-loading,light-executing,dark-executing,light-ime,dark-ime,light-action-panel,dark-action-panel",
+        "manual_ui_matrix=studio_delivery=light-dashboard,dark-dashboard,light-analysis,dark-analysis,light-plugins,dark-plugins,light-operations,dark-operations,light-settings,dark-settings",
+        "manual_ui_matrix=studio_workflow=light-workflow,dark-workflow,light-workflow-error,dark-workflow-error",
+        "manual_ui_matrix=studio_diagnostic=light-plugin-permission,dark-plugin-permission,light-panes,dark-panes",
         "manual_ui_evidence_rule=ui_capture_pixels=samples+opaque_samples+unique_colors+black_pixels+white_pixels+transparent_pixels",
         "manual_ui_evidence_rule=ui_capture_rejects=single-color+dominant-black+dominant-white-carrier",
     ] {
