@@ -13,6 +13,9 @@ pub struct LauncherAppLocalizationSmokeReport {
     pub deferred: bool,
     pub aliases: String,
     pub matched_fields: String,
+    pub selected_titles: Vec<String>,
+    pub preview_titles: Vec<String>,
+    pub enter_statuses: Vec<ActionExecutionStatus>,
 }
 
 impl LauncherAppLocalizationSmokeReport {
@@ -30,19 +33,29 @@ impl LauncherAppLocalizationSmokeReport {
         let mut action_ids = Vec::new();
         let mut aliases = String::new();
         let mut matched_fields = Vec::new();
+        let mut selected_titles = Vec::new();
+        let mut preview_titles = Vec::new();
+        let mut enter_statuses = Vec::new();
 
         for query in &queries {
             state.update_query(query);
-            let Some(result) = state
-                .view
-                .results
-                .iter()
-                .find(|result| result.action.name == "Open App: WeChat")
-            else {
+            let Some(result) = state.view.selected_result() else {
                 return Self::fail(queries, action_ids);
             };
+            if result.action.name != "Open App: WeChat" {
+                return Self::fail(queries, action_ids);
+            }
             matched_fields.extend(result.matched_fields.clone());
             action_ids.push(result.action.id);
+            selected_titles.push(result.action.name.clone());
+            preview_titles.push(
+                state
+                    .view
+                    .preview
+                    .as_ref()
+                    .map(|preview| preview.title.clone())
+                    .unwrap_or_else(|| "none".to_string()),
+            );
             if aliases.is_empty() {
                 aliases = state
                     .core
@@ -50,6 +63,9 @@ impl LauncherAppLocalizationSmokeReport {
                     .ok()
                     .and_then(|preview| preview.metadata.get("aliases").cloned())
                     .unwrap_or_default();
+            }
+            if let Some(execution) = state.trigger_selected() {
+                enter_statuses.push(execution.status);
             }
         }
 
@@ -70,6 +86,11 @@ impl LauncherAppLocalizationSmokeReport {
             .and_then(|value| value.as_bool())
             == Some(true);
         let status = if action_ids_match
+            && selected_titles_match(&selected_titles)
+            && preview_titles_match(&preview_titles)
+            && enter_statuses
+                .iter()
+                .all(|status| status == &ActionExecutionStatus::NeedsExternalRunner)
             && execution.status == ActionExecutionStatus::NeedsExternalRunner
             && deferred
             && aliases.contains("wechat")
@@ -90,16 +111,26 @@ impl LauncherAppLocalizationSmokeReport {
             deferred,
             aliases,
             matched_fields: unique_join(matched_fields),
+            selected_titles,
+            preview_titles,
+            enter_statuses,
         }
     }
 
     pub fn summary(&self) -> String {
         format!(
-            "launcher_app_localization_smoke {}\napp_title={}\nqueries={}\naction_ids_match={}\nenter_status={:?}\ndeferred={}\naliases={}\nmatched_fields={}\nfixture_scope=local_apps_dir_only\nsystem_apps_scanned=false",
+            "launcher_app_localization_smoke {}\napp_title={}\nqueries={}\naction_ids_match={}\nselected_titles={}\npreview_titles={}\nenter_statuses={}\nenter_status={:?}\ndeferred={}\naliases={}\nmatched_fields={}\nfixture_scope=local_apps_dir_only\nsystem_apps_scanned=false",
             self.status,
             self.app_title,
             self.queries.join("|"),
             self.action_ids_match,
+            self.selected_titles.join("|"),
+            self.preview_titles.join("|"),
+            self.enter_statuses
+                .iter()
+                .map(|status| format!("{status:?}"))
+                .collect::<Vec<_>>()
+                .join("|"),
             self.enter_status,
             self.deferred,
             self.aliases,
@@ -117,6 +148,9 @@ impl LauncherAppLocalizationSmokeReport {
             deferred: false,
             aliases: String::new(),
             matched_fields: String::new(),
+            selected_titles: Vec::new(),
+            preview_titles: Vec::new(),
+            enter_statuses: Vec::new(),
         }
     }
 }
@@ -133,6 +167,14 @@ fn smoke_config() -> StdConfig {
 
 fn same_action_ids(ids: &[ActionId]) -> bool {
     !ids.is_empty() && ids.windows(2).all(|pair| pair[0] == pair[1])
+}
+
+fn selected_titles_match(titles: &[String]) -> bool {
+    titles.len() == 3 && titles.iter().all(|title| title == "Open App: WeChat")
+}
+
+fn preview_titles_match(titles: &[String]) -> bool {
+    selected_titles_match(titles)
 }
 
 fn unique_join(values: Vec<String>) -> String {
@@ -177,6 +219,19 @@ mod tests {
         assert_eq!(report.status, "PASS");
         assert!(report.action_ids_match);
         assert_eq!(
+            report.selected_titles,
+            ["Open App: WeChat", "Open App: WeChat", "Open App: WeChat"]
+        );
+        assert_eq!(report.preview_titles, report.selected_titles);
+        assert_eq!(
+            report.enter_statuses,
+            [
+                ActionExecutionStatus::NeedsExternalRunner,
+                ActionExecutionStatus::NeedsExternalRunner,
+                ActionExecutionStatus::NeedsExternalRunner
+            ]
+        );
+        assert_eq!(
             report.enter_status,
             ActionExecutionStatus::NeedsExternalRunner
         );
@@ -185,6 +240,15 @@ mod tests {
         assert!(report.aliases.contains("weixin"));
         assert!(report.aliases.contains("\u{5fae}\u{4fe1}"));
         assert!(report.matched_fields.contains("tags"));
+        assert!(report
+            .summary()
+            .contains("selected_titles=Open App: WeChat|Open App: WeChat|Open App: WeChat"));
+        assert!(report
+            .summary()
+            .contains("preview_titles=Open App: WeChat|Open App: WeChat|Open App: WeChat"));
+        assert!(report.summary().contains(
+            "enter_statuses=NeedsExternalRunner|NeedsExternalRunner|NeedsExternalRunner"
+        ));
         assert!(report.summary().contains("system_apps_scanned=false"));
     }
 }
